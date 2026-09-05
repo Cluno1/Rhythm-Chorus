@@ -45,6 +45,10 @@ import chromahub.rhythm.app.features.local.data.repository.MusicRepository
 import chromahub.rhythm.app.features.catalog.domain.CatalogPlaybackPolicy
 import chromahub.rhythm.app.features.catalog.domain.RhythmNowPlayingItem
 import chromahub.rhythm.app.features.catalog.domain.RhythmQueueEntry
+import chromahub.rhythm.app.core.ProductCapabilities
+import chromahub.rhythm.app.features.local.presentation.player.PlaybackControlStateMachine
+import chromahub.rhythm.app.features.local.presentation.player.PlaybackControlUiState
+import chromahub.rhythm.app.features.local.presentation.player.PlaybackReadiness
 import chromahub.rhythm.app.features.local.data.database.entity.toSong
 import chromahub.rhythm.app.shared.data.model.PlaybackLocation
 import chromahub.rhythm.app.shared.data.model.Playlist
@@ -171,7 +175,8 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
 
         // Phase two is a private-catalog-only product. Keep the legacy ViewModel as the
         // Media3 controller adapter, but never activate its MediaStore library pipeline.
-        private const val CATALOG_ONLY_PRODUCT = true
+        private val catalogOnlyProduct: Boolean
+            get() = ProductCapabilities.catalogOnly
 
         private const val DEFAULT_BLUETOOTH_LYRIC_LINE = "No lyrics"
         private const val METADATA_EXTRA_ORIGINAL_TITLE = "chromahub.rhythm.app.extra.original_title"
@@ -892,6 +897,13 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
     private val _isPlaying = MutableStateFlow(false)
     val isPlaying: StateFlow<Boolean> = _isPlaying.asStateFlow()
 
+    private val playbackControlStateMachine = PlaybackControlStateMachine(
+        scope = viewModelScope,
+        minimumLoadingDurationMs = 400L,
+        elapsedRealtimeMs = SystemClock::elapsedRealtime,
+    )
+    val playbackControlUiState: StateFlow<PlaybackControlUiState> = playbackControlStateMachine.state
+
     private val _showCorruptionDialog = MutableStateFlow(false)
     val showCorruptionDialog: StateFlow<Boolean> = _showCorruptionDialog.asStateFlow()
 
@@ -1196,7 +1208,7 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
 
     init {
         Log.d(TAG, "Initializing MusicViewModel")
-        if (!CATALOG_ONLY_PRODUCT) startLibrarySetupCompletionMonitor()
+        if (!catalogOnlyProduct) startLibrarySetupCompletionMonitor()
         
         // Single coroutine for main initialization to ensure proper ordering
         viewModelScope.launch {
@@ -1221,7 +1233,7 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
             ) { preferSongArtwork, losslessArtwork ->
                 Pair(preferSongArtwork, losslessArtwork)
             }.collect { newState ->
-                if (CATALOG_ONLY_PRODUCT || !_isInitialized.value || newState == previousState) {
+                if (catalogOnlyProduct || !_isInitialized.value || newState == previousState) {
                     return@collect
                 }
                 
@@ -1299,7 +1311,7 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
                 Unit
             }.collect {
                 // Wait for initialization to complete before refreshing
-                if (!CATALOG_ONLY_PRODUCT && _isInitialized.value) {
+                if (!catalogOnlyProduct && _isInitialized.value) {
                     Log.d(TAG, "Blacklist/Whitelist or scan mode changed, refreshing library & playlists")
                     refreshLibrary(showMediaScanLoader = false)
                     removeBlacklistedSongsFromQueue()
@@ -1322,7 +1334,7 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
             ) { groupByAlbumArtist, artistSeparatorEnabled, artistSeparatorDelimiters ->
                 Triple(groupByAlbumArtist, artistSeparatorEnabled, artistSeparatorDelimiters)
             }.collect { newState ->
-                if (CATALOG_ONLY_PRODUCT || !_isInitialized.value || newState == previousState) {
+                if (catalogOnlyProduct || !_isInitialized.value || newState == previousState) {
                     return@collect
                 }
 
@@ -1410,7 +1422,7 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
         val initStartTime = System.currentTimeMillis()
         
         // Step 1: Load core music data with PARALLEL loading for better performance
-        val initializationResults = if (CATALOG_ONLY_PRODUCT) {
+        val initializationResults = if (catalogOnlyProduct) {
             _songs.value = emptyList()
             _albums.value = emptyList()
             _artists.value = emptyList()
@@ -1440,7 +1452,7 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
         }
 
         // Step 4: Initialize from persistence (needs songs to be loaded)
-        if (!CATALOG_ONLY_PRODUCT) {
+        if (!catalogOnlyProduct) {
             try {
                 initializeFromPersistence()
             } catch (e: Exception) {
@@ -1456,10 +1468,10 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
         }
         
         // Step 6: Wait for filteredSongs to be ready and populate playlists
-        if (!CATALOG_ONLY_PRODUCT) populateDefaultPlaylistsSafely()
+        if (!catalogOnlyProduct) populateDefaultPlaylistsSafely()
 
         // Step 7: Initialize queue state
-        if (!CATALOG_ONLY_PRODUCT) initializeQueueState()
+        if (!catalogOnlyProduct) initializeQueueState()
 
         // Step 8: Mark as initialized BEFORE starting background tasks
         // This allows UI to render immediately
@@ -1469,7 +1481,7 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
         
         // Step 9: Start non-critical background tasks AFTER marking initialized
         // This defers heavy work until after UI is responsive
-        if (!CATALOG_ONLY_PRODUCT) startBackgroundTasksDeferred()
+        if (!catalogOnlyProduct) startBackgroundTasksDeferred()
     }
     
     private data class InitializationResult(val success: Boolean, val error: String? = null)
@@ -3840,6 +3852,11 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
                             // Sync playback state with controller when app is reopened
                             val isActuallyPlaying = controller.isPlaying
                             _isPlaying.value = isActuallyPlaying
+                            playbackControlStateMachine.update(
+                                mediaId = controller.currentMediaItem?.mediaId,
+                                readiness = controller.playbackState.toPlaybackReadiness(),
+                                playWhenReady = controller.playWhenReady,
+                            )
                             Log.d(TAG, "Syncing playback state on controller init: isPlaying=$isActuallyPlaying")
 
                             // Update duration and start progress updates if playing
@@ -3890,6 +3907,7 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     private fun releaseStaleControllerConnection() {
+        playbackControlStateMachine.clear()
         mediaController?.let { existingController ->
             try {
                 existingController.removeListener(playerListener)
@@ -3988,6 +4006,11 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     private fun triggerTrackCorruption(controller: MediaController, message: String) {
+        playbackControlStateMachine.update(
+            mediaId = controller.currentMediaItem?.mediaId ?: playbackControlUiState.value.mediaId,
+            readiness = PlaybackReadiness.ERROR,
+            playWhenReady = false,
+        )
         viewModelScope.launch {
             try {
                 controller.pause()
@@ -4009,6 +4032,12 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
     private val playerListener = object : Player.Listener {
         override fun onPlayerError(error: PlaybackException) {
             Log.e(TAG, "Player error encountered in ViewModel: ${error.message}", error)
+            playbackControlStateMachine.update(
+                mediaId = mediaController?.currentMediaItem?.mediaId
+                    ?: playbackControlUiState.value.mediaId,
+                readiness = PlaybackReadiness.ERROR,
+                playWhenReady = false,
+            )
             if (appSettings.trackErrorCheckerEnabled.value) {
                 _corruptedTrackName.value = _currentSong.value?.title ?: "Unknown Song"
                 _corruptedTrackMessage.value = "The player encountered a playback error: ${error.message ?: "Unknown error"}"
@@ -4080,6 +4109,13 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
 
         override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
             Log.d(TAG, "Media item transition: ${mediaItem?.mediaId}, reason: $reason")
+
+            if (mediaItem?.mediaId != playbackControlUiState.value.mediaId) {
+                playbackControlStateMachine.beginLoading(
+                    mediaId = mediaItem?.mediaId,
+                    playWhenReady = mediaController?.playWhenReady == true,
+                )
+            }
 
             if (mediaItem?.mediaId != null && mediaItem.mediaId == _currentSong.value?.id) {
                 Log.d(TAG, "Ignoring media item transition for same song: ${mediaItem.mediaId}")
@@ -4194,6 +4230,16 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
                 }
             }
         }
+
+        override fun onEvents(player: Player, events: Player.Events) {
+            // Commit the controls from one Media3 snapshot. isPlaying and buffering continue to
+            // drive legacy business logic independently, but UI buttons never combine them.
+            playbackControlStateMachine.update(
+                mediaId = player.currentMediaItem?.mediaId,
+                readiness = player.playbackState.toPlaybackReadiness(),
+                playWhenReady = player.playWhenReady,
+            )
+        }
         
         override fun onShuffleModeEnabledChanged(shuffleModeEnabled: Boolean) {
             Log.d(TAG, "Shuffle mode changed: $shuffleModeEnabled")
@@ -4227,6 +4273,13 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
             Log.d(TAG, "Repeat mode changed: $repeatMode")
             _repeatMode.value = repeatMode
         }
+    }
+
+    private fun Int.toPlaybackReadiness(): PlaybackReadiness = when (this) {
+        Player.STATE_BUFFERING -> PlaybackReadiness.BUFFERING
+        Player.STATE_READY -> PlaybackReadiness.READY
+        Player.STATE_ENDED -> PlaybackReadiness.ENDED
+        else -> PlaybackReadiness.IDLE
     }
     
     private fun startProgressUpdates() {
@@ -5659,6 +5712,10 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
                 controller.clearMediaItems()
                 controller.shuffleModeEnabled = false
                 controller.addMediaItems(entries.map { it.playback.toMediaItem() })
+                playbackControlStateMachine.beginLoading(
+                    mediaId = entries[validIndex].playback.toMediaItem().mediaId,
+                    playWhenReady = startPlayback,
+                )
                 controller.prepare()
                 controller.seekTo(validIndex, positionMs.coerceAtLeast(0L))
                 if (!canStartPlayback("playCatalogQueue.prepare")) return@let
@@ -5915,7 +5972,10 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
     fun togglePlayPause() {
         Log.d(TAG, "Toggle play/pause, current state: ${_isPlaying.value}")
         mediaController?.let { controller ->
-            if (controller.isPlaying) {
+            // Follow the same atomic state rendered by the button. During BUFFERING this remains
+            // Pause while automatic playback is intended; after IDLE/ENDED/ERROR it is Play even
+            // if Media3 has not yet cleared a stale playWhenReady value.
+            if (playbackControlUiState.value.showPause) {
                 controller.pause()
                 _isPlaying.value = false
                 progressUpdateJob?.cancel()
@@ -6003,6 +6063,11 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
                 val nextMediaItem = controller.getMediaItemAt(nextIndex)
                 val nextSongId = nextMediaItem.mediaId
                 val nextSong = _songs.value.find { it.id == nextSongId }
+
+                playbackControlStateMachine.beginLoading(
+                    mediaId = nextSongId,
+                    playWhenReady = controller.playWhenReady,
+                )
                 
                 // Update the current queue position first for immediate UI feedback
                 val currentQueue = _currentQueue.value
@@ -6063,6 +6128,11 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
                     val prevMediaItem = controller.getMediaItemAt(prevIndex)
                     val prevSongId = prevMediaItem.mediaId
                     val prevSong = _songs.value.find { it.id == prevSongId }
+
+                    playbackControlStateMachine.beginLoading(
+                        mediaId = prevSongId,
+                        playWhenReady = controller.playWhenReady,
+                    )
 
                     // Update the current queue position first for immediate UI feedback
                     val currentQueue = _currentQueue.value
@@ -9923,6 +9993,7 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
     override fun onCleared() {
 
         Log.d(TAG, "ViewModel clearing, cleaning up resources")
+        playbackControlStateMachine.clear()
         
         // Unregister broadcast receiver
         try {

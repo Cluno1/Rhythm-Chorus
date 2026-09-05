@@ -3,6 +3,7 @@ package chromahub.rhythm.app.shared.presentation.screens.settings
 import chromahub.rhythm.app.shared.presentation.components.icons.RhythmIcons
 import chromahub.rhythm.app.shared.presentation.components.icons.MaterialSymbolIcon
 import chromahub.rhythm.app.shared.presentation.components.icons.Icon
+import chromahub.rhythm.app.core.ProductRoutePolicy
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedContent
@@ -120,6 +121,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import chromahub.rhythm.app.R
 import chromahub.rhythm.app.BuildConfig
+import chromahub.rhythm.app.core.ProductCapabilities
 import chromahub.rhythm.app.shared.presentation.components.common.CollapsibleHeaderScreen
 import chromahub.rhythm.app.ui.utils.LazyListStateSaver
 import chromahub.rhythm.app.ui.LocalMiniPlayerPadding
@@ -378,8 +380,9 @@ fun SettingsScreen(
                 items = buildList {
                     add(SettingItem(RhythmIcons.Notifications, context.getString(R.string.settings_notifications), context.getString(R.string.settings_notifications_desc), onClick = { onNavigateTo(SettingsRoutes.NOTIFICATIONS) }))
                     add(SettingItem(MaterialSymbolIcon("cloud"), "音乐库服务器", "配置 ihope 音乐与乐谱服务", onClick = { onNavigateTo(SettingsRoutes.CATALOG) }))
-                    // API Management/Integrations is available in both LOCAL and STREAMING modes
-                    add(SettingItem(MaterialSymbolIcon("api"), context.getString(R.string.settings_api_management), context.getString(R.string.settings_api_management_desc), onClick = { onNavigateTo(SettingsRoutes.API_MANAGEMENT) }))
+                    if (!ProductCapabilities.catalogOnly) {
+                        add(SettingItem(MaterialSymbolIcon("api"), context.getString(R.string.settings_api_management), context.getString(R.string.settings_api_management_desc), onClick = { onNavigateTo(SettingsRoutes.API_MANAGEMENT) }))
+                    }
                 }
             ),
             // 7. Data & Storage - split into shared and local-only items
@@ -399,27 +402,31 @@ fun SettingsScreen(
             // 8. Updates & Info
             SettingGroup(
                 title = context.getString(R.string.settings_section_updates_info),
-                items = listOf(
-                    SettingItem(
-                        RhythmIcons.Update,
-                        context.getString(R.string.settings_updates_title),
-                        context.getString(R.string.settings_updates_desc),
-                        toggleState = updatesEnabled,
-                        onToggleChange = { enabled ->
-                            if (enabled) {
-                                if (BuildConfig.FLAVOR == "fdroid") {
-                                    showFdroidWarningDialog = true
-                                } else {
-                                    appSettings.setUpdatesEnabled(true)
-                                }
-                            } else {
-                                appSettings.setUpdatesEnabled(false)
-                            }
-                        },
-                        onClick = { onNavigateTo(SettingsRoutes.UPDATES) }
-                    ),
-                    SettingItem(RhythmIcons.Info, context.getString(R.string.settings_about_title), context.getString(R.string.settings_about_desc), onClick = { onNavigateTo(SettingsRoutes.ABOUT) })
-                )
+                items = buildList {
+                    if (!ProductCapabilities.catalogOnly) {
+                        add(
+                            SettingItem(
+                                RhythmIcons.Update,
+                                context.getString(R.string.settings_updates_title),
+                                context.getString(R.string.settings_updates_desc),
+                                toggleState = updatesEnabled,
+                                onToggleChange = { enabled ->
+                                    if (enabled) {
+                                        if (BuildConfig.FLAVOR == "fdroid") {
+                                            showFdroidWarningDialog = true
+                                        } else {
+                                            appSettings.setUpdatesEnabled(true)
+                                        }
+                                    } else {
+                                        appSettings.setUpdatesEnabled(false)
+                                    }
+                                },
+                                onClick = { onNavigateTo(SettingsRoutes.UPDATES) }
+                            )
+                        )
+                    }
+                    add(SettingItem(RhythmIcons.Info, context.getString(R.string.settings_about_title), context.getString(R.string.settings_about_desc), onClick = { onNavigateTo(SettingsRoutes.ABOUT) }))
+                }
             ),
             // 9. Advanced
             SettingGroup(
@@ -990,6 +997,13 @@ fun SettingsScreenWrapper(
     val isPlaying by musicViewModel.isPlaying.collectAsState()
     val appMode by appSettings.appMode.collectAsState()
 
+    val effectiveRoute = currentRoute?.takeIf {
+        ProductRoutePolicy.allowsSettingsSubroute(it, ProductCapabilities.catalogOnly)
+    }
+    LaunchedEffect(currentRoute) {
+        if (currentRoute != null && effectiveRoute == null) currentRoute = null
+    }
+
     // Hoist the main settings scroll state to persist across navigation
     val mainSettingsScrollState = rememberSaveable(
         saver = LazyListStateSaver
@@ -1045,7 +1059,7 @@ fun SettingsScreenWrapper(
             navController.navigate(Screen.Equalizer.route)
         } else if (route == SettingsRoutes.SLEEP_TIMER) {
             showSleepTimerBottomSheet = true
-        } else {
+        } else if (ProductRoutePolicy.allowsSettingsSubroute(route, ProductCapabilities.catalogOnly)) {
             currentRoute = route
         }
     }
@@ -1078,7 +1092,7 @@ fun SettingsScreenWrapper(
                 tonalElevation = 0.dp
             ) {
                 AnimatedContent(
-                    targetState = currentRoute,
+                    targetState = effectiveRoute,
                     transitionSpec = {
                         if (targetState != null) {
                             // Slide in from right for subsettings
@@ -1189,7 +1203,7 @@ fun SettingsScreenWrapper(
     } else {
         // Phone layout: Traditional navigation with AnimatedContent
         AnimatedContent(
-            targetState = currentRoute,
+            targetState = effectiveRoute,
             transitionSpec = {
                 if (targetState != null) {
                     // Enhanced slide in from right when navigating to a screen
@@ -1561,25 +1575,27 @@ fun SettingsTipsRow(
                     )
                 )
             }
-            val updatesDescs = if (updatesEnabled) {
-                listOf(
-                    context.getString(R.string.settings_tip_updates_active_desc_1),
-                    context.getString(R.string.settings_tip_updates_active_desc_2)
-                )
-            } else {
-                listOf(
-                    context.getString(R.string.settings_tip_updates_inactive_desc_1),
-                    context.getString(R.string.settings_tip_updates_inactive_desc_2)
+            if (ProductCapabilities.inAppUpdates) {
+                val updatesDescs = if (updatesEnabled) {
+                    listOf(
+                        context.getString(R.string.settings_tip_updates_active_desc_1),
+                        context.getString(R.string.settings_tip_updates_active_desc_2)
+                    )
+                } else {
+                    listOf(
+                        context.getString(R.string.settings_tip_updates_inactive_desc_1),
+                        context.getString(R.string.settings_tip_updates_inactive_desc_2)
+                    )
+                }
+                add(
+                    SettingsTipData(
+                        icon = RhythmIcons.Update,
+                        title = context.getString(R.string.cd_app_updates),
+                        text = updatesDescs.random(random),
+                        route = SettingsRoutes.UPDATES
+                    )
                 )
             }
-            add(
-                SettingsTipData(
-                    icon = RhythmIcons.Update,
-                    title = context.getString(R.string.cd_app_updates),
-                    text = updatesDescs.random(random),
-                    route = SettingsRoutes.UPDATES
-                )
-            )
             val queueDescs = if (gesturePlayerSwipeTracks) {
                 listOf(
                     context.getString(R.string.settings_tip_queue_active_desc_1),

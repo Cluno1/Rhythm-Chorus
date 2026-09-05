@@ -19,6 +19,8 @@ import chromahub.rhythm.app.worker.BackupWorker
 import chromahub.rhythm.app.worker.RhythmPulseNotificationWorker
 import chromahub.rhythm.app.worker.UpdateNotificationWorker
 import chromahub.rhythm.app.BuildConfig
+import chromahub.rhythm.app.core.ProductCapabilities
+import chromahub.rhythm.app.core.ProductRoutePolicy
 import java.io.File
 import java.util.Date // Import Date for timestamp
 import java.util.concurrent.TimeUnit
@@ -627,23 +629,39 @@ class AppSettings private constructor(context: Context) {
     val prefs: SharedPreferences = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
 
     fun setInitialSettingsSubroute(route: String?) {
-        prefs.edit { putString(KEY_INITIAL_SETTINGS_SUBROUTE, route) }
+        prefs.edit {
+            if (ProductRoutePolicy.allowsSettingsSubroute(route, ProductCapabilities.catalogOnly)) {
+                putString(KEY_INITIAL_SETTINGS_SUBROUTE, route)
+            } else {
+                remove(KEY_INITIAL_SETTINGS_SUBROUTE)
+            }
+        }
     }
 
     fun consumeInitialSettingsSubroute(): String? {
         val v = prefs.getString(KEY_INITIAL_SETTINGS_SUBROUTE, null)
         if (v != null) prefs.edit { remove(KEY_INITIAL_SETTINGS_SUBROUTE) }
-        return v
+        return v?.takeIf {
+            ProductRoutePolicy.allowsSettingsSubroute(it, ProductCapabilities.catalogOnly)
+        }
     }
 
     fun setInitialStreamingRoute(route: String?) {
-        prefs.edit { putString(KEY_INITIAL_STREAMING_ROUTE, route) }
+        prefs.edit {
+            if (ProductRoutePolicy.allowsInitialNavigationRoute(route, ProductCapabilities.catalogOnly)) {
+                putString(KEY_INITIAL_STREAMING_ROUTE, route)
+            } else {
+                remove(KEY_INITIAL_STREAMING_ROUTE)
+            }
+        }
     }
 
     fun consumeInitialStreamingRoute(): String? {
         val v = prefs.getString(KEY_INITIAL_STREAMING_ROUTE, null)
         if (v != null) prefs.edit { remove(KEY_INITIAL_STREAMING_ROUTE) }
-        return v
+        return v?.takeIf {
+            ProductRoutePolicy.allowsInitialNavigationRoute(it, ProductCapabilities.catalogOnly)
+        }
     }
     
     // Playback Settings
@@ -993,7 +1011,9 @@ class AppSettings private constructor(context: Context) {
     val showScrollToTop: StateFlow<Boolean> = _showScrollToTop.asStateFlow()
     
     // App Mode Settings (Local vs Streaming)
-    private val _appMode = MutableStateFlow(prefs.getString(KEY_APP_MODE, "LOCAL") ?: "LOCAL")
+    private val _appMode = MutableStateFlow(
+        if (ProductCapabilities.catalogOnly) "LOCAL" else prefs.getString(KEY_APP_MODE, "LOCAL") ?: "LOCAL"
+    )
     val appMode: StateFlow<String> = _appMode.asStateFlow()
     
     private val _streamingService = MutableStateFlow(prefs.getString(KEY_STREAMING_SERVICE, "SUBSONIC") ?: "SUBSONIC")
@@ -1469,28 +1489,28 @@ class AppSettings private constructor(context: Context) {
     val lastPlayedTimestamp: StateFlow<Long> = _lastPlayedTimestamp.asStateFlow()
     
     // API Enable/Disable States
-    private val _deezerApiEnabled = MutableStateFlow(prefs.getBoolean(KEY_DEEZER_API_ENABLED, BuildConfig.FLAVOR != "fdroid"))
+    private val _deezerApiEnabled = MutableStateFlow(!ProductCapabilities.catalogOnly && prefs.getBoolean(KEY_DEEZER_API_ENABLED, BuildConfig.FLAVOR != "fdroid"))
     val deezerApiEnabled: StateFlow<Boolean> = _deezerApiEnabled.asStateFlow()
     
-    private val _lrclibApiEnabled = MutableStateFlow(prefs.getBoolean(KEY_LRCLIB_API_ENABLED, BuildConfig.FLAVOR != "fdroid"))
+    private val _lrclibApiEnabled = MutableStateFlow(!ProductCapabilities.catalogOnly && prefs.getBoolean(KEY_LRCLIB_API_ENABLED, BuildConfig.FLAVOR != "fdroid"))
     val lrclibApiEnabled: StateFlow<Boolean> = _lrclibApiEnabled.asStateFlow()
     
-    private val _betterLyricsApiEnabled = MutableStateFlow(prefs.getBoolean(KEY_BETTERLYRICS_API_ENABLED, BuildConfig.FLAVOR != "fdroid"))
+    private val _betterLyricsApiEnabled = MutableStateFlow(!ProductCapabilities.catalogOnly && prefs.getBoolean(KEY_BETTERLYRICS_API_ENABLED, BuildConfig.FLAVOR != "fdroid"))
     val betterLyricsApiEnabled: StateFlow<Boolean> = _betterLyricsApiEnabled.asStateFlow()
     
-    private val _ytMusicApiEnabled = MutableStateFlow(prefs.getBoolean(KEY_YTMUSIC_API_ENABLED, BuildConfig.FLAVOR != "fdroid"))
+    private val _ytMusicApiEnabled = MutableStateFlow(!ProductCapabilities.catalogOnly && prefs.getBoolean(KEY_YTMUSIC_API_ENABLED, BuildConfig.FLAVOR != "fdroid"))
     val ytMusicApiEnabled: StateFlow<Boolean> = _ytMusicApiEnabled.asStateFlow()
     
-    private val _spotifyApiEnabled = MutableStateFlow(prefs.getBoolean(KEY_SPOTIFY_API_ENABLED, BuildConfig.FLAVOR != "fdroid"))
+    private val _spotifyApiEnabled = MutableStateFlow(!ProductCapabilities.catalogOnly && prefs.getBoolean(KEY_SPOTIFY_API_ENABLED, BuildConfig.FLAVOR != "fdroid"))
     val spotifyApiEnabled: StateFlow<Boolean> = _spotifyApiEnabled.asStateFlow()
     
-    private val _lyricallyApiEnabled = MutableStateFlow(prefs.getBoolean(KEY_LYRICALLY_API_ENABLED, BuildConfig.FLAVOR != "fdroid"))
+    private val _lyricallyApiEnabled = MutableStateFlow(!ProductCapabilities.catalogOnly && prefs.getBoolean(KEY_LYRICALLY_API_ENABLED, BuildConfig.FLAVOR != "fdroid"))
     val lyricallyApiEnabled: StateFlow<Boolean> = _lyricallyApiEnabled.asStateFlow()
 
-    private val _wikipediaApiEnabled = MutableStateFlow(prefs.getBoolean(KEY_WIKIPEDIA_API_ENABLED, BuildConfig.FLAVOR != "fdroid"))
+    private val _wikipediaApiEnabled = MutableStateFlow(!ProductCapabilities.catalogOnly && prefs.getBoolean(KEY_WIKIPEDIA_API_ENABLED, BuildConfig.FLAVOR != "fdroid"))
     val wikipediaApiEnabled: StateFlow<Boolean> = _wikipediaApiEnabled.asStateFlow()
     
-    private val _autoFetchArtwork = MutableStateFlow(prefs.getBoolean(KEY_AUTO_FETCH_ARTWORK, true))
+    private val _autoFetchArtwork = MutableStateFlow(!ProductCapabilities.catalogOnly && prefs.getBoolean(KEY_AUTO_FETCH_ARTWORK, true))
     val autoFetchArtwork: StateFlow<Boolean> = _autoFetchArtwork.asStateFlow()
 
     private val _artistArtworkSource = MutableStateFlow(
@@ -1498,7 +1518,7 @@ class AppSettings private constructor(context: Context) {
     )
     val artistArtworkSource: StateFlow<ArtistArtworkSource> = _artistArtworkSource.asStateFlow()
 
-    private val _appleCanvasEnabled = MutableStateFlow(prefs.getBoolean(KEY_APPLE_CANVAS_ENABLED, true))
+    private val _appleCanvasEnabled = MutableStateFlow(!ProductCapabilities.catalogOnly && prefs.getBoolean(KEY_APPLE_CANVAS_ENABLED, true))
     val appleCanvasEnabled: StateFlow<Boolean> = _appleCanvasEnabled.asStateFlow()
 
     private val _appleCanvasNetworkMode = MutableStateFlow(
@@ -1617,7 +1637,7 @@ class AppSettings private constructor(context: Context) {
     val embeddedArtworkExtractionLosslessStatus: StateFlow<Boolean> = _embeddedArtworkExtractionLosslessStatus.asStateFlow()
 
     // App Updater Settings
-private val _autoCheckForUpdates = MutableStateFlow(prefs.getBoolean(KEY_AUTO_CHECK_FOR_UPDATES, BuildConfig.FLAVOR != "fdroid"))
+private val _autoCheckForUpdates = MutableStateFlow(ProductCapabilities.inAppUpdates && prefs.getBoolean(KEY_AUTO_CHECK_FOR_UPDATES, BuildConfig.FLAVOR != "fdroid"))
     val autoCheckForUpdates: StateFlow<Boolean> = _autoCheckForUpdates.asStateFlow()
     
     private val _updateChannel = MutableStateFlow(prefs.getString(KEY_UPDATE_CHANNEL, "stable") ?: "stable")
@@ -1626,16 +1646,16 @@ private val _autoCheckForUpdates = MutableStateFlow(prefs.getBoolean(KEY_AUTO_CH
     private val _updateSource = MutableStateFlow(prefs.getString(KEY_UPDATE_SOURCE, "installed") ?: "installed")
     val updateSource: StateFlow<String> = _updateSource.asStateFlow()
     
-    private val _updatesEnabled = MutableStateFlow(prefs.getBoolean(KEY_UPDATES_ENABLED, BuildConfig.FLAVOR != "fdroid"))
+    private val _updatesEnabled = MutableStateFlow(ProductCapabilities.inAppUpdates && prefs.getBoolean(KEY_UPDATES_ENABLED, BuildConfig.FLAVOR != "fdroid"))
     val updatesEnabled: StateFlow<Boolean> = _updatesEnabled.asStateFlow()
     
-    private val _updateNotificationsEnabled = MutableStateFlow(prefs.getBoolean(KEY_UPDATE_NOTIFICATIONS_ENABLED, BuildConfig.FLAVOR != "fdroid"))
+    private val _updateNotificationsEnabled = MutableStateFlow(ProductCapabilities.inAppUpdates && prefs.getBoolean(KEY_UPDATE_NOTIFICATIONS_ENABLED, BuildConfig.FLAVOR != "fdroid"))
     val updateNotificationsEnabled: StateFlow<Boolean> = _updateNotificationsEnabled.asStateFlow()
 
     private val _updateStatusNotificationsEnabled = MutableStateFlow(prefs.getBoolean(KEY_UPDATE_STATUS_NOTIFICATIONS_ENABLED, false))
     val updateStatusNotificationsEnabled: StateFlow<Boolean> = _updateStatusNotificationsEnabled.asStateFlow()
     
-    private val _useSmartUpdatePolling = MutableStateFlow(prefs.getBoolean(KEY_USE_SMART_UPDATE_POLLING, BuildConfig.FLAVOR != "fdroid"))
+    private val _useSmartUpdatePolling = MutableStateFlow(ProductCapabilities.inAppUpdates && prefs.getBoolean(KEY_USE_SMART_UPDATE_POLLING, BuildConfig.FLAVOR != "fdroid"))
     val useSmartUpdatePolling: StateFlow<Boolean> = _useSmartUpdatePolling.asStateFlow()
 
     // Media Scan Mode
@@ -1693,7 +1713,7 @@ private val _autoCheckForUpdates = MutableStateFlow(prefs.getBoolean(KEY_AUTO_CH
     val sleepTimerNotificationsEnabled: StateFlow<Boolean> = _sleepTimerNotificationsEnabled.asStateFlow()
 
     private val _streamingNotificationsEnabled = MutableStateFlow(
-        prefs.getBoolean(KEY_STREAMING_NOTIFICATIONS_ENABLED, true)
+        ProductCapabilities.thirdPartyMusicServices && prefs.getBoolean(KEY_STREAMING_NOTIFICATIONS_ENABLED, true)
     )
     val streamingNotificationsEnabled: StateFlow<Boolean> = _streamingNotificationsEnabled.asStateFlow()
 
@@ -2001,6 +2021,7 @@ private val _autoCheckForUpdates = MutableStateFlow(prefs.getBoolean(KEY_AUTO_CH
      * This must be done after all MutableStateFlow declarations to avoid NullPointerException
      */
     init {
+        applyProductCapabilityMigration()
         migrateLegacyArtworkPreferenceIfNeeded()
         normalizeArtworkPreferenceStateIfNeeded()
 
@@ -2010,7 +2031,8 @@ private val _autoCheckForUpdates = MutableStateFlow(prefs.getBoolean(KEY_AUTO_CH
             if (prefs.getBoolean(KEY_AUTO_BACKUP_ENABLED, false)) {
                 scheduleAutoBackup()
             }
-            if (prefs.getBoolean(KEY_UPDATES_ENABLED, false) &&
+            if (ProductCapabilities.inAppUpdates &&
+                prefs.getBoolean(KEY_UPDATES_ENABLED, false) &&
                 prefs.getBoolean(KEY_AUTO_CHECK_FOR_UPDATES, false) &&
                 (
                     prefs.getBoolean(KEY_UPDATE_NOTIFICATIONS_ENABLED, false) ||
@@ -2023,6 +2045,58 @@ private val _autoCheckForUpdates = MutableStateFlow(prefs.getBoolean(KEY_AUTO_CH
                 scheduleRhythmPulseNotificationWorker()
             }
         }.apply { isDaemon = true }.start()
+    }
+
+    /**
+     * Makes upgrades deterministic: legacy provider/update preferences remain unable to
+     * re-enable network clients in a Catalog-only build. Provider credentials are retained.
+     */
+    private fun applyProductCapabilityMigration() {
+        if (!ProductCapabilities.catalogOnly) return
+
+        prefs.edit {
+            putString(KEY_APP_MODE, "LOCAL")
+            putBoolean(KEY_DEEZER_API_ENABLED, false)
+            putBoolean(KEY_LRCLIB_API_ENABLED, false)
+            putBoolean(KEY_BETTERLYRICS_API_ENABLED, false)
+            putBoolean(KEY_YTMUSIC_API_ENABLED, false)
+            putBoolean(KEY_SPOTIFY_API_ENABLED, false)
+            putBoolean(KEY_LYRICALLY_API_ENABLED, false)
+            putBoolean(KEY_WIKIPEDIA_API_ENABLED, false)
+            putBoolean(KEY_AUTO_FETCH_ARTWORK, false)
+            putBoolean(KEY_APPLE_CANVAS_ENABLED, false)
+            putBoolean(KEY_STREAMING_NOTIFICATIONS_ENABLED, false)
+            putString(KEY_ARTIST_ARTWORK_SOURCE, ArtistArtworkSource.LOCAL_ONLY.name)
+            putBoolean(KEY_AUTO_CHECK_FOR_UPDATES, false)
+            putBoolean(KEY_UPDATES_ENABLED, false)
+            putBoolean(KEY_UPDATE_NOTIFICATIONS_ENABLED, false)
+            putBoolean(KEY_UPDATE_STATUS_NOTIFICATIONS_ENABLED, false)
+            putBoolean(KEY_USE_SMART_UPDATE_POLLING, false)
+            remove(KEY_INITIAL_STREAMING_ROUTE)
+            remove(KEY_INITIAL_SETTINGS_SUBROUTE)
+            putInt(KEY_LYRICS_SOURCE_PREFERENCE, LyricsSourcePreference.LOCAL_FIRST.ordinal)
+        }
+
+        _appMode.value = "LOCAL"
+        _deezerApiEnabled.value = false
+        _lrclibApiEnabled.value = false
+        _betterLyricsApiEnabled.value = false
+        _ytMusicApiEnabled.value = false
+        _spotifyApiEnabled.value = false
+        _lyricallyApiEnabled.value = false
+        _wikipediaApiEnabled.value = false
+        _autoFetchArtwork.value = false
+        _appleCanvasEnabled.value = false
+        _streamingNotificationsEnabled.value = false
+        _artistArtworkSource.value = ArtistArtworkSource.LOCAL_ONLY
+        _autoCheckForUpdates.value = false
+        _updatesEnabled.value = false
+        _updateNotificationsEnabled.value = false
+        _updateStatusNotificationsEnabled.value = false
+        _useSmartUpdatePolling.value = false
+        _lyricsSourcePreference.value = LyricsSourcePreference.LOCAL_FIRST
+        _onlineOnlyLyrics.value = false
+        cancelUpdateNotificationWorker()
     }
 
     private fun migrateLegacyArtworkPreferenceIfNeeded() {
@@ -2193,10 +2267,15 @@ private val _autoCheckForUpdates = MutableStateFlow(prefs.getBoolean(KEY_AUTO_CH
     }
     
     fun setLyricsSourcePreference(preference: LyricsSourcePreference) {
-        prefs.edit { putInt(KEY_LYRICS_SOURCE_PREFERENCE, preference.ordinal) }
-        _lyricsSourcePreference.value = preference
+        val accepted = if (ProductCapabilities.catalogOnly && preference == LyricsSourcePreference.API_FIRST) {
+            LyricsSourcePreference.LOCAL_FIRST
+        } else {
+            preference
+        }
+        prefs.edit { putInt(KEY_LYRICS_SOURCE_PREFERENCE, accepted.ordinal) }
+        _lyricsSourcePreference.value = accepted
         // Update the backward compatibility flag
-        _onlineOnlyLyrics.value = (preference == LyricsSourcePreference.API_FIRST)
+        _onlineOnlyLyrics.value = (accepted == LyricsSourcePreference.API_FIRST)
     }
     
     @Deprecated("Use setLyricsSourcePreference instead")
@@ -2584,8 +2663,9 @@ private val _autoCheckForUpdates = MutableStateFlow(prefs.getBoolean(KEY_AUTO_CH
     
     // App Mode setter methods
     fun setAppMode(mode: String) {
-        prefs.edit { putString(KEY_APP_MODE, mode) }
-        _appMode.value = mode
+        val acceptedMode = if (ProductCapabilities.catalogOnly) "LOCAL" else mode
+        prefs.edit { putString(KEY_APP_MODE, acceptedMode) }
+        _appMode.value = acceptedMode
     }
     
     fun setStreamingService(service: String) {
@@ -3235,8 +3315,9 @@ private val _autoCheckForUpdates = MutableStateFlow(prefs.getBoolean(KEY_AUTO_CH
     
     // API Enable/Disable Methods
     fun setAppleCanvasEnabled(enabled: Boolean) {
-        prefs.edit { putBoolean(KEY_APPLE_CANVAS_ENABLED, enabled) }
-        _appleCanvasEnabled.value = enabled
+        val accepted = enabled && ProductCapabilities.thirdPartyMusicServices
+        prefs.edit { putBoolean(KEY_APPLE_CANVAS_ENABLED, accepted) }
+        _appleCanvasEnabled.value = accepted
     }
 
     fun setAppleCanvasNetworkMode(mode: CanvasNetworkMode) {
@@ -3245,48 +3326,57 @@ private val _autoCheckForUpdates = MutableStateFlow(prefs.getBoolean(KEY_AUTO_CH
     }
 
     fun setArtistArtworkSource(source: ArtistArtworkSource) {
-        prefs.edit { putString(KEY_ARTIST_ARTWORK_SOURCE, source.name) }
-        _artistArtworkSource.value = source
+        val accepted = if (ProductCapabilities.catalogOnly) ArtistArtworkSource.LOCAL_ONLY else source
+        prefs.edit { putString(KEY_ARTIST_ARTWORK_SOURCE, accepted.name) }
+        _artistArtworkSource.value = accepted
     }
 
     fun setDeezerApiEnabled(enabled: Boolean) {
-        prefs.edit { putBoolean(KEY_DEEZER_API_ENABLED, enabled) }
-        _deezerApiEnabled.value = enabled
+        val accepted = enabled && ProductCapabilities.thirdPartyMusicServices
+        prefs.edit { putBoolean(KEY_DEEZER_API_ENABLED, accepted) }
+        _deezerApiEnabled.value = accepted
     }
     
     fun setLrcLibApiEnabled(enabled: Boolean) {
-        prefs.edit { putBoolean(KEY_LRCLIB_API_ENABLED, enabled) }
-        _lrclibApiEnabled.value = enabled
+        val accepted = enabled && ProductCapabilities.thirdPartyMusicServices
+        prefs.edit { putBoolean(KEY_LRCLIB_API_ENABLED, accepted) }
+        _lrclibApiEnabled.value = accepted
     }
     
     fun setBetterLyricsApiEnabled(enabled: Boolean) {
-        prefs.edit { putBoolean(KEY_BETTERLYRICS_API_ENABLED, enabled) }
-        _betterLyricsApiEnabled.value = enabled
+        val accepted = enabled && ProductCapabilities.thirdPartyMusicServices
+        prefs.edit { putBoolean(KEY_BETTERLYRICS_API_ENABLED, accepted) }
+        _betterLyricsApiEnabled.value = accepted
     }
     
     fun setYTMusicApiEnabled(enabled: Boolean) {
-        prefs.edit { putBoolean(KEY_YTMUSIC_API_ENABLED, enabled) }
-        _ytMusicApiEnabled.value = enabled
+        val accepted = enabled && ProductCapabilities.thirdPartyMusicServices
+        prefs.edit { putBoolean(KEY_YTMUSIC_API_ENABLED, accepted) }
+        _ytMusicApiEnabled.value = accepted
     }
     
     fun setSpotifyApiEnabled(enabled: Boolean) {
-        prefs.edit { putBoolean(KEY_SPOTIFY_API_ENABLED, enabled) }
-        _spotifyApiEnabled.value = enabled
+        val accepted = enabled && ProductCapabilities.thirdPartyMusicServices
+        prefs.edit { putBoolean(KEY_SPOTIFY_API_ENABLED, accepted) }
+        _spotifyApiEnabled.value = accepted
     }
     
     fun setLyricallyApiEnabled(enabled: Boolean) {
-        prefs.edit { putBoolean(KEY_LYRICALLY_API_ENABLED, enabled) }
-        _lyricallyApiEnabled.value = enabled
+        val accepted = enabled && ProductCapabilities.thirdPartyMusicServices
+        prefs.edit { putBoolean(KEY_LYRICALLY_API_ENABLED, accepted) }
+        _lyricallyApiEnabled.value = accepted
     }
 
     fun setWikipediaApiEnabled(enabled: Boolean) {
-        prefs.edit { putBoolean(KEY_WIKIPEDIA_API_ENABLED, enabled) }
-        _wikipediaApiEnabled.value = enabled
+        val accepted = enabled && ProductCapabilities.thirdPartyMusicServices
+        prefs.edit { putBoolean(KEY_WIKIPEDIA_API_ENABLED, accepted) }
+        _wikipediaApiEnabled.value = accepted
     }
     
     fun setAutoFetchArtwork(enabled: Boolean) {
-        prefs.edit { putBoolean(KEY_AUTO_FETCH_ARTWORK, enabled) }
-        _autoFetchArtwork.value = enabled
+        val accepted = enabled && ProductCapabilities.thirdPartyMusicServices
+        prefs.edit { putBoolean(KEY_AUTO_FETCH_ARTWORK, accepted) }
+        _autoFetchArtwork.value = accepted
         updateDerivedSettings()
     }
     
@@ -3377,8 +3467,9 @@ private val _autoCheckForUpdates = MutableStateFlow(prefs.getBoolean(KEY_AUTO_CH
 
     // App Updater Settings Methods
     fun setAutoCheckForUpdates(enable: Boolean) {
-        prefs.edit { putBoolean(KEY_AUTO_CHECK_FOR_UPDATES, enable) }
-        _autoCheckForUpdates.value = enable
+        val accepted = enable && ProductCapabilities.inAppUpdates
+        prefs.edit { putBoolean(KEY_AUTO_CHECK_FOR_UPDATES, accepted) }
+        _autoCheckForUpdates.value = accepted
 
         if (shouldRunUpdateNotificationWorker()) {
             scheduleUpdateNotificationWorker()
@@ -3398,8 +3489,9 @@ private val _autoCheckForUpdates = MutableStateFlow(prefs.getBoolean(KEY_AUTO_CH
     }
 
     fun setUpdatesEnabled(enable: Boolean) {
-        prefs.edit { putBoolean(KEY_UPDATES_ENABLED, enable) }
-        _updatesEnabled.value = enable
+        val accepted = enable && ProductCapabilities.inAppUpdates
+        prefs.edit { putBoolean(KEY_UPDATES_ENABLED, accepted) }
+        _updatesEnabled.value = accepted
         
         // Update WorkManager scheduling based on new state
         if (shouldRunUpdateNotificationWorker()) {
@@ -3410,8 +3502,9 @@ private val _autoCheckForUpdates = MutableStateFlow(prefs.getBoolean(KEY_AUTO_CH
     }
 
     fun setUpdateNotificationsEnabled(enable: Boolean) {
-        prefs.edit { putBoolean(KEY_UPDATE_NOTIFICATIONS_ENABLED, enable) }
-        _updateNotificationsEnabled.value = enable
+        val accepted = enable && ProductCapabilities.inAppUpdates
+        prefs.edit { putBoolean(KEY_UPDATE_NOTIFICATIONS_ENABLED, accepted) }
+        _updateNotificationsEnabled.value = accepted
         
         // Update WorkManager scheduling
         if (shouldRunUpdateNotificationWorker()) {
@@ -3422,8 +3515,9 @@ private val _autoCheckForUpdates = MutableStateFlow(prefs.getBoolean(KEY_AUTO_CH
     }
 
     fun setUpdateStatusNotificationsEnabled(enable: Boolean) {
-        prefs.edit { putBoolean(KEY_UPDATE_STATUS_NOTIFICATIONS_ENABLED, enable) }
-        _updateStatusNotificationsEnabled.value = enable
+        val accepted = enable && ProductCapabilities.inAppUpdates
+        prefs.edit { putBoolean(KEY_UPDATE_STATUS_NOTIFICATIONS_ENABLED, accepted) }
+        _updateStatusNotificationsEnabled.value = accepted
 
         if (shouldRunUpdateNotificationWorker()) {
             scheduleUpdateNotificationWorker()
@@ -3433,8 +3527,9 @@ private val _autoCheckForUpdates = MutableStateFlow(prefs.getBoolean(KEY_AUTO_CH
     }
 
     fun setUseSmartUpdatePolling(enable: Boolean) {
-        prefs.edit { putBoolean(KEY_USE_SMART_UPDATE_POLLING, enable) }
-        _useSmartUpdatePolling.value = enable
+        val accepted = enable && ProductCapabilities.inAppUpdates
+        prefs.edit { putBoolean(KEY_USE_SMART_UPDATE_POLLING, accepted) }
+        _useSmartUpdatePolling.value = accepted
         
         // Update WorkManager scheduling
         if (shouldRunUpdateNotificationWorker()) {
@@ -3536,8 +3631,9 @@ private val _autoCheckForUpdates = MutableStateFlow(prefs.getBoolean(KEY_AUTO_CH
     }
 
     fun setStreamingNotificationsEnabled(enabled: Boolean) {
-        prefs.edit { putBoolean(KEY_STREAMING_NOTIFICATIONS_ENABLED, enabled) }
-        _streamingNotificationsEnabled.value = enabled
+        val accepted = enabled && ProductCapabilities.thirdPartyMusicServices
+        prefs.edit { putBoolean(KEY_STREAMING_NOTIFICATIONS_ENABLED, accepted) }
+        _streamingNotificationsEnabled.value = accepted
     }
 
     fun setRhythmGuardAlertNotificationsEnabled(enabled: Boolean) {
@@ -4079,7 +4175,8 @@ private val _autoCheckForUpdates = MutableStateFlow(prefs.getBoolean(KEY_AUTO_CH
      * This implements a webhook-style system using smart polling
      */
     private fun shouldRunUpdateNotificationWorker(): Boolean {
-        return _updatesEnabled.value &&
+        return ProductCapabilities.inAppUpdates &&
+            _updatesEnabled.value &&
             _autoCheckForUpdates.value &&
             _useSmartUpdatePolling.value &&
             (_updateNotificationsEnabled.value || _updateStatusNotificationsEnabled.value)
@@ -4155,6 +4252,7 @@ private val _autoCheckForUpdates = MutableStateFlow(prefs.getBoolean(KEY_AUTO_CH
      * Trigger an immediate update check (useful for testing)
      */
     fun triggerImmediateUpdateCheck() {
+        if (!ProductCapabilities.inAppUpdates) return
         try {
             val workRequest = OneTimeWorkRequestBuilder<chromahub.rhythm.app.worker.UpdateNotificationWorker>()
                 .build()
@@ -5046,14 +5144,14 @@ private val _autoCheckForUpdates = MutableStateFlow(prefs.getBoolean(KEY_AUTO_CH
         _lastPlayedTimestamp.value = safeLong(KEY_LAST_PLAYED_TIMESTAMP, 0L)
         
         // API Enable/Disable States
-        _deezerApiEnabled.value = prefs.getBoolean(KEY_DEEZER_API_ENABLED, BuildConfig.FLAVOR != "fdroid")
-        _lrclibApiEnabled.value = prefs.getBoolean(KEY_LRCLIB_API_ENABLED, BuildConfig.FLAVOR != "fdroid")
-        _betterLyricsApiEnabled.value = prefs.getBoolean(KEY_BETTERLYRICS_API_ENABLED, BuildConfig.FLAVOR != "fdroid")
-        _ytMusicApiEnabled.value = prefs.getBoolean(KEY_YTMUSIC_API_ENABLED, BuildConfig.FLAVOR != "fdroid")
-        _spotifyApiEnabled.value = prefs.getBoolean(KEY_SPOTIFY_API_ENABLED, BuildConfig.FLAVOR != "fdroid")
-        _lyricallyApiEnabled.value = prefs.getBoolean(KEY_LYRICALLY_API_ENABLED, BuildConfig.FLAVOR != "fdroid")
-        _wikipediaApiEnabled.value = prefs.getBoolean(KEY_WIKIPEDIA_API_ENABLED, BuildConfig.FLAVOR != "fdroid")
-        _appleCanvasEnabled.value = prefs.getBoolean(KEY_APPLE_CANVAS_ENABLED, true)
+        _deezerApiEnabled.value = ProductCapabilities.thirdPartyMusicServices && prefs.getBoolean(KEY_DEEZER_API_ENABLED, BuildConfig.FLAVOR != "fdroid")
+        _lrclibApiEnabled.value = ProductCapabilities.thirdPartyMusicServices && prefs.getBoolean(KEY_LRCLIB_API_ENABLED, BuildConfig.FLAVOR != "fdroid")
+        _betterLyricsApiEnabled.value = ProductCapabilities.thirdPartyMusicServices && prefs.getBoolean(KEY_BETTERLYRICS_API_ENABLED, BuildConfig.FLAVOR != "fdroid")
+        _ytMusicApiEnabled.value = ProductCapabilities.thirdPartyMusicServices && prefs.getBoolean(KEY_YTMUSIC_API_ENABLED, BuildConfig.FLAVOR != "fdroid")
+        _spotifyApiEnabled.value = ProductCapabilities.thirdPartyMusicServices && prefs.getBoolean(KEY_SPOTIFY_API_ENABLED, BuildConfig.FLAVOR != "fdroid")
+        _lyricallyApiEnabled.value = ProductCapabilities.thirdPartyMusicServices && prefs.getBoolean(KEY_LYRICALLY_API_ENABLED, BuildConfig.FLAVOR != "fdroid")
+        _wikipediaApiEnabled.value = ProductCapabilities.thirdPartyMusicServices && prefs.getBoolean(KEY_WIKIPEDIA_API_ENABLED, BuildConfig.FLAVOR != "fdroid")
+        _appleCanvasEnabled.value = ProductCapabilities.thirdPartyMusicServices && prefs.getBoolean(KEY_APPLE_CANVAS_ENABLED, true)
         _appleCanvasNetworkMode.value = CanvasNetworkMode.fromOrdinal(
             prefs.getInt(KEY_APPLE_CANVAS_NETWORK_MODE, CanvasNetworkMode.BOTH.ordinal)
         )
@@ -5067,7 +5165,7 @@ private val _autoCheckForUpdates = MutableStateFlow(prefs.getBoolean(KEY_AUTO_CH
             ?.filter { it.isNotBlank() && it in defaultLyricallySources }
             ?.toSet()
             ?: defaultDisabledLyricallySources
-        _autoFetchArtwork.value = prefs.getBoolean(KEY_AUTO_FETCH_ARTWORK, true)
+        _autoFetchArtwork.value = ProductCapabilities.thirdPartyMusicServices && prefs.getBoolean(KEY_AUTO_FETCH_ARTWORK, true)
         _spotifyClientId.value = prefs.getString(KEY_SPOTIFY_CLIENT_ID, "") ?: ""
         _spotifyClientSecret.value = prefs.getString(KEY_SPOTIFY_CLIENT_SECRET, "") ?: ""
 
@@ -5076,13 +5174,13 @@ private val _autoCheckForUpdates = MutableStateFlow(prefs.getBoolean(KEY_AUTO_CH
         _bluetoothLyricsEnabled.value = prefs.getBoolean(KEY_BLUETOOTH_LYRICS_ENABLED, false)
         
         // App Updates
-        _autoCheckForUpdates.value = prefs.getBoolean(KEY_AUTO_CHECK_FOR_UPDATES, BuildConfig.FLAVOR != "fdroid")
+        _autoCheckForUpdates.value = ProductCapabilities.inAppUpdates && prefs.getBoolean(KEY_AUTO_CHECK_FOR_UPDATES, BuildConfig.FLAVOR != "fdroid")
         _updateChannel.value = prefs.getString(KEY_UPDATE_CHANNEL, "stable") ?: "stable"
         _updateSource.value = prefs.getString(KEY_UPDATE_SOURCE, "installed") ?: "installed"
-        _updatesEnabled.value = prefs.getBoolean(KEY_UPDATES_ENABLED, BuildConfig.FLAVOR != "fdroid")
-        _updateNotificationsEnabled.value = prefs.getBoolean(KEY_UPDATE_NOTIFICATIONS_ENABLED, BuildConfig.FLAVOR != "fdroid")
-        _updateStatusNotificationsEnabled.value = prefs.getBoolean(KEY_UPDATE_STATUS_NOTIFICATIONS_ENABLED, false)
-        _useSmartUpdatePolling.value = prefs.getBoolean(KEY_USE_SMART_UPDATE_POLLING, BuildConfig.FLAVOR != "fdroid")
+        _updatesEnabled.value = ProductCapabilities.inAppUpdates && prefs.getBoolean(KEY_UPDATES_ENABLED, BuildConfig.FLAVOR != "fdroid")
+        _updateNotificationsEnabled.value = ProductCapabilities.inAppUpdates && prefs.getBoolean(KEY_UPDATE_NOTIFICATIONS_ENABLED, BuildConfig.FLAVOR != "fdroid")
+        _updateStatusNotificationsEnabled.value = ProductCapabilities.inAppUpdates && prefs.getBoolean(KEY_UPDATE_STATUS_NOTIFICATIONS_ENABLED, false)
+        _useSmartUpdatePolling.value = ProductCapabilities.inAppUpdates && prefs.getBoolean(KEY_USE_SMART_UPDATE_POLLING, BuildConfig.FLAVOR != "fdroid")
         _mediaScanMode.value = MediaScanMode.fromValue(prefs.getString(KEY_MEDIA_SCAN_MODE, "blacklist") ?: "blacklist")
         _includeHiddenWhitelistedMedia.value = prefs.getBoolean(KEY_INCLUDE_HIDDEN_WHITELISTED_MEDIA, true)
         _updateCheckIntervalHours.value = prefs.getInt(KEY_UPDATE_CHECK_INTERVAL_HOURS, 6)

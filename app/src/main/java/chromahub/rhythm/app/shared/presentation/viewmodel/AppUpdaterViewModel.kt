@@ -20,6 +20,7 @@ import androidx.core.net.toUri
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import chromahub.rhythm.app.BuildConfig
+import chromahub.rhythm.app.core.ProductCapabilities
 import chromahub.rhythm.app.R
 import chromahub.rhythm.app.activities.MainActivity
 import chromahub.rhythm.app.network.GitHubAsset
@@ -149,7 +150,7 @@ class AppUpdaterViewModel(
     private val updateCheckInterval = TimeUnit.HOURS.toMillis(6)
 
     // API service
-    private val gitHubApiService = NetworkManager.createGitHubApiService()
+    private val gitHubApiService by lazy { NetworkManager.createGitHubApiService() }
 
     // Last update check timestamp
     private var lastUpdateCheck = 0L
@@ -240,26 +241,33 @@ class AppUpdaterViewModel(
     private var pendingMismatchedDownload: PendingMismatchedDownload? = null
 
     init {
-        ensureDownloadNotificationChannel()
+        if (!ProductCapabilities.inAppUpdates) {
+            notificationManager.cancel(updateDownloadNotificationId)
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+                notificationManager.deleteNotificationChannel(updateDownloadChannelId)
+            }
+        } else {
+            ensureDownloadNotificationChannel()
 
-        // Load any persisted download state
-        loadDownloadState()
+            // Load any persisted download state
+            loadDownloadState()
 
-        viewModelScope.launch {
-            combine(_appSettings.updateChannel, _appSettings.updateSource) { channel, source ->
-                channel to source
-            }.distinctUntilChanged()
-                .collectLatest { (channel, _) ->
-                    _updateChannel.value = channel
-                    // Re-check for updates if channel changes, but only if updates are enabled
-                    if (_appSettings.updatesEnabled.first()) {
-                        checkForUpdates(force = true)
+            viewModelScope.launch {
+                combine(_appSettings.updateChannel, _appSettings.updateSource) { channel, source ->
+                    channel to source
+                }.distinctUntilChanged()
+                    .collectLatest { (channel, _) ->
+                        _updateChannel.value = channel
+                        // Re-check for updates if channel changes, but only if updates are enabled
+                        if (_appSettings.updatesEnabled.first()) {
+                            checkForUpdates(force = true)
+                        }
                     }
-                }
-        }
+            }
 
-        // Start periodic update checks
-        startPeriodicUpdateChecks()
+            // Start periodic update checks
+            startPeriodicUpdateChecks()
+        }
     }
 
     /**
@@ -375,6 +383,7 @@ class AppUpdaterViewModel(
      * Check for updates by fetching the latest release from GitHub
      */
     fun checkForUpdates(force: Boolean = false) {
+        if (!ProductCapabilities.inAppUpdates) return
         viewModelScope.launch {
             val updatesEnabled = _appSettings.updatesEnabled.first()
             val autoCheckEnabled = _appSettings.autoCheckForUpdates.first()

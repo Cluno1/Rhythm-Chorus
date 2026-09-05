@@ -87,7 +87,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import chromahub.rhythm.app.BuildConfig
+import chromahub.rhythm.app.core.ProductCapabilities
 import chromahub.rhythm.app.shared.data.model.AppSettings
 import chromahub.rhythm.app.shared.data.model.Playlist
 import chromahub.rhythm.app.shared.data.model.Song
@@ -234,58 +234,68 @@ fun ExperimentalFeaturesScreen(
             add(
                 SettingGroup(
                     title = context.getString(R.string.exp_developer_debugging),
-                    items = listOf(
+                    items = buildList {
+                        add(
                         SettingItem(
                             MaterialSymbolIcon("running_with_errors"),
                             context.getString(R.string.exp_track_error_checker),
                             context.getString(R.string.exp_track_error_checker_desc),
                             toggleState = appSettings.trackErrorCheckerEnabled.collectAsState().value,
                             onToggleChange = { appSettings.setTrackErrorCheckerEnabled(it) }
-                        ),
+                        ))
+                        add(
                         SettingItem(
                             RhythmIcons.Code,
                             context.getString(R.string.exp_codec_monitoring),
                             context.getString(R.string.exp_codec_monitoring_desc),
                             toggleState = appSettings.codecMonitoringEnabled.collectAsState().value,
                             onToggleChange = { appSettings.setCodecMonitoringEnabled(it) }
-                        ),
+                        ))
+                        add(
                         SettingItem(
                             RhythmIcons.Headphones,
                             context.getString(R.string.exp_audio_device_logging),
                             context.getString(R.string.exp_audio_device_logging_desc),
                             toggleState = appSettings.audioDeviceLoggingEnabled.collectAsState().value,
                             onToggleChange = { appSettings.setAudioDeviceLoggingEnabled(it) }
-                        ),
+                        ))
+                        add(
                         SettingItem(
                             MaterialSymbolIcon("restart_alt"),
                             context.getString(R.string.exp_launch_onboarding),
                             context.getString(R.string.exp_launch_onboarding_desc),
                             onClick = { appSettings.setOnboardingCompleted(false) }
-                        ),
+                        ))
+                        add(
                         SettingItem(
                             RhythmIcons.BugReport,
                             context.getString(R.string.exp_test_crash),
                             context.getString(R.string.exp_test_crash_desc),
                             onClick = { chromahub.rhythm.app.util.CrashReporter.testCrash() }
-                        ),
+                        ))
+                        add(
                         SettingItem(
                             MaterialSymbolIcon("smartphone"),
                             context.getString(R.string.exp_force_player_compact_mode),
                             context.getString(R.string.exp_force_player_compact_mode_desc),
                             toggleState = forcePlayerCompactMode,
                             onToggleChange = { appSettings.setForcePlayerCompactMode(it) }
-                        ),
-                        SettingItem(
-                            MaterialSymbolIcon("cloud_queue"),
-                            context.getString(R.string.exp_go_mode),
-                            context.getString(R.string.exp_go_mode_desc),
-                            toggleState = appMode == "STREAMING",
-                            onToggleChange = { enabled ->
-                                appSettings.setAppMode(if (enabled) "STREAMING" else "LOCAL")
-                            },
-                            onClick = { onNavigateToGoSettings?.invoke() }
-                        )
-                    )
+                        ))
+                        if (!ProductCapabilities.catalogOnly) {
+                            add(
+                                SettingItem(
+                                    MaterialSymbolIcon("cloud_queue"),
+                                    context.getString(R.string.exp_go_mode),
+                                    context.getString(R.string.exp_go_mode_desc),
+                                    toggleState = appMode == "STREAMING",
+                                    onToggleChange = { enabled ->
+                                        appSettings.setAppMode(if (enabled) "STREAMING" else "LOCAL")
+                                    },
+                                    onClick = { onNavigateToGoSettings?.invoke() }
+                                )
+                            )
+                        }
+                    }
                 )
             )
             

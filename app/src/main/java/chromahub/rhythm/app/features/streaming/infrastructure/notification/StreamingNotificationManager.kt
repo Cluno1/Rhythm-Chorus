@@ -9,6 +9,7 @@ import android.os.Build
 import androidx.core.app.NotificationCompat
 import chromahub.rhythm.app.R
 import chromahub.rhythm.app.activities.MainActivity
+import chromahub.rhythm.app.core.ProductCapabilities
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -38,7 +39,25 @@ class StreamingNotificationManager(private val context: Context) {
     }
     
     init {
-        ensureNotificationChannels()
+        if (ProductCapabilities.thirdPartyMusicServices) {
+            ensureNotificationChannels()
+        } else {
+            cancelLegacyNotifications()
+        }
+    }
+
+    private fun cancelLegacyNotifications() {
+        listOf(
+            NOTIFICATION_ID_SYNC,
+            NOTIFICATION_ID_AUTH,
+            NOTIFICATION_ID_LIKE,
+            NOTIFICATION_ID_PLAYLIST,
+            NOTIFICATION_ID_QUALITY,
+            NOTIFICATION_ID_ERROR,
+            NOTIFICATION_ID_OFFLINE,
+        ).forEach(notificationManager::cancel)
+        notificationManager.deleteNotificationChannel(STREAMING_CHANNEL_ID)
+        notificationManager.deleteNotificationChannel(STREAMING_AUTH_CHANNEL_ID)
     }
     
     private fun ensureNotificationChannels() {
@@ -72,7 +91,8 @@ class StreamingNotificationManager(private val context: Context) {
     // ========== Authentication Notifications ==========
     
     private fun isNotificationsEnabled(): Boolean {
-        return chromahub.rhythm.app.shared.data.model.AppSettings.getInstance(context).streamingNotificationsEnabled.value
+        return ProductCapabilities.thirdPartyMusicServices &&
+            chromahub.rhythm.app.shared.data.model.AppSettings.getInstance(context).streamingNotificationsEnabled.value
     }
 
     /**
@@ -115,6 +135,7 @@ class StreamingNotificationManager(private val context: Context) {
      * Show notification when authentication fails
      */
     fun notifyAuthenticationFailed(serviceName: String) {
+        if (!isNotificationsEnabled()) return
         val intent = Intent(context, MainActivity::class.java).apply {
             flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
             putExtra("navigate_to", "streaming_setup")
@@ -141,6 +162,7 @@ class StreamingNotificationManager(private val context: Context) {
      * Show notification when session has expired
      */
     fun notifySessionExpired(serviceName: String) {
+        if (!isNotificationsEnabled()) return
         val notification = NotificationCompat.Builder(context, STREAMING_AUTH_CHANNEL_ID)
             .setSmallIcon(R.drawable.ic_notification)
             .setContentTitle("Session Expired")
@@ -159,6 +181,7 @@ class StreamingNotificationManager(private val context: Context) {
      * Show notification when library sync starts
      */
     fun notifySyncStarted(serviceName: String) {
+        if (!isNotificationsEnabled()) return
         val notification = NotificationCompat.Builder(context, STREAMING_CHANNEL_ID)
             .setSmallIcon(R.drawable.ic_notification)
             .setContentTitle(context.getString(R.string.notification_streaming_sync_title))
@@ -178,6 +201,7 @@ class StreamingNotificationManager(private val context: Context) {
      * Update sync progress notification
      */
     fun updateSyncProgress(songCount: Int, albumCount: Int, artistCount: Int) {
+        if (!isNotificationsEnabled()) return
         val notification = NotificationCompat.Builder(context, STREAMING_CHANNEL_ID)
             .setSmallIcon(R.drawable.ic_notification)
             .setContentTitle(context.getString(R.string.notification_streaming_sync_title))
@@ -206,6 +230,7 @@ class StreamingNotificationManager(private val context: Context) {
      * Show notification when sync completes successfully
      */
     fun notifySyncComplete(songCount: Int, serviceName: String) {
+        if (!isNotificationsEnabled()) return
         val intent = Intent(context, MainActivity::class.java).apply {
             flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
             putExtra("navigate_to", "streaming_library")
@@ -241,6 +266,7 @@ class StreamingNotificationManager(private val context: Context) {
      * Show notification when sync fails
      */
     fun notifySyncFailed(error: String? = null) {
+        if (!isNotificationsEnabled()) return
         val notification = NotificationCompat.Builder(context, STREAMING_CHANNEL_ID)
             .setSmallIcon(R.drawable.ic_notification)
             .setContentTitle(context.getString(R.string.notification_streaming_sync_title))
@@ -262,6 +288,7 @@ class StreamingNotificationManager(private val context: Context) {
      * Show notification when song is liked
      */
     fun notifyLikeSong(serviceName: String) {
+        if (!isNotificationsEnabled()) return
         val notification = NotificationCompat.Builder(context, STREAMING_CHANNEL_ID)
             .setSmallIcon(R.drawable.ic_notification)
             .setContentTitle(context.getString(R.string.notification_streaming_liked_title))
@@ -286,6 +313,7 @@ class StreamingNotificationManager(private val context: Context) {
      * Show notification when song is unliked
      */
     fun notifyUnlikeSong(serviceName: String) {
+        if (!isNotificationsEnabled()) return
         val notification = NotificationCompat.Builder(context, STREAMING_CHANNEL_ID)
             .setSmallIcon(R.drawable.ic_notification)
             .setContentTitle(context.getString(R.string.notification_streaming_liked_title))
@@ -312,6 +340,7 @@ class StreamingNotificationManager(private val context: Context) {
      * Show notification for playlist creation
      */
     fun notifyPlaylistCreated(playlistName: String, serviceName: String) {
+        if (!isNotificationsEnabled()) return
         val notification = NotificationCompat.Builder(context, STREAMING_CHANNEL_ID)
             .setSmallIcon(R.drawable.ic_notification)
             .setContentTitle(context.getString(R.string.notification_streaming_playlist_title))
@@ -335,6 +364,7 @@ class StreamingNotificationManager(private val context: Context) {
      * Show notification for playlist update
      */
     fun notifyPlaylistUpdated(playlistName: String, serviceName: String) {
+        if (!isNotificationsEnabled()) return
         val notification = NotificationCompat.Builder(context, STREAMING_CHANNEL_ID)
             .setSmallIcon(R.drawable.ic_notification)
             .setContentTitle(context.getString(R.string.notification_streaming_playlist_title))
@@ -358,6 +388,7 @@ class StreamingNotificationManager(private val context: Context) {
      * Show notification for playlist deletion
      */
     fun notifyPlaylistDeleted(playlistName: String, serviceName: String) {
+        if (!isNotificationsEnabled()) return
         val notification = NotificationCompat.Builder(context, STREAMING_CHANNEL_ID)
             .setSmallIcon(R.drawable.ic_notification)
             .setContentTitle(context.getString(R.string.notification_streaming_playlist_title))
@@ -383,6 +414,7 @@ class StreamingNotificationManager(private val context: Context) {
      * Show notification when quality is switched
      */
     fun notifyQualitySwitched(qualityName: String) {
+        if (!isNotificationsEnabled()) return
         val notification = NotificationCompat.Builder(context, STREAMING_CHANNEL_ID)
             .setSmallIcon(R.drawable.ic_notification)
             .setContentTitle(context.getString(R.string.notification_streaming_quality_title))
@@ -406,6 +438,7 @@ class StreamingNotificationManager(private val context: Context) {
      * Show notification during buffering
      */
     fun notifyBuffering(serviceName: String) {
+        if (!isNotificationsEnabled()) return
         val notification = NotificationCompat.Builder(context, STREAMING_CHANNEL_ID)
             .setSmallIcon(R.drawable.ic_notification)
             .setContentTitle(context.getString(R.string.notification_streaming_quality_title))
@@ -425,6 +458,7 @@ class StreamingNotificationManager(private val context: Context) {
      * Dismiss buffering notification
      */
     fun notifyBufferingComplete() {
+        if (!isNotificationsEnabled()) return
         val notification = NotificationCompat.Builder(context, STREAMING_CHANNEL_ID)
             .setSmallIcon(R.drawable.ic_notification)
             .setContentTitle(context.getString(R.string.notification_streaming_quality_title))
@@ -448,6 +482,7 @@ class StreamingNotificationManager(private val context: Context) {
      * Show notification for streaming errors
      */
     fun notifyStreamingError(serviceName: String, errorMessage: String? = null) {
+        if (!isNotificationsEnabled()) return
         val notification = NotificationCompat.Builder(context, STREAMING_CHANNEL_ID)
             .setSmallIcon(R.drawable.ic_notification)
             .setContentTitle(context.getString(R.string.notification_streaming_error_title))
@@ -467,6 +502,7 @@ class StreamingNotificationManager(private val context: Context) {
      * Show notification for no internet connection
      */
     fun notifyNoInternet() {
+        if (!isNotificationsEnabled()) return
         val notification = NotificationCompat.Builder(context, STREAMING_CHANNEL_ID)
             .setSmallIcon(R.drawable.ic_notification)
             .setContentTitle(context.getString(R.string.notification_streaming_error_title))
@@ -483,6 +519,7 @@ class StreamingNotificationManager(private val context: Context) {
      * Show notification for account issues
      */
     fun notifyAccountIssue(serviceName: String) {
+        if (!isNotificationsEnabled()) return
         val notification = NotificationCompat.Builder(context, STREAMING_CHANNEL_ID)
             .setSmallIcon(R.drawable.ic_notification)
             .setContentTitle(context.getString(R.string.notification_streaming_error_title))
@@ -501,6 +538,7 @@ class StreamingNotificationManager(private val context: Context) {
      * Show notification when offline cache is syncing
      */
     fun notifyOfflineSyncStarted(serviceName: String) {
+        if (!isNotificationsEnabled()) return
         val notification = NotificationCompat.Builder(context, STREAMING_CHANNEL_ID)
             .setSmallIcon(R.drawable.ic_notification)
             .setContentTitle(context.getString(R.string.notification_streaming_offline_title))
@@ -520,6 +558,7 @@ class StreamingNotificationManager(private val context: Context) {
      * Show notification when offline cache sync completes
      */
     fun notifyOfflineSyncComplete(songCount: Int) {
+        if (!isNotificationsEnabled()) return
         val notification = NotificationCompat.Builder(context, STREAMING_CHANNEL_ID)
             .setSmallIcon(R.drawable.ic_notification)
             .setContentTitle(context.getString(R.string.notification_streaming_offline_title))
@@ -541,6 +580,7 @@ class StreamingNotificationManager(private val context: Context) {
      * Show notification when cache is cleared
      */
     fun notifyCacheCleared(spaceSaved: String) {
+        if (!isNotificationsEnabled()) return
         val notification = NotificationCompat.Builder(context, STREAMING_CHANNEL_ID)
             .setSmallIcon(R.drawable.ic_notification)
             .setContentTitle(context.getString(R.string.notification_streaming_offline_title))

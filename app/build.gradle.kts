@@ -38,6 +38,9 @@ android {
         val isNightly = project.findProperty("nightly")?.toString() == "true"
         buildConfigField("boolean", "IS_NIGHTLY", isNightly.toString())
 
+        // This fork ships against the first-party Catalog API and its trusted COS assets only.
+        buildConfigField("boolean", "CATALOG_ONLY", "true")
+
         // Apple Music: fallback token from environment variable (GitHub secrets), local.properties, or fallback
         val appleMusicToken = System.getenv("APPLE_MUSIC_FALLBACK_TOKEN")
             ?: localProperties.getProperty("APPLE_MUSIC_FALLBACK_TOKEN")
@@ -60,13 +63,13 @@ android {
             applicationId = "chromahub.rhythm.app"
             
             // F-Droid build: Enable all features (FOSS ethos)
-            buildConfigField("boolean", "ENABLE_YOUTUBE_MUSIC", "true")
-            buildConfigField("boolean", "ENABLE_LYRICALLY_API", "true")
-            buildConfigField("boolean", "ENABLE_DEEZER", "true")
-            buildConfigField("boolean", "ENABLE_LRCLIB", "true")
-            buildConfigField("boolean", "ENABLE_BETTERLYRICS", "true")
-            buildConfigField("boolean", "ENABLE_SPOTIFY_SEARCH", "true")
-            buildConfigField("boolean", "ENABLE_WIKIPEDIA", "true")
+            buildConfigField("boolean", "ENABLE_YOUTUBE_MUSIC", "false")
+            buildConfigField("boolean", "ENABLE_LYRICALLY_API", "false")
+            buildConfigField("boolean", "ENABLE_DEEZER", "false")
+            buildConfigField("boolean", "ENABLE_LRCLIB", "false")
+            buildConfigField("boolean", "ENABLE_BETTERLYRICS", "false")
+            buildConfigField("boolean", "ENABLE_SPOTIFY_SEARCH", "false")
+            buildConfigField("boolean", "ENABLE_WIKIPEDIA", "false")
             buildConfigField("String", "FLAVOR", "\"fdroid\"")
             
             versionNameSuffix = "-fdroid"
@@ -77,13 +80,13 @@ android {
             applicationId = "chromahub.rhythm.app"
             
             // GitHub releases: Enable all features (same as F-Droid)
-            buildConfigField("boolean", "ENABLE_YOUTUBE_MUSIC", "true")
-            buildConfigField("boolean", "ENABLE_LYRICALLY_API", "true")
-            buildConfigField("boolean", "ENABLE_DEEZER", "true")
-            buildConfigField("boolean", "ENABLE_LRCLIB", "true")
-            buildConfigField("boolean", "ENABLE_BETTERLYRICS", "true")
-            buildConfigField("boolean", "ENABLE_SPOTIFY_SEARCH", "true")
-            buildConfigField("boolean", "ENABLE_WIKIPEDIA", "true")
+            buildConfigField("boolean", "ENABLE_YOUTUBE_MUSIC", "false")
+            buildConfigField("boolean", "ENABLE_LYRICALLY_API", "false")
+            buildConfigField("boolean", "ENABLE_DEEZER", "false")
+            buildConfigField("boolean", "ENABLE_LRCLIB", "false")
+            buildConfigField("boolean", "ENABLE_BETTERLYRICS", "false")
+            buildConfigField("boolean", "ENABLE_SPOTIFY_SEARCH", "false")
+            buildConfigField("boolean", "ENABLE_WIKIPEDIA", "false")
             buildConfigField("String", "FLAVOR", "\"github\"")
             
             versionNameSuffix = "-gh"

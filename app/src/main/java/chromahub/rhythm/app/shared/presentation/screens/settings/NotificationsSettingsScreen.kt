@@ -33,6 +33,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import chromahub.rhythm.app.R
+import chromahub.rhythm.app.core.ProductCapabilities
 import chromahub.rhythm.app.shared.data.model.AppSettings
 import chromahub.rhythm.app.shared.presentation.components.Material3SettingsGroup
 import chromahub.rhythm.app.shared.presentation.components.Material3SettingsItem
@@ -127,7 +128,7 @@ fun NotificationsSettingsScreen(onBackClick: () -> Unit) {
                     )
                 )
             ),
-            SettingGroup(
+            if (ProductCapabilities.thirdPartyMusicServices) SettingGroup(
                 title = stringResource(R.string.notifications_cloud_streaming),
                 items = listOf(
                     SettingItem(
@@ -138,8 +139,8 @@ fun NotificationsSettingsScreen(onBackClick: () -> Unit) {
                         onToggleChange = { appSettings.setStreamingNotificationsEnabled(it) }
                     )
                 )
-            ),
-            SettingGroup(
+            ) else null,
+            if (ProductCapabilities.inAppUpdates) SettingGroup(
                 title = stringResource(R.string.settings_notifications_updates_group),
                 items = listOf(
                     SettingItem(
@@ -153,7 +154,7 @@ fun NotificationsSettingsScreen(onBackClick: () -> Unit) {
                         }
                     )
                 )
-            ),
+            ) else null,
             SettingGroup(
                 title = stringResource(R.string.settings_notifications_rhythm_guard_group),
                 items = listOf(
@@ -203,7 +204,7 @@ fun NotificationsSettingsScreen(onBackClick: () -> Unit) {
                     )
                 )
             )
-        )
+        ).filterNotNull()
 
         val lazyListState = rememberSaveable(saver = LazyListStateSaver) {
             androidx.compose.foundation.lazy.LazyListState()

@@ -115,6 +115,13 @@ fun RhythmPlayerSheet(
 
     val density = LocalDensity.current
     val miniPlayerThemeId by appSettings.miniPlayerThemeId.collectAsState()
+    val playbackControlUiState by musicViewModel.playbackControlUiState.collectAsState()
+    // Every player surface below consumes this same atomic snapshot. Keep the legacy parameters
+    // on the public API for callers outside the sheet, but do not recombine their independent
+    // isPlaying/isBuffering emissions here.
+    val hasAtomicControlSnapshot = playbackControlUiState.mediaId != null
+    val controlShowsPause = if (hasAtomicControlSnapshot) playbackControlUiState.showPause else isPlaying
+    val controlIsLoading = if (hasAtomicControlSnapshot) playbackControlUiState.isLoading else isMediaLoading
 
     BoxWithConstraints(
         modifier = modifier.fillMaxSize()
@@ -238,14 +245,14 @@ fun RhythmPlayerSheet(
                 ) {
                     MiniPlayer(
                         song = song,
-                        isPlaying = isPlaying,
+                        isPlaying = controlShowsPause,
                         progress = progress,
                         onPlayPause = onPlayPause,
                         onPlayerClick = onExpand,
                         onSkipNext = onSkipNext,
                         onSkipPrevious = onSkipPrevious,
                         onDismiss = onMiniPlayerDismiss,
-                        isMediaLoading = isMediaLoading,
+                        isMediaLoading = controlIsLoading,
                         verticalDragEnabled = false,
                         modifier = Modifier.fillMaxSize()
                     )
@@ -261,7 +268,7 @@ fun RhythmPlayerSheet(
                 ) {
                     PlayerScreen(
                         song = song,
-                        isPlaying = isPlaying,
+                        isPlaying = controlShowsPause,
                         progress = progress,
                         location = location,
                         queuePosition = queuePosition,
@@ -312,7 +319,7 @@ fun RhythmPlayerSheet(
                         onCreatePlaylist = onCreatePlaylist,
                         onShowCreatePlaylistDialog = onShowCreatePlaylistDialog,
                         onClearQueue = onClearQueue,
-                        isMediaLoading = isMediaLoading,
+                        isMediaLoading = controlIsLoading,
                         isSeeking = isSeeking,
                         onShowAlbumBottomSheet = onShowAlbumBottomSheet,
                         onShowArtistBottomSheet = onShowArtistBottomSheet,

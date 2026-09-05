@@ -7,7 +7,7 @@ import chromahub.rhythm.app.shared.data.model.Song
 const val CATALOG_SONG_ID_PREFIX = "rhythm-catalog:rendition:"
 private const val UNKNOWN_ARTIST = "未知艺术家"
 
-fun CatalogLibrarySong.toRhythmSong(): Song = Song(
+fun CatalogLibrarySong.toRhythmSong(trustedServerUrl: String? = null): Song = Song(
     id = "$CATALOG_SONG_ID_PREFIX$renditionId",
     title = title,
     artist = artist ?: UNKNOWN_ARTIST,
@@ -16,7 +16,7 @@ fun CatalogLibrarySong.toRhythmSong(): Song = Song(
     duration = durationMs ?: 0L,
     // This URI is display-only. Playback must exchange renditionId for a fresh descriptor.
     uri = Uri.parse("rhythm-catalog://rendition/$renditionId"),
-    artworkUri = coverUrl?.toSafeArtworkUri(),
+    artworkUri = coverUrl.toSafeArtworkUri(trustedServerUrl),
     trackNumber = trackNo ?: 0,
     albumArtist = artist ?: UNKNOWN_ARTIST,
     codec = "audio/mpeg",
@@ -25,14 +25,14 @@ fun CatalogLibrarySong.toRhythmSong(): Song = Song(
     path = null,
 )
 
-fun CatalogLibraryAlbum.toRhythmAlbum(): Album {
+fun CatalogLibraryAlbum.toRhythmAlbum(trustedServerUrl: String? = null): Album {
     require(songs.all { it.albumId == id }) { "catalog album contains a song from another album" }
-    val projectedSongs = songs.map { it.toRhythmSong() }
+    val projectedSongs = songs.map { it.toRhythmSong(trustedServerUrl) }
     return Album(
         id = id,
         title = title,
         artist = artist ?: UNKNOWN_ARTIST,
-        artworkUri = coverUrl?.toSafeArtworkUri(),
+        artworkUri = coverUrl.toSafeArtworkUri(trustedServerUrl),
         songs = projectedSongs,
         numberOfSongs = songCount,
         dateModified = 0L,
@@ -70,5 +70,6 @@ internal fun catalogQueueSelectionIndexes(
     return CatalogQueueSelectionIndexes(managedIndexes, managedStart)
 }
 
-private fun String.toSafeArtworkUri(): Uri? = runCatching { Uri.parse(this) }.getOrNull()
-    ?.takeIf { it.scheme.equals("https", ignoreCase = true) }
+private fun String?.toSafeArtworkUri(trustedServerUrl: String?): Uri? =
+    CatalogPlaybackPolicy.resolveAutomaticArtworkUrl(this, trustedServerUrl)
+        ?.let(Uri::parse)

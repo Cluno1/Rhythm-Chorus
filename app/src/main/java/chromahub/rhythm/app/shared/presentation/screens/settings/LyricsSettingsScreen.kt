@@ -30,6 +30,7 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.ExperimentalFoundationApi
 import chromahub.rhythm.app.R
+import chromahub.rhythm.app.core.ProductCapabilities
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
@@ -361,23 +362,31 @@ fun LyricsSettingsScreen(onBackClick: () -> Unit) {
                     modifier = Modifier.padding(start = 16.dp, bottom = 8.dp)
                 )
 
-                val sourceOptions = listOf<Pair<chromahub.rhythm.app.shared.data.model.LyricsSourcePreference, Triple<String, String, MaterialSymbolIcon>>>(
-                    chromahub.rhythm.app.shared.data.model.LyricsSourcePreference.EMBEDDED_FIRST to Triple(
-                        context.getString(R.string.lyrics_settings_embedded_first),
-                        context.getString(R.string.lyrics_settings_embedded_first_desc),
-                        RhythmIcons.MusicNote
-                    ),
-                    chromahub.rhythm.app.shared.data.model.LyricsSourcePreference.API_FIRST to Triple(
-                        context.getString(R.string.lyrics_settings_online_first),
-                        context.getString(R.string.lyrics_settings_online_first_desc),
-                        MaterialSymbolIcon("cloud_queue")
-                    ),
-                    chromahub.rhythm.app.shared.data.model.LyricsSourcePreference.LOCAL_FIRST to Triple(
-                        context.getString(R.string.lyrics_settings_local_first),
-                        context.getString(R.string.lyrics_settings_local_first_desc),
-                        RhythmIcons.Storage
+                val sourceOptions = buildList<Pair<chromahub.rhythm.app.shared.data.model.LyricsSourcePreference, Triple<String, String, MaterialSymbolIcon>>> {
+                    add(
+                        chromahub.rhythm.app.shared.data.model.LyricsSourcePreference.EMBEDDED_FIRST to Triple(
+                            context.getString(R.string.lyrics_settings_embedded_first),
+                            context.getString(R.string.lyrics_settings_embedded_first_desc),
+                            RhythmIcons.MusicNote
+                        )
                     )
-                )
+                    if (ProductCapabilities.thirdPartyMusicServices) {
+                        add(
+                            chromahub.rhythm.app.shared.data.model.LyricsSourcePreference.API_FIRST to Triple(
+                                context.getString(R.string.lyrics_settings_online_first),
+                                context.getString(R.string.lyrics_settings_online_first_desc),
+                                MaterialSymbolIcon("cloud_queue")
+                            )
+                        )
+                    }
+                    add(
+                        chromahub.rhythm.app.shared.data.model.LyricsSourcePreference.LOCAL_FIRST to Triple(
+                            context.getString(R.string.lyrics_settings_local_first),
+                            context.getString(R.string.lyrics_settings_local_first_desc),
+                            RhythmIcons.Storage
+                        )
+                    )
+                }
 
                 Material3SettingsGroup(
                     items = sourceOptions.map { (preference, info) ->
@@ -410,7 +419,7 @@ fun LyricsSettingsScreen(onBackClick: () -> Unit) {
             }
 
             // 3. Online APIs
-            item {
+            if (ProductCapabilities.thirdPartyMusicServices) item {
                 Spacer(modifier = Modifier.height(12.dp))
                 Text(
                     text = stringResource(R.string.lyricssourcesettingsscreen_online_api_options),
@@ -796,4 +805,3 @@ fun LyricsSettingsScreen(onBackClick: () -> Unit) {
         )
     }
 }
-

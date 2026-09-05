@@ -17,6 +17,7 @@ import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.TimeUnit
 import java.util.regex.Pattern
 import okhttp3.HttpUrl.Companion.toHttpUrl
+import chromahub.rhythm.app.core.ProductCapabilities
 
 private object AppleCanvasLogger {
     private const val TAG = "AppleMusicCanvas"
@@ -175,6 +176,7 @@ object AppleMusicCanvasProvider {
         album: String? = null,
         storefront: String = "us",
     ): CanvasArtwork? = withContext(Dispatchers.IO) {
+        if (!ProductCapabilities.thirdPartyMusicServices) return@withContext null
         val key = cacheKey("song", song, artist, album ?: "", storefront)
         cache[key]?.takeIf { it.expiresAtMs > System.currentTimeMillis() }?.let { return@withContext it.value }
 
@@ -203,6 +205,7 @@ object AppleMusicCanvasProvider {
         artist: String,
         storefront: String = "us",
     ): CanvasArtwork? = withContext(Dispatchers.IO) {
+        if (!ProductCapabilities.thirdPartyMusicServices) return@withContext null
         val key = cacheKey("album", album, artist, storefront)
         cache[key]?.takeIf { it.expiresAtMs > System.currentTimeMillis() }?.let { return@withContext it.value }
 
@@ -218,6 +221,7 @@ object AppleMusicCanvasProvider {
         artist: String,
         storefront: String = "us",
     ): String? = withContext(Dispatchers.IO) {
+        if (!ProductCapabilities.thirdPartyMusicServices) return@withContext null
         try {
             val query = if (album.contains(artist, ignoreCase = true)) album else "$artist $album"
             val token = getOrFetchToken()

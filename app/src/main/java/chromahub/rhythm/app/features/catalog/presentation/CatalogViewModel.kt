@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import chromahub.rhythm.app.features.catalog.di.CatalogModule
 import chromahub.rhythm.app.features.catalog.data.local.CatalogQueueStore
 import chromahub.rhythm.app.features.catalog.domain.CatalogPlaybackItem
+import chromahub.rhythm.app.features.catalog.domain.CatalogPlaybackPolicy
 import chromahub.rhythm.app.features.catalog.domain.CatalogFailure
 import chromahub.rhythm.app.features.catalog.domain.PlaybackDescriptor
 import chromahub.rhythm.app.features.catalog.domain.ScoreRevision
@@ -208,7 +209,10 @@ class CatalogViewModel(application: Application) : AndroidViewModel(application)
                         mediaType = "audio/mpeg",
                         durationMs = saved.durationMs,
                         albumId = saved.albumId,
-                        artworkUrl = saved.artworkUrl,
+                        artworkUrl = CatalogPlaybackPolicy.resolveAutomaticArtworkUrl(
+                            saved.artworkUrl,
+                            repository.connection().serverUrl,
+                        ),
                     ),
                 )
             }

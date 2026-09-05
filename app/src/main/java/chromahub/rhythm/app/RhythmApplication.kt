@@ -13,6 +13,8 @@ import coil.memory.MemoryCache
 import chromahub.rhythm.app.infrastructure.widget.glance.GlanceShapeBitmaps
 import chromahub.rhythm.app.infrastructure.widget.glance.RhythmCookieWidget
 import chromahub.rhythm.app.infrastructure.widget.glance.RhythmMusicWidget
+import chromahub.rhythm.app.core.ProductCapabilities
+import chromahub.rhythm.app.features.streaming.infrastructure.notification.StreamingNotificationManager
 import chromahub.rhythm.app.shared.data.model.AppSettings
 import chromahub.rhythm.app.util.ANRWatchdog
 import chromahub.rhythm.app.util.CacheManager
@@ -76,11 +78,17 @@ class RhythmApplication : Application(), ImageLoaderFactory {
         CrashReporter.init(this)
         Log.d(TAG, "✓ CrashReporter initialized")
         
-        // Initialize NetworkClient with AppSettings
-        chromahub.rhythm.app.network.NetworkClient.initialize(
-            AppSettings.getInstance(applicationContext)
-        )
-        Log.d(TAG, "✓ NetworkClient initialized")
+        if (ProductCapabilities.thirdPartyMusicServices) {
+            // The Catalog API and COS delivery clients are independent from this legacy client.
+            chromahub.rhythm.app.network.NetworkClient.initialize(settings)
+            Log.d(TAG, "✓ Third-party NetworkClient initialized")
+        } else {
+            // Constructing the manager in Catalog-only mode cancels stale streaming notices and
+            // removes their channels without starting a provider session.
+            StreamingNotificationManager(applicationContext)
+            clearLegacyUpdateNotifications()
+            Log.d(TAG, "✓ Catalog-only network boundary applied")
+        }
         
         // Configure LeakCanary for debug builds
         if (BuildConfig.DEBUG) {
@@ -106,6 +114,14 @@ class RhythmApplication : Application(), ImageLoaderFactory {
                     Log.e(TAG, "Error during startup cache trim", e)
                 }
             }
+        }
+    }
+
+    private fun clearLegacyUpdateNotifications() {
+        val manager = getSystemService(android.app.NotificationManager::class.java)
+        listOf(1001, 1002, 1401).forEach(manager::cancel)
+        listOf("app_updates", "app_update_status", "update_download_progress").forEach {
+            manager.deleteNotificationChannel(it)
         }
     }
 

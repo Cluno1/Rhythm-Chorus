@@ -141,6 +141,7 @@ import chromahub.rhythm.app.shared.presentation.viewmodel.rememberAppUpdaterView
 import chromahub.rhythm.app.shared.presentation.viewmodel.AppVersion
 import chromahub.rhythm.app.features.local.presentation.viewmodel.MusicViewModel
 import chromahub.rhythm.app.features.streaming.presentation.viewmodel.StreamingMusicViewModel
+import chromahub.rhythm.app.core.ProductCapabilities
 import chromahub.rhythm.app.features.streaming.presentation.components.bottomsheets.NearbyServerDiscoverySheet
 import chromahub.rhythm.app.shared.presentation.screens.settings.TunerAnimatedSwitch
 import chromahub.rhythm.app.shared.presentation.screens.settings.ColorSchemeOption
@@ -241,8 +242,10 @@ fun OnboardingScreen(
     
     val visibleSteps = remember(appMode) {
         val list = mutableListOf<OnboardingStep>()
-        list.add(OnboardingStep.APP_MODE_CHOICE)
-        if (appMode == "STREAMING") {
+        if (!ProductCapabilities.catalogOnly) {
+            list.add(OnboardingStep.APP_MODE_CHOICE)
+        }
+        if (!ProductCapabilities.catalogOnly && appMode == "STREAMING") {
             list.add(OnboardingStep.STREAMING_SETUP)
         } else {
             list.add(OnboardingStep.PERMISSIONS)
@@ -251,7 +254,9 @@ fun OnboardingScreen(
         if (appMode != "STREAMING") {
             list.add(OnboardingStep.MEDIA_SCAN)
         }
-        list.add(OnboardingStep.UPDATER)
+        if (ProductCapabilities.inAppUpdates) {
+            list.add(OnboardingStep.UPDATER)
+        }
         list.add(OnboardingStep.FULL_TOUR_PROMPT)
         list.add(OnboardingStep.BACKUP_RESTORE)
         list.add(OnboardingStep.AUDIO_PLAYBACK)
@@ -259,7 +264,9 @@ fun OnboardingScreen(
         list.add(OnboardingStep.PLAYER_THEME_CHOICE)
         list.add(OnboardingStep.GESTURES)
         list.add(OnboardingStep.WIDGETS)
-        list.add(OnboardingStep.INTEGRATIONS)
+        if (ProductCapabilities.thirdPartyMusicServices) {
+            list.add(OnboardingStep.INTEGRATIONS)
+        }
         list.add(OnboardingStep.RHYTHM_STATS)
         list.add(OnboardingStep.SETUP_FINISHED)
         list.add(OnboardingStep.COMPLETE)

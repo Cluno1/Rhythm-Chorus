@@ -88,12 +88,21 @@ import androidx.compose.ui.res.stringResource
 import androidx.core.net.toUri
 import chromahub.rhythm.app.util.windowScreenWidthDp
 import chromahub.rhythm.app.util.windowScreenHeightDp
+import chromahub.rhythm.app.core.ProductCapabilities
+
+@Immutable
+data class UniversalSearchCatalogSource(
+    val songs: List<Song>,
+    val albums: List<Album>,
+    val isLoading: Boolean = false,
+)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun UniversalSearchScreen(
     localViewModel: MusicViewModel = viewModel(),
     streamingViewModel: StreamingMusicViewModel = viewModel(),
+    catalogSource: UniversalSearchCatalogSource? = null,
     onLocalSongClick: (Song) -> Unit = {},
     onLocalAlbumClick: (Album) -> Unit = {},
     onLocalArtistClick: (Artist) -> Unit = {},
@@ -187,12 +196,21 @@ fun UniversalSearchScreen(
         }
     }
 
-    val localSongs by localViewModel.filteredSongs.collectAsState()
-    val fullLocalAlbums by localViewModel.filteredAlbums.collectAsState()
-    val localArtists by localViewModel.filteredArtists.collectAsState()
-    val localPlaylists by localViewModel.playlists.collectAsState()
+    val legacyLocalSongs by localViewModel.filteredSongs.collectAsState()
+    val legacyLocalAlbums by localViewModel.filteredAlbums.collectAsState()
+    val legacyLocalArtists by localViewModel.filteredArtists.collectAsState()
+    val legacyLocalPlaylists by localViewModel.playlists.collectAsState()
     val searchHistory by localViewModel.searchHistory.collectAsState()
     val favoriteSongs by localViewModel.favoriteSongs.collectAsState()
+
+    // A catalog source replaces, rather than augments, the legacy MediaStore surface. The private
+    // catalog currently projects only Songs and Albums, so stale local Artists/Playlists must not
+    // leak back into search results.
+    val localSongs = catalogSource?.songs ?: legacyLocalSongs
+    val fullLocalAlbums = catalogSource?.albums ?: legacyLocalAlbums
+    val localArtists = if (catalogSource != null) emptyList() else legacyLocalArtists
+    val localPlaylists = if (catalogSource != null) emptyList() else legacyLocalPlaylists
+    val isLocalLoading = catalogSource?.isLoading == true
 
     val streamingQuery by streamingViewModel.searchQuery.collectAsState()
     val streamingResults by streamingViewModel.searchResults.collectAsState()
@@ -202,49 +220,66 @@ fun UniversalSearchScreen(
     val isGenreDetectionComplete by localViewModel.isGenreDetectionComplete.collectAsState()
     val streamingBrowseCategories by streamingViewModel.browseCategories.collectAsState()
 
-    val genres = remember(localSongs, streamingBrowseCategories, streamingResults.songs) {
+    val genres = remember(catalogSource, localSongs, streamingBrowseCategories, streamingResults.songs) {
         val localGenres = localSongs
             .flatMap { song -> GenreUtils.splitGenres(song.genre) }
-        val streamingGenres = streamingBrowseCategories.map { it.name } +
-            streamingResults.songs.flatMap { song -> GenreUtils.splitGenres(song.genre) }
+        val streamingGenres = if (catalogSource == null) {
+            streamingBrowseCategories.map { it.name } +
+                streamingResults.songs.flatMap { song -> GenreUtils.splitGenres(song.genre) }
+        } else {
+            emptyList()
+        }
         (localGenres + streamingGenres)
             .distinctBy { it.lowercase() }
             .sortedBy { it.lowercase() }
     }
 
-    val genreSongCounts = remember(genres, localSongs, streamingResults.songs) {
+    val genreSongCounts = remember(catalogSource, genres, localSongs, streamingResults.songs) {
         genres.associateWith { genre ->
             localSongs.count { song -> GenreUtils.matchesGenre(song.genre, genre) } +
-                streamingResults.songs.count { song -> GenreUtils.matchesGenre(song.genre, genre) }
+                if (catalogSource == null) {
+                    streamingResults.songs.count { song -> GenreUtils.matchesGenre(song.genre, genre) }
+                } else {
+                    0
+                }
         }
     }
 
-    LaunchedEffect(query) {
-        if (query.isNotBlank() && streamingQuery != query) {
-            streamingViewModel.search(query)
+    val normalizedQuery = remember(query) { normalizedUniversalSearchQuery(query) }
+
+    LaunchedEffect(normalizedQuery) {
+        if (catalogSource == null &&
+            ProductCapabilities.thirdPartyMusicServices &&
+            normalizedQuery.isNotBlank() &&
+            streamingQuery != normalizedQuery
+        ) {
+            streamingViewModel.search(normalizedQuery)
         }
     }
 
-    val matchedLocalSongs = remember(query, localSongs, filterSongs) {
-        if (!filterSongs || query.isBlank()) emptyList()
+    val matchedLocalSongs = remember(normalizedQuery, localSongs, filterSongs) {
+        if (!filterSongs || normalizedQuery.isBlank()) emptyList()
         else {
-            val lowerQuery = query.lowercase()
             localSongs.filter {
-                it.title.lowercase().contains(lowerQuery) ||
-                        it.artist.lowercase().contains(lowerQuery) ||
-                        it.album.lowercase().contains(lowerQuery) ||
-                        GenreUtils.matchesGenreQuery(it.genre, lowerQuery)
+                matchesUniversalSongQuery(
+                    query = normalizedQuery,
+                    title = it.title,
+                    artist = it.artist,
+                    album = it.album,
+                ) || GenreUtils.matchesGenreQuery(it.genre, normalizedQuery)
             }
         }
     }
-    val matchedLocalAlbums = remember(query, fullLocalAlbums, filterAlbums) {
-        if (!filterAlbums || query.isBlank()) emptyList()
+    val matchedLocalAlbums = remember(normalizedQuery, fullLocalAlbums, filterAlbums) {
+        if (!filterAlbums || normalizedQuery.isBlank()) emptyList()
         else {
-            val lowerQuery = query.lowercase()
             fullLocalAlbums.filter { album ->
-                album.title.contains(query, true) ||
-                album.artist.contains(query, true) ||
-                album.songs.any { it.title.lowercase().contains(lowerQuery) }
+                matchesUniversalAlbumQuery(
+                    query = normalizedQuery,
+                    title = album.title,
+                    artist = album.artist,
+                    songTitles = album.songs.map(Song::title),
+                )
             }
         }
     }
@@ -257,15 +292,23 @@ fun UniversalSearchScreen(
         else localPlaylists.filter { it.name.contains(query, true) }
     }
 
-    val matchedStreamingSongs = if (filterSongs) streamingResults.songs else emptyList()
-    val matchedStreamingAlbums = if (filterAlbums) streamingResults.albums else emptyList()
-    val matchedStreamingArtists = if (filterArtists) streamingResults.artists else emptyList()
-    val matchedStreamingPlaylists = if (filterPlaylists) streamingResults.playlists else emptyList()
+    val matchedStreamingSongs = if (catalogSource == null && filterSongs) streamingResults.songs else emptyList()
+    val matchedStreamingAlbums = if (catalogSource == null && filterAlbums) streamingResults.albums else emptyList()
+    val matchedStreamingArtists = if (catalogSource == null && filterArtists) streamingResults.artists else emptyList()
+    val matchedStreamingPlaylists = if (catalogSource == null && filterPlaylists) streamingResults.playlists else emptyList()
+
+    val effectiveStreamingLoading = catalogSource == null && isStreamingLoading
+    val isSearchLoading = isLocalLoading || effectiveStreamingLoading
 
     val hasResults = matchedLocalSongs.isNotEmpty() || matchedStreamingSongs.isNotEmpty() ||
             matchedLocalAlbums.isNotEmpty() || matchedStreamingAlbums.isNotEmpty() ||
             matchedLocalArtists.isNotEmpty() || matchedStreamingArtists.isNotEmpty() ||
             matchedLocalPlaylists.isNotEmpty() || matchedStreamingPlaylists.isNotEmpty()
+    val showEmptyState = shouldShowUniversalSearchEmptyState(
+        hasResults = hasResults,
+        isLocalLoading = isLocalLoading,
+        isStreamingLoading = effectiveStreamingLoading,
+    )
 
     val handleAction = { itemMode: String, action: () -> Unit ->
         if (itemMode == appMode) {
@@ -564,7 +607,7 @@ fun UniversalSearchScreen(
                     }
                 }
             } else {
-                if (!hasResults && !isStreamingLoading) {
+                if (showEmptyState) {
                     LazyColumn(
                         modifier = Modifier
                             .fillMaxSize()
@@ -634,7 +677,7 @@ fun UniversalSearchScreen(
                             ),
                             verticalArrangement = Arrangement.spacedBy(16.dp)
                         ) {
-                            if (isStreamingLoading && !hasResults) {
+                            if (isSearchLoading && !hasResults) {
                                 item(key = "loading_left") {
                                     Box(modifier = Modifier.fillMaxWidth().padding(vertical = 48.dp), contentAlignment = Alignment.Center) {
                                         WavyLoader()
@@ -675,16 +718,19 @@ fun UniversalSearchScreen(
                                                 verticalArrangement = Arrangement.spacedBy(4.dp)
                                             ) {
                                                 allSongs.forEachIndexed { index, item ->
+                                                    val localSongId = (item.originalSong as? Song)?.id
                                                     UniversalSearchSongItem(
                                                         title = item.title,
                                                         subtitle = item.subtitle,
                                                         artworkUri = item.artworkUri,
                                                         mode = item.mode,
                                                         onClick = item.onClick,
-                                                        onMoreClick = {
-                                                            selectedSongForOptions = item.originalSong
-                                                            showSongOptionsSheet = true
-                                                        },
+                                                        onMoreClick = if (shouldShowLegacySongOptions(item.mode, localSongId)) {
+                                                            {
+                                                                selectedSongForOptions = item.originalSong
+                                                                showSongOptionsSheet = true
+                                                            }
+                                                        } else null,
                                                         haptics = haptics,
                                                         index = index,
                                                         totalCount = allSongs.size
@@ -868,7 +914,7 @@ fun UniversalSearchScreen(
                         ),
                         verticalArrangement = Arrangement.spacedBy(16.dp)
                     ) {
-                        if (isStreamingLoading && !hasResults) {
+                        if (isSearchLoading && !hasResults) {
                             item(key = "loading") {
                                 Box(modifier = Modifier.fillMaxWidth().padding(vertical = 48.dp).animateItem(), contentAlignment = Alignment.Center) {
                                     WavyLoader()
@@ -909,16 +955,19 @@ fun UniversalSearchScreen(
                                             verticalArrangement = Arrangement.spacedBy(4.dp)
                                         ) {
                                             allSongs.forEachIndexed { index, item ->
+                                                val localSongId = (item.originalSong as? Song)?.id
                                                 UniversalSearchSongItem(
                                                     title = item.title,
                                                     subtitle = item.subtitle,
                                                     artworkUri = item.artworkUri,
                                                     mode = item.mode,
                                                     onClick = item.onClick,
-                                                    onMoreClick = {
-                                                        selectedSongForOptions = item.originalSong
-                                                        showSongOptionsSheet = true
-                                                    },
+                                                    onMoreClick = if (shouldShowLegacySongOptions(item.mode, localSongId)) {
+                                                        {
+                                                            selectedSongForOptions = item.originalSong
+                                                            showSongOptionsSheet = true
+                                                        }
+                                                    } else null,
                                                     haptics = haptics,
                                                     index = index,
                                                     totalCount = allSongs.size
@@ -1665,7 +1714,7 @@ fun UniversalSearchSongItem(
     artworkUri: Any?,
     mode: String,
     onClick: () -> Unit,
-    onMoreClick: () -> Unit,
+    onMoreClick: (() -> Unit)?,
     haptics: androidx.compose.ui.hapticfeedback.HapticFeedback,
     index: Int = 0,
     totalCount: Int = 1
@@ -1755,22 +1804,24 @@ fun UniversalSearchSongItem(
                 }
             }
 
-            FilledIconButton(
-                onClick = {
-                    HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
-                    onMoreClick()
-                },
-                modifier = Modifier.size(36.dp),
-                colors = IconButtonDefaults.filledIconButtonColors(
-                    containerColor = MaterialTheme.colorScheme.tertiaryContainer,
-                    contentColor = MaterialTheme.colorScheme.onTertiaryContainer
-                )
-            ) {
-                Icon(
-                    imageVector = RhythmIcons.More,
-                    contentDescription = stringResource(R.string.content_desc_more_options),
-                    modifier = Modifier.size(18.dp)
-                )
+            if (onMoreClick != null) {
+                FilledIconButton(
+                    onClick = {
+                        HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
+                        onMoreClick()
+                    },
+                    modifier = Modifier.size(36.dp),
+                    colors = IconButtonDefaults.filledIconButtonColors(
+                        containerColor = MaterialTheme.colorScheme.tertiaryContainer,
+                        contentColor = MaterialTheme.colorScheme.onTertiaryContainer
+                    )
+                ) {
+                    Icon(
+                        imageVector = RhythmIcons.More,
+                        contentDescription = stringResource(R.string.content_desc_more_options),
+                        modifier = Modifier.size(18.dp)
+                    )
+                }
             }
         }
     }
@@ -1998,9 +2049,9 @@ fun UniversalAllSongsPage(
                         if (isLocal) onLocalSongClick(item.first as Song)
                         else onStreamingSongClick(item.first as StreamingSong)
                     },
-                    onMoreClick = {
-                        onOptionsClick(item.first)
-                    },
+                    onMoreClick = if (shouldShowLegacySongOptions(item.second, (item.first as? Song)?.id)) {
+                        { onOptionsClick(item.first) }
+                    } else null,
                     haptics = haptics,
                     index = index,
                     totalCount = allSongs.size

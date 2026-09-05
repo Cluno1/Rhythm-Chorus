@@ -31,6 +31,7 @@ import android.net.Uri
 import chromahub.rhythm.app.shared.data.model.Song
 import chromahub.rhythm.app.features.local.presentation.viewmodel.MusicViewModel
 import chromahub.rhythm.app.R
+import chromahub.rhythm.app.core.ProductCapabilities
 import android.util.Log
 import androidx.core.net.toUri
 
@@ -141,11 +142,13 @@ class StreamingMusicViewModel(application: Application) : AndroidViewModel(appli
     val searchResults: StateFlow<StreamingSearchResults> = _searchResults.asStateFlow()
     
     init {
-        observeSelectedService()
-        // Keep an updated view of the provider catalog exposed by the repository
-        viewModelScope.launch {
-            repository.getSongs().collect { items ->
-                _allSongs.value = items.filterIsInstance<StreamingSong>()
+        if (ProductCapabilities.thirdPartyMusicServices) {
+            observeSelectedService()
+            // Keep an updated view of the provider catalog exposed by the repository
+            viewModelScope.launch {
+                repository.getSongs().collect { items ->
+                    _allSongs.value = items.filterIsInstance<StreamingSong>()
+                }
             }
         }
     }
@@ -602,6 +605,13 @@ class StreamingMusicViewModel(application: Application) : AndroidViewModel(appli
      */
     fun search(query: String) {
         _searchQuery.value = query
+
+        if (!ProductCapabilities.thirdPartyMusicServices) {
+            _searchResults.value = StreamingSearchResults()
+            _isLoading.value = false
+            _error.value = null
+            return
+        }
 
         if (query.isBlank()) {
             _searchResults.value = StreamingSearchResults()

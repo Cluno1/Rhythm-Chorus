@@ -1,6 +1,8 @@
 package chromahub.rhythm.app.features.catalog.domain
 
+import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
@@ -173,6 +175,32 @@ class CatalogPlaybackPolicyTest {
         assertFalse(CatalogPlaybackPolicy.isSignedObjectStoreUrl(fakeHost))
         assertFalse(
             CatalogPlaybackPolicy.allows(mediaId, fakeHost, cacheKey, "audio/mpeg", "https://music.example"),
+        )
+    }
+
+    @Test
+    fun automaticArtworkAllowsOnlyCatalogOriginOrSignedCos() {
+        val origin = "http://10.88.0.1:8010"
+
+        assertEquals(
+            "http://10.88.0.1:8010/v2/assets/11111111-1111-4111-8111-111111111111/content",
+            CatalogPlaybackPolicy.resolveAutomaticArtworkUrl(
+                "/v2/assets/11111111-1111-4111-8111-111111111111/content",
+                origin,
+            ),
+        )
+        assertEquals(
+            cosSignedUrl,
+            CatalogPlaybackPolicy.resolveAutomaticArtworkUrl(cosSignedUrl, origin),
+        )
+        assertNull(
+            CatalogPlaybackPolicy.resolveAutomaticArtworkUrl("https://images.example/cover.jpg", origin),
+        )
+        assertNull(
+            CatalogPlaybackPolicy.resolveAutomaticArtworkUrl(
+                "https://bible-1328751369.cos.ap-guangzhou.myqcloud.com/cover.jpg",
+                origin,
+            ),
         )
     }
 

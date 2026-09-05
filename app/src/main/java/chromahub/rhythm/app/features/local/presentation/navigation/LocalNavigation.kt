@@ -124,6 +124,7 @@ import chromahub.rhythm.app.features.local.presentation.screens.HomeScreen
 import chromahub.rhythm.app.features.catalog.domain.CatalogPlaybackItem
 import chromahub.rhythm.app.features.catalog.domain.RhythmNowPlayingItem
 import chromahub.rhythm.app.features.catalog.domain.RhythmQueueEntry
+import chromahub.rhythm.app.features.catalog.domain.CatalogPlaybackPolicy
 import chromahub.rhythm.app.features.catalog.domain.catalogQueueSelection
 import chromahub.rhythm.app.features.catalog.domain.isCatalogLibrarySong
 import chromahub.rhythm.app.features.catalog.domain.toRhythmAlbum
@@ -131,7 +132,10 @@ import chromahub.rhythm.app.features.catalog.domain.toRhythmSong
 import chromahub.rhythm.app.features.catalog.presentation.CatalogServerSettingsScreen
 import chromahub.rhythm.app.features.catalog.presentation.CatalogRemoteScoreScreen
 import chromahub.rhythm.app.features.catalog.presentation.CatalogViewModel
+import chromahub.rhythm.app.core.ProductCapabilities
+import chromahub.rhythm.app.core.ProductRoutePolicy
 import chromahub.rhythm.app.shared.presentation.screens.RhythmStatsScreen
+import chromahub.rhythm.app.shared.presentation.screens.UniversalSearchCatalogSource
 import chromahub.rhythm.app.features.local.presentation.screens.EqualizerScreen
 import chromahub.rhythm.app.shared.presentation.screens.player.PlayerScreen
 
@@ -529,7 +533,9 @@ fun LocalNavigation(
     // Consume pending startup route from shared settings handoff and navigate if valid.
     LaunchedEffect(navController, appSettings) {
         val pendingRoute = appSettings.consumeInitialStreamingRoute()
-        if (!pendingRoute.isNullOrBlank()) {
+        if (!pendingRoute.isNullOrBlank() &&
+            ProductRoutePolicy.allowsInitialNavigationRoute(pendingRoute, ProductCapabilities.catalogOnly)
+        ) {
             val isValidLocalRoute = pendingRoute == Screen.Home.route ||
                 pendingRoute == Screen.Search.route ||
                 pendingRoute == Screen.Player.route ||
@@ -538,11 +544,13 @@ fun LocalNavigation(
                 pendingRoute.startsWith(Screen.Library.route.substringBefore("?")) ||
                 pendingRoute.startsWith("playlist/") ||
                 pendingRoute.startsWith("artist/") ||
-                pendingRoute.startsWith("streaming_artist/") ||
-                pendingRoute.startsWith("streaming_album/") ||
-                pendingRoute.startsWith("streaming_playlist/") ||
-                pendingRoute.startsWith("streaming_service_setup/") ||
-                pendingRoute == StreamingRoutes.GoSettings
+                (!ProductCapabilities.catalogOnly && (
+                    pendingRoute.startsWith("streaming_artist/") ||
+                        pendingRoute.startsWith("streaming_album/") ||
+                        pendingRoute.startsWith("streaming_playlist/") ||
+                        pendingRoute.startsWith("streaming_service_setup/") ||
+                        pendingRoute == StreamingRoutes.GoSettings
+                    ))
 
             if (isValidLocalRoute) {
                 navController.navigate(pendingRoute) {
@@ -871,8 +879,12 @@ private fun LocalNavigationContent(
             ?.any { (it.publishedRevisionId ?: it.headRevisionId) != null }
             ?: false
     }
-    val catalogSongs = remember(catalogState.songs) { catalogState.songs.map { it.toRhythmSong() } }
-    val catalogAlbums = remember(catalogState.albums) { catalogState.albums.map { it.toRhythmAlbum() } }
+    val catalogSongs = remember(catalogState.songs, catalogState.serverUrl) {
+        catalogState.songs.map { it.toRhythmSong(catalogState.serverUrl) }
+    }
+    val catalogAlbums = remember(catalogState.albums, catalogState.serverUrl) {
+        catalogState.albums.map { it.toRhythmAlbum(catalogState.serverUrl) }
+    }
     val catalogSongByDisplayId = remember(catalogState.songs) {
         catalogState.songs.associateBy { "rhythm-catalog:rendition:${it.renditionId}" }
     }
@@ -921,7 +933,10 @@ private fun LocalNavigationContent(
                             mediaType = "audio/mpeg",
                             durationMs = song.durationMs ?: 0L,
                             albumId = song.albumId,
-                            artworkUrl = song.coverUrl,
+                            artworkUrl = CatalogPlaybackPolicy.resolveAutomaticArtworkUrl(
+                                song.coverUrl,
+                                catalogState.serverUrl,
+                            ),
                         ),
                     )
                 }
@@ -1963,9 +1978,18 @@ private fun LocalNavigationContent(
                         chromahub.rhythm.app.shared.presentation.screens.UniversalSearchScreen(
                             localViewModel = viewModel,
                             streamingViewModel = streamingViewModel,
+                            catalogSource = UniversalSearchCatalogSource(
+                                songs = nativeSongs,
+                                albums = nativeAlbums,
+                                isLoading = catalogState.loading,
+                            ),
                             onLocalSongClick = { song ->
-                                viewModel.playSongFromSearch(song, songs)
-                                navController.navigate(Screen.Player.route)
+                                val index = nativeSongs.indexOfFirst { it.id == song.id }
+                                if (index >= 0) {
+                                    playCatalogQueue(nativeSongs, index, false)
+                                } else {
+                                    playNativeSong(song)
+                                }
                             },
                             onLocalAlbumClick = { album ->
                                 navController.navigate(Screen.AlbumDetail.createRoute(album.id, album.title))

@@ -11,6 +11,7 @@ import androidx.core.app.NotificationCompat
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
 import chromahub.rhythm.app.BuildConfig
+import chromahub.rhythm.app.core.ProductCapabilities
 import chromahub.rhythm.app.activities.MainActivity
 import chromahub.rhythm.app.R
 import chromahub.rhythm.app.shared.data.model.AppSettings
@@ -107,11 +108,15 @@ class UpdateNotificationWorker(
     }
     
     private val appSettings = AppSettings.getInstance(applicationContext)
-    private val gitHubApiService = NetworkManager.createGitHubApiService()
+    private val gitHubApiService by lazy { NetworkManager.createGitHubApiService() }
     private val prefs = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
     private var lastCheckErrorMessage: String? = null
     
     override suspend fun doWork(): Result = withContext(Dispatchers.IO) {
+        if (!ProductCapabilities.inAppUpdates) {
+            Log.d(TAG, "Catalog-only build: update checks are disabled")
+            return@withContext Result.success()
+        }
         return@withContext try {
             Log.d(TAG, "Starting update check via webhook worker...")
             

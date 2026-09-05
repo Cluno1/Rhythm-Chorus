@@ -89,6 +89,7 @@ import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import chromahub.rhythm.app.BuildConfig
+import chromahub.rhythm.app.core.ProductCapabilities
 import chromahub.rhythm.app.shared.data.model.Playlist
 import chromahub.rhythm.app.shared.data.model.Song
 import chromahub.rhythm.app.shared.data.repository.PlaybackStatsRepository
@@ -471,7 +472,9 @@ fun AboutScreen(
 
 
             item {
-                val actionItems = listOf(
+                val actionItems = buildList {
+                    if (ProductCapabilities.inAppUpdates) {
+                        add(
                     toMaterial3SettingsItem(
                         context = context,
                         hapticFeedback = haptics,
@@ -484,7 +487,9 @@ fun AboutScreen(
                                 onNavigateToUpdates?.invoke()
                             }
                         )
-                    ),
+                    ))
+                    }
+                    add(
                     toMaterial3SettingsItem(
                         context = context,
                         hapticFeedback = haptics,
@@ -494,7 +499,8 @@ fun AboutScreen(
                             description = "github.com/cromaguy/Rhythm/issues",
                             onClick = { openUrl("https://github.com/cromaguy/Rhythm/issues") }
                         )
-                    ),
+                    ))
+                    add(
                     toMaterial3SettingsItem(
                         context = context,
                         hapticFeedback = haptics,
@@ -504,7 +510,8 @@ fun AboutScreen(
                             description = context.getString(R.string.settings_about_view_dependencies),
                             onClick = { showLicensesSheet = true }
                         )
-                    ),
+                    ))
+                    add(
                     toMaterial3SettingsItem(
                         context = context,
                         hapticFeedback = haptics,
@@ -514,7 +521,8 @@ fun AboutScreen(
                             description = "discord.gg/XjPyUYPQYc",
                             onClick = { openUrl("https://discord.gg/XjPyUYPQYc") }
                         )
-                    ),
+                    ))
+                    add(
                     toMaterial3SettingsItem(
                         context = context,
                         hapticFeedback = haptics,
@@ -524,8 +532,8 @@ fun AboutScreen(
                             description = "t.me/RhythmSupport",
                             onClick = { openUrl("https://t.me/RhythmSupport") }
                         )
-                    )
-                )
+                    ))
+                }
 
                 Material3SettingsGroup(
                     title = context.getString(R.string.settings_about_actions),
@@ -577,7 +585,7 @@ fun DeveloperCard(
                 val cookieShape = rememberExpressiveShape("COOKIE_12")
                 AsyncImage(
                     model = ImageRequest.Builder(context)
-                        .data(avatarUrl)
+                        .data(avatarUrl.takeIf { ProductCapabilities.thirdPartyMusicServices })
                         .crossfade(true)
                         .build(),
                     contentDescription = name,
@@ -728,7 +736,7 @@ private fun createCommunityMemberItem(
             val fallbackPainter = painterResource(id = R.drawable.ic_music_note)
             AsyncImage(
                 model = ImageRequest.Builder(context)
-                    .data(avatarUrl)
+                    .data(avatarUrl.takeIf { ProductCapabilities.thirdPartyMusicServices })
                     .crossfade(true)
                     .build(),
                 contentDescription = null,

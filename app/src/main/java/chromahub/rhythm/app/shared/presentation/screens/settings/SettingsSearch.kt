@@ -63,6 +63,7 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import chromahub.rhythm.app.R
+import chromahub.rhythm.app.core.ProductCapabilities
 import chromahub.rhythm.app.shared.presentation.components.Material3SettingsGroup
 import chromahub.rhythm.app.shared.presentation.components.Material3SettingsItem
 import chromahub.rhythm.app.util.HapticUtils
@@ -2484,6 +2485,17 @@ fun buildSettingsSearchIndex(context: Context): List<SearchableSettingItem> {
             parentScreen = "Shapes",
             settingKey = "expressiveShapeMiniPlayer"
         ))
+    }.filterNot { item ->
+        ProductCapabilities.catalogOnly && (
+            item.route == SettingsRoutes.API_MANAGEMENT ||
+                item.route == SettingsRoutes.UPDATES ||
+                item.route == SettingsRoutes.GO_SETTINGS ||
+                item.id == "experimental_go_mode" ||
+                item.id == "notifications_updates" ||
+                item.id == "auto_fetch_artwork" ||
+                item.id == "artist_artwork_source" ||
+                item.id.startsWith("lyrics_api_")
+            )
     }
 }
 
@@ -2696,5 +2708,4 @@ fun SettingsSearchResults(
         }
     }
 }
-
 

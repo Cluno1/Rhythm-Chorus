@@ -3,6 +3,7 @@ package chromahub.rhythm.app.features.streaming.data.repository
 import android.content.Context
 import android.util.Log
 import chromahub.rhythm.app.core.domain.model.AlbumItem
+import chromahub.rhythm.app.core.ProductCapabilities
 import chromahub.rhythm.app.core.domain.model.ArtistItem
 import chromahub.rhythm.app.core.domain.model.PlayableItem
 import chromahub.rhythm.app.core.domain.model.PlaylistItem
@@ -52,8 +53,16 @@ class StreamingMusicRepositoryImpl(
 
     private val appSettings = AppSettings.getInstance(context)
 
-    private val subsonicClient = SubsonicApiClient(context)
-    private val jellyfinClient = JellyfinApiClient(context)
+    // Catalog-only builds still compile the legacy UI types, but must not read provider credentials
+    // or allocate provider HTTP clients merely because a shared ViewModel is constructed.
+    private val subsonicClient by lazy(LazyThreadSafetyMode.SYNCHRONIZED) {
+        check(ProductCapabilities.thirdPartyMusicServices) { "Subsonic is disabled in Catalog-only builds" }
+        SubsonicApiClient(context)
+    }
+    private val jellyfinClient by lazy(LazyThreadSafetyMode.SYNCHRONIZED) {
+        check(ProductCapabilities.thirdPartyMusicServices) { "Jellyfin is disabled in Catalog-only builds" }
+        JellyfinApiClient(context)
+    }
 
     private val songsFlow = MutableStateFlow<List<PlayableItem>>(emptyList())
     private val albumsFlow = MutableStateFlow<List<AlbumItem>>(emptyList())

@@ -115,6 +115,23 @@ object CatalogPlaybackPolicy {
     fun isSignedObjectStoreUrl(uri: String?): Boolean =
         runCatching { URI(uri) }.getOrNull()?.let(::isSignedObjectStoreUri) ?: false
 
+    /**
+     * Resolves artwork returned by the Catalog while keeping automatic image requests inside the
+     * product network boundary. Relative URLs are resolved only against the configured Catalog
+     * origin; cross-origin artwork is accepted only when it is a signed Tencent COS URL.
+     */
+    fun resolveAutomaticArtworkUrl(uri: String?, trustedServerUrl: String?): String? {
+        val raw = uri?.trim()?.takeIf { it.isNotEmpty() } ?: return null
+        val trustedRaw = trustedServerUrl?.trim()?.takeIf { it.isNotEmpty() } ?: return null
+        val trusted = runCatching { URI(trustedRaw.trimEnd('/') + "/") }.getOrNull() ?: return null
+        val resolved = runCatching { trusted.resolve(raw) }.getOrNull() ?: return null
+        if (resolved.userInfo != null || resolved.fragment != null) return null
+        if (resolved.scheme?.lowercase(Locale.ROOT) !in setOf("http", "https")) return null
+        return resolved.toString().takeIf {
+            sameOrigin(resolved, trusted) || isSignedObjectStoreUri(resolved)
+        }
+    }
+
     /** Explicit real-audio allowlist; a generic audio wildcard is insufficient because of MIDI. */
     fun isPlayableMediaType(mediaType: String?): Boolean =
         mediaType

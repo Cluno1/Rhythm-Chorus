@@ -65,6 +65,7 @@ import chromahub.rhythm.app.shared.presentation.viewmodel.AppUpdaterViewModel
 import chromahub.rhythm.app.shared.presentation.viewmodel.rememberAppUpdaterViewModel
 import chromahub.rhythm.app.features.streaming.presentation.viewmodel.StreamingMusicViewModel
 import chromahub.rhythm.app.features.catalog.domain.CatalogPlaybackPolicy
+import chromahub.rhythm.app.core.ProductCapabilities
 import kotlinx.coroutines.launch
 import androidx.compose.runtime.rememberCoroutineScope
 
@@ -352,7 +353,8 @@ fun PermissionHandler(
                 streamingViewModel = streamingViewModel,
                 onNextStep = {
                     when (currentOnboardingStep) {
-                        OnboardingStep.WELCOME -> currentOnboardingStep = OnboardingStep.APP_MODE_CHOICE
+                        OnboardingStep.WELCOME -> currentOnboardingStep =
+                            if (ProductCapabilities.catalogOnly) OnboardingStep.PERMISSIONS else OnboardingStep.APP_MODE_CHOICE
                         OnboardingStep.APP_MODE_CHOICE -> {
                             currentOnboardingStep = if (appSettings.appMode.value == "STREAMING") {
                                 OnboardingStep.STREAMING_SETUP
@@ -386,7 +388,7 @@ fun PermissionHandler(
                             }
                         }
                         OnboardingStep.RHYTHM_GUARD -> {
-                            currentOnboardingStep = if (appSettings.appMode.value == "STREAMING") {
+                            currentOnboardingStep = if (!ProductCapabilities.catalogOnly && appSettings.appMode.value == "STREAMING") {
                                 OnboardingStep.UPDATER
                             } else {
                                 OnboardingStep.MEDIA_SCAN
@@ -395,7 +397,11 @@ fun PermissionHandler(
                         OnboardingStep.MEDIA_SCAN -> {
                             musicViewModel.refreshLibrary(showMediaScanLoader = false)
                             onShowMediaScanLoaderChange(true)
-                            currentOnboardingStep = OnboardingStep.UPDATER
+                            currentOnboardingStep = if (ProductCapabilities.inAppUpdates) {
+                                OnboardingStep.UPDATER
+                            } else {
+                                OnboardingStep.FULL_TOUR_PROMPT
+                            }
                         }
                         OnboardingStep.UPDATER -> currentOnboardingStep = OnboardingStep.FULL_TOUR_PROMPT
                         OnboardingStep.FULL_TOUR_PROMPT -> {
@@ -412,7 +418,8 @@ fun PermissionHandler(
                         OnboardingStep.PLAYER_THEME_CHOICE -> currentOnboardingStep = OnboardingStep.GESTURES
                         OnboardingStep.GESTURES -> currentOnboardingStep = OnboardingStep.WIDGETS
                         OnboardingStep.LIBRARY_SETUP -> currentOnboardingStep = OnboardingStep.WIDGETS
-                        OnboardingStep.WIDGETS -> currentOnboardingStep = OnboardingStep.INTEGRATIONS // Move to integrations
+                        OnboardingStep.WIDGETS -> currentOnboardingStep =
+                            if (ProductCapabilities.thirdPartyMusicServices) OnboardingStep.INTEGRATIONS else OnboardingStep.RHYTHM_STATS
                         OnboardingStep.INTEGRATIONS -> currentOnboardingStep = OnboardingStep.RHYTHM_STATS // Move to rhythm stats
                         OnboardingStep.RHYTHM_STATS -> currentOnboardingStep = OnboardingStep.SETUP_FINISHED // Move to setup finished
                         OnboardingStep.SETUP_FINISHED -> {
@@ -424,7 +431,8 @@ fun PermissionHandler(
                 onPrevStep = {
                     when (currentOnboardingStep) {
                         OnboardingStep.APP_MODE_CHOICE -> currentOnboardingStep = OnboardingStep.WELCOME
-                        OnboardingStep.PERMISSIONS -> currentOnboardingStep = OnboardingStep.APP_MODE_CHOICE
+                        OnboardingStep.PERMISSIONS -> currentOnboardingStep =
+                            if (ProductCapabilities.catalogOnly) OnboardingStep.WELCOME else OnboardingStep.APP_MODE_CHOICE
                         OnboardingStep.STREAMING_SETUP -> currentOnboardingStep = OnboardingStep.APP_MODE_CHOICE
                         OnboardingStep.RHYTHM_GUARD -> {
                             if (appSettings.appMode.value == "STREAMING") {
@@ -445,7 +453,8 @@ fun PermissionHandler(
                                 OnboardingStep.MEDIA_SCAN
                             }
                         }
-                        OnboardingStep.FULL_TOUR_PROMPT -> currentOnboardingStep = OnboardingStep.UPDATER
+                        OnboardingStep.FULL_TOUR_PROMPT -> currentOnboardingStep =
+                            if (ProductCapabilities.inAppUpdates) OnboardingStep.UPDATER else OnboardingStep.MEDIA_SCAN
                         OnboardingStep.NOTIFICATIONS -> currentOnboardingStep = OnboardingStep.FULL_TOUR_PROMPT
                         OnboardingStep.BACKUP_RESTORE -> currentOnboardingStep = OnboardingStep.FULL_TOUR_PROMPT
                         OnboardingStep.AUDIO_PLAYBACK -> currentOnboardingStep = OnboardingStep.BACKUP_RESTORE
@@ -455,7 +464,8 @@ fun PermissionHandler(
                         OnboardingStep.LIBRARY_SETUP -> currentOnboardingStep = OnboardingStep.GESTURES
                         OnboardingStep.WIDGETS -> currentOnboardingStep = OnboardingStep.GESTURES
                         OnboardingStep.INTEGRATIONS -> currentOnboardingStep = OnboardingStep.WIDGETS
-                        OnboardingStep.RHYTHM_STATS -> currentOnboardingStep = OnboardingStep.INTEGRATIONS
+                        OnboardingStep.RHYTHM_STATS -> currentOnboardingStep =
+                            if (ProductCapabilities.thirdPartyMusicServices) OnboardingStep.INTEGRATIONS else OnboardingStep.WIDGETS
                         OnboardingStep.SETUP_FINISHED -> {
                             currentOnboardingStep = if (continueFullTour) {
                                 OnboardingStep.RHYTHM_STATS

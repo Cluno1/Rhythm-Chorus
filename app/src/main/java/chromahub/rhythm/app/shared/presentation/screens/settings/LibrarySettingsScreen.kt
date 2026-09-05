@@ -29,6 +29,7 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.ExperimentalFoundationApi
 import chromahub.rhythm.app.R
+import chromahub.rhythm.app.core.ProductCapabilities
 import chromahub.rhythm.app.shared.data.model.ArtistArtworkSource
 import chromahub.rhythm.app.shared.presentation.components.bottomsheets.ArtistArtworkSourceBottomSheet
 import androidx.compose.foundation.background
@@ -224,63 +225,77 @@ fun LibrarySettingsScreen(onBackClick: () -> Unit) {
             ),
             SettingGroup(
                 title = context.getString(R.string.settings_library_group_artwork),
-                items = listOf(
-                    SettingItem(
-                        RhythmIcons.Album,
-                        context.getString(R.string.settings_ignore_mediastore_covers),
-                        context.getString(R.string.settings_ignore_mediastore_covers_desc),
-                        toggleState = preferSongArtwork,
-                        onToggleChange = {
-                            if (it != preferSongArtwork) {
-                                appSettings.setPreferSongArtwork(it)
-                                restartRequiresArtworkRescan = true
-                                restartDialogMessage = context.getString(R.string.settings_song_artwork_restart_required)
-                                showRestartDialog = true
+                items = buildList {
+                    add(
+                        SettingItem(
+                            RhythmIcons.Album,
+                            context.getString(R.string.settings_ignore_mediastore_covers),
+                            context.getString(R.string.settings_ignore_mediastore_covers_desc),
+                            toggleState = preferSongArtwork,
+                            onToggleChange = {
+                                if (it != preferSongArtwork) {
+                                    appSettings.setPreferSongArtwork(it)
+                                    restartRequiresArtworkRescan = true
+                                    restartDialogMessage = context.getString(R.string.settings_song_artwork_restart_required)
+                                    showRestartDialog = true
+                                }
                             }
-                        }
-                    ),
-                    SettingItem(
-                        RhythmIcons.MusicNote,
-                        context.getString(R.string.settings_lossless_artwork),
-                        context.getString(R.string.settings_lossless_artwork_desc),
-                        toggleState = losslessArtwork,
-                        onToggleChange = {
-                            if (it != losslessArtwork) {
-                                appSettings.setLosslessArtwork(it)
-                                restartRequiresArtworkRescan = true
-                                restartDialogMessage = context.getString(R.string.settings_song_artwork_restart_required)
-                                showRestartDialog = true
-                            }
-                        }
-                    ),
-                    SettingItem(
-                        MaterialSymbolIcon("lens_blur"),
-                        context.getString(R.string.settings_album_bottom_sheet_gradient_blur),
-                        context.getString(R.string.settings_album_bottom_sheet_gradient_blur_desc),
-                        toggleState = albumBottomSheetGradientBlur,
-                        onToggleChange = { appSettings.setAlbumBottomSheetGradientBlur(it) }
-                    ),
-                    SettingItem(
-                        MaterialSymbolIcon("info"),
-                        context.getString(R.string.settings_album_hide_about),
-                        context.getString(R.string.settings_album_hide_about_desc),
-                        toggleState = albumHideAbout,
-                        onToggleChange = { appSettings.setAlbumHideAbout(it) }
-                    ),
-                    SettingItem(
-                        icon = MaterialSymbolIcon("cloud_download"),
-                        title = stringResource(R.string.librarysettingsscreen_autofetch_artwork),
-                        description = context.getString(R.string.library_auto_fetch_artwork_desc),
-                        toggleState = autoFetchArtwork,
-                        onToggleChange = { enabled -> appSettings.setAutoFetchArtwork(enabled) }
-                    ),
-                    SettingItem(
-                        icon = MaterialSymbolIcon("portrait"),
-                        title = stringResource(R.string.settings_artist_artwork_source),
-                        description = artistArtworkSourceSubtitle,
-                        onClick = { showArtistArtworkSourceBottomSheet = true }
+                        )
                     )
-                )
+                    add(
+                        SettingItem(
+                            RhythmIcons.MusicNote,
+                            context.getString(R.string.settings_lossless_artwork),
+                            context.getString(R.string.settings_lossless_artwork_desc),
+                            toggleState = losslessArtwork,
+                            onToggleChange = {
+                                if (it != losslessArtwork) {
+                                    appSettings.setLosslessArtwork(it)
+                                    restartRequiresArtworkRescan = true
+                                    restartDialogMessage = context.getString(R.string.settings_song_artwork_restart_required)
+                                    showRestartDialog = true
+                                }
+                            }
+                        )
+                    )
+                    add(
+                        SettingItem(
+                            MaterialSymbolIcon("lens_blur"),
+                            context.getString(R.string.settings_album_bottom_sheet_gradient_blur),
+                            context.getString(R.string.settings_album_bottom_sheet_gradient_blur_desc),
+                            toggleState = albumBottomSheetGradientBlur,
+                            onToggleChange = { appSettings.setAlbumBottomSheetGradientBlur(it) }
+                        )
+                    )
+                    add(
+                        SettingItem(
+                            MaterialSymbolIcon("info"),
+                            context.getString(R.string.settings_album_hide_about),
+                            context.getString(R.string.settings_album_hide_about_desc),
+                            toggleState = albumHideAbout,
+                            onToggleChange = { appSettings.setAlbumHideAbout(it) }
+                        )
+                    )
+                    if (ProductCapabilities.thirdPartyMusicServices) {
+                        add(
+                            SettingItem(
+                                icon = MaterialSymbolIcon("cloud_download"),
+                                title = context.getString(R.string.librarysettingsscreen_autofetch_artwork),
+                                description = context.getString(R.string.library_auto_fetch_artwork_desc),
+                                toggleState = autoFetchArtwork,
+                                onToggleChange = { enabled -> appSettings.setAutoFetchArtwork(enabled) }
+                            )
+                        )
+                        add(
+                            SettingItem(
+                                icon = MaterialSymbolIcon("portrait"),
+                                title = context.getString(R.string.settings_artist_artwork_source),
+                                description = artistArtworkSourceSubtitle,
+                                onClick = { showArtistArtworkSourceBottomSheet = true }
+                            )
+                        )
+                    }
+                }
             )
         )
 
