@@ -20,8 +20,8 @@ import io.github.cluno1.sonorus.core.ProductCapabilities
 import io.github.cluno1.sonorus.activities.MainActivity
 import io.github.cluno1.sonorus.R
 import io.github.cluno1.sonorus.shared.data.model.AppSettings
-import io.github.cluno1.sonorus.network.NetworkManager
-import io.github.cluno1.sonorus.util.VersionComparator
+import io.github.cluno1.sonorus.network.SonorusUpdateClient
+import io.github.cluno1.sonorus.network.SonorusUpdateFetchResult
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.util.concurrent.TimeUnit
@@ -30,8 +30,7 @@ import java.util.Locale
 import androidx.core.content.edit
 
 /**
- * Background worker that checks for app updates using smart polling techniques
- * to minimize GitHub API calls while still providing timely notifications.
+ * Background worker that checks the authenticated first-party update service.
  * 
  * ## How the "Webhook" System Works
  * 
@@ -39,9 +38,9 @@ import androidx.core.content.edit
  * this worker implements a smart polling system that behaves similarly by:
  * 
  * ### 1. HTTP Conditional Requests (ETag/Last-Modified)
- * - Stores the `ETag` and `Last-Modified` headers from previous GitHub API responses
+ * - Stores the `ETag` and `Last-Modified` headers from previous responses
  * - On subsequent checks, includes these in conditional request headers
- * - GitHub returns `304 Not Modified` if nothing changed (saves bandwidth and API calls)
+ * - The gateway returns `304 Not Modified` if nothing changed
  * - Only processes full response when actual changes are detected
  * 
  * ### 2. Exponential Backoff
@@ -58,22 +57,12 @@ import androidx.core.content.edit
  * - Only sends notifications when a genuinely newer version appears
  * - Prevents duplicate notifications for the same version
  * 
- * ### 4. Rate Limit Awareness
- * - Monitors GitHub's `X-RateLimit-Remaining` header
- * - Automatically backs off if approaching rate limits
- * - Handles `403 Forbidden` responses gracefully
- * 
  * ### Benefits Over Regular Polling
  * - **Reduced API Calls**: HTTP 304 responses don't count toward rate limits as heavily
  * - **Bandwidth Efficient**: No data transfer when nothing changed
  * - **Battery Friendly**: Exponential backoff reduces wake-ups when app is stable
  * - **Timely Notifications**: Still detects updates within hours of release
  * - **User Control**: Can be disabled via settings while maintaining manual check ability
- * 
- * ### GitHub API Rate Limits
- * - Unauthenticated: 60 requests/hour
- * - Authenticated: 5000 requests/hour
- * - This worker typically uses <10 requests/day with smart polling
  * 
  * @see io.github.cluno1.sonorus.shared.data.model.AppSettings.updateNotificationsEnabled
  * @see io.github.cluno1.sonorus.shared.data.model.AppSettings.useSmartUpdatePolling
@@ -114,7 +103,7 @@ class UpdateNotificationWorker(
     }
     
     private val appSettings = AppSettings.getInstance(applicationContext)
-    private val gitHubApiService by lazy { NetworkManager.createGitHubApiService() }
+    private val updateClient by lazy { SonorusUpdateClient(applicationContext) }
     private val prefs = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
     private var lastCheckErrorMessage: String? = null
     
@@ -144,10 +133,8 @@ class UpdateNotificationWorker(
                 return@withContext Result.success()
             }
             
-            val currentChannel = "stable"
-            
             // Perform smart polling check
-            when (checkForUpdateWithSmartPolling(currentChannel)) {
+            when (checkForUpdateWithSmartPolling()) {
                 UpdateCheckResult.UPDATE_AVAILABLE -> {
                     if (updateAvailabilityNotificationsEnabled) {
                         Log.d(TAG, "New update detected! Sending notification...")
@@ -193,37 +180,19 @@ class UpdateNotificationWorker(
     /**
      * Smart polling using HTTP conditional requests to minimize API calls.
      */
-    private suspend fun checkForUpdateWithSmartPolling(channel: String): UpdateCheckResult {
+    private suspend fun checkForUpdateWithSmartPolling(): UpdateCheckResult {
         lastCheckErrorMessage = null
 
         try {
             val lastETag = prefs.getString(KEY_LAST_ETAG, null)
             val lastModified = prefs.getString(KEY_LAST_MODIFIED, null)
-            val lastVersionTag = prefs.getString(KEY_LAST_VERSION_TAG, null)
             val consecutiveNotModified = prefs.getInt(KEY_CONSECUTIVE_NOT_MODIFIED, 0)
             
             Log.d(TAG, "Smart polling - Last ETag: $lastETag, Last Modified: $lastModified")
             Log.d(TAG, "Consecutive 304 responses: $consecutiveNotModified")
             
-            // Sonorus v1 intentionally follows the latest stable GitHub Release only.
-            val response = gitHubApiService.getLatestReleaseWithHeaders(
-                owner = BuildConfig.GITHUB_OWNER,
-                repo = BuildConfig.GITHUB_REPO,
-                ifNoneMatch = lastETag,
-                ifModifiedSince = lastModified
-            )
-            
-            val responseCode = response.code()
-            val newETag = response.headers()["ETag"]
-            val newLastModified = response.headers()["Last-Modified"]
-            val rateLimit = response.headers()["X-RateLimit-Remaining"]
-            val rateLimitReset = response.headers()["X-RateLimit-Reset"]
-            
-            Log.d(TAG, "Response code: $responseCode")
-            Log.d(TAG, "Rate limit remaining: $rateLimit, resets at: $rateLimitReset")
-            
-            when (responseCode) {
-                304 -> {
+            when (val result = updateClient.latest(lastETag, lastModified)) {
+                SonorusUpdateFetchResult.NotModified -> {
                     Log.d(TAG, "304 Not Modified - no changes detected")
                     prefs.edit {
                         putInt(KEY_CONSECUTIVE_NOT_MODIFIED, consecutiveNotModified + 1)
@@ -232,50 +201,19 @@ class UpdateNotificationWorker(
                     return UpdateCheckResult.UP_TO_DATE
                 }
                 
-                200 -> {
-                    if (response.isSuccessful && response.body() != null) {
-                        val bestRelease = response.body() as? io.github.cluno1.sonorus.network.GitHubRelease
-                        
-                        if (bestRelease != null) {
-                            val newVersionTag = bestRelease.tag_name
-                            val isNewer = VersionComparator.isNewer(
-                                candidate = newVersionTag,
-                                current = BuildConfig.VERSION_NAME,
-                                isCandidatePreRelease = bestRelease.prerelease,
-                                isCurrentPreRelease = BuildConfig.IS_NIGHTLY || BuildConfig.VERSION_NAME.contains("Beta", ignoreCase = true),
-                            )
-                            
-                            Log.d(TAG, "Latest version tag: $newVersionTag, Last known: $lastVersionTag, Is newer: $isNewer")
-                            
-                            prefs.edit {
-                                putString(KEY_LAST_ETAG, newETag)
-                                putString(KEY_LAST_MODIFIED, newLastModified)
-                                putString(KEY_LAST_VERSION_TAG, newVersionTag)
-                                putLong(KEY_LAST_CHECK_TIME, System.currentTimeMillis())
-                                putInt(KEY_CONSECUTIVE_NOT_MODIFIED, 0)
-                            }
-                            
-                            return if (isNewer) UpdateCheckResult.UPDATE_AVAILABLE else UpdateCheckResult.UP_TO_DATE
-                        }
-
-                        lastCheckErrorMessage = "GitHub returned an empty release payload"
-                        return UpdateCheckResult.ERROR
+                is SonorusUpdateFetchResult.Available -> {
+                    val update = result.update
+                    val isNewer = update.manifest.versionCode > BuildConfig.VERSION_CODE &&
+                        update.manifest.minimumAndroidSdk <= Build.VERSION.SDK_INT
+                    Log.d(TAG, "Latest ${BuildConfig.UPDATE_CHANNEL} version: ${update.manifest.versionCode}, newer=$isNewer")
+                    prefs.edit {
+                        putString(KEY_LAST_ETAG, update.etag)
+                        putString(KEY_LAST_MODIFIED, update.lastModified)
+                        putString(KEY_LAST_VERSION_TAG, update.manifest.versionName)
+                        putLong(KEY_LAST_CHECK_TIME, System.currentTimeMillis())
+                        putInt(KEY_CONSECUTIVE_NOT_MODIFIED, 0)
                     }
-
-                    lastCheckErrorMessage = "GitHub returned an unsuccessful response"
-                    return UpdateCheckResult.ERROR
-                }
-                
-                403 -> {
-                    Log.w(TAG, "GitHub API rate limit exceeded. Next reset: $rateLimitReset")
-                    lastCheckErrorMessage = "GitHub rate limit reached. Try again later."
-                    return UpdateCheckResult.ERROR
-                }
-                
-                else -> {
-                    Log.w(TAG, "Unexpected response code: $responseCode")
-                    lastCheckErrorMessage = "Update check failed with HTTP $responseCode"
-                    return UpdateCheckResult.ERROR
+                    return if (isNewer) UpdateCheckResult.UPDATE_AVAILABLE else UpdateCheckResult.UP_TO_DATE
                 }
             }
         } catch (e: Exception) {

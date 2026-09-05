@@ -32,8 +32,14 @@ class CatalogDeviceCanonicalTest {
     @Test
     fun enrollmentCanonicalMatchesBackendContractExactly() {
         assertEquals(
-            "RHYTHM-ENROLL-V1\nnonce\ninvite\nthumbprint",
-            CatalogDeviceCanonical.enrollment("nonce", "invite", "thumbprint").decodeToString(),
+            "RHYTHM-ENROLL-V2\nnonce\ninvite\nthumbprint\nio.github.cluno1.sonorus.debug\nabcdef",
+            CatalogDeviceCanonical.enrollment(
+                "nonce",
+                "invite",
+                "thumbprint",
+                "io.github.cluno1.sonorus.debug",
+                "ABCDEF",
+            ).decodeToString(),
         )
     }
 }

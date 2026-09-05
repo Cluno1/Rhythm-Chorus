@@ -5966,7 +5966,6 @@ fun EnhancedUpdaterContent(
     val context = LocalContext.current
     val autoCheckForUpdates by appSettings.autoCheckForUpdates.collectAsState()
     val updateNotificationsEnabled by appSettings.updateNotificationsEnabled.collectAsState()
-    val updateChannel by appSettings.updateChannel.collectAsState()
     val updateCheckIntervalHours by appSettings.updateCheckIntervalHours.collectAsState()
     val updatesEnabled by appSettings.updatesEnabled.collectAsState()
     val scope = rememberCoroutineScope()
@@ -6223,34 +6222,14 @@ fun EnhancedUpdaterContent(
                         Material3SettingsGroup(
                             items = listOf(
                                 Material3SettingsItem(
-                                    icon = when (updateChannel) {
-                                        "stable" -> RhythmIcons.Public
-                                        "beta" -> RhythmIcons.BugReport
-                                        else -> RhythmIcons.Public
-                                    },
+                                    icon = RhythmIcons.Public,
                                     title = { Text(context.getString(R.string.onboarding_update_channel_title)) },
                                     description = {
-                                        Column(modifier = Modifier.fillMaxWidth().padding(top = 8.dp)) {
-                                            Text(
-                                                text = context.getString(R.string.onboarding_update_channel_desc),
-                                                style = MaterialTheme.typography.bodyMedium,
-                                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                                            )
-                                            Spacer(modifier = Modifier.height(12.dp))
-                                            ExpressiveButtonGroup(
-                                                items = listOf(
-                                                    context.getString(R.string.option_stable),
-                                                    context.getString(R.string.option_beta)
-                                                ),
-                                                selectedIndex = if (updateChannel == "beta") 1 else 0,
-                                                onItemClick = { index ->
-                                                    HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT)
-                                                    scope.launch { appSettings.setUpdateChannel(if (index == 0) "stable" else "beta") }
-                                                },
-                                                modifier = Modifier.fillMaxWidth()
-                                            )
-                                        }
-                                    }
+                                        Text(
+                                            text = "${context.getString(R.string.onboarding_update_channel_desc)} (${io.github.cluno1.sonorus.BuildConfig.UPDATE_CHANNEL})",
+                                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                        )
+                                    },
                                 ),
                                 Material3SettingsItem(
                                     icon = MaterialSymbolIcon("autorenew", filled = true),
@@ -6475,34 +6454,14 @@ fun EnhancedUpdaterContent(
                         Material3SettingsGroup(
                             items = listOf(
                                 Material3SettingsItem(
-                                    icon = when (updateChannel) {
-                                        "stable" -> RhythmIcons.Public
-                                        "beta" -> RhythmIcons.BugReport
-                                        else -> RhythmIcons.Public
-                                    },
+                                    icon = RhythmIcons.Public,
                                     title = { Text(context.getString(R.string.onboarding_update_channel_title)) },
                                     description = {
-                                        Column(modifier = Modifier.fillMaxWidth().padding(top = 8.dp)) {
-                                            Text(
-                                                text = context.getString(R.string.onboarding_update_channel_desc),
-                                                style = MaterialTheme.typography.bodyMedium,
-                                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                                            )
-                                            Spacer(modifier = Modifier.height(12.dp))
-                                            ExpressiveButtonGroup(
-                                                items = listOf(
-                                                    context.getString(R.string.option_stable),
-                                                    context.getString(R.string.option_beta)
-                                                ),
-                                                selectedIndex = if (updateChannel == "beta") 1 else 0,
-                                                onItemClick = { index ->
-                                                    HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT)
-                                                    scope.launch { appSettings.setUpdateChannel(if (index == 0) "stable" else "beta") }
-                                                },
-                                                modifier = Modifier.fillMaxWidth()
-                                            )
-                                        }
-                                    }
+                                        Text(
+                                            text = "${context.getString(R.string.onboarding_update_channel_desc)} (${io.github.cluno1.sonorus.BuildConfig.UPDATE_CHANNEL})",
+                                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                        )
+                                    },
                                 ),
                                 Material3SettingsItem(
                                     icon = MaterialSymbolIcon("autorenew", filled = true),

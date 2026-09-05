@@ -29,13 +29,9 @@ import io.github.cluno1.sonorus.BuildConfig
 import io.github.cluno1.sonorus.core.ProductCapabilities
 import io.github.cluno1.sonorus.R
 import io.github.cluno1.sonorus.activities.MainActivity
-import io.github.cluno1.sonorus.network.GitHubAsset
-import io.github.cluno1.sonorus.network.GitHubRelease
-import io.github.cluno1.sonorus.network.GitHubWorkflowRun
-import io.github.cluno1.sonorus.network.NetworkManager
+import io.github.cluno1.sonorus.network.SonorusUpdateClient
+import io.github.cluno1.sonorus.network.SonorusUpdateFetchResult
 import io.github.cluno1.sonorus.shared.data.model.AppSettings
-import io.github.cluno1.sonorus.util.ChangelogFilter
-import io.github.cluno1.sonorus.util.VersionComparator
 import com.google.gson.Gson
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -49,7 +45,6 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.withContext
 import okhttp3.Call
 import okhttp3.Callback
-import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.Response
 import java.io.File
@@ -57,7 +52,6 @@ import java.io.FileInputStream
 import java.io.FileOutputStream
 import java.io.IOException
 import java.security.MessageDigest
-import java.text.SimpleDateFormat
 import java.util.Locale
 import java.util.concurrent.TimeUnit
 
@@ -76,11 +70,8 @@ data class AppVersion(
     val releaseNotes: String = "",
     val isPreRelease: Boolean = false,
     val buildNumber: Int = 0,
-)
-
-data class ReleaseContent(
-    val whatsNew: List<String>,
-    val knownIssues: List<String>,
+    val apkSha256: String = "",
+    val minimumAndroidSdk: Int = 1,
 )
 
 /**
@@ -116,15 +107,10 @@ class AppUpdaterViewModel(
     private val updateDownloadNotificationId = 1401
     private val updateDownloadCompletionAutoDismissMs = 7000L
 
-    // GitHub repository information
-    private val githubOwner = BuildConfig.GITHUB_OWNER
-    private val githubRepo = BuildConfig.GITHUB_REPO
-
     // Update check interval (6 hours)
     private val updateCheckInterval = TimeUnit.HOURS.toMillis(6)
 
-    // API service
-    private val gitHubApiService by lazy { NetworkManager.createGitHubApiService() }
+    private val updateClient by lazy { SonorusUpdateClient(application.applicationContext) }
 
     // Last update check timestamp
     private var lastUpdateCheck = 0L
@@ -150,10 +136,6 @@ class AppUpdaterViewModel(
 
     // Maximum retry attempts for downloads
     private val maxRetryAttempts = 2
-
-    // Update channel (stable or beta)
-    private val _updateChannel = MutableStateFlow("stable")
-    val updateChannel: StateFlow<String> = _updateChannel.asStateFlow()
 
     // Current app version info
     private val _currentVersion =
@@ -267,9 +249,9 @@ class AppUpdaterViewModel(
                 if (file.exists() && file.length() > 0) {
                     // Verify file integrity if checksum available
                     val isValid =
-                        activeDownload?.checksum?.let { checksum ->
+                        activeDownload?.checksum?.takeIf { it.isNotBlank() }?.let { checksum ->
                             verifyFileChecksum(file, checksum)
-                        } ?: true
+                        } ?: false
 
                     if (isValid) {
                         _downloadedFile.value = file
@@ -299,11 +281,12 @@ class AppUpdaterViewModel(
      */
     private fun validateDownloadState(state: DownloadState?): Boolean {
         if (state == null) return false
-        return state.fileName.isNotBlank() &&
+        return state.fileName.matches(Regex("^[A-Za-z0-9._-]+\\.apk$")) &&
             state.url.isNotBlank() &&
-            state.totalBytes >= 0 &&
+            state.totalBytes > 0 &&
             state.downloadedBytes >= 0 &&
             state.downloadedBytes <= state.totalBytes &&
+            state.checksum?.matches(Regex("^[0-9a-fA-F]{64}$")) == true &&
             state.retryCount >= 0 &&
             state.retryCount < maxRetryAttempts
     }
@@ -343,16 +326,12 @@ class AppUpdaterViewModel(
         _downloadState.value = null
     }
 
-    /**
-     * Check for updates by fetching the latest release from GitHub
-     */
+    /** Check the device-authenticated first-party update service. */
     fun checkForUpdates(force: Boolean = false) {
         if (!ProductCapabilities.inAppUpdates) return
         viewModelScope.launch {
             val updatesEnabled = _appSettings.updatesEnabled.first()
             val autoCheckEnabled = _appSettings.autoCheckForUpdates.first()
-            val currentChannel = "stable"
-
             // Master check: if updates are completely disabled, don't check at all
             if (!updatesEnabled) {
                 Log.d(tag, "Skipping update check - updates are completely disabled.")
@@ -378,33 +357,33 @@ class AppUpdaterViewModel(
             _latestVersion.value = null // Clear any previous version data
 
             try {
-                val candidate: AppVersion
-                val releasesResponse = gitHubApiService.getReleases(githubOwner, githubRepo)
-                if (releasesResponse.isSuccessful) {
-                    val allReleases = releasesResponse.body()
-                    if (allReleases.isNullOrEmpty()) {
-                        _error.value = "No releases found on GitHub"
-                        _isCheckingForUpdates.value = false
-                        return@launch
+                when (val result = updateClient.latest()) {
+                    SonorusUpdateFetchResult.NotModified -> Unit
+                    is SonorusUpdateFetchResult.Available -> {
+                        val update = result.update
+                        val manifest = update.manifest
+                        processCandidate(
+                            AppVersion(
+                                versionName = manifest.versionName,
+                                versionCode = manifest.versionCode,
+                                releaseDate = manifest.publishedAt.substringBefore('T'),
+                                whatsNew = manifest.releaseNotes,
+                                knownIssues = emptyList(),
+                                downloadUrl = update.downloadUrl,
+                                apkAssetName = update.asset.fileName,
+                                apkSize = update.asset.sizeBytes,
+                                releaseNotes = manifest.releaseNotes.joinToString("\n"),
+                                isPreRelease = manifest.channel == "debug",
+                                buildNumber = manifest.versionCode,
+                                apkSha256 = update.asset.sha256,
+                                minimumAndroidSdk = manifest.minimumAndroidSdk,
+                            ),
+                        )
                     }
-
-                    val latestSuitableRelease = findLatestSuitableRelease(allReleases, currentChannel)
-                    if (latestSuitableRelease == null) {
-                        _error.value = "No stable release found"
-                        _isCheckingForUpdates.value = false
-                        return@launch
-                    }
-
-                    candidate = convertReleaseToAppVersion(latestSuitableRelease)
-                } else {
-                    handleApiError(releasesResponse.code(), releasesResponse.message())
-                    return@launch
                 }
-
-                processCandidate(candidate)
             } catch (e: Exception) {
                 Log.e(tag, "Error checking for updates", e)
-                _error.value = "Network error: ${e.message ?: "Unknown error"}"
+                _error.value = "Update check failed: ${e.message ?: "Unknown error"}"
             } finally {
                 _isCheckingForUpdates.value = false
                 lastUpdateCheck = System.currentTimeMillis()
@@ -414,13 +393,9 @@ class AppUpdaterViewModel(
 
     private fun processCandidate(candidate: AppVersion) {
         _latestVersion.value = candidate
-        val isNewer = VersionComparator.isNewer(
-            candidate = candidate.versionName,
-            current = _currentVersion.value.versionName,
-            isCandidatePreRelease = candidate.isPreRelease,
-            isCurrentPreRelease = _currentVersion.value.isPreRelease,
-        )
-        val hasVersionCodeDowngrade = candidate.versionCode > 0 && candidate.versionCode < BuildConfig.VERSION_CODE
+        val isNewer = candidate.versionCode > BuildConfig.VERSION_CODE &&
+            candidate.minimumAndroidSdk <= Build.VERSION.SDK_INT
+        val hasVersionCodeDowngrade = candidate.versionCode <= BuildConfig.VERSION_CODE
         _isVersionCodeDowngrade.value = hasVersionCodeDowngrade
 
         Log.d(
@@ -456,243 +431,6 @@ class AppUpdaterViewModel(
         return parts.getOrNull(3)?.filter { it.isDigit() }?.toIntOrNull() ?: 0
     }
 
-    private fun calculateVersionCode(versionString: String): Int {
-        val cleaned = versionString.trim().removePrefix("v").removePrefix("V")
-        val versionBase = cleaned.split(" ")[0].split("-")[0].split("_")[0]
-        val versionParts = versionBase.split(".")
-        val codeString =
-            buildString {
-                append(versionParts.getOrNull(0)?.filter { it.isDigit() }?.takeIf { it.isNotEmpty() } ?: "0")
-                append(versionParts.getOrNull(1)?.filter { it.isDigit() }?.takeIf { it.isNotEmpty() } ?: "0")
-                append(versionParts.getOrNull(2)?.filter { it.isDigit() }?.takeIf { it.isNotEmpty() } ?: "0")
-                val buildPart = versionParts.getOrNull(3)?.filter { it.isDigit() }
-                if (!buildPart.isNullOrEmpty()) {
-                    append(buildPart)
-                } else {
-                    append(extractBuildNumber(cleaned, versionParts).toString())
-                }
-            }
-
-        return codeString.toIntOrNull() ?: 0
-    }
-
-    /**
-     * Handle API errors with specific messages based on status code
-     */
-    private fun handleApiError(
-        code: Int,
-        message: String,
-    ) {
-        _error.value =
-            when (code) {
-                403 -> "GitHub API rate limit exceeded. Please try again later."
-                404 -> "No releases found on GitHub."
-                500, 502, 503, 504 -> "GitHub server error. Please try again later."
-                else -> "GitHub API error: $code - $message"
-            }
-        _isCheckingForUpdates.value = false
-    }
-
-    /**
-     * Find the latest suitable release based on the update channel.
-     * "stable" channel: latest non-prerelease, non-draft release
-     * "beta" channel: latest release (including pre-releases) that is not a draft
-     * Ranks candidates using VersionComparator (Higher Version Number >> Stable > Beta).
-     */
-    private fun findLatestSuitableRelease(
-        releases: List<GitHubRelease>,
-        channel: String,
-    ): GitHubRelease? {
-        val filteredReleases =
-            when (channel) {
-                "stable" -> releases.filter { !it.draft && !it.prerelease }
-                "beta" -> releases.filter { !it.draft } // Include all non-draft releases (stable + pre-release)
-                else -> {
-                    Log.w(tag, "Unknown channel: $channel, defaulting to stable")
-                    releases.filter { !it.draft && !it.prerelease }
-                }
-            }
-
-        return filteredReleases.maxWithOrNull { r1, r2 ->
-            val v1 = r1.tag_name
-            val v2 = r2.tag_name
-            VersionComparator.compare(v1, v2, isPreRelease1 = r1.prerelease, isPreRelease2 = r2.prerelease)
-        }
-    }
-
-    /**
-     * Convert a GitHub release to an AppVersion object
-     */
-    private fun convertReleaseToAppVersion(release: GitHubRelease): AppVersion {
-        val semanticVersion = VersionComparator.parse(release.tag_name, isPreRelease = release.prerelease)
-
-        // Format the release date
-        val releaseDateString =
-            try {
-                val inputFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.US)
-                val outputFormat = SimpleDateFormat("yyyy-MM-dd", Locale.US)
-                val date = inputFormat.parse(release.published_at)
-                outputFormat.format(date!!)
-            } catch (e: Exception) {
-                "Unknown date"
-            }
-
-        // Parse changelog from release body
-        val releaseContent = parseReleaseBody(release.body)
-        Log.d(tag, "Parsed whatsNew: ${releaseContent.whatsNew}")
-        Log.d(tag, "Parsed knownIssues: ${releaseContent.knownIssues}")
-
-        val apkAsset = selectReleaseApkAsset(release)
-        val downloadUrl = apkAsset?.browser_download_url ?: release.html_url
-        val apkSize = apkAsset?.size ?: 0
-        // The release title is presentation text (for example, "Sonorus 1.1.0").
-        // GitHub's tag is the canonical machine-readable version identifier.
-        val versionName = release.tag_name
-
-        return AppVersion(
-            versionName = versionName,
-            versionCode = calculateVersionCode(versionName),
-            releaseDate = releaseDateString,
-            whatsNew = releaseContent.whatsNew,
-            knownIssues = releaseContent.knownIssues,
-            downloadUrl = downloadUrl,
-            apkAssetName = apkAsset?.name ?: "",
-            apkSize = apkSize,
-            releaseNotes = release.body,
-            isPreRelease = release.prerelease,
-            buildNumber = semanticVersion.buildNumber,
-        )
-    }
-
-    private fun extractNightlyRunNumber(versionString: String): Int {
-        val regex = Regex("nightly-r(\\d+)", RegexOption.IGNORE_CASE)
-        return regex
-            .find(versionString)
-            ?.groupValues
-            ?.get(1)
-            ?.toIntOrNull() ?: 0
-    }
-
-    private fun convertWorkflowRunToAppVersion(
-        run: GitHubWorkflowRun,
-        apkSize: Long = 0,
-    ): AppVersion {
-        val releaseDateString =
-            try {
-                val inputFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.US)
-                val outputFormat = SimpleDateFormat("yyyy-MM-dd", Locale.US)
-                val date = inputFormat.parse(run.updated_at)
-                outputFormat.format(date!!)
-            } catch (e: Exception) {
-                "Unknown date"
-            }
-
-        val shortSha = run.head_sha.take(7)
-        val cleanedBaseName =
-            BuildConfig.VERSION_NAME
-                .replace(" Beta", "")
-                .replace(Regex("-nightly-r\\d+-[0-9a-f]+", RegexOption.IGNORE_CASE), "")
-        val versionName = "$cleanedBaseName-nightly-r${run.run_number}-$shortSha"
-
-        val downloadUrl = "https://nightly.link/${BuildConfig.GITHUB_OWNER}/${BuildConfig.GITHUB_REPO}/workflows/nightly.yml/main/Sonorus-Nightly-Artifacts.zip"
-
-        val commitMessage = run.head_commit?.message ?: "New features and performance updates"
-        val changelogItems = ChangelogFilter.filterLines(commitMessage.lines())
-
-        return AppVersion(
-            versionName = versionName,
-            versionCode = run.run_number,
-            releaseDate = releaseDateString,
-            whatsNew = changelogItems,
-            knownIssues = emptyList(),
-            downloadUrl = downloadUrl,
-            apkAssetName = "Sonorus-Nightly-Artifacts.zip",
-            apkSize = apkSize,
-            releaseNotes = commitMessage,
-            isPreRelease = true,
-            buildNumber = run.run_number,
-        )
-    }
-
-    /**
-     * Parses the release body string to extract "What's New" and "Known Issues" sections.
-     * Assumes a Markdown-like format with specific headings.
-     */
-    private enum class ParsingState {
-        NONE,
-        WHATS_NEW,
-        KNOWN_ISSUES,
-    }
-
-    private fun parseReleaseBody(body: String?): ReleaseContent {
-        if (body.isNullOrBlank()) {
-            return ReleaseContent(emptyList(), emptyList())
-        }
-
-        val whatsNew = mutableListOf<String>()
-        val knownIssues = mutableListOf<String>()
-
-        var currentState = ParsingState.NONE
-
-        body.lines().forEach { line ->
-            val trimmedLine = line.trim()
-
-            when {
-                trimmedLine.startsWith("**What's New:**") -> {
-                    currentState = ParsingState.WHATS_NEW
-                }
-                trimmedLine.startsWith("**Known Issues") -> { // Matches "Known Issues (Will be fixed on a later build):"
-                    currentState = ParsingState.KNOWN_ISSUES
-                }
-                trimmedLine.startsWith("**Build Information:**") -> {
-                    currentState = ParsingState.NONE // Stop parsing for these sections
-                }
-                // If we are in a section and encounter another heading, stop parsing the current section
-                (trimmedLine.startsWith("#") || trimmedLine.startsWith("##")) &&
-                    currentState != ParsingState.NONE -> {
-                    currentState = ParsingState.NONE
-                }
-                else -> {
-                    // Add line to current section if we are in one
-                    when (currentState) {
-                        ParsingState.WHATS_NEW -> {
-                            // Defense-in-depth: the release body is generated by the
-                            // junk-filtered release-notes script, but drop any stray
-                            // low-value entry that slips through.
-                            if (ChangelogFilter.isJunkReleaseBullet(trimmedLine)) {
-                                return@forEach
-                            }
-                            val htmlLine =
-                                trimmedLine
-                                    .replace(Regex("^[*-]\\s*"), "") // Remove list prefixes
-                                    .replace(Regex("\\*\\*(.*?)\\*\\*"), "<b>$1</b>") // Bold
-                                    .replace(Regex("_(.*?)_"), "<i>$1</i>") // Italic
-                                    .replace(Regex("\\[(.*?)\\]\\((.*?)\\)"), "<a href=\"$2\">$1</a>") // Links
-                            if (htmlLine.isNotBlank()) {
-                                whatsNew.add(htmlLine)
-                            }
-                        }
-                        ParsingState.KNOWN_ISSUES -> {
-                            val htmlLine =
-                                trimmedLine
-                                    .replace(Regex("^[*-]\\s*"), "") // Remove list prefixes
-                                    .replace(Regex("\\*\\*(.*?)\\*\\*"), "<b>$1</b>") // Bold
-                                    .replace(Regex("_(.*?)_"), "<i>$1</i>") // Italic
-                                    .replace(Regex("\\[(.*?)\\]\\((.*?)\\)"), "<a href=\"$2\">$1</a>") // Links
-                            if (htmlLine.isNotBlank()) {
-                                knownIssues.add(htmlLine)
-                            }
-                        }
-                        ParsingState.NONE -> {
-                            // Do nothing if not in a specific section
-                        }
-                    }
-                }
-            }
-        }
-        return ReleaseContent(whatsNew, knownIssues)
-    }
-
     /**
      * Clear any error message
      */
@@ -721,7 +459,7 @@ class AppUpdaterViewModel(
                             "Bug fixes and optimizations",
                         ),
                     knownIssues = emptyList(),
-                    downloadUrl = BuildConfig.RELEASES_URL,
+                    downloadUrl = "",
                     apkAssetName = "Sonorus-release.apk",
                     apkSize = 0,
                     releaseNotes = "Test update",
@@ -777,9 +515,8 @@ class AppUpdaterViewModel(
             // Clear any previous errors
             _error.value = null
 
-            // If it's not an APK file, open in browser
-            if (latestVersion.apkAssetName.isNullOrEmpty()) {
-                openInBrowser(downloadUrl)
+            if (latestVersion.apkAssetName.isEmpty()) {
+                _error.value = "The signed update manifest contains no compatible APK."
                 return@launch
             }
 
@@ -790,32 +527,28 @@ class AppUpdaterViewModel(
             }
 
             // Start or resume download
-            downloadApkInApp(downloadUrl, latestVersion.apkAssetName, expectedSize = latestVersion.apkSize)
-        }
-    }
-
-    /**
-     * Open a URL in the browser
-     */
-    private fun openInBrowser(url: String) {
-        try {
-            val browserIntent = Intent(Intent.ACTION_VIEW, url.toUri())
-            browserIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-            getApplication<Application>().startActivity(browserIntent)
-        } catch (e: Exception) {
-            Log.e(tag, "Error opening download URL", e)
-            _error.value = "Could not open download link: ${e.message ?: "Unknown error"}"
+            if (latestVersion.minimumAndroidSdk > Build.VERSION.SDK_INT) {
+                _error.value = "This update requires Android API ${latestVersion.minimumAndroidSdk} or newer."
+                return@launch
+            }
+            downloadApkInApp(
+                downloadUrl,
+                latestVersion.apkAssetName,
+                expectedSize = latestVersion.apkSize,
+                expectedChecksum = latestVersion.apkSha256,
+            )
         }
     }
 
     /**
      * Download an APK file in-app with progress tracking and resume support
-     * @param expectedSize The expected file size from GitHub API (0 if unknown)
+     * @param expectedSize The signed manifest's exact APK size.
      */
     private fun downloadApkInApp(
         downloadUrl: String,
         fileName: String,
         expectedSize: Long = 0,
+        expectedChecksum: String = "",
         retryAttempt: Int = 0,
     ) {
         // Use mutex to prevent concurrent downloads
@@ -826,7 +559,7 @@ class AppUpdaterViewModel(
             }
 
             try {
-                downloadApkInAppInternal(downloadUrl, fileName, expectedSize, retryAttempt)
+                downloadApkInAppInternal(downloadUrl, fileName, expectedSize, expectedChecksum, retryAttempt)
             } finally {
                 downloadMutex.unlock()
             }
@@ -835,16 +568,25 @@ class AppUpdaterViewModel(
 
     /**
      * Internal download implementation with mutex protection
-     * @param expectedSize The expected file size from GitHub API (0 if unknown)
+     * @param expectedSize The signed manifest's exact APK size.
      */
     private fun downloadApkInAppInternal(
         downloadUrl: String,
         fileName: String,
         expectedSize: Long = 0,
+        expectedChecksum: String = "",
         retryAttempt: Int = 0,
     ) {
         if (_isDownloading.value) {
             return // Already downloading
+        }
+        if (
+            expectedSize <= 0L ||
+            !expectedChecksum.matches(Regex("^[0-9a-fA-F]{64}$")) ||
+            !fileName.matches(Regex("^[A-Za-z0-9._-]+\\.apk$"))
+        ) {
+            _error.value = "The signed update manifest does not contain valid APK integrity metadata."
+            return
         }
 
         // Cancel any stale notification from a previous session
@@ -944,15 +686,6 @@ class AppUpdaterViewModel(
                     file.delete()
                 }
 
-                // Create OkHttp client with longer timeouts
-                val client =
-                    OkHttpClient
-                        .Builder()
-                        .connectTimeout(30, TimeUnit.SECONDS)
-                        .readTimeout(30, TimeUnit.SECONDS)
-                        .writeTimeout(30, TimeUnit.SECONDS)
-                        .build()
-
                 // Create request with resume support
                 val requestBuilder =
                     Request
@@ -964,14 +697,13 @@ class AppUpdaterViewModel(
                 if (existingLength > 0 && activeDownload != null) {
                     Log.d(tag, "Resuming download from byte $existingLength")
                     requestBuilder.header("Range", "bytes=$existingLength-")
-                    activeDownload?.etag?.let { requestBuilder.header("If-Match", it) }
-                    activeDownload?.lastModified?.let { requestBuilder.header("If-Unmodified-Since", it) }
+                    requestBuilder.header("If-Match", "\"${expectedChecksum.lowercase(Locale.ROOT)}\"")
                 }
 
                 val request = requestBuilder.build()
 
                 // Execute request
-                activeCall = client.newCall(request)
+                activeCall = updateClient.newDownloadCall(request)
                 activeCall?.enqueue(
                     object : Callback {
                         override fun onFailure(
@@ -993,6 +725,7 @@ class AppUpdaterViewModel(
                             // Handle HTTP 412 Precondition Failed - file changed on server
                             if (response.code == 412) {
                                 Log.w(tag, "Server file changed (HTTP 412), restarting download")
+                                response.close()
                                 viewModelScope.launch {
                                     _isDownloading.value = false
                                     activeDownload = null
@@ -1005,6 +738,7 @@ class AppUpdaterViewModel(
                             }
 
                             if (!response.isSuccessful && response.code != 206) {
+                                response.close()
                                 viewModelScope.launch {
                                     handleDownloadFailure(
                                         downloadUrl,
@@ -1027,6 +761,20 @@ class AppUpdaterViewModel(
                                         contentLength
                                     }
 
+                                if (totalLength > 0L && totalLength != expectedSize) {
+                                    response.close()
+                                    file.delete()
+                                    viewModelScope.launch {
+                                        handleDownloadFailure(
+                                            downloadUrl,
+                                            fileName,
+                                            retryAttempt,
+                                            "Server APK size does not match signed manifest",
+                                        )
+                                    }
+                                    return
+                                }
+
                                 var resumePosition = existingLength
                                 if (resumePosition > 0 && response.code != 206) {
                                     Log.w(tag, "Server ignored range request with HTTP ${response.code}; restarting download from scratch")
@@ -1035,17 +783,16 @@ class AppUpdaterViewModel(
                                 }
 
                                 // Store download state
-                                val checksumHeader = response.header("X-Checksum-SHA256") ?: response.header("Digest")
                                 activeDownload =
                                     DownloadState(
                                         fileName = fileName,
                                         url = downloadUrl,
-                                        totalBytes = totalLength,
+                                        totalBytes = expectedSize,
                                         downloadedBytes = resumePosition,
-                                        etag = response.header("ETag"),
+                                        etag = "\"${expectedChecksum.lowercase(Locale.ROOT)}\"",
                                         lastModified = response.header("Last-Modified"),
                                         resumePosition = resumePosition,
-                                        checksum = checksumHeader,
+                                        checksum = expectedChecksum,
                                         retryCount = retryAttempt,
                                     )
                                 viewModelScope.launch {
@@ -1074,14 +821,7 @@ class AppUpdaterViewModel(
                                     totalBytesRead += bytesRead
 
                                     // Update progress
-                                    val totalBytes =
-                                        if (totalLength > 0) {
-                                            totalLength
-                                        } else if (response.code == 206 && resumePosition > 0) {
-                                            resumePosition + contentLength.coerceAtLeast(0)
-                                        } else {
-                                            contentLength
-                                        }
+                                    val totalBytes = expectedSize
                                     if (totalBytes > 0) {
                                         val progress = (totalBytesRead.toFloat() / totalBytes.toFloat()) * 100f
                                         viewModelScope.launch {
@@ -1110,36 +850,26 @@ class AppUpdaterViewModel(
 
                                 // Verify file integrity
                                 val fileSize = file.length()
-                                // Prefer HTTP headers (Content-Range/Content-Length) which reflect the actual file
-                                // being downloaded. Fall back to GitHub API's expectedSize only if HTTP headers
-                                // are unavailable (e.g. chunked transfer with no Content-Length).
-                                val httpExpectedSize = if (totalLength > 0) totalLength else contentLength
-                                val finalExpectedSize = if (httpExpectedSize > 0) httpExpectedSize else expectedSize
-
-                                if (finalExpectedSize == 0L) {
-                                    Log.w(
-                                        tag,
-                                        "No reference size available (HTTP Content-Length unavailable and GitHub API returned 0) — skipping size verification for $fileName ($fileSize bytes)",
-                                    )
-                                } else if (fileSize != finalExpectedSize) {
-                                    Log.w(
-                                        tag,
-                                        "File size mismatch (expected: $finalExpectedSize [HTTP: $httpExpectedSize, GitHub: $expectedSize], actual: $fileSize) — proceeding anyway; checksum will verify integrity",
-                                    )
+                                if (fileSize != expectedSize) {
+                                    viewModelScope.launch {
+                                        file.delete()
+                                        handleDownloadFailure(downloadUrl, fileName, retryAttempt, "Downloaded APK size does not match signed manifest")
+                                    }
+                                    return
                                 } else {
-                                    Log.d(tag, "File size verification passed: $fileSize bytes (expected: $finalExpectedSize)")
+                                    Log.d(tag, "File size verification passed: $fileSize bytes (expected: $expectedSize)")
                                 }
 
                                 // Verify checksum if available
                                 val checksumValid =
-                                    activeDownload?.checksum?.let { expectedChecksum ->
+                                    activeDownload?.checksum?.takeIf { it.isNotBlank() }?.let { expectedChecksum ->
                                         val actualChecksum = calculateFileChecksum(file)
                                         val isValid = verifyChecksum(actualChecksum, expectedChecksum)
                                         if (!isValid) {
                                             Log.e(tag, "Checksum verification failed. Expected: $expectedChecksum, Actual: $actualChecksum")
                                         }
                                         isValid
-                                    } ?: true
+                                    } ?: false
 
                                 if (!checksumValid) {
                                     viewModelScope.launch {
@@ -1152,34 +882,7 @@ class AppUpdaterViewModel(
                                 // Download complete and verified
                                 viewModelScope.launch(Dispatchers.IO) {
                                     if (_isDownloading.value) {
-                                        val isZip = fileName.endsWith(".zip", ignoreCase = true)
-                                        if (isZip) {
-                                            _isExtracting.value = true
-                                        }
-                                        val finalFile =
-                                            if (isZip) {
-                                                val apkFile = File(file.parentFile, fileName.replace(".zip", ".apk", ignoreCase = true))
-                                                if (extractApkFromZip(file, apkFile)) {
-                                                    file.delete() // delete the zip file
-                                                    _isExtracting.value = false
-                                                    apkFile
-                                                } else {
-                                                    _isExtracting.value = false
-                                                    _isDownloading.value = false
-                                                    _downloadProgress.value = 0f
-                                                    activeDownload = null
-                                                    _downloadState.value = null
-                                                    clearDownloadState()
-                                                    cancelDownloadNotification()
-                                                    withContext(Dispatchers.Main) {
-                                                        _error.value =
-                                                            "Failed to extract APK from ZIP. The ZIP file is still saved — you can extract it manually or try downloading again."
-                                                    }
-                                                    return@launch
-                                                }
-                                            } else {
-                                                file
-                                            }
+                                        val finalFile = file
 
                                         _isDownloading.value = false
                                         _downloadProgress.value = 100f
@@ -1221,79 +924,6 @@ class AppUpdaterViewModel(
                 cancelDownloadNotification()
             }
         }
-    }
-
-    /**
-     * Handle download failures with retry logic
-     */
-    private fun handleSizeMismatch(
-        downloadUrl: String,
-        fileName: String,
-        retryAttempt: Int,
-        file: File,
-        expectedSize: Long,
-        actualSize: Long,
-        isHttpSizeAbsent: Boolean = false,
-    ) {
-        Log.w(
-            tag,
-            "File size mismatch (expected: $expectedSize, actual: $actualSize, httpSizeAbsent: $isHttpSizeAbsent) — proceeding with download anyway",
-        )
-
-        _isDownloading.value = false
-        activeCall = null
-        activeDownload = null
-        _downloadState.value = null
-        clearDownloadState()
-        cancelDownloadNotification()
-
-        viewModelScope.launch(Dispatchers.IO) {
-            finishDownload(file, fileName)
-        }
-    }
-
-    private fun finishDownload(
-        file: File,
-        fileName: String,
-    ) {
-        val isZip = fileName.endsWith(".zip", ignoreCase = true)
-        if (isZip) {
-            _isExtracting.value = true
-        }
-        val finalFile =
-            if (isZip) {
-                val apkFile = File(file.parentFile, fileName.replace(".zip", ".apk", ignoreCase = true))
-                if (extractApkFromZip(file, apkFile)) {
-                    file.delete()
-                    _isExtracting.value = false
-                    apkFile
-                } else {
-                    _isExtracting.value = false
-                    _isDownloading.value = false
-                    _downloadProgress.value = 0f
-                    clearDownloadState()
-                    cancelDownloadNotification()
-                    _error.value = "Failed to extract APK from ZIP. Opening GitHub releases instead."
-                    openInBrowser("https://github.com/$githubOwner/$githubRepo/releases")
-                    return
-                }
-            } else {
-                file
-            }
-
-        _isDownloading.value = false
-        _downloadProgress.value = 100f
-        _downloadedFile.value = finalFile
-        showDownloadCompletedNotification(finalFile.name)
-
-        val finalChecksum = calculateFileChecksum(finalFile)
-        activeDownload = null
-        activeCall = null
-        _downloadState.value = null
-        Log.d(
-            tag,
-            "Download complete (proceeded despite size mismatch): ${finalFile.absolutePath} (${finalFile.length()} bytes, checksum: $finalChecksum)",
-        )
     }
 
     private fun handleDownloadFailure(
@@ -1343,17 +973,18 @@ class AppUpdaterViewModel(
                 if (!_isDownloading.value) {
                     Log.d(tag, "Retrying download (attempt $nextRetryAttempt)")
                     val expectedSize = _latestVersion.value?.apkSize ?: 0
-                    downloadApkInApp(downloadUrl, fileName, expectedSize, nextRetryAttempt)
+                    val expectedChecksum = _latestVersion.value?.apkSha256
+                        ?: activeDownload?.checksum.orEmpty()
+                    downloadApkInApp(downloadUrl, fileName, expectedSize, expectedChecksum, nextRetryAttempt)
                 }
             }
         } else {
             Log.e(tag, "Download failed after $maxRetryAttempts attempts: $errorMessage")
-            _error.value = "Download failed. Opening GitHub releases in browser..."
+            _error.value = "Download failed after $maxRetryAttempts attempts."
             activeDownload = null
             _downloadState.value = null
             clearDownloadState()
             cancelDownloadNotification()
-            openInBrowser("https://github.com/$githubOwner/$githubRepo/releases")
         }
     }
 
@@ -1363,81 +994,10 @@ class AppUpdaterViewModel(
             _error.value = "No mismatched download is available to proceed with."
             return
         }
-
-        val file = File(pending.filePath)
-        if (!file.exists() || file.length() == 0L) {
-            cleanupUpdaterDownloadAfterFailure("Downloaded update file is missing or empty.", file)
-            return
-        }
-
-        _error.value = null
-        _isDownloading.value = true
-        _downloadProgress.value = 100f
-        _canProceedWithMismatchedDownload.value = false
-
-        // Track proceed attempts to avoid infinite loops on persistent extraction failures
-        val maxProceedAttempts = 3
-        val proceedAttempt = activeDownload?.retryCount?.coerceAtMost(maxProceedAttempts) ?: 0
-
-        viewModelScope.launch(Dispatchers.IO) {
-            try {
-                val finalFile =
-                    if (pending.fileName.endsWith(".zip", ignoreCase = true)) {
-                        _isExtracting.value = true
-                        val apkFile = File(file.parentFile, pending.fileName.replace(".zip", ".apk", ignoreCase = true))
-                        if (extractApkFromZip(file, apkFile)) {
-                            file.delete()
-                            _isExtracting.value = false
-                            apkFile
-                        } else {
-                            _isExtracting.value = false
-                            _isDownloading.value = false
-                            if (proceedAttempt >= maxProceedAttempts) {
-                                _error.value =
-                                    "Could not extract an APK from the downloaded ZIP after $maxProceedAttempts attempts. The ZIP file has been kept at: ${file.absolutePath}. Reset to download again."
-                                pendingMismatchedDownload = null
-                                clearDownloadState()
-                                cancelDownloadNotification()
-                            } else {
-                                activeDownload = activeDownload?.copy(retryCount = proceedAttempt + 1)
-                                _canProceedWithMismatchedDownload.value = true
-                                _error.value =
-                                    "Could not extract an APK from the downloaded ZIP. The ZIP file is still saved — you can try again or reset."
-                            }
-                            return@launch
-                        }
-                    } else {
-                        file
-                    }
-
-                _isDownloading.value = false
-                _downloadProgress.value = 100f
-                _downloadedFile.value = finalFile
-                pendingMismatchedDownload = null
-                activeDownload = null
-                activeCall = null
-                _downloadState.value = null
-                _canProceedWithMismatchedDownload.value = false
-                saveDownloadState()
-                showDownloadCompletedNotification(finalFile.name)
-                Log.w(tag, "Proceeding with size-mismatched download: ${finalFile.absolutePath} (${finalFile.length()} bytes)")
-            } catch (e: Exception) {
-                Log.e(tag, "Proceeding with mismatched download failed", e)
-                _isDownloading.value = false
-                if (proceedAttempt >= maxProceedAttempts) {
-                    _error.value =
-                        "Could not use the downloaded update after $maxProceedAttempts attempts. The file has been kept at: ${file.absolutePath}. Reset to download again."
-                    pendingMismatchedDownload = null
-                    clearDownloadState()
-                    cancelDownloadNotification()
-                } else {
-                    activeDownload = activeDownload?.copy(retryCount = proceedAttempt + 1)
-                    _canProceedWithMismatchedDownload.value = true
-                    _error.value =
-                        "Could not use the downloaded update: ${e.message ?: "Unknown error"}. The file is still saved — you can try again or reset."
-                }
-            }
-        }
+        cleanupUpdaterDownloadAfterFailure(
+            "Size-mismatched APKs cannot bypass signed update verification.",
+            File(pending.filePath),
+        )
     }
 
     private fun cleanupUpdaterDownloadAfterFailure(
@@ -1503,7 +1063,7 @@ class AppUpdaterViewModel(
         file: File,
         expectedChecksum: String,
     ): Boolean {
-        if (expectedChecksum.isBlank()) return true
+        if (expectedChecksum.isBlank()) return false
         val actualChecksum = calculateFileChecksum(file)
         return verifyChecksum(actualChecksum, expectedChecksum)
     }
@@ -1515,7 +1075,7 @@ class AppUpdaterViewModel(
         actual: String,
         expected: String,
     ): Boolean {
-        if (actual.isBlank() || expected.isBlank()) return true
+        if (actual.isBlank() || expected.isBlank()) return false
 
         // Handle different checksum formats (sha-256=xxx, sha256:xxx, etc.)
         val cleanExpected =
@@ -1529,73 +1089,6 @@ class AppUpdaterViewModel(
                 .trim()
 
         return actual.lowercase() == cleanExpected
-    }
-
-    /**
-     * Select the APK asset for the currently installed flavor.
-     * Prefers the flavor-specific universal APK, then any flavor-matching APK.
-     */
-    private fun extractApkFromZip(
-        zipFile: File,
-        targetApkFile: File,
-    ): Boolean =
-        try {
-            val flavor = resolveUpdateSourceFlavor().lowercase(Locale.ROOT)
-            var extracted = false
-            java.util.zip.ZipInputStream(FileInputStream(zipFile)).use { zis ->
-                var entry = zis.nextEntry
-                while (entry != null) {
-                    if (!entry.isDirectory && entry.name.endsWith(".apk", ignoreCase = true)) {
-                        val lowerName = entry.name.lowercase(Locale.ROOT)
-                        val matchFlavor =
-                            when (flavor) {
-                                "fdroid" -> lowerName.contains("fdroidrelease") || lowerName.contains("-fdroid-")
-                                "github" -> lowerName.contains("githubrelease") || lowerName.contains("-github-")
-                                else -> true
-                            }
-                        if (matchFlavor && (isUniversalApkName(entry.name) || !hasAbiSuffix(entry.name))) {
-                            FileOutputStream(targetApkFile).use { fos ->
-                                zis.copyTo(fos)
-                            }
-                            extracted = true
-                            break
-                        }
-                    }
-                    entry = zis.nextEntry
-                }
-            }
-            extracted
-        } catch (e: Exception) {
-            Log.e(tag, "Error extracting ZIP file", e)
-            false
-        }
-
-    private fun selectReleaseApkAsset(release: GitHubRelease): GitHubAsset? {
-        val flavor = resolveUpdateSourceFlavor().lowercase(Locale.ROOT)
-        val selected = SonorusReleaseAssetSelector.select(
-            assets = release.assets,
-            flavor = flavor,
-            supportedAbis = Build.SUPPORTED_ABIS.toList(),
-        )
-        if (selected == null) {
-            Log.w(tag, "No APK asset matched current flavor '$flavor' for release ${release.tag_name}")
-        }
-        return selected
-    }
-
-    private fun resolveUpdateSourceFlavor(): String =
-        when (_appSettings.updateSource.value.lowercase(Locale.ROOT)) {
-            "installed" -> BuildConfig.FLAVOR
-            "github" -> "github"
-            "fdroid" -> "fdroid"
-            else -> BuildConfig.FLAVOR
-        }
-
-    private fun isUniversalApkName(name: String): Boolean = name.contains("universal", ignoreCase = true) || !hasAbiSuffix(name)
-
-    private fun hasAbiSuffix(name: String): Boolean {
-        val lowerName = name.lowercase(Locale.ROOT)
-        return listOf("arm64-v8a", "armeabi-v7a", "x86_64", "x86").any { lowerName.contains(it) }
     }
 
     /**
@@ -1690,6 +1183,15 @@ class AppUpdaterViewModel(
             ?: return "Downloaded file is not a valid Android package."
         if (archiveInfo.packageName != BuildConfig.APPLICATION_ID) {
             return "Downloaded update belongs to a different app (${archiveInfo.packageName})."
+        }
+
+        val archiveVersionCode = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+            archiveInfo.longVersionCode
+        } else {
+            archiveInfo.versionCode.toLong()
+        }
+        if (archiveVersionCode <= BuildConfig.VERSION_CODE.toLong()) {
+            return "Downloaded update is not newer than the installed Sonorus version."
         }
 
         val installedInfo = packageManager.getPackageInfo(context.packageName, flags)
@@ -1794,7 +1296,13 @@ class AppUpdaterViewModel(
             "Resuming download: ${downloadState.fileName} from ${downloadState.downloadedBytes} bytes (retry: ${downloadState.retryCount})",
         )
 
-        downloadApkInApp(downloadState.url, downloadState.fileName, downloadState.totalBytes, downloadState.retryCount)
+        downloadApkInApp(
+            downloadState.url,
+            downloadState.fileName,
+            downloadState.totalBytes,
+            downloadState.checksum.orEmpty(),
+            downloadState.retryCount,
+        )
     }
 
     /**

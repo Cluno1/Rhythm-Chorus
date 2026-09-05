@@ -1,0 +1,134 @@
+name: Sonorus Debug Update
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: sonorus-debug-update
+  cancel-in-progress: false
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    environment: sonorus-debug
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-java@v5
+        with:
+          distribution: zulu
+          java-version: '17'
+          cache: gradle
+
+      - uses: android-actions/setup-android@v4
+
+      - name: Allocate monotonically increasing Debug version
+        id: version
+        shell: bash
+        run: |
+          echo "code=$((100000000 + GITHUB_RUN_NUMBER))" >> "$GITHUB_OUTPUT"
+          echo "name=1.0.0-dev.${GITHUB_RUN_NUMBER}" >> "$GITHUB_OUTPUT"
+
+      - name: Prepare fixed Debug identities
+        env:
+          KEYSTORE_B64: ${{ secrets.SONORUS_DEBUG_SIGNING_KEYSTORE }}
+          STORE_PASSWORD: ${{ secrets.SONORUS_DEBUG_STORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.SONORUS_DEBUG_KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.SONORUS_DEBUG_KEY_PASSWORD }}
+          MANIFEST_PRIVATE_KEY: ${{ secrets.SONORUS_DEBUG_MANIFEST_PRIVATE_KEY }}
+          MANIFEST_PUBLIC_KEY: ${{ vars.SONORUS_DEBUG_MANIFEST_PUBLIC_KEY }}
+          EXPECTED_CERT_SHA256: ${{ vars.SONORUS_DEBUG_CERT_SHA256 }}
+        shell: bash
+        run: |
+          test -n "$KEYSTORE_B64" && test -n "$STORE_PASSWORD" && test -n "$KEY_ALIAS" && test -n "$KEY_PASSWORD"
+          test -n "$MANIFEST_PRIVATE_KEY" && test -n "$MANIFEST_PUBLIC_KEY" && test -n "$EXPECTED_CERT_SHA256"
+          mkdir -p config/signing .config
+          printf '%s' "$KEYSTORE_B64" | base64 --decode > config/signing/sonorus-debug.jks
+          {
+            echo 'store_file=config/signing/sonorus-debug.jks'
+            echo "store_password=$STORE_PASSWORD"
+            echo "key_alias=$KEY_ALIAS"
+            echo "key_password=$KEY_PASSWORD"
+          } > .config/debug-keystore.properties
+          printf '%s' "$MANIFEST_PRIVATE_KEY" > .config/sonorus-debug-manifest.pem
+          chmod 600 .config/sonorus-debug-manifest.pem
+
+      - name: Build fixed-signer Debug APK
+        run: >-
+          ./gradlew testGithubDebugUnitTest lintGithubDebug assembleGithubDebug
+          -PversionNameOverride=${{ steps.version.outputs.name }}
+          -PversionCodeOverride=${{ steps.version.outputs.code }}
+          -PreleaseDateOverride=$(date -u +%F)
+          -PsonorusDebugManifestPublicKey=${{ vars.SONORUS_DEBUG_MANIFEST_PUBLIC_KEY }}
+          --stacktrace
+
+      - name: Build and verify signed Debug manifest
+        env:
+          EXPECTED_CERT_SHA256: ${{ vars.SONORUS_DEBUG_CERT_SHA256 }}
+        shell: bash
+        run: |
+          APKSIGNER="$(find "$ANDROID_HOME/build-tools" -type f -name apksigner | sort -V | tail -1)"
+          AAPT="$(find "$ANDROID_HOME/build-tools" -type f -name aapt | sort -V | tail -1)"
+          APK="$(find app/build/outputs/apk/github/debug -maxdepth 1 -type f -name 'Sonorus-*-githubDebug-arm64-v8a.apk' -print -quit)"
+          test -x "$APKSIGNER" && test -x "$AAPT" && test -n "$APK"
+          scripts/build_update_manifest.py \
+            --channel debug \
+            --apk "$APK" \
+            --abi arm64-v8a \
+            --manifest-key .config/sonorus-debug-manifest.pem \
+            --expected-certificate-sha256 "$EXPECTED_CERT_SHA256" \
+            --published-at "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+            --release-note "Automated Debug build $GITHUB_SHA" \
+            --output-root build/sonorus-updates \
+            --aapt "$AAPT" \
+            --apksigner "$APKSIGNER"
+
+      - uses: actions/upload-artifact@v6
+        with:
+          name: Sonorus-debug-${{ github.run_number }}
+          path: build/sonorus-updates/debug
+
+      - name: Connect the WireGuard management channel
+        env:
+          WIREGUARD_CONFIG: ${{ secrets.SONORUS_UPDATE_WIREGUARD_CONFIG }}
+        shell: bash
+        run: |
+          test -n "$WIREGUARD_CONFIG"
+          sudo apt-get update
+          sudo apt-get install -y wireguard-tools
+          printf '%s\n' "$WIREGUARD_CONFIG" | sudo tee /etc/wireguard/sonorus-update.conf >/dev/null
+          sudo chmod 600 /etc/wireguard/sonorus-update.conf
+          sudo wg-quick up sonorus-update
+
+      - name: Publish through the management channel
+        env:
+          DEPLOY_KEY: ${{ secrets.SONORUS_UPDATE_SSH_KEY }}
+          KNOWN_HOSTS: ${{ secrets.SONORUS_UPDATE_KNOWN_HOSTS }}
+          SSH_TARGET: ${{ vars.SONORUS_UPDATE_SSH_TARGET }}
+          REMOTE_ROOT: ${{ vars.SONORUS_UPDATE_REMOTE_ROOT }}
+        shell: bash
+        run: |
+          test -n "$DEPLOY_KEY" && test -n "$KNOWN_HOSTS" && test -n "$SSH_TARGET"
+          mkdir -p ~/.ssh
+          printf '%s' "$DEPLOY_KEY" > ~/.ssh/sonorus_update
+          printf '%s\n' "$KNOWN_HOSTS" > ~/.ssh/known_hosts
+          chmod 600 ~/.ssh/sonorus_update
+          printf 'Host *\n  IdentityFile ~/.ssh/sonorus_update\n  StrictHostKeyChecking yes\n' > ~/.ssh/config
+          scripts/publish_update_bundle.py \
+            --channel debug \
+            --bundle-root build/sonorus-updates \
+            --ssh-target "$SSH_TARGET" \
+            --remote-root "${REMOTE_ROOT:-/srv/sonorus-updates}" \
+            --expected-certificate-sha256 "${{ vars.SONORUS_DEBUG_CERT_SHA256 }}"
+
+      - name: Disconnect the WireGuard management channel
+        if: always()
+        run: sudo wg-quick down sonorus-update || true

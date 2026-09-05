@@ -180,8 +180,6 @@ fun UpdatesSettingsScreen(onBackClick: () -> Unit) {
     // Collect state from ViewModel and AppSettings
     val updatesEnabled by appSettings.updatesEnabled.collectAsState()
     val autoCheckForUpdates by appSettings.autoCheckForUpdates.collectAsState()
-    val updateChannel by appSettings.updateChannel.collectAsState()
-    val updateSource by appSettings.updateSource.collectAsState()
     val updateCheckIntervalHours by appSettings.updateCheckIntervalHours.collectAsState()
     val currentVersion by updaterViewModel.currentVersion.collectAsState()
     val latestVersion by updaterViewModel.latestVersion.collectAsState()
@@ -218,7 +216,7 @@ fun UpdatesSettingsScreen(onBackClick: () -> Unit) {
             knownIssues = listOf(
                 "Simulated sandbox mode overrides actual remote check updates."
             ),
-            downloadUrl = BuildConfig.RELEASES_URL,
+            downloadUrl = "",
             apkAssetName = "Sonorus-v3.2.0-beta.apk",
             apkSize = 18454937, // ~17.6 MB
             releaseNotes = "Simulated update notes",
@@ -244,8 +242,6 @@ fun UpdatesSettingsScreen(onBackClick: () -> Unit) {
     val activeKnownIssues = activeLatestVersion?.knownIssues ?: emptyList()
 
     // Dialog states
-    var showChannelDialog by remember { mutableStateOf(false) }
-    var showSourceDialog by remember { mutableStateOf(false) }
     var showIntervalDialog by remember { mutableStateOf(false) }
     var showFdroidWarningDialog by remember { mutableStateOf(false) }
     var showDowngradeWarningDialog by remember { mutableStateOf(false) }
@@ -887,21 +883,6 @@ fun UpdatesSettingsScreen(onBackClick: () -> Unit) {
                     modifier = Modifier
                         .fillMaxWidth()
                         .clip(RoundedCornerShape(12.dp))
-                        .clickable {
-                            HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
-                            val tag = currentVersion.versionName
-                            val releaseUrl = if (tag.startsWith("v", ignoreCase = true)) {
-                                "${BuildConfig.RELEASES_URL}/tag/$displayVersionName"
-                            } else {
-                                "${BuildConfig.RELEASES_URL}/tag/v$displayVersionName"
-                            }
-                            try {
-                                val intent = Intent(Intent.ACTION_VIEW, (releaseUrl).toUri())
-                                context.startActivity(intent)
-                            } catch (e: Exception) {
-                                Toast.makeText(context, R.string.updatessettingsscreen_unable_to_open_release, Toast.LENGTH_SHORT).show()
-                            }
-                        }
                         .padding(vertical = 8.dp, horizontal = 16.dp),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
@@ -1124,95 +1105,6 @@ fun UpdatesSettingsScreen(onBackClick: () -> Unit) {
         }
     }
 
-    // Update Channel Dialog
-    if (showChannelDialog) {
-        AlertDialog(
-            onDismissRequest = { showChannelDialog = false },
-            icon = {
-                Icon(
-                    imageVector = RhythmIcons.Category,
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.size(24.dp)
-                )
-            },
-            title = { Text(context.getString(R.string.updates_channel_title)) },
-            text = {
-                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Text(
-                        text = context.getString(R.string.updates_channel_desc),
-                        style = MaterialTheme.typography.bodyMedium
-                    )
-                    Spacer(modifier = Modifier.height(8.dp))
-
-                    val channels = listOf(
-                        "stable" to context.getString(R.string.updates_channel_stable_desc),
-                        "beta" to context.getString(R.string.updates_channel_beta_desc),
-                        "nightly" to context.getString(R.string.updates_channel_nightly_desc)
-                    )
-
-                    channels.forEach { (channel, description) ->
-                        Card(
-                            onClick = {
-                                HapticUtils.performHapticFeedback(context, haptics, HapticType.LIGHT)
-                                appSettings.setUpdateChannel(channel)
-                                showChannelDialog = false
-                            },
-                            colors = CardDefaults.cardColors(
-                                containerColor = if (updateChannel == channel)
-                                    MaterialTheme.colorScheme.primaryContainer
-                                else
-                                    MaterialTheme.colorScheme.surfaceVariant
-                            ),
-                            shape = RoundedCornerShape(12.dp),
-                            modifier = Modifier.fillMaxWidth()
-                        ) {
-                            Row(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(16.dp),
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Column(modifier = Modifier.weight(1f)) {
-                                    Text(
-                                        text = channel.replaceFirstChar { if (it.isLowerCase()) it.titlecase() else it.toString() },
-                                        style = MaterialTheme.typography.titleMedium,
-                                        fontWeight = FontWeight.SemiBold
-                                    )
-                                    Text(
-                                        text = description,
-                                        style = MaterialTheme.typography.bodySmall,
-                                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                                    )
-                                }
-                                if (updateChannel == channel) {
-                                    Icon(
-                                        imageVector = RhythmIcons.CheckCircle,
-                                        contentDescription = stringResource(R.string.streaming_selected),
-                                        tint = MaterialTheme.colorScheme.primary,
-                                        modifier = Modifier.size(28.dp)
-                                    )
-                                }
-                            }
-                        }
-                    }
-                }
-            },
-            confirmButton = {
-                OutlinedButton(onClick = { showChannelDialog = false }) {
-                    Icon(
-                        imageVector = RhythmIcons.Close,
-                        contentDescription = null,
-                        modifier = Modifier.size(18.dp)
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text(context.getString(R.string.ui_close))
-                }
-            },
-            shape = RoundedCornerShape(24.dp)
-        )
-    }
-
     // Update Check Interval Dialog
     if (showIntervalDialog) {
         AlertDialog(
@@ -1277,97 +1169,6 @@ fun UpdatesSettingsScreen(onBackClick: () -> Unit) {
             },
             confirmButton = {
                 OutlinedButton(onClick = { showIntervalDialog = false }) {
-                    Icon(
-                        imageVector = RhythmIcons.Close,
-                        contentDescription = null,
-                        modifier = Modifier.size(18.dp)
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text(context.getString(R.string.ui_close))
-                }
-            },
-            shape = RoundedCornerShape(24.dp)
-        )
-    }
-
-    if (showSourceDialog) {
-        AlertDialog(
-            onDismissRequest = { showSourceDialog = false },
-            icon = {
-                Icon(
-                    imageVector = RhythmIcons.Category,
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.size(24.dp)
-                )
-            },
-            title = { Text(context.getString(R.string.updates_source_title)) },
-            text = {
-                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Text(
-                        text = context.getString(R.string.updates_source_desc),
-                        style = MaterialTheme.typography.bodyMedium
-                    )
-                    Spacer(modifier = Modifier.height(8.dp))
-
-                    val sources = listOf(
-                        "installed" to getUpdateSourceLabel(context, "installed"),
-                        "github" to context.getString(R.string.updates_source_github_desc),
-                        "fdroid" to context.getString(R.string.updates_source_fdroid_desc)
-                    )
-
-                    sources.forEach { (source, description) ->
-                        Card(
-                            onClick = {
-                                HapticUtils.performHapticFeedback(context, haptics, HapticType.LIGHT)
-                                appSettings.setUpdateSource(source)
-                                showSourceDialog = false
-                            },
-                            colors = CardDefaults.cardColors(
-                                containerColor = if (updateSource == source)
-                                    MaterialTheme.colorScheme.primaryContainer
-                                else
-                                    MaterialTheme.colorScheme.surfaceVariant
-                            ),
-                            shape = RoundedCornerShape(12.dp),
-                            modifier = Modifier.fillMaxWidth()
-                        ) {
-                            Row(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(16.dp),
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Column(modifier = Modifier.weight(1f)) {
-                                    Text(
-                                        text = when (source) {
-                                            "installed" -> context.getString(R.string.updates_source_installed)
-                                            else -> source.replaceFirstChar { if (it.isLowerCase()) it.titlecase() else it.toString() }
-                                        },
-                                        style = MaterialTheme.typography.titleMedium,
-                                        fontWeight = FontWeight.SemiBold
-                                    )
-                                    Text(
-                                        text = description,
-                                        style = MaterialTheme.typography.bodySmall,
-                                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                                    )
-                                }
-                                if (updateSource == source) {
-                                    Icon(
-                                        imageVector = RhythmIcons.CheckCircle,
-                                        contentDescription = stringResource(R.string.streaming_selected),
-                                        tint = MaterialTheme.colorScheme.primary,
-                                        modifier = Modifier.size(28.dp)
-                                    )
-                                }
-                            }
-                        }
-                    }
-                }
-            },
-            confirmButton = {
-                OutlinedButton(onClick = { showSourceDialog = false }) {
                     Icon(
                         imageVector = RhythmIcons.Close,
                         contentDescription = null,

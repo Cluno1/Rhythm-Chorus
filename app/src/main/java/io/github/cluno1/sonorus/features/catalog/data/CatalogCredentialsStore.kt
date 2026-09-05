@@ -1,12 +1,16 @@
 package io.github.cluno1.sonorus.features.catalog.data
 
 import android.content.Context
+import android.content.pm.PackageInfo
+import android.content.pm.PackageManager
+import android.os.Build
 import android.security.keystore.KeyGenParameterSpec
 import android.security.keystore.KeyProperties
 import android.util.Base64
 import androidx.core.content.edit
 import io.github.cluno1.sonorus.features.catalog.data.remote.CatalogEndpoint
 import java.security.KeyStore
+import java.security.MessageDigest
 import javax.crypto.Cipher
 import javax.crypto.KeyGenerator
 import javax.crypto.SecretKey
@@ -24,6 +28,7 @@ data class CatalogDeviceCredentials(
 
 /** Stores the short-lived access token encrypted under a non-exportable Android Keystore key. */
 class CatalogCredentialsStore(context: Context) {
+    private val applicationContext = context.applicationContext
     private val preferences = context.applicationContext.getSharedPreferences(
         PREFERENCES_NAME,
         Context.MODE_PRIVATE,
@@ -111,6 +116,22 @@ class CatalogCredentialsStore(context: Context) {
         }
     }
 
+    /** SHA-256 of the sole current APK signer, used to bind server registration to this app line. */
+    @Suppress("DEPRECATION")
+    fun applicationSigningCertificateSha256(): String {
+        val packageManager = applicationContext.packageManager
+        val flags = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+            PackageManager.GET_SIGNING_CERTIFICATES
+        } else {
+            PackageManager.GET_SIGNATURES
+        }
+        val info = packageManager.getPackageInfo(applicationContext.packageName, flags)
+        val signers = currentSigners(info)
+        require(signers.size == 1) { "Sonorus requires exactly one current APK signer" }
+        return MessageDigest.getInstance("SHA-256").digest(signers.single())
+            .joinToString("") { "%02x".format(it) }
+    }
+
     fun clear() {
         preferences.edit(commit = true) { clear() }
         CatalogDeviceKey.delete()
@@ -144,6 +165,14 @@ class CatalogCredentialsStore(context: Context) {
             generateKey()
         }
     }
+
+    @Suppress("DEPRECATION")
+    private fun currentSigners(packageInfo: PackageInfo): List<ByteArray> =
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+            packageInfo.signingInfo?.apkContentsSigners.orEmpty().map { it.toByteArray() }
+        } else {
+            packageInfo.signatures.orEmpty().map { it.toByteArray() }
+        }
 
     private companion object {
         const val PREFERENCES_NAME = "rhythm_catalog_credentials"

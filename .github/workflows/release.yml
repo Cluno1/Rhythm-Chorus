@@ -55,9 +55,13 @@ jobs:
           STORE_PASSWORD: ${{ secrets.SONORUS_STORE_PASSWORD }}
           KEY_ALIAS: ${{ secrets.SONORUS_KEY_ALIAS }}
           KEY_PASSWORD: ${{ secrets.SONORUS_KEY_PASSWORD }}
+          MANIFEST_PRIVATE_KEY: ${{ secrets.SONORUS_STABLE_MANIFEST_PRIVATE_KEY }}
+          MANIFEST_PUBLIC_KEY: ${{ vars.SONORUS_STABLE_MANIFEST_PUBLIC_KEY }}
+          EXPECTED_CERT_SHA256: ${{ vars.SONORUS_RELEASE_CERT_SHA256 }}
         shell: bash
         run: |
           test -n "$KEYSTORE_B64" && test -n "$STORE_PASSWORD" && test -n "$KEY_ALIAS" && test -n "$KEY_PASSWORD"
+          test -n "$MANIFEST_PRIVATE_KEY" && test -n "$MANIFEST_PUBLIC_KEY" && test -n "$EXPECTED_CERT_SHA256"
           mkdir -p config/signing .config
           printf '%s' "$KEYSTORE_B64" | base64 --decode > config/signing/sonorus-release.jks
           {
@@ -66,6 +70,8 @@ jobs:
             echo "key_alias=$KEY_ALIAS"
             echo "key_password=$KEY_PASSWORD"
           } > .config/keystore.properties
+          printf '%s' "$MANIFEST_PRIVATE_KEY" > .config/sonorus-stable-manifest.pem
+          chmod 600 .config/sonorus-stable-manifest.pem
 
       - name: Test, lint and build signed GitHub release
         run: >-
@@ -73,9 +79,12 @@ jobs:
           -PversionNameOverride=${{ steps.version.outputs.name }}
           -PversionCodeOverride=${{ steps.version.outputs.code }}
           -PreleaseDateOverride=$(date -u +%F)
+          -PsonorusStableManifestPublicKey=${{ vars.SONORUS_STABLE_MANIFEST_PUBLIC_KEY }}
           --stacktrace
 
       - name: Verify and checksum release APKs
+        env:
+          EXPECTED_CERT_SHA256: ${{ vars.SONORUS_RELEASE_CERT_SHA256 }}
         shell: bash
         run: |
           scripts/check_sonorus_brand.py
@@ -94,10 +103,34 @@ jobs:
             ! grep -q 'CN=Android Debug' <<< "$cert"
             current="$(sed -n 's/^Signer #1 certificate SHA-256 digest: //p' <<< "$cert")"
             test -n "$current"
+            normalized_current="$(tr -d ':' <<< "$current" | tr '[:upper:]' '[:lower:]')"
+            normalized_expected="$(tr -d ':' <<< "$EXPECTED_CERT_SHA256" | tr '[:upper:]' '[:lower:]')"
+            test "$normalized_current" = "$normalized_expected"
             if [[ -z "$signer" ]]; then signer="$current"; else test "$current" = "$signer"; fi
             "$AAPT" dump badging "$apk" | grep -q "^package: name='io.github.cluno1.sonorus'"
             sha256sum "$apk" > "$apk.sha256"
           done
+
+      - name: Build signed Stable update manifest
+        env:
+          EXPECTED_CERT_SHA256: ${{ vars.SONORUS_RELEASE_CERT_SHA256 }}
+        shell: bash
+        run: |
+          APKSIGNER="$(find "$ANDROID_HOME/build-tools" -type f -name apksigner | sort -V | tail -1)"
+          AAPT="$(find "$ANDROID_HOME/build-tools" -type f -name aapt | sort -V | tail -1)"
+          APK="$(find app/build/outputs/apk/github/release -maxdepth 1 -type f -name 'Sonorus-*-githubRelease-arm64-v8a.apk' -print -quit)"
+          test -n "$APK"
+          scripts/build_update_manifest.py \
+            --channel stable \
+            --apk "$APK" \
+            --abi arm64-v8a \
+            --manifest-key .config/sonorus-stable-manifest.pem \
+            --expected-certificate-sha256 "$EXPECTED_CERT_SHA256" \
+            --published-at "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+            --release-note "Sonorus ${{ steps.version.outputs.name }}" \
+            --output-root build/sonorus-updates \
+            --aapt "$AAPT" \
+            --apksigner "$APKSIGNER"
 
       - uses: actions/upload-artifact@v6
         with:
@@ -105,6 +138,8 @@ jobs:
           path: |
             app/build/outputs/apk/github/release/Sonorus-*-githubRelease*.apk
             app/build/outputs/apk/github/release/Sonorus-*-githubRelease*.apk.sha256
+            build/sonorus-updates/stable/latest.json
+            build/sonorus-updates/stable/releases/**
 
       - name: Publish GitHub Release
         if: github.ref_type == 'tag'

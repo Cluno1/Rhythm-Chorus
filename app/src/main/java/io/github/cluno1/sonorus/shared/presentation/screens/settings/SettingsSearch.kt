@@ -1186,16 +1186,6 @@ fun buildSettingsSearchIndex(context: Context): List<SearchableSettingItem> {
             settingKey = "updateCheckIntervalHours"
         ))
         add(SearchableSettingItem(
-            id = "updates_channel",
-            title = context.getString(R.string.updates_channel_title),
-            description = context.getString(R.string.updates_channel_desc),
-            keywords = listOf("update channel", "stable", "beta", "nightly", "release channel"),
-            icon = MaterialSymbolIcon("autorenew"),
-            route = SettingsRoutes.UPDATES,
-            parentScreen = context.getString(R.string.settings_updates_title),
-            settingKey = "updateChannel"
-        ))
-        add(SearchableSettingItem(
             id = "updates_enable",
             title = context.getString(R.string.updates_enable_updates),
             description = context.getString(R.string.settings_updates_enable_desc),
@@ -1223,16 +1213,6 @@ fun buildSettingsSearchIndex(context: Context): List<SearchableSettingItem> {
             icon = MaterialSymbolIcon("refresh"),
             route = SettingsRoutes.UPDATES,
             parentScreen = context.getString(R.string.settings_updates_title)
-        ))
-        add(SearchableSettingItem(
-            id = "updates_source",
-            title = context.getString(R.string.updates_source_title),
-            description = context.getString(R.string.updates_source_desc),
-            keywords = listOf("update source", "github", "fdroid", "installed", "apk", "download source"),
-            icon = MaterialSymbolIcon("cloud_download"),
-            route = SettingsRoutes.UPDATES,
-            parentScreen = context.getString(R.string.settings_updates_title),
-            settingKey = "updateSource"
         ))
         add(SearchableSettingItem(
             id = "about",

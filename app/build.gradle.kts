@@ -20,6 +20,11 @@ android {
     namespace = "io.github.cluno1.sonorus"
     compileSdk = 37
 
+    // Public verification keys are injected at build time. Private manifest keys never
+    // belong in this repository. An empty key makes update checks fail closed.
+    val debugManifestPublicKey = providers.gradleProperty("sonorusDebugManifestPublicKey").orNull.orEmpty()
+    val stableManifestPublicKey = providers.gradleProperty("sonorusStableManifestPublicKey").orNull.orEmpty()
+
     defaultConfig {
         applicationId = "io.github.cluno1.sonorus"
         minSdk = 26
@@ -101,6 +106,15 @@ android {
     }
 
     val signingProperties = getProperties(".config/keystore.properties")
+    val debugSigningProperties = getProperties(".config/debug-keystore.properties")
+    val fixedDebugSigning = debugSigningProperties?.let { properties ->
+        signingConfigs.create("sonorusDebug") {
+            keyAlias = properties.property("key_alias")
+            keyPassword = properties.property("key_password")
+            storePassword = properties.property("store_password")
+            storeFile = rootProject.file(properties.property("store_file"))
+        }
+    }
     val releaseSigning =
         if (signingProperties != null) {
             signingConfigs.create("release") {
@@ -121,6 +135,8 @@ android {
 
     buildTypes {
         release {
+            buildConfigField("String", "UPDATE_CHANNEL", "\"stable\"")
+            buildConfigField("String", "UPDATE_MANIFEST_PUBLIC_KEY", "\"$stableManifestPublicKey\"")
             isMinifyEnabled = true
             isShrinkResources = true
             proguardFiles(
@@ -143,11 +159,15 @@ android {
             }
         }
         debug {
+            buildConfigField("String", "UPDATE_CHANNEL", "\"debug\"")
+            buildConfigField("String", "UPDATE_MANIFEST_PUBLIC_KEY", "\"$debugManifestPublicKey\"")
             applicationIdSuffix = ".debug"
             versionNameSuffix = "-debug"
             //isMinifyEnabled = false
             //isDebuggable = true
-            signingConfig = signingConfigs.getByName("debug")
+            // Local builds may use Android's disposable debug key. Any published Debug APK
+            // must provide .config/debug-keystore.properties and use the frozen Sonorus key.
+            signingConfig = fixedDebugSigning ?: signingConfigs.getByName("debug")
         }
         // Required by the macrobenchmark module for baseline profile generation.
         // Mirrors release (fully minified + signed) so the profile reflects production.
@@ -307,6 +327,7 @@ dependencies {
     implementation(libs.com.squareup.okhttp3.okhttp)
     implementation(libs.com.squareup.okhttp3.logging.interceptor)
     implementation(libs.com.google.code.gson.gson)
+    implementation(libs.com.google.crypto.tink.android)
 //    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.3")
 //    implementation("com.jakewharton.retrofit:retrofit2-kotlinx-serialization-converter:1.0.0")
 

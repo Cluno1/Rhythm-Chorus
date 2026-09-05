@@ -1,6 +1,7 @@
 package io.github.cluno1.sonorus.features.catalog.data.remote
 
 import android.os.Build
+import io.github.cluno1.sonorus.BuildConfig
 import io.github.cluno1.sonorus.features.catalog.data.CatalogCredentialsStore
 import io.github.cluno1.sonorus.features.catalog.data.CatalogDeviceCredentials
 import io.github.cluno1.sonorus.features.catalog.data.CatalogDeviceKey
@@ -46,6 +47,8 @@ internal data class EnrollRequest(
     val publicKeySpki: String,
     val signature: String,
     val displayName: String,
+    val applicationId: String,
+    val signingCertificateSha256: String,
 )
 internal data class RefreshRequest(
     val deviceId: String,
@@ -101,8 +104,20 @@ internal interface CatalogDeviceAuthApi {
 internal object CatalogDeviceCanonical {
     val emptySha256: String = sha256Hex(ByteArray(0))
 
-    fun enrollment(nonce: String, inviteCode: String, keyThumbprint: String): ByteArray =
-        "RHYTHM-ENROLL-V1\n$nonce\n$inviteCode\n$keyThumbprint".toByteArray()
+    fun enrollment(
+        nonce: String,
+        inviteCode: String,
+        keyThumbprint: String,
+        applicationId: String,
+        signingCertificateSha256: String,
+    ): ByteArray = listOf(
+        "RHYTHM-ENROLL-V2",
+        nonce,
+        inviteCode,
+        keyThumbprint,
+        applicationId,
+        signingCertificateSha256.lowercase(),
+    ).joinToString("\n").toByteArray()
 
     fun refresh(deviceId: String, sessionId: String, timestamp: Long, nonce: String): ByteArray =
         "RHYTHM-REFRESH-V1\n$deviceId\n$sessionId\n$timestamp\n$nonce".toByteArray()
@@ -155,11 +170,15 @@ internal class CatalogDeviceAuthClient(
         if (!health.isSuccessful) throw IOException("服务器健康检查失败（${health.code()}）")
         val challenge = api.enrollmentChallenge(InviteChallengeRequest(normalizedInvite)).bodyOrThrow()
         val publicKey = signer.publicKeySpki()
+        val applicationId = BuildConfig.APPLICATION_ID
+        val signingCertificateSha256 = credentials.applicationSigningCertificateSha256()
         val signature = signer.sign(
             CatalogDeviceCanonical.enrollment(
                 challenge.nonce,
                 normalizedInvite,
                 CatalogDeviceCanonical.publicKeyThumbprint(publicKey),
+                applicationId,
+                signingCertificateSha256,
             ),
         )
         val enrolled = api.enroll(
@@ -172,6 +191,8 @@ internal class CatalogDeviceAuthClient(
                     .filter { it.isNotBlank() }
                     .joinToString(" ")
                     .ifBlank { "Android device" },
+                applicationId = applicationId,
+                signingCertificateSha256 = signingCertificateSha256,
             ),
         ).bodyOrThrow()
         credentials.saveDevice(enrolled.toCredentials(origin.toString().trimEnd('/')))

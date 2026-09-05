@@ -19,6 +19,12 @@ The GitHub Actions environment expects these encrypted secrets:
 - `SONORUS_STORE_PASSWORD`
 - `SONORUS_KEY_ALIAS`
 - `SONORUS_KEY_PASSWORD`
+- `SONORUS_STABLE_MANIFEST_PRIVATE_KEY`: PEM Ed25519 key, restricted to the protected Stable release environment
+
+It also requires these non-secret repository variables:
+
+- `SONORUS_RELEASE_CERT_SHA256`: frozen APK signing certificate fingerprint
+- `SONORUS_STABLE_MANIFEST_PUBLIC_KEY`: raw 32-byte Stable Ed25519 public key in Base64
 
 Losing the key prevents upgrades of existing installations. A replacement key creates a different installation line.
 
@@ -38,7 +44,9 @@ Inspect the generated APK package, label, version, signing certificate, icons, b
 2. Confirm the version is greater than every published Sonorus version.
 3. Confirm the signing certificate fingerprint matches the first Sonorus release.
 4. Push the annotated stable tag.
-5. Verify all ABI/universal APKs, checksums, source tag, GPL notice, and updater discovery.
+5. Generate the signed Stable update manifest as documented in `SELF_HOSTED_UPDATES.md`.
+6. Publish the immutable server directory and atomically switch `stable/latest.json` only after external smoke tests.
+7. Verify all ABI/universal APKs, checksums, source tag, GPL notice, and updater discovery.
 
 Do not replace a published binary under the same tag. If a release is bad, mark it clearly, publish a higher patch version signed by the same key, and let clients upgrade forward.
 
@@ -49,7 +57,7 @@ The current repository is a local Sonorus rebrand/build baseline, not an authori
 - create or rename the `Cluno1/Sonorus` GitHub repository and configure protected release environments;
 - provision the permanent keystore secrets, add an expected certificate SHA-256 secret, and enforce an exact certificate match in CI;
 - enforce that a proposed tag and Android `versionCode` are greater than every historical Sonorus release;
-- complete stable-only updater cleanup and end-to-end update/install testing against real GitHub Release assets;
+- deploy the authenticated self-hosted update routes and complete two-version end-to-end update/install testing;
 - finish explicit translations for newly added About/legal text in every supported locale;
 - resolve the bundled `sonivox.sf2` provenance/license blocker and verify exact notices for every bundled font/library listed in `THIRD_PARTY_NOTICES.md`.
 
