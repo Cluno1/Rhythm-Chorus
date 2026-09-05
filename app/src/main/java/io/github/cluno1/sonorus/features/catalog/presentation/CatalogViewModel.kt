@@ -15,6 +15,7 @@ import io.github.cluno1.sonorus.features.catalog.domain.WorkSummary
 import io.github.cluno1.sonorus.features.catalog.domain.RhythmQueueEntry
 import io.github.cluno1.sonorus.features.catalog.domain.CatalogLibraryAlbum
 import io.github.cluno1.sonorus.features.catalog.domain.CatalogLibrarySong
+import io.github.cluno1.sonorus.features.catalog.domain.CatalogIssuedInvite
 import io.github.cluno1.sonorus.shared.data.model.Song
 import android.net.Uri
 import kotlinx.coroutines.Job
@@ -35,7 +36,7 @@ data class CatalogUiState(
     val loading: Boolean = false,
     val refreshing: Boolean = false,
     val offlineSnapshot: Boolean = false,
-    val issuedInvite: String? = null,
+    val issuedInvite: CatalogIssuedInvite? = null,
     val error: String? = null,
 )
 
@@ -124,6 +125,10 @@ class CatalogViewModel(application: Application) : AndroidViewModel(application)
         repository.clearConnection()
         queueStore.clear()
         _state.value = CatalogUiState()
+    }
+
+    fun clearInviteUiState() {
+        _state.value = _state.value.copy(issuedInvite = null, error = null)
     }
 
     fun refreshWorks(query: String? = null) {

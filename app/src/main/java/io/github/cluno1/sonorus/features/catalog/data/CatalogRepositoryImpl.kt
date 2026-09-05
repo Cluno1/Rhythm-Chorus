@@ -11,6 +11,7 @@ import io.github.cluno1.sonorus.features.catalog.data.remote.CatalogEndpoint
 import io.github.cluno1.sonorus.features.catalog.domain.CatalogChanges
 import io.github.cluno1.sonorus.features.catalog.domain.CatalogConnection
 import io.github.cluno1.sonorus.features.catalog.domain.CatalogFailure
+import io.github.cluno1.sonorus.features.catalog.domain.CatalogIssuedInvite
 import io.github.cluno1.sonorus.features.catalog.domain.CatalogPage
 import io.github.cluno1.sonorus.features.catalog.domain.CatalogLibraryAlbum
 import io.github.cluno1.sonorus.features.catalog.domain.CatalogLibrarySnapshot
@@ -65,7 +66,7 @@ class CatalogRepositoryImpl(context: Context) : CatalogRepository {
         userId: String,
         displayName: String?,
         replaceExistingDevice: Boolean,
-    ): Result<String> = guarded {
+    ): Result<CatalogIssuedInvite> = guarded {
         val normalized = CatalogEndpoint.normalize(serverUrl)
         CatalogDeviceAuthClient(normalized, credentials).issueInvite(
             username,

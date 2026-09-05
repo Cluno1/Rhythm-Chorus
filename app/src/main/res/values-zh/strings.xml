@@ -2802,6 +2802,13 @@
     <string name="catalog_replace_existing_device_desc">用于换机或重装；新设备登记成功时，旧设备立即失效。</string>
     <string name="catalog_generate_invite">生成一次性邀请码</string>
     <string name="catalog_invite_code_value">邀请码：%1$s</string>
+    <string name="catalog_invite_generated">邀请码已生成</string>
+    <string name="catalog_invite_for_user">用户：%1$s</string>
+    <string name="catalog_invite_expires_at">过期时间：%1$s</string>
+    <string name="catalog_copy_invite">复制邀请码</string>
+    <string name="catalog_invite_copied">邀请码已复制</string>
+    <string name="catalog_share_invite">分享</string>
+    <string name="catalog_invite_share_text">Sonorus 用户 %1$s 的一次性邀请码\n邀请码：%2$s\n过期时间：%3$s\n服务器：%4$s</string>
     <string name="settings_device_metadata_group">本地音乐元数据</string>
     <string name="settings_device_public_metadata">公共元数据查询</string>
     <string name="settings_device_public_metadata_privacy">需要补全时仅向 LRCLIB 和 Deezer 发送标题、歌手、专辑和时长，音频文件绝不会离开本机。</string>

@@ -155,6 +155,12 @@ data class CatalogChanges(
     val hasMore: Boolean,
 )
 
+data class CatalogIssuedInvite(
+    val inviteCode: String,
+    val userId: String,
+    val expiresAt: String,
+)
+
 /** A real-audio rendition projected by the server into the native Songs library. */
 data class CatalogLibrarySong(
     val workId: String,

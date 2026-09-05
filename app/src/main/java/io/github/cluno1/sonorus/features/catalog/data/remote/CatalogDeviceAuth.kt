@@ -6,6 +6,7 @@ import io.github.cluno1.sonorus.features.catalog.data.CatalogDeviceCredentials
 import io.github.cluno1.sonorus.features.catalog.data.CatalogDeviceKey
 import io.github.cluno1.sonorus.features.catalog.data.CatalogSigner
 import io.github.cluno1.sonorus.features.catalog.domain.CatalogFailure
+import io.github.cluno1.sonorus.features.catalog.domain.CatalogIssuedInvite
 import com.google.gson.GsonBuilder
 import okhttp3.HttpUrl.Companion.toHttpUrl
 import okhttp3.OkHttpClient
@@ -31,6 +32,11 @@ internal data class InviteRequest(
     val replaceExistingDevice: Boolean = false,
 )
 internal data class InviteDto(val inviteCode: String, val userId: String, val expiresAt: String)
+internal fun InviteDto.toIssuedInvite(): CatalogIssuedInvite = CatalogIssuedInvite(
+    inviteCode = inviteCode,
+    userId = userId,
+    expiresAt = expiresAt,
+)
 internal data class InviteChallengeRequest(val inviteCode: String)
 internal data class DeviceNonceRequest(val deviceId: String)
 internal data class NonceDto(val nonce: String, val expiresAt: String)
@@ -177,7 +183,7 @@ internal class CatalogDeviceAuthClient(
         userId: String,
         displayName: String?,
         replaceExistingDevice: Boolean,
-    ): String {
+    ): CatalogIssuedInvite {
         val session = api.adminSession(AdminSessionRequest(username.trim(), password)).bodyOrThrow()
         return api.createInvite(
             "Bearer ${session.accessToken}",
@@ -186,7 +192,7 @@ internal class CatalogDeviceAuthClient(
                 displayName?.trim()?.takeIf { it.isNotEmpty() },
                 replaceExistingDevice,
             ),
-        ).bodyOrThrow().inviteCode
+        ).bodyOrThrow().toIssuedInvite()
     }
 
     @Synchronized

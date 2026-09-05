@@ -28,7 +28,7 @@ interface CatalogRepository {
         userId: String,
         displayName: String? = null,
         replaceExistingDevice: Boolean = false,
-    ): Result<String>
+    ): Result<CatalogIssuedInvite>
     fun clearConnection()
     suspend fun listWorks(query: String? = null, cursor: String? = null, limit: Int = 50): Result<CatalogPage>
     suspend fun getWorkBundle(workId: String, forceRefresh: Boolean = false): Result<WorkBundle>

@@ -1,39 +1,54 @@
 package io.github.cluno1.sonorus.features.catalog.presentation
 
+import android.content.ClipData
+import android.content.ClipboardManager
+import android.content.Context
+import android.content.Intent
+import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import io.github.cluno1.sonorus.R
+import io.github.cluno1.sonorus.features.catalog.domain.CatalogIssuedInvite
 import io.github.cluno1.sonorus.shared.presentation.components.common.CollapsibleHeaderScreen
+import io.github.cluno1.sonorus.shared.presentation.components.icons.Icon
+import io.github.cluno1.sonorus.shared.presentation.components.icons.RhythmIcons
 import io.github.cluno1.sonorus.ui.LocalMiniPlayerPadding
+import java.time.Instant
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
+import java.time.format.FormatStyle
 
 @Composable
 fun CatalogServerSettingsScreen(
@@ -41,31 +56,65 @@ fun CatalogServerSettingsScreen(
     onEnroll: (String, String) -> Unit,
     onIssueInvite: (String, String, String, String, String, Boolean) -> Unit,
     onClear: () -> Unit,
+    onClearInviteUiState: () -> Unit,
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    var serverUrl by rememberSaveable(state.serverUrl, state.deviceRegistered) {
-        mutableStateOf(
-            if (state.deviceRegistered) {
-                state.serverUrl.ifBlank { PUBLIC_CATALOG_URL }
-            } else {
-                PUBLIC_CATALOG_URL
-            },
-        )
-    }
-    var inviteCode by remember { mutableStateOf("") }
-    var adminUsername by remember { mutableStateOf("admin") }
-    var adminPassword by remember { mutableStateOf("") }
-    var userId by rememberSaveable { mutableStateOf("") }
-    var displayName by rememberSaveable { mutableStateOf("") }
-    var replaceExistingDevice by rememberSaveable { mutableStateOf(false) }
+    var showAdminPage by rememberSaveable { mutableStateOf(false) }
 
+    if (showAdminPage) {
+        CatalogAdminInviteScreen(
+            state = state,
+            onIssueInvite = onIssueInvite,
+            onClearInviteUiState = onClearInviteUiState,
+            onBack = {
+                onClearInviteUiState()
+                showAdminPage = false
+            },
+            modifier = modifier,
+        )
+        return
+    }
+
+    CatalogDeviceEnrollmentScreen(
+        state = state,
+        onEnroll = onEnroll,
+        onClear = onClear,
+        onOpenAdmin = {
+            onClearInviteUiState()
+            showAdminPage = true
+        },
+        onBack = onBack,
+        modifier = modifier,
+    )
+}
+
+@Composable
+private fun CatalogDeviceEnrollmentScreen(
+    state: CatalogUiState,
+    onEnroll: (String, String) -> Unit,
+    onClear: () -> Unit,
+    onOpenAdmin: () -> Unit,
+    onBack: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    var serverUrl by rememberSaveable { mutableStateOf("") }
+    var inviteCode by rememberSaveable { mutableStateOf("") }
     val miniPlayerBottomPadding = LocalMiniPlayerPadding.current.calculateBottomPadding()
+    val adminPageDescription = stringResource(R.string.catalog_admin_issue_invite)
 
     CollapsibleHeaderScreen(
         title = stringResource(R.string.settings_catalog_server),
         showBackButton = true,
         onBackClick = onBack,
+        actions = {
+            IconButton(onClick = onOpenAdmin) {
+                Icon(
+                    icon = RhythmIcons.Navigation.SettingsOutlined,
+                    contentDescription = adminPageDescription,
+                )
+            }
+        },
     ) { contentModifier ->
         Column(
             modifier = contentModifier
@@ -144,14 +193,55 @@ fun CatalogServerSettingsScreen(
                     )
                 }
             }
+        }
+    }
+}
 
-            CatalogSettingsSection(title = stringResource(R.string.catalog_admin_issue_invite)) {
+@Composable
+private fun CatalogAdminInviteScreen(
+    state: CatalogUiState,
+    onIssueInvite: (String, String, String, String, String, Boolean) -> Unit,
+    onClearInviteUiState: () -> Unit,
+    onBack: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    var serverUrl by rememberSaveable { mutableStateOf("") }
+    var adminUsername by rememberSaveable { mutableStateOf("") }
+    var adminPassword by rememberSaveable { mutableStateOf("") }
+    var userId by rememberSaveable { mutableStateOf("") }
+    var displayName by rememberSaveable { mutableStateOf("") }
+    var replaceExistingDevice by rememberSaveable { mutableStateOf(false) }
+    val miniPlayerBottomPadding = LocalMiniPlayerPadding.current.calculateBottomPadding()
+
+    CollapsibleHeaderScreen(
+        title = stringResource(R.string.catalog_admin_issue_invite),
+        showBackButton = true,
+        onBackClick = onBack,
+    ) { contentModifier ->
+        Column(
+            modifier = contentModifier
+                .then(modifier)
+                .fillMaxSize()
+                .verticalScroll(rememberScrollState())
+                .padding(horizontal = 24.dp)
+                .padding(bottom = 24.dp + miniPlayerBottomPadding),
+            verticalArrangement = Arrangement.spacedBy(18.dp),
+        ) {
+            CatalogSettingsSection {
                 Text(
                     stringResource(R.string.catalog_admin_http_notice),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
                 HorizontalDivider()
+                OutlinedTextField(
+                    value = serverUrl,
+                    onValueChange = { serverUrl = it },
+                    label = { Text(stringResource(R.string.catalog_server_address)) },
+                    singleLine = true,
+                    enabled = !state.loading,
+                    modifier = Modifier.fillMaxWidth(),
+                )
                 OutlinedTextField(
                     value = adminUsername,
                     onValueChange = { adminUsername = it },
@@ -222,22 +312,103 @@ fun CatalogServerSettingsScreen(
                         userId.isNotBlank(),
                     modifier = Modifier.fillMaxWidth(),
                 ) {
-                    Text(stringResource(R.string.catalog_generate_invite))
-                }
-                state.issuedInvite?.let { issued ->
-                    SelectionContainer {
-                        Text(
-                            stringResource(R.string.catalog_invite_code_value, issued),
-                            style = MaterialTheme.typography.bodyLarge,
-                        )
+                    if (state.loading) {
+                        CircularProgressIndicator()
+                    } else {
+                        Text(stringResource(R.string.catalog_generate_invite))
                     }
+                }
+                state.error?.let {
+                    Text(
+                        it,
+                        color = MaterialTheme.colorScheme.error,
+                        style = MaterialTheme.typography.bodyMedium,
+                    )
                 }
             }
         }
     }
+
+    state.issuedInvite?.let { issuedInvite ->
+        CatalogIssuedInviteDialog(
+            invite = issuedInvite,
+            serverUrl = serverUrl,
+            onDismiss = onClearInviteUiState,
+        )
+    }
 }
 
-private const val PUBLIC_CATALOG_URL = "http://175.178.242.232:8010"
+@Composable
+private fun CatalogIssuedInviteDialog(
+    invite: CatalogIssuedInvite,
+    serverUrl: String,
+    onDismiss: () -> Unit,
+) {
+    val context = LocalContext.current
+    val formattedExpiry = formatInviteExpiry(invite.expiresAt)
+    val shareText = stringResource(
+        R.string.catalog_invite_share_text,
+        invite.userId,
+        invite.inviteCode,
+        formattedExpiry,
+        serverUrl,
+    )
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text(stringResource(R.string.catalog_invite_generated)) },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                Text(stringResource(R.string.catalog_invite_for_user, invite.userId))
+                Text(
+                    text = invite.inviteCode,
+                    style = MaterialTheme.typography.headlineSmall,
+                    fontWeight = FontWeight.SemiBold,
+                )
+                Text(stringResource(R.string.catalog_invite_expires_at, formattedExpiry))
+            }
+        },
+        confirmButton = {
+            TextButton(
+                onClick = {
+                    val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+                    clipboard.setPrimaryClip(ClipData.newPlainText("Sonorus invitation", invite.inviteCode))
+                    Toast.makeText(context, R.string.catalog_invite_copied, Toast.LENGTH_SHORT).show()
+                },
+            ) {
+                Text(stringResource(R.string.catalog_copy_invite))
+            }
+        },
+        dismissButton = {
+            Row {
+                TextButton(
+                    onClick = {
+                        context.startActivity(
+                            Intent.createChooser(
+                                Intent(Intent.ACTION_SEND).apply {
+                                    type = "text/plain"
+                                    putExtra(Intent.EXTRA_TEXT, shareText)
+                                },
+                                context.getString(R.string.catalog_share_invite),
+                            ),
+                        )
+                    },
+                ) {
+                    Text(stringResource(R.string.catalog_share_invite))
+                }
+                TextButton(onClick = onDismiss) {
+                    Text(stringResource(R.string.sonorus_close))
+                }
+            }
+        },
+    )
+}
+
+internal fun formatInviteExpiry(value: String): String = runCatching {
+    DateTimeFormatter.ofLocalizedDateTime(FormatStyle.MEDIUM)
+        .withZone(ZoneId.systemDefault())
+        .format(Instant.parse(value))
+}.getOrDefault(value)
 
 @Composable
 private fun CatalogSettingsSection(

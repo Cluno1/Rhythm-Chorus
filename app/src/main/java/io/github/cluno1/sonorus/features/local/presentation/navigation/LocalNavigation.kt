@@ -2149,6 +2149,7 @@ private fun LocalNavigationContent(
                         onEnroll = catalogViewModel::enrollDevice,
                         onIssueInvite = catalogViewModel::issueInvite,
                         onClear = catalogViewModel::clearConnection,
+                        onClearInviteUiState = catalogViewModel::clearInviteUiState,
                         onBack = {
                             if (!navController.popBackStack()) navigateToTopLevel(Screen.Home.route)
                         },

@@ -3062,6 +3062,13 @@
     <string name="catalog_replace_existing_device_desc">Use after changing phones or reinstalling. The old device is disabled when the new device registers.</string>
     <string name="catalog_generate_invite">Generate one-time invitation</string>
     <string name="catalog_invite_code_value">Invitation code: %1$s</string>
+    <string name="catalog_invite_generated">Invitation created</string>
+    <string name="catalog_invite_for_user">User: %1$s</string>
+    <string name="catalog_invite_expires_at">Expires: %1$s</string>
+    <string name="catalog_copy_invite">Copy invitation</string>
+    <string name="catalog_invite_copied">Invitation copied</string>
+    <string name="catalog_share_invite">Share</string>
+    <string name="catalog_invite_share_text">Sonorus invitation for %1$s\nCode: %2$s\nExpires: %3$s\nServer: %4$s</string>
     <string name="settings_device_metadata_group">Device music metadata</string>
     <string name="settings_device_public_metadata">Public metadata lookup</string>
     <string name="settings_device_public_metadata_privacy">When needed, sends only title, artist, album, and duration to LRCLIB and Deezer. Audio files never leave this device.</string>
