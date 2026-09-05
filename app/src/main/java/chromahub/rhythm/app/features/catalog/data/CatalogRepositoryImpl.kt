@@ -33,10 +33,12 @@ class CatalogRepositoryImpl(context: Context) : CatalogRepository {
 
     override fun connection(): CatalogConnection {
         val server = credentials.loadServerUrl().orEmpty()
+        val deviceRegistered = credentials.loadDevice() != null
         return CatalogConnection(
             server,
             server.isNotEmpty() &&
-                (credentials.loadDevice() != null || !credentials.loadToken().isNullOrEmpty()),
+                (deviceRegistered || !credentials.loadToken().isNullOrEmpty()),
+            deviceRegistered,
         )
     }
 

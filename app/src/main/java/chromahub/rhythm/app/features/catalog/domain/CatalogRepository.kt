@@ -12,6 +12,7 @@ sealed class CatalogFailure(message: String, cause: Throwable? = null) : Excepti
 data class CatalogConnection(
     val serverUrl: String,
     val configured: Boolean,
+    val deviceRegistered: Boolean,
 )
 
 interface CatalogRepository {

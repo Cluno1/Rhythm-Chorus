@@ -401,7 +401,13 @@ fun SettingsScreen(
                 title = context.getString(R.string.settings_section_notifications_services),
                 items = buildList {
                     add(SettingItem(RhythmIcons.Notifications, context.getString(R.string.settings_notifications), context.getString(R.string.settings_notifications_desc), palette = SettingsPalettes.Coral, onClick = { onNavigateTo(SettingsRoutes.NOTIFICATIONS) }))
-                    add(SettingItem(MaterialSymbolIcon("cloud"), "音乐库服务器", "配置 ihope 音乐与乐谱服务", palette = SettingsPalettes.SkyBlue, onClick = { onNavigateTo(SettingsRoutes.CATALOG) }))
+                    add(SettingItem(
+                        MaterialSymbolIcon("cloud"),
+                        context.getString(R.string.settings_catalog_server),
+                        context.getString(R.string.settings_catalog_server_desc),
+                        palette = SettingsPalettes.SkyBlue,
+                        onClick = { onNavigateTo(SettingsRoutes.CATALOG) },
+                    ))
                     if (!ProductCapabilities.catalogOnly) {
                         add(SettingItem(MaterialSymbolIcon("api"), context.getString(R.string.settings_api_management), context.getString(R.string.settings_api_management_desc), palette = SettingsPalettes.Slate, onClick = { onNavigateTo(SettingsRoutes.API_MANAGEMENT) }))
                     }

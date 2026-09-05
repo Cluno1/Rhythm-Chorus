@@ -2774,4 +2774,24 @@
     <string name="player_favorite_added_message">已加入「Liked」</string>
     <string name="player_favorite_removed_message">已從「Liked」移除</string>
     <string name="action_undo">復原</string>
+    <string name="settings_catalog_server">音樂庫伺服器</string>
+    <string name="settings_catalog_server_desc">連線 ihope 音樂與樂譜服務</string>
+    <string name="catalog_enrollment_intro">輸入一次性邀請碼後，本機會在 Android Keystore 產生無法匯出的裝置私鑰。之後 Rhythm 會自動簽署請求，無需再輸入憑證。</string>
+    <string name="catalog_server_address">伺服器位址</string>
+    <string name="catalog_one_time_invite">一次性邀請碼</string>
+    <string name="catalog_enroll_this_device">登錄這台裝置</string>
+    <string name="catalog_device_registered">本裝置已登錄</string>
+    <string name="catalog_remove_device_registration">移除本機登錄資訊</string>
+    <string name="catalog_legacy_connection_notice">偵測到舊的私有網路連線。在上方輸入邀請碼，即可將本裝置切換為公開網路存取。</string>
+    <string name="catalog_remove_legacy_connection">移除舊連線</string>
+    <string name="catalog_admin_issue_invite">管理員發放邀請碼</string>
+    <string name="catalog_admin_http_notice">帳號和密碼只用於本次請求，不會儲存到手機。HTTP 網路可看到這些內容，這是目前部署已接受的風險。</string>
+    <string name="catalog_admin_username">管理員帳號</string>
+    <string name="catalog_admin_password">管理員密碼</string>
+    <string name="catalog_user_id">使用者 ID（唯一）</string>
+    <string name="catalog_user_display_name">使用者顯示名稱（選填）</string>
+    <string name="catalog_replace_existing_device">取代已有裝置</string>
+    <string name="catalog_replace_existing_device_desc">用於更換手機或重新安裝；新裝置登錄成功時，舊裝置立即失效。</string>
+    <string name="catalog_generate_invite">產生一次性邀請碼</string>
+    <string name="catalog_invite_code_value">邀請碼：%1$s</string>
 </resources>

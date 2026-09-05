@@ -3042,4 +3042,24 @@
     <string name="player_favorite_added_message">Added to Liked</string>
     <string name="player_favorite_removed_message">Removed from Liked</string>
     <string name="action_undo">Undo</string>
+    <string name="settings_catalog_server">Music Library Server</string>
+    <string name="settings_catalog_server_desc">Connect to the ihope music and score service</string>
+    <string name="catalog_enrollment_intro">Enter a one-time invitation code to create a non-exportable device key in Android Keystore. Rhythm will then sign requests automatically, with no credentials to enter again.</string>
+    <string name="catalog_server_address">Server address</string>
+    <string name="catalog_one_time_invite">One-time invitation code</string>
+    <string name="catalog_enroll_this_device">Register this device</string>
+    <string name="catalog_device_registered">This device is registered</string>
+    <string name="catalog_remove_device_registration">Remove device registration</string>
+    <string name="catalog_legacy_connection_notice">A legacy private-network connection is active. Enter an invitation code above to switch this device to public access.</string>
+    <string name="catalog_remove_legacy_connection">Remove legacy connection</string>
+    <string name="catalog_admin_issue_invite">Administrator invitations</string>
+    <string name="catalog_admin_http_notice">The username and password are used only for this request and are not saved on the phone. They are visible on the HTTP network; this is an accepted risk of the current deployment.</string>
+    <string name="catalog_admin_username">Administrator username</string>
+    <string name="catalog_admin_password">Administrator password</string>
+    <string name="catalog_user_id">User ID (unique)</string>
+    <string name="catalog_user_display_name">Display name (optional)</string>
+    <string name="catalog_replace_existing_device">Replace existing device</string>
+    <string name="catalog_replace_existing_device_desc">Use after changing phones or reinstalling. The old device is disabled when the new device registers.</string>
+    <string name="catalog_generate_invite">Generate one-time invitation</string>
+    <string name="catalog_invite_code_value">Invitation code: %1$s</string>
 </resources>

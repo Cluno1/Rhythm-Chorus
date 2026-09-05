@@ -26,6 +26,7 @@ import kotlinx.coroutines.launch
 
 data class CatalogUiState(
     val configured: Boolean = false,
+    val deviceRegistered: Boolean = false,
     val serverUrl: String = "",
     val works: List<WorkSummary> = emptyList(),
     val songs: List<CatalogLibrarySong> = emptyList(),
@@ -58,6 +59,7 @@ class CatalogViewModel(application: Application) : AndroidViewModel(application)
         repository.connection().let {
             CatalogUiState(
                 configured = it.configured,
+                deviceRegistered = it.deviceRegistered,
                 serverUrl = it.serverUrl,
                 works = repository.cachedWorks(),
                 songs = repository.cachedLibrary()?.songs.orEmpty(),
@@ -81,6 +83,7 @@ class CatalogViewModel(application: Application) : AndroidViewModel(application)
                     val connection = repository.connection()
                     _state.value = _state.value.copy(
                         configured = true,
+                        deviceRegistered = connection.deviceRegistered,
                         serverUrl = connection.serverUrl,
                         loading = false,
                     )
