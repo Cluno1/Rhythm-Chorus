@@ -277,11 +277,11 @@ object NetworkClient {
     }
     
     val deezerApiService: DeezerApiService? by lazy {
-        if (BuildConfig.ENABLE_DEEZER) deezerRetrofit.create(DeezerApiService::class.java) else null
+        if (BuildConfig.ENABLE_DEEZER || BuildConfig.DEVICE_PUBLIC_METADATA) deezerRetrofit.create(DeezerApiService::class.java) else null
     }
     
     val lrclibApiService: LRCLibApiService? by lazy {
-        if (BuildConfig.ENABLE_LRCLIB) lrclibRetrofit.create(LRCLibApiService::class.java) else null
+        if (BuildConfig.ENABLE_LRCLIB || BuildConfig.DEVICE_PUBLIC_METADATA) lrclibRetrofit.create(LRCLibApiService::class.java) else null
     }
     
     val betterLyricsApiService: BetterLyricsApiService? by lazy {
@@ -314,6 +314,7 @@ object NetworkClient {
     // Helper methods to check if APIs are enabled (respects both BuildConfig AND runtime settings)
     fun isDeezerApiEnabled(): Boolean = BuildConfig.ENABLE_DEEZER && (appSettings?.deezerApiEnabled?.value ?: false)
     fun isLrcLibApiEnabled(): Boolean = BuildConfig.ENABLE_LRCLIB && (appSettings?.lrclibApiEnabled?.value ?: false)
+    fun isDevicePublicMetadataEnabled(): Boolean = BuildConfig.DEVICE_PUBLIC_METADATA && (appSettings?.devicePublicMetadataEnabled?.value ?: false)
     fun isBetterLyricsApiEnabled(): Boolean = BuildConfig.ENABLE_BETTERLYRICS && (appSettings?.betterLyricsApiEnabled?.value ?: false)
     fun isYTMusicApiEnabled(): Boolean = BuildConfig.ENABLE_YOUTUBE_MUSIC && (appSettings?.ytMusicApiEnabled?.value ?: false)
     fun isSpotifyApiEnabled(): Boolean = BuildConfig.ENABLE_SPOTIFY_SEARCH && (appSettings?.spotifyApiEnabled?.value ?: false)

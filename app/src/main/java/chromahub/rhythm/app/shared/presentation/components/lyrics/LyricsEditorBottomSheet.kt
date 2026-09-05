@@ -42,11 +42,14 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Button
 import androidx.compose.material3.BottomSheetDefaults
 import androidx.compose.material3.ButtonDefaults
@@ -79,6 +82,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import chromahub.rhythm.app.R
+import chromahub.rhythm.app.core.ProductCapabilities
+import chromahub.rhythm.app.features.local.data.device.DeviceLyricsCandidate
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import chromahub.rhythm.app.shared.presentation.components.common.RhythmGroupedButton
 import chromahub.rhythm.app.shared.presentation.components.common.RhythmButtonWeighted
@@ -181,11 +186,17 @@ fun LyricsEditorBottomSheet(
     onDismiss: () -> Unit,
     onSave: (String, Int, String) -> Unit,
     onRefresh: () -> Unit = {},
+    onOnlineRematch: () -> Unit = {},
+    onChooseOtherVersion: () -> Unit = {},
+    deviceLyricsCandidates: List<DeviceLyricsCandidate> = emptyList(),
+    onSelectDeviceLyricsCandidate: (DeviceLyricsCandidate) -> Unit = {},
+    onRestoreLocal: () -> Unit = {},
     onEmbedInFile: (String) -> Unit = {}
 ) {
     val context = LocalContext.current
     val haptic = LocalHapticFeedback.current
     val scope = rememberCoroutineScope()
+    var showCandidateDialog by remember { mutableStateOf(false) }
     
     var selectedFormat by remember(lyricsData) {
         mutableStateOf(
@@ -859,6 +870,28 @@ fun LyricsEditorBottomSheet(
                             }
                         }
                     }
+
+                    if (ProductCapabilities.devicePublicMetadata && !song.id.startsWith("rhythm-catalog:")) {
+                        Spacer(modifier = Modifier.height(12.dp))
+                        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                            FilledTonalButton(onClick = onOnlineRematch, modifier = Modifier.fillMaxWidth()) {
+                                Icon(MaterialSymbolIcon("travel_explore", filled = true), null)
+                                Spacer(Modifier.width(8.dp))
+                                Text(stringResource(R.string.lyrics_online_rematch))
+                            }
+                            OutlinedButton(onClick = {
+                                onChooseOtherVersion()
+                                showCandidateDialog = true
+                            }, modifier = Modifier.fillMaxWidth()) {
+                                Icon(MaterialSymbolIcon("swap_horiz", filled = true), null)
+                                Spacer(Modifier.width(8.dp))
+                                Text(stringResource(R.string.lyrics_choose_version))
+                            }
+                            TextButton(onClick = onRestoreLocal, modifier = Modifier.fillMaxWidth()) {
+                                Text(stringResource(R.string.lyrics_restore_local))
+                            }
+                        }
+                    }
                 }
                 Spacer(modifier = Modifier.height(16.dp))
             }
@@ -1430,6 +1463,50 @@ fun LyricsEditorBottomSheet(
                 }
             )
         }
+    }
+
+    if (showCandidateDialog) {
+        AlertDialog(
+            onDismissRequest = { showCandidateDialog = false },
+            title = { Text(stringResource(R.string.lyrics_choose_version)) },
+            text = {
+                if (deviceLyricsCandidates.isEmpty()) {
+                    Text(stringResource(R.string.lyrics_no_candidates))
+                } else {
+                    LazyColumn(modifier = Modifier.heightIn(max = 420.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                        items(deviceLyricsCandidates, key = { it.externalId }) { candidate ->
+                            Surface(
+                                onClick = {
+                                    onSelectDeviceLyricsCandidate(candidate)
+                                    showCandidateDialog = false
+                                },
+                                shape = RoundedCornerShape(12.dp),
+                                color = MaterialTheme.colorScheme.surfaceContainerHigh,
+                                modifier = Modifier.fillMaxWidth()
+                            ) {
+                                Column(Modifier.padding(12.dp)) {
+                                    Text(candidate.title, style = MaterialTheme.typography.titleSmall)
+                                    Text(
+                                        stringResource(
+                                            R.string.lyrics_candidate_format,
+                                            candidate.artist,
+                                            candidate.album.ifBlank { "—" },
+                                            candidate.durationSeconds?.toInt()?.let { stringResource(R.string.lyrics_duration_seconds, it) } ?: "—",
+                                            (candidate.confidence * 100).toInt()
+                                        ),
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                                    )
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            confirmButton = {
+                TextButton(onClick = { showCandidateDialog = false }) { Text(stringResource(R.string.action_cancel)) }
+            }
+        )
     }
 }
 }

@@ -712,6 +712,36 @@ fun buildSettingsSearchIndex(context: Context): List<SearchableSettingItem> {
             route = SettingsRoutes.LIBRARY_SETTINGS,
             parentScreen = context.getString(R.string.settings_section_library_content)
         ))
+        if (ProductCapabilities.devicePublicMetadata) add(SearchableSettingItem(
+            id = "device_metadata_folders",
+            title = context.getString(R.string.settings_device_metadata_add_folder),
+            description = context.getString(R.string.settings_device_metadata_add_folder_desc, 0),
+            keywords = listOf(
+                "music", "device music", "local music", "folder", "lyrics", "lrc", "cover", "artwork",
+                "metadata", "public api", "lrclib", "deezer", "音乐", "本地音乐", "歌词", "封面", "文件夹"
+            ),
+            icon = MaterialSymbolIcon("create_new_folder"),
+            route = SettingsRoutes.LIBRARY_SETTINGS,
+            parentScreen = context.getString(R.string.settings_library_settings)
+        ))
+        if (ProductCapabilities.devicePublicMetadata) add(SearchableSettingItem(
+            id = "device_public_metadata",
+            title = context.getString(R.string.settings_device_public_metadata),
+            description = context.getString(R.string.settings_device_public_metadata_privacy),
+            keywords = listOf("music", "lyrics", "cover", "public api", "privacy", "lrclib", "deezer", "本地音乐", "歌词", "封面", "隐私"),
+            icon = MaterialSymbolIcon("public"),
+            route = SettingsRoutes.LIBRARY_SETTINGS,
+            parentScreen = context.getString(R.string.settings_library_settings)
+        ))
+        if (ProductCapabilities.devicePublicMetadata) add(SearchableSettingItem(
+            id = "device_metadata_clear_cache",
+            title = context.getString(R.string.settings_device_metadata_clear_cache),
+            description = context.getString(R.string.settings_device_metadata_clear_cache_desc),
+            keywords = listOf("music", "lyrics", "cover", "cache", "clear", "metadata", "音乐", "歌词", "封面", "缓存"),
+            icon = MaterialSymbolIcon("delete_sweep"),
+            route = SettingsRoutes.LIBRARY_SETTINGS,
+            parentScreen = context.getString(R.string.settings_library_settings)
+        ))
         add(SearchableSettingItem(
             id = "library_tab_order",
             title = context.getString(R.string.settings_library_tab_order),

@@ -4071,9 +4071,13 @@ fun MaterialPlayerScreen(
                 musicViewModel.saveEditedLyrics(editedLyrics, timeOffset, format)
             },
             onRefresh = {
-                // Clear cache and refetch lyrics from source priority
-                musicViewModel.clearLyricsCacheAndRefetch()
+                musicViewModel.searchAndApplyBestDeviceLyrics()
             },
+            onOnlineRematch = { musicViewModel.searchAndApplyBestDeviceLyrics() },
+            onChooseOtherVersion = { musicViewModel.loadDeviceLyricsCandidates() },
+            deviceLyricsCandidates = musicViewModel.deviceLyricsCandidates.collectAsState().value,
+            onSelectDeviceLyricsCandidate = { musicViewModel.selectDeviceLyricsCandidate(it) },
+            onRestoreLocal = { musicViewModel.restoreCurrentDeviceLyrics() },
             onEmbedInFile = { editedLyrics ->
                 // Embed lyrics into the audio file's metadata with permission handling
                 musicViewModel.embedLyricsInFile(

@@ -119,6 +119,8 @@ import chromahub.rhythm.app.shared.presentation.components.bottomsheets.Licenses
 import chromahub.rhythm.app.shared.presentation.components.bottomsheets.UpdateBottomSheet
 import chromahub.rhythm.app.ui.utils.LazyListStateSaver
 import chromahub.rhythm.app.features.local.presentation.viewmodel.MusicViewModel
+import chromahub.rhythm.app.features.local.data.device.DeviceFolderAccess
+import chromahub.rhythm.app.features.local.data.device.DeviceMetadataRepository
 import chromahub.rhythm.app.shared.presentation.components.common.ExpressiveShapeProvider
 import chromahub.rhythm.app.shared.presentation.components.common.ExpressiveShapes
 import chromahub.rhythm.app.shared.presentation.components.common.buildSplashBackdropShapes
@@ -170,6 +172,19 @@ fun LibrarySettingsScreen(onBackClick: () -> Unit) {
     val appSettings = AppSettings.getInstance(context)
     val haptics = LocalHapticFeedback.current
     val scope = rememberCoroutineScope()
+    val deviceFolderAccess = remember { DeviceFolderAccess(context) }
+    val deviceMetadataRepository = remember { DeviceMetadataRepository(context) }
+    var deviceFolderRoots by remember { mutableStateOf(deviceFolderAccess.roots().toList()) }
+    val deviceFolderLauncher = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocumentTree()) { uri ->
+        if (uri != null) {
+            runCatching { deviceFolderAccess.add(uri) }
+                .onSuccess {
+                    deviceFolderRoots = deviceFolderAccess.roots().toList()
+                    Toast.makeText(context, R.string.settings_device_folder_added, Toast.LENGTH_SHORT).show()
+                }
+                .onFailure { Toast.makeText(context, R.string.settings_device_folder_failed, Toast.LENGTH_LONG).show() }
+        }
+    }
 
     val libraryCombineDiscs by appSettings.libraryCombineDiscs.collectAsState()
     val showLibraryBottomBarAlways by appSettings.showLibraryBottomBarAlways.collectAsState()
@@ -180,6 +195,7 @@ fun LibrarySettingsScreen(onBackClick: () -> Unit) {
     val lyricallyApiEnabled by appSettings.lyricallyApiEnabled.collectAsState()
     val autoFetchArtwork by appSettings.autoFetchArtwork.collectAsState()
     val artistArtworkSource by appSettings.artistArtworkSource.collectAsState()
+    val devicePublicMetadataEnabled by appSettings.devicePublicMetadataEnabled.collectAsState()
 
     var showLibraryTabOrderBottomSheet by remember { mutableStateOf(false) }
     var showArtistArtworkSourceBottomSheet by remember { mutableStateOf(false) }
@@ -226,6 +242,57 @@ fun LibrarySettingsScreen(onBackClick: () -> Unit) {
                         onToggleChange = { appSettings.setShowLibraryBottomBarAlways(it) }
                     )
                 )
+            ),
+            SettingGroup(
+                title = context.getString(R.string.settings_device_metadata_group),
+                items = buildList {
+                    add(SettingItem(
+                        MaterialSymbolIcon("public"),
+                        context.getString(R.string.settings_device_public_metadata),
+                        context.getString(R.string.settings_device_public_metadata_privacy),
+                        toggleState = devicePublicMetadataEnabled,
+                        onToggleChange = appSettings::setDevicePublicMetadataEnabled
+                    ))
+                    add(SettingItem(
+                        MaterialSymbolIcon("create_new_folder"),
+                        context.getString(R.string.settings_device_metadata_add_folder),
+                        context.getString(R.string.settings_device_metadata_add_folder_desc, deviceFolderRoots.size),
+                        onClick = { deviceFolderLauncher.launch(null) }
+                    ))
+                    deviceFolderRoots.forEach { root ->
+                        add(SettingItem(
+                            MaterialSymbolIcon("folder"),
+                            root.lastPathSegment ?: root.toString(),
+                            context.getString(R.string.settings_device_metadata_remove_folder_desc),
+                            onClick = {
+                                deviceFolderAccess.remove(root)
+                                deviceFolderRoots = deviceFolderAccess.roots().toList()
+                            }
+                        ))
+                    }
+                    if (deviceFolderRoots.isNotEmpty()) add(SettingItem(
+                        MaterialSymbolIcon("folder_off"),
+                        context.getString(R.string.settings_device_metadata_clear_folders),
+                        context.getString(R.string.settings_device_metadata_clear_folders_desc),
+                        onClick = {
+                            deviceFolderAccess.clear()
+                            deviceFolderRoots = emptyList()
+                            Toast.makeText(context, R.string.settings_device_folders_cleared, Toast.LENGTH_SHORT).show()
+                        }
+                    ))
+                    add(SettingItem(
+                        MaterialSymbolIcon("delete_sweep"),
+                        context.getString(R.string.settings_device_metadata_clear_cache),
+                        context.getString(R.string.settings_device_metadata_clear_cache_desc),
+                        onClick = {
+                            scope.launch {
+                                deviceMetadataRepository.clearAllCachedMetadata()
+                                appSettings.requestFullMediaRescanOnNextLaunch("device_metadata_cache_cleared")
+                                Toast.makeText(context, R.string.settings_device_metadata_cache_cleared, Toast.LENGTH_SHORT).show()
+                            }
+                        }
+                    ))
+                }
             ),
             SettingGroup(
                 title = context.getString(R.string.settings_library_group_artwork),
@@ -280,7 +347,7 @@ fun LibrarySettingsScreen(onBackClick: () -> Unit) {
                             onToggleChange = { appSettings.setAlbumHideAbout(it) }
                         )
                     )
-                    if (ProductCapabilities.thirdPartyMusicServices) {
+                    if (ProductCapabilities.thirdPartyMusicServices || ProductCapabilities.devicePublicMetadata) {
                         add(
                             SettingItem(
                                 icon = MaterialSymbolIcon("cloud_download"),
@@ -290,6 +357,8 @@ fun LibrarySettingsScreen(onBackClick: () -> Unit) {
                                 onToggleChange = { enabled -> appSettings.setAutoFetchArtwork(enabled) }
                             )
                         )
+                    }
+                    if (ProductCapabilities.thirdPartyMusicServices) {
                         add(
                             SettingItem(
                                 icon = MaterialSymbolIcon("portrait"),

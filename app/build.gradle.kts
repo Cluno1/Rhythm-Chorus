@@ -43,6 +43,9 @@ android {
 
         // This fork ships against the first-party Catalog API and its trusted COS assets only.
         buildConfigField("boolean", "CATALOG_ONLY", "true")
+        // Public metadata is deliberately narrower than the disabled third-party streaming stack.
+        // It is used only to enrich files already present on the user's device.
+        buildConfigField("boolean", "DEVICE_PUBLIC_METADATA", "true")
 
         // Apple Music: fallback token from environment variable (GitHub secrets), local.properties, or fallback
         val appleMusicToken = System.getenv("APPLE_MUSIC_FALLBACK_TOKEN")
