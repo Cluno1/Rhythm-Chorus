@@ -359,6 +359,7 @@ fun LibraryScreen(
     val tabOrder by appSettings.libraryTabOrder.collectAsState()
     val hiddenTabs by appSettings.hiddenLibraryTabs.collectAsState()
     val showLibraryBottomBarAlways by appSettings.showLibraryBottomBarAlways.collectAsState()
+    val gestureLibrarySwipeTabs by appSettings.gestureLibrarySwipeTabs.collectAsState()
 
     // Show Album Artists tab by default in Go mode, hidden in local mode
     val effectiveHiddenTabs = remember(hiddenTabs, isStreamingMode) {
@@ -1936,6 +1937,7 @@ fun LibraryScreen(
                                     state = pagerState,
                                     contentPadding = PaddingValues(0.dp),
                                     pageSpacing = 0.dp,
+                                    userScrollEnabled = gestureLibrarySwipeTabs,
                                     modifier = Modifier.fillMaxSize()
                                 ) { page ->
                                 when (visibleTabIds.getOrNull(page)) {
