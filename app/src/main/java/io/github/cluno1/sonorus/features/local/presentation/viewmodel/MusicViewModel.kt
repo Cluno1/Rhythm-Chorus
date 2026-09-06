@@ -8059,7 +8059,11 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
                 // Verify the song hasn't changed before updating lyrics
                 if (currentSong.value?.id == fetchingSongId && isActive) {
                     _currentLyrics.value = lyricsData
-                    Log.d(TAG, "Successfully fetched lyrics for: ${song.artist} - ${song.title}")
+                    if (lyricsData?.hasLyrics() == true) {
+                        Log.d(TAG, "Successfully fetched lyrics for: ${song.artist} - ${song.title}")
+                    } else {
+                        Log.d(TAG, "No lyrics found for: ${song.artist} - ${song.title}")
+                    }
                 } else {
                     Log.d(TAG, "Song changed during lyrics fetch, discarding results for: ${song.title}")
                 }

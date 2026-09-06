@@ -84,11 +84,14 @@ class RhythmApplication : Application(), ImageLoaderFactory {
         CrashReporter.init(this)
         Log.d(TAG, "✓ CrashReporter initialized")
         
-        if (ProductCapabilities.thirdPartyMusicServices) {
-            // The Catalog API and COS delivery clients are independent from this legacy client.
+        if (ProductCapabilities.metadataNetworkClient) {
+            // Catalog/COS delivery is independent, but DEVICE metadata deliberately reuses this
+            // client for LRCLIB, MusicBrainz, Cover Art Archive, and Deezer lookups.
             io.github.cluno1.sonorus.network.NetworkClient.initialize(settings)
-            Log.d(TAG, "✓ Third-party NetworkClient initialized")
-        } else {
+            Log.d(TAG, "✓ Public metadata NetworkClient initialized")
+        }
+
+        if (!ProductCapabilities.thirdPartyMusicServices) {
             // Constructing the manager in Catalog-only mode cancels stale streaming notices and
             // removes their channels without starting a provider session.
             StreamingNotificationManager(applicationContext)

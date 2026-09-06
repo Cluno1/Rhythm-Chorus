@@ -18,4 +18,12 @@ object ProductCapabilities {
 
     val devicePublicMetadata: Boolean
         get() = BuildConfig.DEVICE_PUBLIC_METADATA
+
+    val metadataNetworkClient: Boolean
+        get() = shouldInitializeMetadataNetworkClient(thirdPartyMusicServices, devicePublicMetadata)
+
+    internal fun shouldInitializeMetadataNetworkClient(
+        thirdPartyMusicServices: Boolean,
+        devicePublicMetadata: Boolean
+    ): Boolean = thirdPartyMusicServices || devicePublicMetadata
 }
