@@ -13,8 +13,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.ListItem
-import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -60,20 +58,30 @@ internal fun CatalogScoreLibraryContent(
                 shape = RoundedCornerShape(16.dp),
                 color = MaterialTheme.colorScheme.surfaceContainer,
             ) {
-                ListItem(
-                    headlineContent = { Text(work.title, maxLines = 1, overflow = TextOverflow.Ellipsis) },
-                    supportingContent = {
+                Row(
+                    modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 12.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(12.dp),
+                ) {
+                    Icon(MaterialSymbolIcon("score"), contentDescription = null, modifier = Modifier.size(32.dp))
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(work.title, maxLines = 1, overflow = TextOverflow.Ellipsis)
                         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                            work.artist?.takeIf(String::isNotBlank)?.let { Text(it, maxLines = 1) }
-                            Text(stringResource(R.string.catalog_score_count, work.scoreCount))
+                            work.artist?.takeIf(String::isNotBlank)?.let {
+                                Text(it, maxLines = 1, style = MaterialTheme.typography.bodySmall)
+                            }
+                            Text(
+                                stringResource(R.string.catalog_score_count, work.scoreCount),
+                                style = MaterialTheme.typography.bodySmall,
+                            )
                         }
-                    },
-                    leadingContent = {
-                        Icon(MaterialSymbolIcon("score"), contentDescription = null, modifier = Modifier.size(32.dp))
-                    },
-                    trailingContent = { Icon(MaterialSymbolIcon("chevron_right"), contentDescription = null) },
-                    colors = ListItemDefaults.colors(containerColor = MaterialTheme.colorScheme.surfaceContainer),
-                )
+                    }
+                    Icon(
+                        MaterialSymbolIcon("chevron_right"),
+                        contentDescription = null,
+                        modifier = Modifier.size(24.dp),
+                    )
+                }
             }
         }
     }
