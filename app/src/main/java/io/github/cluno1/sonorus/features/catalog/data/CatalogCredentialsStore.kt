@@ -47,6 +47,7 @@ class CatalogCredentialsStore(context: Context) {
             remove(KEY_SESSION_ID)
             remove(KEY_ACCESS_EXPIRES_AT)
             remove(KEY_SESSION_EXPIRES_AT)
+            remove(KEY_REENROLLMENT_REQUIRED)
         }
     }
 
@@ -59,8 +60,19 @@ class CatalogCredentialsStore(context: Context) {
             putString(KEY_SESSION_ID, credentials.sessionId)
             putLong(KEY_ACCESS_EXPIRES_AT, credentials.accessTokenExpiresAtEpochSeconds)
             putString(KEY_SESSION_EXPIRES_AT, credentials.sessionExpiresAt)
+            putBoolean(KEY_REENROLLMENT_REQUIRED, false)
         }
     }
+
+    fun markReenrollmentRequired() {
+        preferences.edit(commit = true) {
+            putBoolean(KEY_REENROLLMENT_REQUIRED, true)
+            remove(KEY_ACCESS_EXPIRES_AT)
+        }
+    }
+
+    fun isReenrollmentRequired(): Boolean =
+        preferences.getBoolean(KEY_REENROLLMENT_REQUIRED, false)
 
     fun updateAccessToken(token: String, expiresAtEpochSeconds: Long) {
         check(loadDeviceId() != null) { "device credentials are not configured" }
@@ -184,6 +196,7 @@ class CatalogCredentialsStore(context: Context) {
         const val KEY_SESSION_ID = "device_session_id"
         const val KEY_ACCESS_EXPIRES_AT = "access_token_expires_at"
         const val KEY_SESSION_EXPIRES_AT = "device_session_expires_at"
+        const val KEY_REENROLLMENT_REQUIRED = "reenrollment_required"
         const val ENCRYPTION_KEY_ALIAS = "rhythm_catalog_bearer_token_v1"
         const val ANDROID_KEYSTORE = "AndroidKeyStore"
         const val TRANSFORMATION = "AES/GCM/NoPadding"

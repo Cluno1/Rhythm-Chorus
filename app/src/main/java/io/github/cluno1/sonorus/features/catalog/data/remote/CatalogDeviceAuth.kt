@@ -223,29 +223,37 @@ internal class CatalogDeviceAuthClient(
         require(request.method == "GET" || request.method == "HEAD") {
             "public Catalog only signs GET and HEAD requests"
         }
-        val current = accessCredentials()
-        val nonce = api.nonce(
-            "Device ${current.accessToken}",
-            DeviceNonceRequest(current.deviceId),
-        ).execute().bodyOrThrow().nonce
-        val timestamp = Instant.now().epochSecond
-        val canonical = CatalogDeviceCanonical.request(
-            request.method,
-            request.url.encodedPath,
-            request.url.encodedQuery.orEmpty(),
-            CatalogDeviceCanonical.emptySha256,
-            current.deviceId,
-            timestamp,
-            nonce,
-        )
-        return mapOf(
-            "Authorization" to "Device ${current.accessToken}",
-            "X-Rhythm-Device-ID" to current.deviceId,
-            "X-Rhythm-Timestamp" to timestamp.toString(),
-            "X-Rhythm-Nonce" to nonce,
-            "X-Rhythm-Content-SHA256" to CatalogDeviceCanonical.emptySha256,
-            "X-Rhythm-Signature" to signer.sign(canonical),
-        )
+        if (credentials.isReenrollmentRequired()) throw CatalogFailure.InvalidCredentials()
+        try {
+            val current = accessCredentials()
+            val nonce = api.nonce(
+                "Device ${current.accessToken}",
+                DeviceNonceRequest(current.deviceId),
+            ).execute().bodyOrThrow().nonce
+            val timestamp = Instant.now().epochSecond
+            val canonical = CatalogDeviceCanonical.request(
+                request.method,
+                request.url.encodedPath,
+                request.url.encodedQuery.orEmpty(),
+                CatalogDeviceCanonical.emptySha256,
+                current.deviceId,
+                timestamp,
+                nonce,
+            )
+            return mapOf(
+                "Authorization" to "Device ${current.accessToken}",
+                "X-Rhythm-Device-ID" to current.deviceId,
+                "X-Rhythm-Timestamp" to timestamp.toString(),
+                "X-Rhythm-Nonce" to nonce,
+                "X-Rhythm-Content-SHA256" to CatalogDeviceCanonical.emptySha256,
+                "X-Rhythm-Signature" to signer.sign(canonical),
+            )
+        } catch (error: CatalogFailure.InvalidCredentials) {
+            // Keep the Keystore key and cached media, but stop all use of this invalid session.
+            // The synchronized boundary makes concurrent callers observe one durable result.
+            credentials.markReenrollmentRequired()
+            throw error
+        }
     }
 
     fun proofForGet(url: String): Map<String, String> = proof(

@@ -1,12 +1,22 @@
 package io.github.cluno1.sonorus.features.catalog.data.remote
 
+import io.github.cluno1.sonorus.features.catalog.domain.CatalogFailure
 import kotlinx.coroutines.runBlocking
+import okhttp3.Call
+import okhttp3.Callback
+import okhttp3.OkHttpClient
+import okhttp3.Request
+import okhttp3.Response
 import okhttp3.mockwebserver.MockResponse
 import okhttp3.mockwebserver.MockWebServer
+import java.io.IOException
+import java.util.concurrent.CountDownLatch
+import java.util.concurrent.TimeUnit
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertThrows
+import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class CatalogApiClientTest {
@@ -75,5 +85,33 @@ class CatalogApiClientTest {
         } finally {
             objectStore.close()
         }
+    }
+
+    @Test
+    fun invalidCredentialsCrossAsyncInterceptorAsTransportFailure() {
+        val completed = CountDownLatch(1)
+        var failure: IOException? = null
+        var responseReceived = false
+        val client = OkHttpClient.Builder()
+            .addInterceptor { throw CatalogFailure.InvalidCredentials() }
+            .build()
+
+        client.newCall(Request.Builder().url(server.url("/v2/library/songs")).build())
+            .enqueue(object : Callback {
+                override fun onFailure(call: Call, e: IOException) {
+                    failure = e
+                    completed.countDown()
+                }
+
+                override fun onResponse(call: Call, response: Response) {
+                    response.close()
+                    responseReceived = true
+                    completed.countDown()
+                }
+            })
+
+        assertTrue(completed.await(3, TimeUnit.SECONDS))
+        assertTrue(failure is CatalogFailure.InvalidCredentials)
+        assertTrue(!responseReceived)
     }
 }

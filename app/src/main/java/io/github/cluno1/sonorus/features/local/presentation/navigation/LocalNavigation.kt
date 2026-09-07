@@ -931,7 +931,15 @@ private fun LocalNavigationContent(
         (albums + catalogAlbums).distinctBy { it.id }
     }
     LaunchedEffect(catalogState.error) {
-        catalogState.error?.let { snackbarHostState.showSnackbar(it) }
+        catalogState.error?.let { message ->
+            val result = snackbarHostState.showSnackbar(
+                message = message,
+                actionLabel = if (catalogState.reenrollmentRequired) "重新登记" else null,
+            )
+            if (catalogState.reenrollmentRequired && result == androidx.compose.material3.SnackbarResult.ActionPerformed) {
+                navController.navigate(Screen.CatalogSettings.route) { launchSingleTop = true }
+            }
+        }
     }
 
     val catalogQueueEntryForSong: (Song) -> RhythmQueueEntry? = { displaySong ->

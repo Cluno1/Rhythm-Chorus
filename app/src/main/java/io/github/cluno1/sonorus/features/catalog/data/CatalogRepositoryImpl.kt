@@ -36,12 +36,14 @@ class CatalogRepositoryImpl(context: Context) : CatalogRepository {
 
     override fun connection(): CatalogConnection {
         val server = credentials.loadServerUrl().orEmpty()
-        val deviceRegistered = credentials.loadDevice() != null
+        val reenrollmentRequired = credentials.isReenrollmentRequired()
+        val deviceRegistered = credentials.loadDevice() != null && !reenrollmentRequired
         return CatalogConnection(
             server,
             server.isNotEmpty() &&
-                (deviceRegistered || !credentials.loadToken().isNullOrEmpty()),
+                (credentials.loadDevice() != null || !credentials.loadToken().isNullOrEmpty()),
             deviceRegistered,
+            reenrollmentRequired,
         )
     }
 
@@ -354,6 +356,7 @@ class CatalogRepositoryImpl(context: Context) : CatalogRepository {
 
     private fun client(): CatalogApiClient {
         val server = credentials.loadServerUrl() ?: throw CatalogFailure.NotConfigured()
+        if (credentials.isReenrollmentRequired()) throw CatalogFailure.InvalidCredentials()
         if (credentials.loadDevice() == null && credentials.loadToken() == null) {
             throw CatalogFailure.NotConfigured()
         }
@@ -371,6 +374,9 @@ class CatalogRepositoryImpl(context: Context) : CatalogRepository {
         try {
             Result.success(block())
         } catch (error: Throwable) {
+            if (error is CatalogFailure.InvalidCredentials) {
+                credentials.markReenrollmentRequired()
+            }
             when (error) {
                 is CatalogFailure -> Result.failure(error)
                 is IOException -> Result.failure(CatalogFailure.Unreachable(error))

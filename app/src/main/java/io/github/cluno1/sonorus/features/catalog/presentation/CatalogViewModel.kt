@@ -29,6 +29,7 @@ import kotlinx.coroutines.launch
 data class CatalogUiState(
     val configured: Boolean = false,
     val deviceRegistered: Boolean = false,
+    val reenrollmentRequired: Boolean = false,
     val serverUrl: String = "",
     val works: List<WorkSummary> = emptyList(),
     val songs: List<CatalogLibrarySong> = emptyList(),
@@ -63,10 +64,12 @@ class CatalogViewModel(application: Application) : AndroidViewModel(application)
             CatalogUiState(
                 configured = it.configured,
                 deviceRegistered = it.deviceRegistered,
+                reenrollmentRequired = it.reenrollmentRequired,
                 serverUrl = it.serverUrl,
                 works = repository.cachedWorks(),
                 songs = repository.cachedLibrary()?.songs.orEmpty(),
                 albums = repository.cachedLibrary()?.albums.orEmpty(),
+                error = if (it.reenrollmentRequired) "Catalog 登记已失效，请重新登记" else null,
             )
         },
     )
@@ -87,6 +90,7 @@ class CatalogViewModel(application: Application) : AndroidViewModel(application)
                     _state.value = _state.value.copy(
                         configured = true,
                         deviceRegistered = connection.deviceRegistered,
+                        reenrollmentRequired = connection.reenrollmentRequired,
                         serverUrl = connection.serverUrl,
                         loading = false,
                     )
@@ -163,10 +167,13 @@ class CatalogViewModel(application: Application) : AndroidViewModel(application)
                     if (!page.fromCache && query.isNullOrBlank()) repository.syncChanges()
                 },
                 onFailure = { error ->
+                    val reenrollmentRequired = error is CatalogFailure.InvalidCredentials
                     _state.value = _state.value.copy(
                         loading = false,
                         refreshing = false,
                         offlineSnapshot = hadItems && error is CatalogFailure.Unreachable,
+                        reenrollmentRequired = reenrollmentRequired || _state.value.reenrollmentRequired,
+                        deviceRegistered = if (reenrollmentRequired) false else _state.value.deviceRegistered,
                         error = message(error),
                     )
                 },
@@ -213,10 +220,13 @@ class CatalogViewModel(application: Application) : AndroidViewModel(application)
                     )
                 },
                 onFailure = { error ->
+                    val reenrollmentRequired = error is CatalogFailure.InvalidCredentials
                     _state.value = _state.value.copy(
                         loading = false,
                         refreshing = false,
                         offlineSnapshot = hadItems && error is CatalogFailure.Unreachable,
+                        reenrollmentRequired = reenrollmentRequired || _state.value.reenrollmentRequired,
+                        deviceRegistered = if (reenrollmentRequired) false else _state.value.deviceRegistered,
                         error = message(error),
                     )
                 },
@@ -319,6 +329,7 @@ class CatalogViewModel(application: Application) : AndroidViewModel(application)
     }
 
     private fun message(error: Throwable): String = when (error) {
+        is CatalogFailure.InvalidCredentials -> "Catalog 登记已失效，请重新登记"
         is CatalogFailure.AdminInvalidCredentials -> getApplication<Application>()
             .getString(R.string.catalog_admin_invalid_credentials)
         else -> error.message ?: "发生未知错误"

@@ -1,6 +1,9 @@
 package io.github.cluno1.sonorus.features.catalog.domain
 
-sealed class CatalogFailure(message: String, cause: Throwable? = null) : Exception(message, cause) {
+import java.io.IOException
+
+/** Catalog failures may cross OkHttp interceptor boundaries and must remain transport-safe. */
+sealed class CatalogFailure(message: String, cause: Throwable? = null) : IOException(message, cause) {
     class NotConfigured : CatalogFailure("私有作品库尚未配置")
     class InvalidCredentials : CatalogFailure("私有作品库凭据已失效")
     class AdminInvalidCredentials : CatalogFailure("Administrator username or password is incorrect")
@@ -14,6 +17,7 @@ data class CatalogConnection(
     val serverUrl: String,
     val configured: Boolean,
     val deviceRegistered: Boolean,
+    val reenrollmentRequired: Boolean = false,
 )
 
 interface CatalogRepository {
