@@ -934,6 +934,37 @@ private fun LocalNavigationContent(
         catalogState.error?.let { snackbarHostState.showSnackbar(it) }
     }
 
+    val catalogQueueEntryForSong: (Song) -> RhythmQueueEntry? = { displaySong ->
+        catalogSongByDisplayId[displaySong.id]?.let { song ->
+            RhythmQueueEntry(
+                nowPlaying = RhythmNowPlayingItem(
+                    workId = song.workId,
+                    arrangementId = song.arrangementId,
+                    renditionId = song.renditionId,
+                    assetId = null,
+                    title = song.title,
+                    subtitle = song.artist ?: "未知艺术家",
+                    lyrics = song.lyrics,
+                ),
+                playback = CatalogPlaybackItem(
+                    renditionId = song.renditionId,
+                    assetId = null,
+                    title = song.title,
+                    artist = song.artist ?: "未知艺术家",
+                    arrangementName = song.albumTitle,
+                    playbackUrl = CatalogPlaybackPolicy.deferredUri(song.renditionId),
+                    cacheKey = null,
+                    mediaType = "audio/mpeg",
+                    durationMs = song.durationMs ?: 0L,
+                    albumId = song.albumId,
+                    artworkUrl = CatalogPlaybackPolicy.resolveAutomaticArtworkUrl(
+                        song.coverUrl,
+                        catalogState.serverUrl,
+                    ),
+                ),
+            )
+        }
+    }
     val playCatalogQueue: (List<Song>, Int, Boolean) -> Unit = playQueue@{ requestedSongs, startIndex, shuffle ->
         if (requestedSongs.isEmpty()) {
             return@playQueue
@@ -947,37 +978,7 @@ private fun LocalNavigationContent(
             if (missingCatalogIdentity) {
                 coroutineScope.launch { snackbarHostState.showSnackbar("Catalog 歌曲身份已过期，请刷新曲库") }
             } else {
-                val entries = orderedSongs.mapNotNull { displaySong ->
-                    val song = catalogSongByDisplayId[displaySong.id] ?: return@mapNotNull null
-                    RhythmQueueEntry(
-                        nowPlaying = RhythmNowPlayingItem(
-                            workId = song.workId,
-                            arrangementId = song.arrangementId,
-                            renditionId = song.renditionId,
-                            assetId = null,
-                            title = song.title,
-                            subtitle = song.artist ?: "未知艺术家",
-                            lyrics = song.lyrics,
-                        ),
-                        playback = CatalogPlaybackItem(
-                            renditionId = song.renditionId,
-                            assetId = null,
-                            title = song.title,
-                            artist = song.artist ?: "未知艺术家",
-                            arrangementName = song.albumTitle,
-                            playbackUrl = io.github.cluno1.sonorus.features.catalog.domain.CatalogPlaybackPolicy
-                                .deferredUri(song.renditionId),
-                            cacheKey = null,
-                            mediaType = "audio/mpeg",
-                            durationMs = song.durationMs ?: 0L,
-                            albumId = song.albumId,
-                            artworkUrl = CatalogPlaybackPolicy.resolveAutomaticArtworkUrl(
-                                song.coverUrl,
-                                catalogState.serverUrl,
-                            ),
-                        ),
-                    )
-                }
+                val entries = orderedSongs.mapNotNull(catalogQueueEntryForSong)
                 viewModel.playUnifiedQueue(
                     songs = orderedSongs,
                     catalogEntries = entries,
@@ -4050,29 +4051,37 @@ private fun LocalNavigationContent(
                             }
                         },
                         onAddToQueue = { song ->
-                            if (catalogAlbum == null) viewModel.addSongToQueue(song)
+                            if (catalogAlbum == null) {
+                                viewModel.addSongToQueue(song)
+                            } else {
+                                catalogQueueEntryForSong(song)?.let { entry ->
+                                    viewModel.addUnifiedSongToQueue(song, entry, playNext = false)
+                                }
+                            }
                         },
                         onAddSongToPlaylist = { song ->
-                            if (catalogAlbum == null) {
-                                selectedSongForPlaylist = song
-                                showAddToPlaylistSheet = true
-                            }
+                            selectedSongForPlaylist = song
+                            showAddToPlaylistSheet = true
                         },
                         onPlayerClick = {
                             navController.navigate(Screen.Player.route)
                         },
                         onPlayNext = { song ->
-                            if (catalogAlbum == null) viewModel.playNext(song)
+                            if (catalogAlbum == null) {
+                                viewModel.playNext(song)
+                            } else {
+                                catalogQueueEntryForSong(song)?.let { entry ->
+                                    viewModel.addUnifiedSongToQueue(song, entry, playNext = true)
+                                }
+                            }
                         },
                         onToggleFavorite = { song ->
                             viewModel.toggleFavorite(song)
                         },
                         favoriteSongs = favoriteSongs,
                         onShowSongInfo = { song ->
-                            if (catalogAlbum == null) {
-                                selectedSongForInfo = song
-                                showSongInfoSheet = true
-                            }
+                            selectedSongForInfo = song
+                            showSongInfoSheet = true
                         },
                         onAddToBlacklist = { song ->
                             if (catalogAlbum == null) appSettings.addToBlacklist(song.id)
@@ -4083,7 +4092,7 @@ private fun LocalNavigationContent(
                         songsOverride = catalogAlbum?.songs,
                         isContentLoadingOverride = if (catalogAlbum != null) catalogState.loading else null,
                         isStreamingMode = catalogAlbum != null,
-                        allowSongOptions = catalogAlbum == null,
+                        allowSongOptions = true,
                         onEditAlbum = if (catalogAlbum != null) null else { title, artist, artworkUri, removeArtwork, onProgress, onComplete ->
                             val allAlbumsList = viewModel.albums.value
                             val activeAlbum = allAlbumsList.find { it.id == albumId }
@@ -4203,6 +4212,7 @@ private fun LocalNavigationContent(
                     }
 
                     if (showSongInfoSheet && selectedSongForInfo != null) {
+                        val infoSongIsCatalog = selectedSongForInfo!!.isCatalogLibrarySong()
                         SongInfoBottomSheet(
                             song = selectedSongForInfo!!,
                             onDismiss = { 
@@ -4210,7 +4220,8 @@ private fun LocalNavigationContent(
                                 selectedSongForInfo = null
                             },
                             appSettings = appSettings,
-                            onEditSong = { title, artist, album, genre, year, trackNumber, artworkUri, removeArtwork, albumArtist, composer, discNumber, onComplete ->
+                            isStreamingMode = infoSongIsCatalog,
+                            onEditSong = if (infoSongIsCatalog) null else { title, artist, album, genre, year, trackNumber, artworkUri, removeArtwork, albumArtist, composer, discNumber, onComplete ->
                                 viewModel.saveMetadataChanges(
                                     song = selectedSongForInfo!!,
                                     title = title,

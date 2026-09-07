@@ -1213,6 +1213,11 @@ fun AlbumDetailScreen(
                 showSongOptionsSheet = false
                 handleArtistTap(song)
             },
+            isFavorite = favoriteSongs.contains(selectedSongForOptions!!.id),
+            onToggleFavorite = {
+                onToggleFavorite(selectedSongForOptions!!)
+                showSongOptionsSheet = false
+            },
             showRemoveFromPlaylist = false,
             showGoToAlbum = false,
             isStreamingMode = isStreamingMode,

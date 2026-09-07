@@ -53,7 +53,9 @@ import io.github.cluno1.sonorus.features.catalog.domain.CATALOG_SONG_ID_PREFIX
 import io.github.cluno1.sonorus.features.catalog.domain.CatalogPlaybackPolicy
 import io.github.cluno1.sonorus.features.catalog.domain.RhythmNowPlayingItem
 import io.github.cluno1.sonorus.features.catalog.domain.RhythmQueueEntry
+import io.github.cluno1.sonorus.features.catalog.domain.isCatalogLibrarySong
 import io.github.cluno1.sonorus.features.catalog.domain.toStableCatalogSongId
+import io.github.cluno1.sonorus.features.catalog.data.local.CatalogQueueStore
 import io.github.cluno1.sonorus.features.local.presentation.player.PlaybackControlStateMachine
 import io.github.cluno1.sonorus.features.local.presentation.player.PlaybackControlUiState
 import io.github.cluno1.sonorus.features.local.presentation.player.PlaybackReadiness
@@ -5858,6 +5860,41 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
         applyUnifiedQueue(songs, catalogEntries, startIndex, positionMs, startPlayback = false)
     }
 
+    /** Inserts a managed Catalog song without weakening the deferred-URI playback boundary. */
+    fun addUnifiedSongToQueue(song: Song, entry: RhythmQueueEntry, playNext: Boolean) {
+        if (!song.isCatalogLibrarySong()) return
+        val mediaItem = entry.playback.toMediaItem()
+        if (!CatalogPlaybackPolicy.allowsDeferred(
+                mediaId = mediaItem.mediaId,
+                uri = mediaItem.localConfiguration?.uri?.toString(),
+                mediaType = mediaItem.localConfiguration?.mimeType,
+            )
+        ) {
+            Log.w(TAG, "Rejected Catalog queue insertion because the item failed deferred policy")
+            return
+        }
+        mediaController?.let { controller ->
+            val queueSongs = _currentQueue.value.songs.toMutableList()
+            val insertIndex = if (playNext && controller.currentMediaItemIndex >= 0) {
+                controller.currentMediaItemIndex + 1
+            } else {
+                controller.mediaItemCount
+            }.coerceIn(0, queueSongs.size)
+            controller.addMediaItem(insertIndex, mediaItem)
+            queueSongs.add(insertIndex, song)
+            val currentIndex = controller.currentMediaItemIndex.coerceIn(0, queueSongs.lastIndex)
+            _currentQueue.value = Queue(queueSongs, currentIndex)
+            val catalogEntries = (_catalogQueue.value + entry).distinctBy { it.playback.toMediaItem().mediaId }
+            _catalogQueue.value = catalogEntries
+            CatalogQueueStore(getApplication()).saveUnified(
+                songs = queueSongs,
+                catalogEntriesByMediaId = catalogEntries.associateBy { it.playback.toMediaItem().mediaId },
+                currentIndex = currentIndex,
+                positionMs = controller.currentPosition,
+            )
+        }
+    }
+
     private fun applyUnifiedQueue(
         songs: List<Song>,
         catalogEntries: List<RhythmQueueEntry>,
@@ -7093,17 +7130,14 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
 
     // New functions for playlist management
     fun createPlaylist(name: String, songs: List<Song> = emptyList(), showSnackbar: ((String) -> Unit)? = null) {
-        if (songs.any { it.id.startsWith("rhythm-catalog:") }) {
-            showSnackbar?.invoke("远程歌曲暂不写入本地歌单")
-            return
-        }
+        val playlistSongs = songs.map { it.toFavoriteSnapshot() }
         viewModelScope.launch {
             val newPlaylist = repository.createPlaylist(name)
             var updatedPlaylist = newPlaylist
             if (songs.isNotEmpty()) {
                 val filteredSongsSet: Set<String> = filteredSongs.value.map { song: Song -> song.id }.toSet()
                 val existingSongIds: Set<String> = newPlaylist.songs.map { song: Song -> song.id }.toSet()
-                val songsToAdd = songs.filter { song ->
+                val songsToAdd = playlistSongs.filter { song ->
                     val isStreaming = song.uri.toString().startsWith("http://") || 
                                       song.uri.toString().startsWith("https://") || 
                                       song.uri.toString().startsWith("streaming://") ||
@@ -7131,10 +7165,7 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun addSongToPlaylist(song: Song, playlistId: String, showSnackbar: (String) -> Unit) {
-        if (song.id.startsWith("rhythm-catalog:")) {
-            showSnackbar("远程歌曲暂不写入本地歌单")
-            return
-        }
+        val playlistSong = song.toFavoriteSnapshot()
         // Check if song is filtered out (blacklisted or not whitelisted)
         val filteredSongsSet: Set<String> = filteredSongs.value.map { song: Song -> song.id }.toSet()
         val isStreaming = song.uri.toString().startsWith("http://") || 
@@ -7150,11 +7181,11 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
         _playlists.value = _playlists.value.map { playlist ->
             if (playlist.id == playlistId) {
                 // Check if song is already in the playlist
-                if (playlist.songs.any { it.id == song.id }) {
+                if (playlist.songs.any { it.id.toStableCatalogSongId() == playlistSong.id }) {
                     showSnackbar("${song.title} is already in playlist '${playlist.name}'")
                     playlist
                 } else {
-                    val updatedSongs = playlist.songs + song
+                    val updatedSongs = playlist.songs + playlistSong
                     success = true
                     showSnackbar("Added ${song.title} to ${playlist.name}")
                     playlist.copy(

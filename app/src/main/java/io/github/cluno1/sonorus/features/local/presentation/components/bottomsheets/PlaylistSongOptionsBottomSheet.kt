@@ -131,6 +131,8 @@ fun PlaylistSongOptionsBottomSheet(
     onGoToArtist: () -> Unit,
     onShare: () -> Unit,
     onDeleteSong: () -> Unit,
+    isFavorite: Boolean = false,
+    onToggleFavorite: (() -> Unit)? = null,
     showRemoveFromPlaylist: Boolean = true,
     showAddToPlaylist: Boolean = true,
     showGoToAlbum: Boolean = true,
@@ -278,7 +280,7 @@ fun PlaylistSongOptionsBottomSheet(
                     val errorContainer = MaterialTheme.colorScheme.errorContainer
                     val errorColor = MaterialTheme.colorScheme.error
 
-                    val gridItems = remember(showGoToAlbum, showRemoveFromPlaylist, showAddToPlaylist, primaryContainer, onPrimaryContainer, secondaryContainer, onSecondaryContainer, errorContainer, errorColor) {
+                    val gridItems = remember(showGoToAlbum, showRemoveFromPlaylist, showAddToPlaylist, isFavorite, onToggleFavorite, primaryContainer, onPrimaryContainer, secondaryContainer, onSecondaryContainer, errorContainer, errorColor) {
                         buildList {
                             add(
                                 OptionItem(
@@ -306,6 +308,23 @@ fun PlaylistSongOptionsBottomSheet(
                                         containerColor = primaryContainer,
                                         iconColor = onPrimaryContainer,
                                         onClick = onAddToPlaylist
+                                    )
+                                )
+                            }
+                            onToggleFavorite?.let { toggleFavorite ->
+                                add(
+                                    OptionItem(
+                                        icon = if (isFavorite) {
+                                            MaterialSymbolIcon("favorite", filled = true)
+                                        } else {
+                                            MaterialSymbolIcon("favorite", filled = false)
+                                        },
+                                        text = context.getString(
+                                            if (isFavorite) R.string.action_dislike else R.string.action_like
+                                        ),
+                                        containerColor = primaryContainer,
+                                        iconColor = onPrimaryContainer,
+                                        onClick = toggleFavorite
                                     )
                                 )
                             }
