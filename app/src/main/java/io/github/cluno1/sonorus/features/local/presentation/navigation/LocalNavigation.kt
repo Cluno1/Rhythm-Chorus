@@ -477,6 +477,7 @@ fun LocalNavigation(
             "PLAYLISTS" -> LibraryTab.PLAYLISTS
             "ALBUMS" -> LibraryTab.ALBUMS
             "ARTISTS" -> LibraryTab.ARTISTS
+            "SCORES" -> LibraryTab.SCORES
             "EXPLORER" -> LibraryTab.EXPLORER
             else -> LibraryTab.SONGS // Default fallback
         }
@@ -2064,6 +2065,17 @@ private fun LocalNavigationContent(
                                     restoreState = true
                                 }
                             },
+                            scoreWorks = catalogState.scoreWorks,
+                            onScoreWorkClick = { work ->
+                                val option = work.scoreOptions.firstOrNull { it.scoreId == work.defaultScoreId }
+                                    ?: work.scoreOptions.firstOrNull()
+                                if (option != null) navController.navigate(
+                                    Screen.CatalogScore.createRoute(work.workId, option.scoreId, option.revisionId, work.title, option.partCount)
+                                )
+                            },
+                            onViewAllScores = {
+                                navController.navigate(Screen.Library.createRoute(LibraryTab.SCORES))
+                            },
                             onSkipNext = onSkipNext,
                             onSearchClick = {
                                 navigateToTopLevel(Screen.Search.route)
@@ -2179,6 +2191,10 @@ private fun LocalNavigationContent(
                         revisionId = backStackEntry.arguments?.getString("revisionId")?.let(Uri::decode).orEmpty(),
                         title = backStackEntry.arguments?.getString("title")?.let(Uri::decode) ?: "远程谱面",
                         expectedPartCount = backStackEntry.arguments?.getInt("parts") ?: 0,
+                        scoreWork = catalogState.scoreWorks.firstOrNull {
+                            it.workId == backStackEntry.arguments?.getString("workId")?.let(Uri::decode)
+                        },
+                        initialScoreId = backStackEntry.arguments?.getString("scoreId")?.let(Uri::decode),
                         viewModel = catalogViewModel,
                         onBack = {
                             if (!navController.popBackStack()) navigateToTopLevel(Screen.Home.route)
@@ -2215,6 +2231,7 @@ private fun LocalNavigationContent(
                             catalogSource = UniversalSearchCatalogSource(
                                 songs = nativeSongs,
                                 albums = nativeAlbums,
+                                scoreWorks = catalogState.scoreWorks,
                                 isLoading = catalogState.loading,
                             ),
                             onLocalSongClick = { song ->
@@ -2227,6 +2244,13 @@ private fun LocalNavigationContent(
                             },
                             onLocalAlbumClick = { album ->
                                 navController.navigate(Screen.AlbumDetail.createRoute(album.id, album.title))
+                            },
+                            onCatalogScoreWorkClick = { work ->
+                                val option = work.scoreOptions.firstOrNull { it.scoreId == work.defaultScoreId }
+                                    ?: work.scoreOptions.firstOrNull()
+                                if (option != null) navController.navigate(
+                                    Screen.CatalogScore.createRoute(work.workId, option.scoreId, option.revisionId, work.title, option.partCount)
+                                )
                             },
                             onLocalArtistClick = { artist -> navController.navigate(Screen.ArtistDetail.createRoute(artist.name)) },
                             onLocalPlaylistClick = { playlist -> navController.navigate(Screen.PlaylistDetail.createRoute(playlist.id)) },
@@ -3327,6 +3351,7 @@ private fun LocalNavigationContent(
                         "playlists" -> LibraryTab.PLAYLISTS
                         "albums" -> LibraryTab.ALBUMS
                         "artists" -> LibraryTab.ARTISTS
+                        "scores" -> LibraryTab.SCORES
                         "explorer" -> LibraryTab.EXPLORER
                         else -> LibraryTab.SONGS
                     }
@@ -3545,7 +3570,23 @@ private fun LocalNavigationContent(
                                 else streamingMusicViewModel.unlikeSong(original)
                             }
                         }) else null,
-                        streamingFavoriteSongIds = streamingLikedSongIds
+                        streamingFavoriteSongIds = streamingLikedSongIds,
+                        scoreWorks = if (isStreamingMode) emptyList() else catalogState.scoreWorks,
+                        onScoreWorkClick = { work ->
+                            val option = work.scoreOptions.firstOrNull { it.scoreId == work.defaultScoreId }
+                                ?: work.scoreOptions.firstOrNull()
+                            if (option != null) {
+                                navController.navigate(
+                                    Screen.CatalogScore.createRoute(
+                                        work.workId,
+                                        option.scoreId,
+                                        option.revisionId,
+                                        work.title,
+                                        option.partCount,
+                                    )
+                                ) { launchSingleTop = true }
+                            }
+                        },
                         )
                 }
 

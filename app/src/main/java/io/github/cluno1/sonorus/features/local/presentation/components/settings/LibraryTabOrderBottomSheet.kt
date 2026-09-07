@@ -105,6 +105,7 @@ fun LibraryTabOrderBottomSheet(
             "PLAYLISTS" -> Pair(context.getString(R.string.settings_tab_playlists), RhythmIcons.PlaylistFilled)
             "ALBUMS" -> Pair(context.getString(R.string.settings_tab_albums), RhythmIcons.Music.Album)
             "ARTISTS" -> Pair(context.getString(R.string.settings_tab_artists), RhythmIcons.Artist)
+            "SCORES" -> Pair(context.getString(R.string.catalog_scores), MaterialSymbolIcon("score"))
             "ALBUM_ARTISTS" -> Pair(context.getString(R.string.settings_tab_album_artists), MaterialSymbolIcon("person_pin"))
             "EXPLORER" -> Pair(context.getString(R.string.settings_tab_explorer), RhythmIcons.Folder)
             else -> Pair(tabId, RhythmIcons.Music.Song)

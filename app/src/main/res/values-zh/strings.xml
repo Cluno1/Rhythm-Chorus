@@ -2849,4 +2849,14 @@
     <string name="widget_stats_name">Sonorus 统计</string>
     <string name="sonorus_close">关闭</string>
     <string name="sonorus_update_source_desc">来自 Cluno1/Sonorus 的稳定版本</string>
+    <string name="catalog_scores">歌谱</string>
+    <string name="catalog_scores_empty">暂无可阅读歌谱</string>
+    <string name="catalog_score_count">%1$d 份歌谱</string>
+    <string name="catalog_score_origin_edited">精校谱</string>
+    <string name="catalog_score_origin_midi">MIDI 谱</string>
+    <string name="score_settings">乐谱设置</string>
+    <string name="score_version">谱面版本</string>
+    <string name="score_playback_end">播放结束</string>
+    <string name="score_pause_at_end">播完暂停</string>
+    <string name="score_loop_current">当前循环</string>
 </resources>

@@ -7,6 +7,7 @@ import io.github.cluno1.sonorus.features.catalog.domain.WorkSummary
 import io.github.cluno1.sonorus.features.catalog.domain.CatalogLibraryAlbum
 import io.github.cluno1.sonorus.features.catalog.domain.CatalogLibrarySnapshot
 import io.github.cluno1.sonorus.features.catalog.domain.CatalogLibrarySong
+import io.github.cluno1.sonorus.features.catalog.domain.CatalogLibraryScoreWork
 import io.github.cluno1.sonorus.features.catalog.domain.ScoreRevision
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
@@ -30,7 +31,11 @@ internal class CatalogCache(context: Context, private val gson: Gson = Gson()) {
             ?: return null
         val albums = read<List<CatalogLibraryAlbum>>(KEY_LIBRARY_ALBUMS, object : TypeToken<List<CatalogLibraryAlbum>>() {}.type)
             ?: return null
-        return CatalogLibrarySnapshot(songs, albums, fromCache = true)
+        val scoreWorks = read<List<CatalogLibraryScoreWork>>(
+            KEY_LIBRARY_SCORE_WORKS,
+            object : TypeToken<List<CatalogLibraryScoreWork>>() {}.type,
+        ).orEmpty()
+        return CatalogLibrarySnapshot(songs, albums, scoreWorks, fromCache = true)
     }
 
     fun saveLibrary(snapshot: CatalogLibrarySnapshot) {
@@ -39,6 +44,7 @@ internal class CatalogCache(context: Context, private val gson: Gson = Gson()) {
         preferences.edit(commit = true) {
             putString(KEY_LIBRARY_SONGS, gson.toJson(snapshot.songs))
             putString(KEY_LIBRARY_ALBUMS, gson.toJson(snapshot.albums))
+            putString(KEY_LIBRARY_SCORE_WORKS, gson.toJson(snapshot.scoreWorks))
             snapshot.albums.forEach { album ->
                 putString(libraryAlbumKey(album.id), gson.toJson(album))
             }
@@ -82,5 +88,6 @@ internal class CatalogCache(context: Context, private val gson: Gson = Gson()) {
         const val KEY_SYNC_CURSOR = "sync_cursor"
         const val KEY_LIBRARY_SONGS = "library_songs"
         const val KEY_LIBRARY_ALBUMS = "library_albums"
+        const val KEY_LIBRARY_SCORE_WORKS = "library_score_works"
     }
 }

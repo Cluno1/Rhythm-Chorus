@@ -6,6 +6,8 @@ import io.github.cluno1.sonorus.features.catalog.domain.CatalogChange
 import io.github.cluno1.sonorus.features.catalog.domain.CatalogChanges
 import io.github.cluno1.sonorus.features.catalog.domain.CatalogLibraryAlbum
 import io.github.cluno1.sonorus.features.catalog.domain.CatalogLibrarySong
+import io.github.cluno1.sonorus.features.catalog.domain.CatalogLibraryScoreWork
+import io.github.cluno1.sonorus.features.catalog.domain.CatalogScoreOption
 import io.github.cluno1.sonorus.features.catalog.domain.CatalogPage
 import io.github.cluno1.sonorus.features.catalog.domain.CatalogPlaybackPolicy
 import io.github.cluno1.sonorus.features.catalog.domain.Part
@@ -34,6 +36,40 @@ internal object CatalogDtoMapper {
 
     fun libraryAlbums(dto: LibraryAlbumPageDto): Pair<List<CatalogLibraryAlbum>, String?> =
         dto.items.required("items").map(::libraryAlbum) to dto.nextCursor
+
+    fun libraryScoreWorks(dto: LibraryScoreWorkPageDto): Pair<List<CatalogLibraryScoreWork>, String?> =
+        dto.items.required("items").map { item ->
+            val options = item.scoreOptions.required("score_work.score_options").map { option ->
+                CatalogScoreOption(
+                    arrangementId = uuid(option.arrangementId, "score_option.arrangement_id"),
+                    arrangementName = text(option.arrangementName, "score_option.arrangement_name"),
+                    scoreId = uuid(option.scoreId, "score_option.score_id"),
+                    revisionId = uuid(option.revisionId, "score_option.revision_id"),
+                    scoreLabel = text(option.scoreLabel, "score_option.score_label"),
+                    origin = text(option.origin, "score_option.origin"),
+                    partCount = nonNegative(option.partCount, "score_option.part_count"),
+                    revisionNo = positive(option.revisionNo, "score_option.revision_no"),
+                    publishedAt = text(option.publishedAt, "score_option.published_at"),
+                    preferred = option.preferred.required("score_option.preferred"),
+                )
+            }
+            val defaultScoreId = uuid(item.defaultScoreId, "score_work.default_score_id")
+            require(options.isNotEmpty()) { "score work has no options" }
+            require(options.any { it.scoreId == defaultScoreId }) { "default score is not an option" }
+            require(options.distinctBy { it.scoreId }.size == options.size) { "score work has duplicate score ids" }
+            CatalogLibraryScoreWork(
+                workId = uuid(item.workId, "score_work.work_id"),
+                title = text(item.title, "score_work.title"),
+                artist = item.artist,
+                coverAssetId = optionalUuid(item.coverAssetId, "score_work.cover_asset_id"),
+                coverUrl = item.coverUrl,
+                defaultScoreId = defaultScoreId,
+                latestPublishedAt = text(item.latestPublishedAt, "score_work.latest_published_at"),
+                scoreCount = positive(item.scoreCount, "score_work.score_count"),
+                origins = item.origins.required("score_work.origins").map { text(it, "score_work.origin") },
+                scoreOptions = options,
+            ).also { require(it.scoreCount == options.size) { "score_count does not match options" } }
+        } to dto.nextCursor
 
     fun libraryAlbumDetail(dto: LibraryAlbumDetailDto): CatalogLibraryAlbum {
         val album = libraryAlbum(dto.album.required("album"))

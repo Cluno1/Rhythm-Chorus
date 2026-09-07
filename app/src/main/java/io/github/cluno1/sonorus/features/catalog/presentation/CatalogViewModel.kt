@@ -16,6 +16,7 @@ import io.github.cluno1.sonorus.features.catalog.domain.WorkSummary
 import io.github.cluno1.sonorus.features.catalog.domain.RhythmQueueEntry
 import io.github.cluno1.sonorus.features.catalog.domain.CatalogLibraryAlbum
 import io.github.cluno1.sonorus.features.catalog.domain.CatalogLibrarySong
+import io.github.cluno1.sonorus.features.catalog.domain.CatalogLibraryScoreWork
 import io.github.cluno1.sonorus.features.catalog.domain.CatalogIssuedInvite
 import io.github.cluno1.sonorus.shared.data.model.Song
 import android.net.Uri
@@ -34,6 +35,7 @@ data class CatalogUiState(
     val works: List<WorkSummary> = emptyList(),
     val songs: List<CatalogLibrarySong> = emptyList(),
     val albums: List<CatalogLibraryAlbum> = emptyList(),
+    val scoreWorks: List<CatalogLibraryScoreWork> = emptyList(),
     val selectedBundle: WorkBundle? = null,
     val loading: Boolean = false,
     val refreshing: Boolean = false,
@@ -69,6 +71,7 @@ class CatalogViewModel(application: Application) : AndroidViewModel(application)
                 works = repository.cachedWorks(),
                 songs = repository.cachedLibrary()?.songs.orEmpty(),
                 albums = repository.cachedLibrary()?.albums.orEmpty(),
+                scoreWorks = repository.cachedLibrary()?.scoreWorks.orEmpty(),
                 error = if (it.reenrollmentRequired) "Catalog 登记已失效，请重新登记" else null,
             )
         },
@@ -203,7 +206,8 @@ class CatalogViewModel(application: Application) : AndroidViewModel(application)
     fun refreshLibrary() {
         libraryRefreshJob?.cancel()
         libraryRefreshJob = viewModelScope.launch {
-            val hadItems = _state.value.songs.isNotEmpty() || _state.value.albums.isNotEmpty()
+            val hadItems = _state.value.songs.isNotEmpty() || _state.value.albums.isNotEmpty() ||
+                _state.value.scoreWorks.isNotEmpty()
             _state.value = _state.value.copy(
                 loading = !hadItems,
                 refreshing = hadItems,
@@ -214,6 +218,7 @@ class CatalogViewModel(application: Application) : AndroidViewModel(application)
                     _state.value = _state.value.copy(
                         songs = snapshot.songs,
                         albums = snapshot.albums,
+                        scoreWorks = snapshot.scoreWorks,
                         loading = false,
                         refreshing = false,
                         offlineSnapshot = snapshot.fromCache,

@@ -17,6 +17,37 @@ internal data class LibraryAlbumPageDto(
     @SerializedName("next_cursor") val nextCursor: String?,
 )
 
+internal data class LibraryScoreWorkPageDto(
+    val items: List<LibraryScoreWorkDto>?,
+    @SerializedName("next_cursor") val nextCursor: String?,
+)
+
+internal data class LibraryScoreWorkDto(
+    @SerializedName("work_id") val workId: String?,
+    val title: String?,
+    val artist: String?,
+    @SerializedName("cover_asset_id") val coverAssetId: String?,
+    @SerializedName("cover_url") val coverUrl: String?,
+    @SerializedName("default_score_id") val defaultScoreId: String?,
+    @SerializedName("latest_published_at") val latestPublishedAt: String?,
+    @SerializedName("score_count") val scoreCount: Int?,
+    val origins: List<String>?,
+    @SerializedName("score_options") val scoreOptions: List<LibraryScoreOptionDto>?,
+)
+
+internal data class LibraryScoreOptionDto(
+    @SerializedName("arrangement_id") val arrangementId: String?,
+    @SerializedName("arrangement_name") val arrangementName: String?,
+    @SerializedName("score_id") val scoreId: String?,
+    @SerializedName("revision_id") val revisionId: String?,
+    @SerializedName("score_label") val scoreLabel: String?,
+    val origin: String?,
+    @SerializedName("part_count") val partCount: Int?,
+    @SerializedName("revision_no") val revisionNo: Int?,
+    @SerializedName("published_at") val publishedAt: String?,
+    val preferred: Boolean?,
+)
+
 internal data class LibraryAlbumDetailDto(
     val album: LibraryAlbumDto?,
     val songs: List<LibrarySongDto>?,

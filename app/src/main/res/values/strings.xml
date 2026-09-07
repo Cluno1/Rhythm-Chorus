@@ -3109,4 +3109,14 @@
     <string name="widget_stats_name">Sonorus Stats</string>
     <string name="sonorus_close">Close</string>
     <string name="sonorus_update_source_desc">Stable releases from Cluno1/Sonorus</string>
+    <string name="catalog_scores">Scores</string>
+    <string name="catalog_scores_empty">No readable scores yet</string>
+    <string name="catalog_score_count">%1$d scores</string>
+    <string name="catalog_score_origin_edited">Edited score</string>
+    <string name="catalog_score_origin_midi">MIDI score</string>
+    <string name="score_settings">Score settings</string>
+    <string name="score_version">Score version</string>
+    <string name="score_playback_end">When playback ends</string>
+    <string name="score_pause_at_end">Pause at end</string>
+    <string name="score_loop_current">Loop current</string>
 </resources>

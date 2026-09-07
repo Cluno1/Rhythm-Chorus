@@ -80,6 +80,7 @@ import io.github.cluno1.sonorus.shared.data.model.AppSettings
 import io.github.cluno1.sonorus.shared.data.model.Artist
 import io.github.cluno1.sonorus.shared.data.model.Playlist
 import io.github.cluno1.sonorus.shared.data.model.Song
+import io.github.cluno1.sonorus.features.catalog.domain.CatalogLibraryScoreWork
 import io.github.cluno1.sonorus.shared.presentation.components.Material3SettingsGroup
 import io.github.cluno1.sonorus.shared.presentation.components.Material3SettingsItem
 import io.github.cluno1.sonorus.shared.presentation.components.SettingScope
@@ -105,6 +106,7 @@ import io.github.cluno1.sonorus.core.ProductCapabilities
 data class UniversalSearchCatalogSource(
     val songs: List<Song>,
     val albums: List<Album>,
+    val scoreWorks: List<CatalogLibraryScoreWork> = emptyList(),
     val isLoading: Boolean = false,
 )
 
@@ -116,6 +118,7 @@ fun UniversalSearchScreen(
     catalogSource: UniversalSearchCatalogSource? = null,
     onLocalSongClick: (Song) -> Unit = {},
     onLocalAlbumClick: (Album) -> Unit = {},
+    onCatalogScoreWorkClick: (CatalogLibraryScoreWork) -> Unit = {},
     onLocalArtistClick: (Artist) -> Unit = {},
     onLocalPlaylistClick: (Playlist) -> Unit = {},
     onStreamingSongClick: (StreamingSong) -> Unit = {},
@@ -295,6 +298,15 @@ fun UniversalSearchScreen(
             }
         }
     }
+    val matchedScoreWorks = remember(normalizedQuery, catalogSource?.scoreWorks) {
+        if (normalizedQuery.isBlank()) emptyList()
+        else catalogSource?.scoreWorks.orEmpty().filter { work ->
+            sequenceOf(work.title, work.artist)
+                .plus(work.scoreOptions.asSequence().flatMap { sequenceOf(it.scoreLabel, it.origin) })
+                .filterNotNull()
+                .any { it.contains(normalizedQuery, ignoreCase = true) }
+        }
+    }
     val matchedLocalArtists = remember(query, localArtists, filterArtists) {
         if (!filterArtists || query.isBlank()) emptyList()
         else localArtists.filter { it.name.contains(query, true) }
@@ -315,7 +327,8 @@ fun UniversalSearchScreen(
     val hasResults = matchedLocalSongs.isNotEmpty() || matchedStreamingSongs.isNotEmpty() ||
             matchedLocalAlbums.isNotEmpty() || matchedStreamingAlbums.isNotEmpty() ||
             matchedLocalArtists.isNotEmpty() || matchedStreamingArtists.isNotEmpty() ||
-            matchedLocalPlaylists.isNotEmpty() || matchedStreamingPlaylists.isNotEmpty()
+            matchedLocalPlaylists.isNotEmpty() || matchedStreamingPlaylists.isNotEmpty() ||
+            matchedScoreWorks.isNotEmpty()
     val showEmptyState = shouldShowUniversalSearchEmptyState(
         hasResults = hasResults,
         isLocalLoading = isLocalLoading,
@@ -909,6 +922,24 @@ fun UniversalSearchScreen(
                                     }
                                 }
                             }
+                            if (matchedScoreWorks.isNotEmpty()) {
+                                item(key = "scores_header") {
+                                    Text(stringResource(R.string.catalog_scores), style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.primary, modifier = Modifier.padding(top = 8.dp).animateItem())
+                                }
+                                item(key = "scores_grid") {
+                                    LazyRow(horizontalArrangement = Arrangement.spacedBy(12.dp), modifier = Modifier.animateItem()) {
+                                        items(matchedScoreWorks.take(6).size, key = { i -> matchedScoreWorks[i].workId }) { i ->
+                                            val work = matchedScoreWorks[i]
+                                            SearchGridCard(
+                                                item = SearchGridItem("SCORE", work.title, work.artist.orEmpty(), work.coverUrl) { onCatalogScoreWorkClick(work) },
+                                                haptics = haptics,
+                                                context = context,
+                                                isAlbum = true,
+                                            )
+                                        }
+                                    }
+                                }
+                            }
 
                             val allArtists = buildList {
                                 matchedLocalArtists.take(6).forEach { artist ->
@@ -1093,6 +1124,24 @@ fun UniversalSearchScreen(
                                     LazyRow(horizontalArrangement = Arrangement.spacedBy(12.dp), modifier = Modifier.animateItem()) {
                                         items(allAlbums.size, key = { i -> "album_${allAlbums[i].title}_$i" }) { i ->
                                             SearchGridCard(item = allAlbums[i], haptics = haptics, context = context, isAlbum = true)
+                                        }
+                                    }
+                                }
+                            }
+                            if (matchedScoreWorks.isNotEmpty()) {
+                                item(key = "scores_header") {
+                                    Text(stringResource(R.string.catalog_scores), style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.primary, modifier = Modifier.padding(top = 8.dp).animateItem())
+                                }
+                                item(key = "scores_grid") {
+                                    LazyRow(horizontalArrangement = Arrangement.spacedBy(12.dp), modifier = Modifier.animateItem()) {
+                                        items(matchedScoreWorks.take(6).size, key = { i -> matchedScoreWorks[i].workId }) { i ->
+                                            val work = matchedScoreWorks[i]
+                                            SearchGridCard(
+                                                item = SearchGridItem("SCORE", work.title, work.artist.orEmpty(), work.coverUrl) { onCatalogScoreWorkClick(work) },
+                                                haptics = haptics,
+                                                context = context,
+                                                isAlbum = true,
+                                            )
                                         }
                                     }
                                 }

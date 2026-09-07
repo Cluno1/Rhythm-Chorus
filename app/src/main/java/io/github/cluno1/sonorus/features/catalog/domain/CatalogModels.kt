@@ -189,6 +189,32 @@ data class CatalogLibraryAlbum(
     val coverAssetId: String? = null,
 )
 
+data class CatalogScoreOption(
+    val arrangementId: String,
+    val arrangementName: String,
+    val scoreId: String,
+    val revisionId: String,
+    val scoreLabel: String,
+    val origin: String,
+    val partCount: Int,
+    val revisionNo: Int,
+    val publishedAt: String,
+    val preferred: Boolean,
+)
+
+data class CatalogLibraryScoreWork(
+    val workId: String,
+    val title: String,
+    val artist: String?,
+    val coverAssetId: String?,
+    val coverUrl: String?,
+    val defaultScoreId: String,
+    val latestPublishedAt: String,
+    val scoreCount: Int,
+    val origins: List<String>,
+    val scoreOptions: List<CatalogScoreOption>,
+)
+
 data class CatalogArtwork(
     val assetId: String,
     val mediaType: String,
@@ -199,6 +225,7 @@ data class CatalogArtwork(
 data class CatalogLibrarySnapshot(
     val songs: List<CatalogLibrarySong>,
     val albums: List<CatalogLibraryAlbum>,
+    val scoreWorks: List<CatalogLibraryScoreWork> = emptyList(),
     val fromCache: Boolean = false,
 )
 

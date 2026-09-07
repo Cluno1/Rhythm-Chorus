@@ -97,6 +97,7 @@ fun HomeSectionOrderBottomSheet(
     val showRecentlyPlayed by appSettings.homeShowRecentlyPlayed.collectAsState()
     val showDiscoverCarousel by appSettings.homeShowDiscoverCarousel.collectAsState()
     val showArtists by appSettings.homeShowArtists.collectAsState()
+    val showScores by appSettings.homeShowScores.collectAsState()
     val showNewReleases by appSettings.homeShowNewReleases.collectAsState()
     val showRecentlyAdded by appSettings.homeShowRecentlyAdded.collectAsState()
     val showRecommended by appSettings.homeShowRecommended.collectAsState()
@@ -112,6 +113,7 @@ fun HomeSectionOrderBottomSheet(
                 "RECENTLY_PLAYED" to showRecentlyPlayed,
                 "DISCOVER" to showDiscoverCarousel,
                 "ARTISTS" to showArtists,
+                "SCORES" to showScores,
                 "NEW_RELEASES" to showNewReleases,
                 "RECENTLY_ADDED" to showRecentlyAdded,
                 "RECOMMENDED" to showRecommended,
@@ -131,6 +133,7 @@ fun HomeSectionOrderBottomSheet(
             "RECENTLY_PLAYED" -> Pair("Recently Played", MaterialSymbolIcon("history"))
             "DISCOVER" -> Pair("Discover Carousel", MaterialSymbolIcon("explore"))
             "ARTISTS" -> Pair("Top Artists", RhythmIcons.Artist)
+            "SCORES" -> Pair(context.getString(R.string.catalog_scores), MaterialSymbolIcon("score"))
             "NEW_RELEASES" -> Pair("New Releases", MaterialSymbolIcon("new_releases"))
             "RECENTLY_ADDED" -> Pair("Recently Added", RhythmIcons.Music.Album)
             "RECOMMENDED" -> Pair("Recommended", MaterialSymbolIcon("recommend"))
@@ -398,7 +401,7 @@ fun HomeSectionOrderBottomSheet(
                     onClick = {
                         HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
                         val defaultOrder = listOf(
-                            "RECENTLY_PLAYED", "ARTISTS", "RHYTHM_GUARD",
+                            "RECENTLY_PLAYED", "ARTISTS", "SCORES", "RHYTHM_GUARD",
                             "NEW_RELEASES", "RECENTLY_ADDED", "RECOMMENDED", "STATS"
                         )
                         reorderableList = defaultOrder
@@ -406,6 +409,7 @@ fun HomeSectionOrderBottomSheet(
                             "RECENTLY_PLAYED" to true,
                             "DISCOVER" to true,
                             "ARTISTS" to true,
+                            "SCORES" to true,
                             "RHYTHM_GUARD" to true,
                             "NEW_RELEASES" to true,
                             "RECENTLY_ADDED" to true,
@@ -433,6 +437,7 @@ fun HomeSectionOrderBottomSheet(
                         appSettings.setHomeShowRecentlyPlayed(visibilityMap["RECENTLY_PLAYED"] ?: true)
                         appSettings.setHomeShowDiscoverCarousel(visibilityMap["DISCOVER"] ?: true)
                         appSettings.setHomeShowArtists(visibilityMap["ARTISTS"] ?: true)
+                        appSettings.setHomeShowScores(visibilityMap["SCORES"] ?: true)
                         appSettings.setHomeShowNewReleases(visibilityMap["NEW_RELEASES"] ?: true)
                         appSettings.setHomeShowRecentlyAdded(visibilityMap["RECENTLY_ADDED"] ?: true)
                         appSettings.setHomeShowRecommended(visibilityMap["RECOMMENDED"] ?: true)

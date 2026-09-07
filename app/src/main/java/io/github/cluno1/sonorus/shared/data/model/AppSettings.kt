@@ -507,6 +507,7 @@ class AppSettings private constructor(context: Context) {
         private const val KEY_HOME_SHOW_RECENTLY_PLAYED = "home_show_recently_played"
         private const val KEY_HOME_SHOW_DISCOVER_CAROUSEL = "home_show_discover_carousel"
         private const val KEY_HOME_SHOW_ARTISTS = "home_show_artists"
+        private const val KEY_HOME_SHOW_SCORES = "home_show_scores"
         private const val KEY_HOME_SHOW_NEW_RELEASES = "home_show_new_releases"
         private const val KEY_HOME_SHOW_RECENTLY_ADDED = "home_show_recently_added"
         private const val KEY_HOME_SHOW_RECOMMENDED = "home_show_recommended"
@@ -872,7 +873,7 @@ class AppSettings private constructor(context: Context) {
     val artistCollaborationMode: StateFlow<Boolean> = _artistCollaborationMode.asStateFlow()
     
     // Library Tab Order
-    private val defaultTabOrder = listOf("SONGS", "LIKED", "PLAYLISTS", "ALBUMS", "ARTISTS", "ALBUM_ARTISTS", "EXPLORER")
+    private val defaultTabOrder = listOf("SONGS", "LIKED", "PLAYLISTS", "ALBUMS", "ARTISTS", "SCORES", "ALBUM_ARTISTS", "EXPLORER")
     private val _libraryTabOrder = MutableStateFlow(
         prefs.getString(KEY_LIBRARY_TAB_ORDER, null)
             ?.split(",")
@@ -885,11 +886,17 @@ class AppSettings private constructor(context: Context) {
                     if (songsIndex >= 0) order.toMutableList().apply { add(songsIndex + 1, "LIKED") }
                     else order + "LIKED"
                 }
-                if ("ALBUM_ARTISTS" in withLiked) withLiked
+                val withScores = if ("SCORES" in withLiked) withLiked
                 else {
                     val artistsIndex = withLiked.indexOf("ARTISTS")
-                    if (artistsIndex >= 0) withLiked.toMutableList().apply { add(artistsIndex + 1, "ALBUM_ARTISTS") }
-                    else withLiked + "ALBUM_ARTISTS"
+                    if (artistsIndex >= 0) withLiked.toMutableList().apply { add(artistsIndex + 1, "SCORES") }
+                    else withLiked + "SCORES"
+                }
+                if ("ALBUM_ARTISTS" in withScores) withScores
+                else {
+                    val scoresIndex = withScores.indexOf("SCORES")
+                    if (scoresIndex >= 0) withScores.toMutableList().apply { add(scoresIndex + 1, "ALBUM_ARTISTS") }
+                    else withScores + "ALBUM_ARTISTS"
                 }
             }
             ?: defaultTabOrder
@@ -5718,6 +5725,13 @@ private val _autoCheckForUpdates = MutableStateFlow(ProductCapabilities.inAppUpd
         _homeShowArtists.value = value
         prefs.edit { putBoolean(KEY_HOME_SHOW_ARTISTS, value) }
     }
+
+    private val _homeShowScores = MutableStateFlow(prefs.getBoolean(KEY_HOME_SHOW_SCORES, true))
+    val homeShowScores: StateFlow<Boolean> = _homeShowScores.asStateFlow()
+    fun setHomeShowScores(value: Boolean) {
+        _homeShowScores.value = value
+        prefs.edit { putBoolean(KEY_HOME_SHOW_SCORES, value) }
+    }
     
     private val _homeShowNewReleases = MutableStateFlow(prefs.getBoolean(KEY_HOME_SHOW_NEW_RELEASES, true))
     val homeShowNewReleases: StateFlow<Boolean> = _homeShowNewReleases.asStateFlow()
@@ -6245,7 +6259,7 @@ private val _autoCheckForUpdates = MutableStateFlow(ProductCapabilities.inAppUpd
     
     // Default section order for home screen
     private val defaultHomeSectionOrder = listOf(
-        "DISCOVER", "RECENTLY_PLAYED", "ARTISTS", "RHYTHM_GUARD",
+        "DISCOVER", "RECENTLY_PLAYED", "ARTISTS", "SCORES", "RHYTHM_GUARD",
         "NEW_RELEASES", "RECENTLY_ADDED", "RECOMMENDED", "STATS", "MOOD"
     )
     private val _homeSectionOrder = MutableStateFlow(
@@ -6254,6 +6268,12 @@ private val _autoCheckForUpdates = MutableStateFlow(ProductCapabilities.inAppUpd
             ?.map(String::trim)
             ?.filter { it.isNotBlank() && it != "GREETING" }
             ?.takeIf { it.isNotEmpty() }
+            ?.let { saved ->
+                if ("SCORES" in saved) saved
+                else saved.toMutableList().apply {
+                    add((indexOf("ARTISTS") + 1).coerceAtLeast(0), "SCORES")
+                }
+            }
             ?: defaultHomeSectionOrder
     )
     val homeSectionOrder: StateFlow<List<String>> = _homeSectionOrder.asStateFlow()

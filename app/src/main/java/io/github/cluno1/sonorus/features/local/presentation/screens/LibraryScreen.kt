@@ -288,7 +288,7 @@ private fun LazyGridState.shouldShowScrollbar(): Boolean {
     return lastItemBottom > layoutInfo.viewportEndOffset - 120
 }
 
-enum class LibraryTab { SONGS, PLAYLISTS, ALBUMS, ARTISTS, EXPLORER }
+enum class LibraryTab { SONGS, PLAYLISTS, ALBUMS, ARTISTS, SCORES, EXPLORER }
 
 enum class LibraryPlaylistSortOrder {
     NAME_ASC,
@@ -346,7 +346,9 @@ fun LibraryScreen(
     onStreamingAddToQueue: ((Song) -> Unit)? = null,
     onStreamingToggleFavorite: ((Song) -> Unit)? = null,
     onStreamingSetFavorite: ((Song, Boolean) -> Unit)? = null,
-    streamingFavoriteSongIds: Set<String> = emptySet()
+    streamingFavoriteSongIds: Set<String> = emptySet(),
+    scoreWorks: List<io.github.cluno1.sonorus.features.catalog.domain.CatalogLibraryScoreWork> = emptyList(),
+    onScoreWorkClick: (io.github.cluno1.sonorus.features.catalog.domain.CatalogLibraryScoreWork) -> Unit = {},
 ) {
     val context = LocalContext.current
     val appSettings = remember { AppSettings.getInstance(context) }
@@ -370,6 +372,7 @@ fun LibraryScreen(
                     "PLAYLISTS" -> context.getString(R.string.settings_tab_playlists)
                     "ALBUMS" -> context.getString(R.string.settings_tab_albums)
                     "ARTISTS" -> context.getString(R.string.settings_tab_artists)
+                    "SCORES" -> context.getString(R.string.catalog_scores)
                     "ALBUM_ARTISTS" -> context.getString(R.string.settings_tab_album_artists)
                     "DATES" -> context.getString(R.string.settings_tab_dates)
                     "EXPLORER" -> context.getString(R.string.settings_tab_explorer)
@@ -1535,6 +1538,7 @@ fun LibraryScreen(
                                             "PLAYLISTS" -> RhythmIcons.PlaylistFilled
                                             "ALBUMS" -> RhythmIcons.Music.Album
                                             "ARTISTS" -> RhythmIcons.Artist
+                                            "SCORES" -> MaterialSymbolIcon("score")
                                             "ALBUM_ARTISTS" -> MaterialSymbolIcon("person_pin")
                                             "DATES" -> RhythmIcons.CalendarMonth
                                             "EXPLORER" -> RhythmIcons.Folder
@@ -1939,6 +1943,11 @@ fun LibraryScreen(
                                         initialSortOption = artistSortOption,
                                         onSortOptionChange = { artistSortOption = it }
                                     )
+                                    "SCORES" -> CatalogScoreLibraryContent(
+                                        scoreWorks = scoreWorks,
+                                        onScoreWorkClick = onScoreWorkClick,
+                                        bottomPadding = baseLibraryBottomPadding,
+                                    )
                                     "ALBUM_ARTISTS" -> SingleCardArtistsContent(
                                         artists = sortedAlbumArtists,
                                         onArtistClick = { artist ->
@@ -2067,6 +2076,7 @@ fun LibraryScreen(
                             "LIKED" -> likedSongs.isNotEmpty()
                             "ALBUMS" -> albums.isNotEmpty()
                             "ARTISTS" -> false
+                            "SCORES" -> scoreWorks.isNotEmpty()
                             "ALBUM_ARTISTS" -> albumArtists.isNotEmpty()
                             "DATES" -> songs.isNotEmpty()
                             "EXPLORER" -> explorerPath != null || explorerFolderSongs.isNotEmpty()

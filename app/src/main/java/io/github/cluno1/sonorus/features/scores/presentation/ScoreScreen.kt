@@ -32,6 +32,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
@@ -39,6 +40,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
@@ -55,12 +57,14 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.view.doOnLayout
@@ -97,6 +101,8 @@ private enum class ScorePlaybackIndicatorMode {
     LINE,
     PULSE,
 }
+
+private enum class ScorePlaybackEndBehavior { PAUSE_AT_END, LOOP_CURRENT }
 
 private data class MergedDisplayProjection(
     val trackIndexes: Set<Int>,
@@ -365,6 +371,7 @@ fun RemoteScoreScreen(
     canOpenOlderRevision: Boolean = false,
     onOpenNewerRevision: () -> Unit = {},
     onOpenOlderRevision: () -> Unit = {},
+    scoreSettingsContent: @Composable () -> Unit = {},
     expectedPartCount: Int? = null,
     modifier: Modifier = Modifier,
 ) {
@@ -392,20 +399,16 @@ fun RemoteScoreScreen(
     Scaffold(
         modifier = modifier,
         topBar = {
-            TopAppBar(
-                title = { Text(if (revisionLabel == null) title else "$title · $revisionLabel") },
-                navigationIcon = {
-                    IconButton(onClick = onBackClick) {
-                        Icon(RhythmIcons.Back, contentDescription = stringResource(R.string.score_back))
+            if (loaded == null || soundFont == null || failed) {
+                TopAppBar(
+                    title = { Text(if (revisionLabel == null) title else "$title · $revisionLabel") },
+                    navigationIcon = {
+                        IconButton(onClick = onBackClick) {
+                            Icon(RhythmIcons.Back, contentDescription = stringResource(R.string.score_back))
+                        }
                     }
-                },
-                actions = {
-                    if (revisionLabel != null) {
-                        TextButton(onClick = onOpenNewerRevision, enabled = canOpenNewerRevision) { Text("较新") }
-                        TextButton(onClick = onOpenOlderRevision, enabled = canOpenOlderRevision) { Text("较旧") }
-                    }
-                },
-            )
+                )
+            }
         },
     ) { padding ->
         Box(
@@ -440,6 +443,18 @@ fun RemoteScoreScreen(
                         viewMode = ScoreViewMode.OCR,
                         onEditingChange = {},
                         allowEditing = false,
+                        title = if (revisionLabel == null) title else "$title · $revisionLabel",
+                        onBackClick = onBackClick,
+                        scoreSettingsContent = {
+                            scoreSettingsContent()
+                            if (revisionLabel != null) {
+                                Text(revisionLabel, style = MaterialTheme.typography.titleSmall)
+                                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                                    TextButton(onClick = onOpenNewerRevision, enabled = canOpenNewerRevision) { Text("最新") }
+                                    TextButton(onClick = onOpenOlderRevision, enabled = canOpenOlderRevision) { Text("旧版") }
+                                }
+                            }
+                        },
                         modifier = Modifier.fillMaxWidth().weight(1f),
                     )
                 }
@@ -471,6 +486,9 @@ private fun ScoreReadyContent(
     viewMode: ScoreViewMode,
     onEditingChange: (Boolean) -> Unit,
     allowEditing: Boolean = true,
+    title: String? = null,
+    onBackClick: (() -> Unit)? = null,
+    scoreSettingsContent: @Composable () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     var activeScores by remember(scores) { mutableStateOf(scores) }
@@ -481,6 +499,7 @@ private fun ScoreReadyContent(
     var playbackIndicatorMode by rememberSaveable {
         mutableStateOf(ScorePlaybackIndicatorMode.LINE)
     }
+    var playbackEndBehavior by rememberSaveable { mutableStateOf(ScorePlaybackEndBehavior.PAUSE_AT_END) }
     // View-local on purpose: the previous release saved a single track index in this slot,
     // which is not compatible with the new multi-select bit mask after an app upgrade.
     var staffMode by remember { mutableStateOf(ScoreStaffMode.ALL_STAVES) }
@@ -674,18 +693,53 @@ private fun ScoreReadyContent(
 
     Column(modifier = modifier) {
         ScorePlaybackControls(
+            title = title,
+            onBackClick = onBackClick,
             viewMode = viewMode,
             playbackVariant = playbackVariant,
             status = playbackStatus,
             indicatorMode = playbackIndicatorMode,
             onPlaybackVariantChange = { playbackVariant = it },
             onIndicatorModeChange = { playbackIndicatorMode = it },
+            endBehavior = playbackEndBehavior,
+            onEndBehaviorChange = { playbackEndBehavior = it },
             onPlayPause = { playbackController.playPause() },
             onStop = {
                 playbackController.stop()
                 playbackStatus = ScorePlaybackStatus.READY
             },
             interactionEnabled = editSession == null,
+            settingsContent = {
+                scoreSettingsContent()
+                if (editSession == null) {
+                    ScoreTrackControls(
+                        trackOptions = trackOptions,
+                        expanded = trackControlsExpanded,
+                        staffMode = staffMode,
+                        notationLayout = notationLayout,
+                        partColorMode = partColorMode,
+                        selectedTrackIndexes = selectedTrackIndexes,
+                        mutedTrackIndexes = mutedTrackIndexes,
+                        onExpandedChange = { trackControlsExpanded = it },
+                        onStaffModeChange = { staffMode = it },
+                        onNotationLayoutChange = { notationLayout = it },
+                        onPartColorModeChange = { partColorMode = it },
+                        onTrackVisibilityToggle = { trackIndex ->
+                            selectedTrackMask = toggleScoreTrackSelectionMask(
+                                effectiveSelectedTrackMask, trackIndex, trackOptions.size
+                            )
+                            staffMode = ScoreStaffMode.SELECTED_PARTS
+                        },
+                        onTrackSoundToggle = { trackIndex ->
+                            val next = mutedTrackIndexes.toMutableSet().apply {
+                                if (!add(trackIndex)) remove(trackIndex)
+                            }
+                            mutedTracksByVariant = mutedTracksByVariant + (playbackVariant to next)
+                        },
+                        modifier = Modifier.fillMaxWidth(),
+                    )
+                }
+            },
             modifier = Modifier.fillMaxWidth()
         )
         if (allowEditing) {
@@ -709,37 +763,7 @@ private fun ScoreReadyContent(
                 modifier = Modifier.fillMaxWidth()
             )
         }
-        if (editSession == null) {
-            ScoreTrackControls(
-                trackOptions = trackOptions,
-                expanded = trackControlsExpanded,
-                staffMode = staffMode,
-                notationLayout = notationLayout,
-                partColorMode = partColorMode,
-                selectedTrackIndexes = selectedTrackIndexes,
-                mutedTrackIndexes = mutedTrackIndexes,
-                onExpandedChange = { trackControlsExpanded = it },
-                onStaffModeChange = { staffMode = it },
-                onNotationLayoutChange = { notationLayout = it },
-                onPartColorModeChange = { partColorMode = it },
-                onTrackVisibilityToggle = { trackIndex ->
-                    selectedTrackMask = toggleScoreTrackSelectionMask(
-                        selectedMask = effectiveSelectedTrackMask,
-                        trackIndex = trackIndex,
-                        trackCount = trackOptions.size
-                    )
-                    staffMode = ScoreStaffMode.SELECTED_PARTS
-                },
-                onTrackSoundToggle = { trackIndex ->
-                    val nextMutedTracks = mutedTrackIndexes.toMutableSet().apply {
-                        if (!add(trackIndex)) remove(trackIndex)
-                    }
-                    mutedTracksByVariant = mutedTracksByVariant +
-                        (playbackVariant to nextMutedTracks)
-                },
-                modifier = Modifier.fillMaxWidth()
-            )
-        } else {
+        if (editSession != null) {
             ScoreEditStaffControls(
                 trackOptions = trackOptions,
                 staffMode = staffMode,
@@ -869,6 +893,7 @@ private fun ScoreReadyContent(
                     soundFont = soundFont,
                     controller = playbackController,
                     onStatusChange = { playbackStatus = it },
+                    endBehavior = playbackEndBehavior,
                     modifier = Modifier.size(1.dp)
                 )
             }
@@ -1285,135 +1310,103 @@ private fun ScoreTrackControls(
 
 @Composable
 private fun ScorePlaybackControls(
+    title: String?,
+    onBackClick: (() -> Unit)?,
     viewMode: ScoreViewMode,
     playbackVariant: BundledScoreVariant,
     status: ScorePlaybackStatus,
     indicatorMode: ScorePlaybackIndicatorMode,
     onPlaybackVariantChange: (BundledScoreVariant) -> Unit,
     onIndicatorModeChange: (ScorePlaybackIndicatorMode) -> Unit,
+    endBehavior: ScorePlaybackEndBehavior,
+    onEndBehaviorChange: (ScorePlaybackEndBehavior) -> Unit,
     onPlayPause: () -> Unit,
     onStop: () -> Unit,
     interactionEnabled: Boolean,
+    settingsContent: @Composable () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    var showSettings by rememberSaveable { mutableStateOf(false) }
     Surface(
         modifier = modifier,
         color = MaterialTheme.colorScheme.surfaceContainer
     ) {
-        Column(
-            modifier = Modifier.padding(horizontal = 16.dp, vertical = 10.dp)
+        Row(
+            modifier = Modifier.fillMaxWidth().statusBarsPadding().padding(horizontal = 8.dp, vertical = 2.dp),
+            horizontalArrangement = Arrangement.spacedBy(4.dp),
+            verticalAlignment = Alignment.CenterVertically,
         ) {
-            if (viewMode == ScoreViewMode.COMPARE) {
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text(
-                        text = stringResource(R.string.score_playback_source),
-                        style = MaterialTheme.typography.labelLarge
-                    )
-                    ScoreModeChip(
-                        selected = playbackVariant == BundledScoreVariant.OCR,
-                        enabled = interactionEnabled,
-                        onClick = { onPlaybackVariantChange(BundledScoreVariant.OCR) },
-                        label = stringResource(R.string.score_source_ocr)
-                    )
-                    ScoreModeChip(
-                        selected = playbackVariant == BundledScoreVariant.MIDI,
-                        enabled = interactionEnabled,
-                        onClick = { onPlaybackVariantChange(BundledScoreVariant.MIDI) },
-                        label = stringResource(R.string.score_source_midi)
-                    )
+            if (onBackClick != null) {
+                IconButton(onClick = onBackClick) {
+                    Icon(RhythmIcons.Back, contentDescription = stringResource(R.string.score_back))
                 }
             }
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .horizontalScroll(rememberScrollState()),
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                verticalAlignment = Alignment.CenterVertically
+            IconButton(
+                onClick = onPlayPause,
+                enabled = interactionEnabled && status in setOf(
+                    ScorePlaybackStatus.READY, ScorePlaybackStatus.PLAYING, ScorePlaybackStatus.PAUSED
+                ),
             ) {
-                Text(
-                    text = stringResource(R.string.score_playback_indicator),
-                    style = MaterialTheme.typography.labelLarge
-                )
-                ScoreModeChip(
-                    selected = indicatorMode == ScorePlaybackIndicatorMode.LINE,
-                    enabled = interactionEnabled,
-                    onClick = { onIndicatorModeChange(ScorePlaybackIndicatorMode.LINE) },
-                    label = stringResource(R.string.score_playback_indicator_default)
-                )
-                ScoreModeChip(
-                    selected = indicatorMode == ScorePlaybackIndicatorMode.PULSE,
-                    enabled = interactionEnabled,
-                    onClick = { onIndicatorModeChange(ScorePlaybackIndicatorMode.PULSE) },
-                    label = stringResource(R.string.score_playback_indicator_pulse)
-                )
-            }
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Button(
-                    onClick = onPlayPause,
-                    enabled = interactionEnabled && (status == ScorePlaybackStatus.READY ||
-                        status == ScorePlaybackStatus.PLAYING ||
-                        status == ScorePlaybackStatus.PAUSED)
-                ) {
-                    Icon(
-                        imageVector = if (status == ScorePlaybackStatus.PLAYING) {
-                            RhythmIcons.Pause
-                        } else {
-                            RhythmIcons.Play
-                        },
-                        contentDescription = null,
-                        modifier = Modifier.size(20.dp)
-                    )
-                    Text(
-                        text = stringResource(
-                            if (status == ScorePlaybackStatus.PLAYING) {
-                                R.string.score_pause
-                            } else {
-                                R.string.score_play
-                            }
-                        ),
-                        modifier = Modifier.padding(start = 6.dp)
-                    )
-                }
-                OutlinedButton(
-                    onClick = onStop,
-                    enabled = interactionEnabled && (status == ScorePlaybackStatus.PLAYING ||
-                        status == ScorePlaybackStatus.PAUSED)
-                ) {
-                    Icon(
-                        imageVector = RhythmIcons.Stop,
-                        contentDescription = null,
-                        modifier = Modifier.size(20.dp)
-                    )
-                    Text(
-                        text = stringResource(R.string.score_stop),
-                        modifier = Modifier.padding(start = 6.dp)
-                    )
-                }
-                Text(
-                    text = stringResource(
-                        when (status) {
-                            ScorePlaybackStatus.PREPARING -> R.string.score_playback_preparing
-                            ScorePlaybackStatus.READY -> R.string.score_playback_ready
-                            ScorePlaybackStatus.PLAYING -> R.string.score_playback_playing
-                            ScorePlaybackStatus.PAUSED -> R.string.score_playback_paused
-                            ScorePlaybackStatus.ERROR -> R.string.score_playback_error
-                        }
+                Icon(
+                    imageVector = if (status == ScorePlaybackStatus.PLAYING) RhythmIcons.Pause else RhythmIcons.Play,
+                    contentDescription = stringResource(
+                        if (status == ScorePlaybackStatus.PLAYING) R.string.score_pause else R.string.score_play
                     ),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = if (status == ScorePlaybackStatus.ERROR) {
-                        MaterialTheme.colorScheme.error
-                    } else {
-                        MaterialTheme.colorScheme.onSurfaceVariant
-                    },
-                    modifier = Modifier.weight(1f)
                 )
+            }
+            IconButton(
+                onClick = onStop,
+                enabled = interactionEnabled && status in setOf(
+                    ScorePlaybackStatus.PLAYING, ScorePlaybackStatus.PAUSED
+                ),
+            ) {
+                Icon(RhythmIcons.Stop, contentDescription = stringResource(R.string.score_stop))
+            }
+            Text(
+                text = title ?: stringResource(
+                    when (status) {
+                        ScorePlaybackStatus.PREPARING -> R.string.score_playback_preparing
+                        ScorePlaybackStatus.READY -> R.string.score_playback_ready
+                        ScorePlaybackStatus.PLAYING -> R.string.score_playback_playing
+                        ScorePlaybackStatus.PAUSED -> R.string.score_playback_paused
+                        ScorePlaybackStatus.ERROR -> R.string.score_playback_error
+                    }
+                ),
+                style = MaterialTheme.typography.bodySmall,
+                modifier = Modifier.weight(1f),
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+            )
+            IconButton(onClick = { showSettings = true }) {
+                Icon(RhythmIcons.Settings, contentDescription = stringResource(R.string.score_settings))
+            }
+        }
+    }
+    if (showSettings) {
+        ModalBottomSheet(onDismissRequest = { showSettings = false }) {
+            Column(
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp).padding(bottom = 32.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp),
+            ) {
+                Text(stringResource(R.string.score_settings), style = MaterialTheme.typography.titleLarge)
+                settingsContent()
+                if (viewMode == ScoreViewMode.COMPARE) {
+                    Text(stringResource(R.string.score_playback_source), style = MaterialTheme.typography.titleSmall)
+                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        ScoreModeChip(playbackVariant == BundledScoreVariant.OCR, { onPlaybackVariantChange(BundledScoreVariant.OCR) }, stringResource(R.string.score_source_ocr), interactionEnabled)
+                        ScoreModeChip(playbackVariant == BundledScoreVariant.MIDI, { onPlaybackVariantChange(BundledScoreVariant.MIDI) }, stringResource(R.string.score_source_midi), interactionEnabled)
+                    }
+                }
+                Text(stringResource(R.string.score_playback_indicator), style = MaterialTheme.typography.titleSmall)
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    ScoreModeChip(indicatorMode == ScorePlaybackIndicatorMode.LINE, { onIndicatorModeChange(ScorePlaybackIndicatorMode.LINE) }, stringResource(R.string.score_playback_indicator_default), interactionEnabled)
+                    ScoreModeChip(indicatorMode == ScorePlaybackIndicatorMode.PULSE, { onIndicatorModeChange(ScorePlaybackIndicatorMode.PULSE) }, stringResource(R.string.score_playback_indicator_pulse), interactionEnabled)
+                }
+                Text(stringResource(R.string.score_playback_end), style = MaterialTheme.typography.titleSmall)
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    ScoreModeChip(endBehavior == ScorePlaybackEndBehavior.PAUSE_AT_END, { onEndBehaviorChange(ScorePlaybackEndBehavior.PAUSE_AT_END) }, stringResource(R.string.score_pause_at_end), interactionEnabled)
+                    ScoreModeChip(endBehavior == ScorePlaybackEndBehavior.LOOP_CURRENT, { onEndBehaviorChange(ScorePlaybackEndBehavior.LOOP_CURRENT) }, stringResource(R.string.score_loop_current), interactionEnabled)
+                }
             }
         }
     }
@@ -1705,8 +1698,10 @@ private fun ScorePlaybackEngine(
     soundFont: ByteArray,
     controller: ScorePlaybackController,
     onStatusChange: (ScorePlaybackStatus) -> Unit,
+    endBehavior: ScorePlaybackEndBehavior,
     modifier: Modifier = Modifier
 ) {
+    val currentEndBehavior by rememberUpdatedState(endBehavior)
     AndroidView(
         modifier = modifier,
         factory = { context ->
@@ -1778,7 +1773,15 @@ private fun ScorePlaybackEngine(
                         SCORE_PLAYBACK_TAG,
                         "player finished: tick=${api.tickPosition}, time=${api.timePosition}"
                     )
-                    post { onStatusChange(ScorePlaybackStatus.READY) }
+                    if (currentEndBehavior == ScorePlaybackEndBehavior.LOOP_CURRENT) {
+                        post {
+                            api.stop()
+                            controller.playPause()
+                            onStatusChange(ScorePlaybackStatus.PLAYING)
+                        }
+                    } else {
+                        post { onStatusChange(ScorePlaybackStatus.READY) }
+                    }
                 }
                 api.updateSettings()
                 post {

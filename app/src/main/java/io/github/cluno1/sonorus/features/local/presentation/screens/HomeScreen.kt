@@ -292,7 +292,10 @@ fun HomeScreen(
     onStreamingNavigateToAlbum: (io.github.cluno1.sonorus.features.streaming.domain.model.StreamingAlbum) -> Unit = {},
     onStreamingNavigateToPlaylist: (io.github.cluno1.sonorus.features.streaming.domain.model.StreamingPlaylist) -> Unit = {},
     onStreamingPlayQueue: (List<io.github.cluno1.sonorus.features.streaming.domain.model.StreamingSong>, Int, Boolean) -> Unit = { _, _, _ -> },
-    onStreamingShuffleQueue: (List<io.github.cluno1.sonorus.features.streaming.domain.model.StreamingSong>) -> Unit = {}
+    onStreamingShuffleQueue: (List<io.github.cluno1.sonorus.features.streaming.domain.model.StreamingSong>) -> Unit = {},
+    scoreWorks: List<io.github.cluno1.sonorus.features.catalog.domain.CatalogLibraryScoreWork> = emptyList(),
+    onScoreWorkClick: (io.github.cluno1.sonorus.features.catalog.domain.CatalogLibraryScoreWork) -> Unit = {},
+    onViewAllScores: () -> Unit = {},
 ) {
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
     val coroutineScope = rememberCoroutineScope()
@@ -642,6 +645,9 @@ fun HomeScreen(
                 onViewAllSongs = onViewAllSongs,
                 onViewAllAlbums = onViewAllAlbums,
                 onViewAllArtists = onViewAllArtists,
+                scoreWorks = scoreWorks,
+                onScoreWorkClick = onScoreWorkClick,
+                onViewAllScores = onViewAllScores,
                 onSearchClick = onSearchClick,
                 onSettingsClick = onSettingsClick,
                 onNavigateToLibrary = onNavigateToLibrary,
@@ -1362,6 +1368,9 @@ private fun ModernScrollableContent(
     onViewAllSongs: () -> Unit,
     onViewAllAlbums: () -> Unit,
     onViewAllArtists: () -> Unit,
+    scoreWorks: List<io.github.cluno1.sonorus.features.catalog.domain.CatalogLibraryScoreWork>,
+    onScoreWorkClick: (io.github.cluno1.sonorus.features.catalog.domain.CatalogLibraryScoreWork) -> Unit,
+    onViewAllScores: () -> Unit,
     onSearchClick: () -> Unit,
     onSettingsClick: () -> Unit = {},
     onNavigateToLibrary: () -> Unit = {},
@@ -1386,6 +1395,7 @@ private fun ModernScrollableContent(
     val showRecentlyPlayed by appSettings.homeShowRecentlyPlayed.collectAsState()
     val showDiscoverCarousel by appSettings.homeShowDiscoverCarousel.collectAsState()
     val showArtists by appSettings.homeShowArtists.collectAsState()
+    val showScores by appSettings.homeShowScores.collectAsState()
     val showNewReleases by appSettings.homeShowNewReleases.collectAsState()
     val showRecentlyAdded by appSettings.homeShowRecentlyAdded.collectAsState()
     val showRecommended by appSettings.homeShowRecommended.collectAsState()
@@ -1602,6 +1612,31 @@ private fun ModernScrollableContent(
                         }
                     }
                 }
+                "SCORES" -> if (showScores && scoreWorks.isNotEmpty()) {
+                    Column {
+                        ModernSectionTitle(
+                            title = stringResource(R.string.catalog_scores),
+                            subtitle = "可阅读的 MusicXML 乐谱",
+                            viewAllAction = onViewAllScores,
+                        )
+                        Spacer(Modifier.height(12.dp))
+                        LazyRow(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                            items(scoreWorks.sortedByDescending { it.latestPublishedAt }.take(12), key = { it.workId }) { work ->
+                                Surface(
+                                    modifier = Modifier.width(160.dp).clickable { onScoreWorkClick(work) },
+                                    shape = RoundedCornerShape(18.dp),
+                                    color = MaterialTheme.colorScheme.surfaceContainer,
+                                ) {
+                                    Column(Modifier.padding(16.dp)) {
+                                        Icon(MaterialSymbolIcon("score"), contentDescription = null, modifier = Modifier.size(36.dp))
+                                        Text(work.title, maxLines = 2, overflow = TextOverflow.Ellipsis, modifier = Modifier.padding(top = 12.dp))
+                                        Text(stringResource(R.string.catalog_score_count, work.scoreCount), style = MaterialTheme.typography.bodySmall)
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
                 "NEW_RELEASES" -> {
                     if (showNewReleases) {
                         Column {
@@ -1786,6 +1821,7 @@ private fun ModernScrollableContent(
         fun isLocalSectionVisible(sectionId: String): Boolean = when (sectionId) {
             "RECENTLY_PLAYED" -> showRecentlyPlayed
             "ARTISTS" -> showArtists
+            "SCORES" -> showScores && scoreWorks.isNotEmpty()
             "NEW_RELEASES" -> showNewReleases
             "RECENTLY_ADDED" -> showRecentlyAdded
             "RECOMMENDED" -> showRecommended

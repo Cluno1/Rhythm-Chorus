@@ -185,7 +185,18 @@ class CatalogRepositoryImpl(context: Context) : CatalogRepository {
         require(detailSongs.map { it.renditionId }.toSet() == songs.map { it.renditionId }.toSet()) {
             "album details and songs list do not describe the same renditions"
         }
-        val snapshot = CatalogLibrarySnapshot(songs, detailedAlbums)
+        val scoreWorks = mutableListOf<io.github.cluno1.sonorus.features.catalog.domain.CatalogLibraryScoreWork>()
+        var scoreCursor: String? = null
+        val scoreCursorGuard = CatalogPaginationCursorGuard("library score works")
+        do {
+            val page = CatalogDtoMapper.libraryScoreWorks(api.libraryScoreWorks(scoreCursor).bodyOrThrow())
+            scoreWorks += page.first
+            scoreCursor = scoreCursorGuard.advance(page.second)
+        } while (scoreCursor != null)
+        require(scoreWorks.distinctBy { it.workId }.size == scoreWorks.size) {
+            "library contains duplicate score work ids"
+        }
+        val snapshot = CatalogLibrarySnapshot(songs, detailedAlbums, scoreWorks)
         cache.saveLibrary(snapshot)
         snapshot
     }.recoverCatching { error ->
