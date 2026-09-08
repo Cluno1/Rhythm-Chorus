@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import argparse
 import base64
+import concurrent.futures
 import hashlib
 import json
 import re
@@ -153,8 +154,36 @@ finally:
     if incoming.exists():
         shutil.rmtree(incoming)
     latest_tmp.unlink(missing_ok=True)
-    archive.unlink(missing_ok=True)
+archive.unlink(missing_ok=True)
 """
+
+REMOTE_ASSEMBLER = r"""
+import pathlib, shutil, sys
+
+archive = pathlib.Path(sys.argv[1])
+parts = [pathlib.Path(value) for value in sys.argv[2:]]
+try:
+    with archive.open("xb") as destination:
+        for part in parts:
+            with part.open("rb") as source:
+                shutil.copyfileobj(source, destination, 1024 * 1024)
+except BaseException:
+    archive.unlink(missing_ok=True)
+    raise
+finally:
+    for part in parts:
+        part.unlink(missing_ok=True)
+"""
+
+REMOTE_UPLOAD_CLEANER = r"""
+import pathlib, sys
+
+for value in sys.argv[1:]:
+    pathlib.Path(value).unlink(missing_ok=True)
+"""
+
+UPLOAD_CHUNK_BYTES = 8 * 1024 * 1024
+UPLOAD_WORKERS = 8
 
 
 def main() -> None:
@@ -198,9 +227,53 @@ def main() -> None:
                 with path.open("rb") as stream:
                     bundle.addfile(info, stream)
         temporary.flush()
-        subprocess.run(
-            ["scp", temporary.name, f"{args.ssh_target}:{remote_archive}"], check=True
-        )
+        with tempfile.TemporaryDirectory(prefix="sonorus-upload-parts-") as directory:
+            local_parts: list[Path] = []
+            with Path(temporary.name).open("rb") as source:
+                index = 0
+                while chunk := source.read(UPLOAD_CHUNK_BYTES):
+                    part = Path(directory) / f"part-{index:04d}"
+                    part.write_bytes(chunk)
+                    local_parts.append(part)
+                    index += 1
+            remote_parts = [
+                f"{remote_archive}.part-{index:04d}"
+                for index in range(len(local_parts))
+            ]
+
+            def upload(item: tuple[Path, str]) -> None:
+                local, remote = item
+                subprocess.run(
+                    ["scp", str(local), f"{args.ssh_target}:{remote}"],
+                    check=True,
+                )
+
+            try:
+                with concurrent.futures.ThreadPoolExecutor(
+                    max_workers=min(UPLOAD_WORKERS, len(local_parts))
+                ) as executor:
+                    list(executor.map(upload, zip(local_parts, remote_parts)))
+                subprocess.run(
+                    ["ssh", args.ssh_target, "python3", "-", remote_archive, *remote_parts],
+                    input=REMOTE_ASSEMBLER,
+                    text=True,
+                    check=True,
+                )
+            except BaseException:
+                subprocess.run(
+                    [
+                        "ssh",
+                        args.ssh_target,
+                        "python3",
+                        "-",
+                        remote_archive,
+                        *remote_parts,
+                    ],
+                    input=REMOTE_UPLOAD_CLEANER,
+                    text=True,
+                    check=False,
+                )
+                raise
 
     command = [
         "ssh",
