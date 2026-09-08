@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Publish one locally verified Sonorus update bundle over the management channel."""
+"""Publish one locally verified Sonorus update bundle over SSH."""
 
 from __future__ import annotations
 
@@ -162,7 +162,7 @@ def main() -> None:
     parser.add_argument("--channel", choices=("debug", "stable"), required=True)
     parser.add_argument("--bundle-root", type=Path, required=True)
     parser.add_argument(
-        "--ssh-target", required=True, help="deployment-user@WireGuard-host"
+        "--ssh-target", required=True, help="deployment-user@SSH-host"
     )
     parser.add_argument("--remote-root", default="/srv/sonorus-updates")
     parser.add_argument("--expected-certificate-sha256", required=True)

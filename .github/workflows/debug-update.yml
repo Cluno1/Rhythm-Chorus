@@ -96,19 +96,7 @@ jobs:
           name: Sonorus-debug-${{ github.run_number }}
           path: build/sonorus-updates/debug
 
-      - name: Connect the WireGuard management channel
-        env:
-          WIREGUARD_CONFIG: ${{ secrets.SONORUS_UPDATE_WIREGUARD_CONFIG }}
-        shell: bash
-        run: |
-          test -n "$WIREGUARD_CONFIG"
-          sudo apt-get update
-          sudo apt-get install -y wireguard-tools
-          printf '%s\n' "$WIREGUARD_CONFIG" | sudo tee /etc/wireguard/sonorus-update.conf >/dev/null
-          sudo chmod 600 /etc/wireguard/sonorus-update.conf
-          sudo wg-quick up sonorus-update
-
-      - name: Publish through the management channel
+      - name: Publish through public SSH
         env:
           DEPLOY_KEY: ${{ secrets.SONORUS_UPDATE_SSH_KEY }}
           KNOWN_HOSTS: ${{ secrets.SONORUS_UPDATE_KNOWN_HOSTS }}
@@ -121,14 +109,12 @@ jobs:
           printf '%s' "$DEPLOY_KEY" > ~/.ssh/sonorus_update
           printf '%s\n' "$KNOWN_HOSTS" > ~/.ssh/known_hosts
           chmod 600 ~/.ssh/sonorus_update
-          printf 'Host *\n  IdentityFile ~/.ssh/sonorus_update\n  StrictHostKeyChecking yes\n' > ~/.ssh/config
+          chmod 600 ~/.ssh/known_hosts
+          printf 'Host *\n  IdentityFile ~/.ssh/sonorus_update\n  IdentitiesOnly yes\n  StrictHostKeyChecking yes\n  ConnectTimeout 20\n  ServerAliveInterval 15\n  ServerAliveCountMax 3\n' > ~/.ssh/config
+          chmod 600 ~/.ssh/config
           scripts/publish_update_bundle.py \
             --channel debug \
             --bundle-root build/sonorus-updates \
             --ssh-target "$SSH_TARGET" \
             --remote-root "${REMOTE_ROOT:-/srv/sonorus-updates}" \
             --expected-certificate-sha256 "${{ vars.SONORUS_DEBUG_CERT_SHA256 }}"
-
-      - name: Disconnect the WireGuard management channel
-        if: always()
-        run: sudo wg-quick down sonorus-update || true

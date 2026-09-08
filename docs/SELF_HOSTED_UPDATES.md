@@ -49,14 +49,14 @@ Use the repository publisher rather than copying individual files. It revalidate
 scripts/publish_update_bundle.py \
   --channel stable \
   --bundle-root build/sonorus-updates \
-  --ssh-target sonorus-update@10.88.0.1 \
+  --ssh-target sonorus-deploy@175.178.242.232 \
   --remote-root /srv/sonorus-updates \
   --expected-certificate-sha256 "$SONORUS_RELEASE_CERT_SHA256"
 ```
 
-`.github/workflows/debug-update.yml` performs that sequence automatically after a successful `main` build. Configure the `sonorus-debug` GitHub environment with the fixed Debug keystore/password secrets, Debug manifest private key, manifest public key, frozen APK certificate fingerprint, deployment SSH private key, a dedicated `SONORUS_UPDATE_WIREGUARD_CONFIG`, pinned `SONORUS_UPDATE_KNOWN_HOSTS`, and `SONORUS_UPDATE_SSH_TARGET`. The WireGuard peer and SSH account must be dedicated to this job; host-key checking remains mandatory. The deployment account needs write access only to `/srv/sonorus-updates/debug`.
+`.github/workflows/debug-update.yml` performs that sequence automatically after a successful `main` build. Configure the `sonorus-debug` GitHub environment with the fixed Debug keystore/password secrets, Debug manifest private key, manifest public key, frozen APK certificate fingerprint, deployment SSH private key, pinned `SONORUS_UPDATE_KNOWN_HOSTS`, and the public `SONORUS_UPDATE_SSH_TARGET`. The SSH account must be dedicated to this job, have no sudo access, and use key-only authentication; host-key checking remains mandatory. The deployment account needs write access only to `/srv/sonorus-updates`.
 
-Stable remains deliberately manual: `.github/workflows/release.yml` creates and retains the signed Stable bundle, but does not switch the server pointer. Download and inspect that artifact, then run the publisher with `--channel stable` from the WireGuard management path. The Stable deployment account needs write access only to `/srv/sonorus-updates/stable`.
+Stable remains deliberately manual: `.github/workflows/release.yml` creates and retains the signed Stable bundle, but does not switch the server pointer. Download and inspect that artifact, then run the publisher with `--channel stable` over the same pinned public SSH path. The Stable deployment account needs write access only to `/srv/sonorus-updates/stable`.
 
 The public gateway must expose only authenticated `GET/HEAD /v2/app-updates/latest` and `/v2/app-updates/files/{versionCode}/{fileName}`. Range requests require the same device proof. There is deliberately no public update upload API.
 
