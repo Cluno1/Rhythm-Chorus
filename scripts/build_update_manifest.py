@@ -66,7 +66,7 @@ def signer_digest(apk: Path, apksigner: str) -> str:
         stderr=subprocess.STDOUT,
     )
     matches = re.findall(
-        r"^(?:Signer #\d+|V\d+ Signer): certificate SHA-256 digest:"
+        r"^(?:Signer #\d+|V\d+ Signer:) certificate SHA-256 digest:"
         r"\s*([0-9a-fA-F:]{64,95})\s*$",
         result.stdout,
         re.MULTILINE,
