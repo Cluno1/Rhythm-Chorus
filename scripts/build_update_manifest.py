@@ -58,22 +58,26 @@ def parse_badging(apk: Path, aapt: str) -> tuple[str, int, str, int]:
 
 
 def signer_digest(apk: Path, apksigner: str) -> str:
-    output = command(apksigner, "verify", "--print-certs", str(apk))
-    match = re.search(
-        r"^Signer #1 certificate SHA-256 digest: (.+)$", output, re.MULTILINE
+    result = subprocess.run(
+        [apksigner, "verify", "--print-certs", str(apk)],
+        check=True,
+        text=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT,
     )
-    if match is None:
-        raise SystemExit("apksigner did not report a signer SHA-256")
-    if (
-        len(
-            re.findall(
-                r"^Signer #\d+ certificate SHA-256 digest:", output, re.MULTILINE
-            )
+    matches = re.findall(
+        r"^Signer #\d+ certificate SHA-256 digest:\s*([0-9a-fA-F:]{64,95})\s*$",
+        result.stdout,
+        re.MULTILINE,
+    )
+    if not matches:
+        raise SystemExit(
+            "apksigner did not report a signer SHA-256; output was:\n"
+            + result.stdout.strip()
         )
-        != 1
-    ):
+    if len(matches) != 1:
         raise SystemExit("release APK must have exactly one current signer")
-    return normalize_digest(match.group(1))
+    return normalize_digest(matches[0])
 
 
 def sign(payload: bytes, key: Path, openssl: str) -> str:
