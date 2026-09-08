@@ -66,7 +66,8 @@ def signer_digest(apk: Path, apksigner: str) -> str:
         stderr=subprocess.STDOUT,
     )
     matches = re.findall(
-        r"^Signer #\d+ certificate SHA-256 digest:\s*([0-9a-fA-F:]{64,95})\s*$",
+        r"^(?:Signer #\d+|V\d+ Signer): certificate SHA-256 digest:"
+        r"\s*([0-9a-fA-F:]{64,95})\s*$",
         result.stdout,
         re.MULTILINE,
     )
@@ -75,9 +76,10 @@ def signer_digest(apk: Path, apksigner: str) -> str:
             "apksigner did not report a signer SHA-256; output was:\n"
             + result.stdout.strip()
         )
-    if len(matches) != 1:
+    digests = {normalize_digest(match) for match in matches}
+    if len(digests) != 1:
         raise SystemExit("release APK must have exactly one current signer")
-    return normalize_digest(matches[0])
+    return digests.pop()
 
 
 def sign(payload: bytes, key: Path, openssl: str) -> str:
