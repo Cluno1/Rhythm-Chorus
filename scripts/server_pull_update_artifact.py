@@ -84,7 +84,7 @@ def pull(url: str, destination: Path) -> None:
                 "--connect-timeout",
                 "20",
                 "--max-time",
-                "1200",
+                "1800",
                 "--retry",
                 "2",
                 "--retry-delay",
