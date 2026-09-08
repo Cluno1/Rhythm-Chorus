@@ -6,6 +6,7 @@ on:
   workflow_dispatch:
 
 permissions:
+  actions: read
   contents: read
 
 concurrency:
@@ -95,19 +96,23 @@ jobs:
             --apksigner "$APKSIGNER"
 
       - uses: actions/upload-artifact@v6
+        id: debug-artifact
         with:
           name: Sonorus-debug-${{ github.run_number }}
           path: build/sonorus-updates/debug
 
-      - name: Publish through public SSH
+      - name: Ask the server to pull the artifact through its proxy
         env:
           DEPLOY_KEY: ${{ secrets.SONORUS_UPDATE_SSH_KEY }}
           KNOWN_HOSTS: ${{ secrets.SONORUS_UPDATE_KNOWN_HOSTS }}
           SSH_TARGET: ${{ vars.SONORUS_UPDATE_SSH_TARGET }}
-          REMOTE_ROOT: ${{ vars.SONORUS_UPDATE_REMOTE_ROOT }}
+          ARTIFACT_ID: ${{ steps.debug-artifact.outputs.artifact-id }}
+          ARTIFACT_SHA256: ${{ steps.debug-artifact.outputs.artifact-digest }}
+          GH_TOKEN: ${{ github.token }}
         shell: bash
         run: |
           test -n "$DEPLOY_KEY" && test -n "$KNOWN_HOSTS" && test -n "$SSH_TARGET"
+          test -n "$ARTIFACT_ID" && test -n "$ARTIFACT_SHA256" && test -n "$GH_TOKEN"
           mkdir -p ~/.ssh
           printf '%s' "$DEPLOY_KEY" > ~/.ssh/sonorus_update
           printf '%s\n' "$KNOWN_HOSTS" > ~/.ssh/known_hosts
@@ -115,9 +120,31 @@ jobs:
           chmod 600 ~/.ssh/known_hosts
           printf 'Host *\n  IdentityFile ~/.ssh/sonorus_update\n  IdentitiesOnly yes\n  StrictHostKeyChecking yes\n  ConnectTimeout 20\n  ServerAliveInterval 15\n  ServerAliveCountMax 3\n' > ~/.ssh/config
           chmod 600 ~/.ssh/config
-          scripts/publish_update_bundle.py \
-            --channel debug \
-            --bundle-root build/sonorus-updates \
-            --ssh-target "$SSH_TARGET" \
-            --remote-root "${REMOTE_ROOT:-/srv/sonorus-updates}" \
-            --expected-certificate-sha256 "${{ vars.SONORUS_DEBUG_CERT_SHA256 }}"
+          for attempt in 1 2 3; do
+            headers="$(mktemp)"
+            if curl -fsS \
+              --connect-timeout 10 \
+              --max-time 30 \
+              --dump-header "$headers" \
+              --output /dev/null \
+              --header 'Accept: application/vnd.github+json' \
+              --header "Authorization: Bearer $GH_TOKEN" \
+              --header 'X-GitHub-Api-Version: 2026-03-10' \
+              "https://api.github.com/repos/$GITHUB_REPOSITORY/actions/artifacts/$ARTIFACT_ID/zip"; then
+              artifact_url="$(sed -n 's/^[Ll]ocation: //p' "$headers" | tr -d '\r' | tail -1)"
+            else
+              artifact_url=''
+            fi
+            rm -f "$headers"
+            if test -n "$artifact_url" && printf '%s\n' "$artifact_url" | ssh "$SSH_TARGET" \
+              /usr/local/bin/sonorus-pull-update \
+              --artifact-id "$ARTIFACT_ID" \
+              --artifact-sha256 "$ARTIFACT_SHA256" \
+              --source-run-id "$GITHUB_RUN_ID" \
+              --source-sha "$GITHUB_SHA"; then
+              exit 0
+            fi
+            echo "server-side artifact pull attempt $attempt failed" >&2
+            sleep 5
+          done
+          exit 1
