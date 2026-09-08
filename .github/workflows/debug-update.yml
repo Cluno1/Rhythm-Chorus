@@ -62,13 +62,16 @@ jobs:
           chmod 600 .config/sonorus-debug-manifest.pem
 
       - name: Build fixed-signer Debug APK
-        run: >-
-          ./gradlew testGithubDebugUnitTest lintGithubDebug assembleGithubDebug
-          -PversionNameOverride=${{ steps.version.outputs.name }}
-          -PversionCodeOverride=${{ steps.version.outputs.code }}
-          -PreleaseDateOverride=$(date -u +%F)
-          -PsonorusDebugManifestPublicKey=${{ vars.SONORUS_DEBUG_MANIFEST_PUBLIC_KEY }}
-          --stacktrace
+        env:
+          MANIFEST_PUBLIC_KEY: ${{ vars.SONORUS_DEBUG_MANIFEST_PUBLIC_KEY }}
+        shell: bash
+        run: |
+          ./gradlew testGithubDebugUnitTest lintGithubDebug assembleGithubDebug \
+            -PversionNameOverride=${{ steps.version.outputs.name }} \
+            -PversionCodeOverride=${{ steps.version.outputs.code }} \
+            -PreleaseDateOverride=$(date -u +%F) \
+            -PsonorusDebugManifestPublicKey="$MANIFEST_PUBLIC_KEY" \
+            --stacktrace
 
       - name: Build and verify signed Debug manifest
         env:
