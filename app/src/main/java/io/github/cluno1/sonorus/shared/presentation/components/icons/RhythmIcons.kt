@@ -94,6 +94,8 @@ object RhythmIcons {
     object Music {
         val Song = MaterialSymbolIcon("music_note", filled = true)
         val SongOutlined = MaterialSymbolIcon("music_note")
+        val Score = MaterialSymbolIcon("audio_file", defaultWeight = 500)
+        val ScoreFilled = MaterialSymbolIcon("audio_file", filled = true, defaultWeight = 500)
         val Album = MaterialSymbolIcon("album", filled = true)
         val AlbumOutlined = MaterialSymbolIcon("album")
         val Artist = MaterialSymbolIcon("person", filled = true)
@@ -264,6 +266,8 @@ object RhythmIcons {
     // Music items
     val Song = Music.SongOutlined
     val SongFilled = Music.Song
+    val Score = Music.Score
+    val ScoreFilled = Music.ScoreFilled
     val Album = Music.AlbumOutlined
     val AlbumFilled = Music.Album
     val Artist = Music.ArtistOutlined

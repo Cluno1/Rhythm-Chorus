@@ -61,6 +61,25 @@ enum class PlaylistViewType {
     LIST, GRID
 }
 
+enum class ScoreViewType {
+    LIST, GRID
+}
+
+enum class ScoreSortOrder {
+    TITLE_ASC,
+    TITLE_DESC,
+    PUBLISHED_ASC,
+    PUBLISHED_DESC,
+    SCORE_COUNT_ASC,
+    SCORE_COUNT_DESC,
+}
+
+enum class ScoreOriginFilter {
+    ALL,
+    EDITED,
+    MIDI,
+}
+
 /**
  * Enum for artist artwork source preferences
  */
@@ -193,6 +212,9 @@ class AppSettings private constructor(context: Context) {
         private const val KEY_ALBUM_VIEW_TYPE = "album_view_type"
         private const val KEY_ARTIST_VIEW_TYPE = "artist_view_type"
         private const val KEY_PLAYLIST_VIEW_TYPE = "playlist_view_type"
+        private const val KEY_SCORE_VIEW_TYPE = "score_view_type"
+        private const val KEY_SCORE_SORT_ORDER = "score_sort_order"
+        private const val KEY_SCORE_ORIGIN_FILTER = "score_origin_filter"
         private const val KEY_ALBUM_SORT_ORDER = "album_sort_order"
         private const val KEY_PLAYLIST_SORT_ORDER = "playlist_sort_order"
         private const val KEY_PLAYLIST_DETAIL_SORT_ORDER = "playlist_detail_sort_order"
@@ -855,6 +877,27 @@ class AppSettings private constructor(context: Context) {
         PlaylistViewType.valueOf(prefs.getString(KEY_PLAYLIST_VIEW_TYPE, PlaylistViewType.LIST.name) ?: PlaylistViewType.LIST.name)
     )
     val playlistViewType: StateFlow<PlaylistViewType> = _playlistViewType.asStateFlow()
+
+    private val _scoreViewType = MutableStateFlow(
+        runCatching {
+            ScoreViewType.valueOf(prefs.getString(KEY_SCORE_VIEW_TYPE, ScoreViewType.GRID.name) ?: ScoreViewType.GRID.name)
+        }.getOrDefault(ScoreViewType.GRID)
+    )
+    val scoreViewType: StateFlow<ScoreViewType> = _scoreViewType.asStateFlow()
+
+    private val _scoreSortOrder = MutableStateFlow(
+        runCatching {
+            ScoreSortOrder.valueOf(prefs.getString(KEY_SCORE_SORT_ORDER, ScoreSortOrder.TITLE_ASC.name) ?: ScoreSortOrder.TITLE_ASC.name)
+        }.getOrDefault(ScoreSortOrder.TITLE_ASC)
+    )
+    val scoreSortOrder: StateFlow<ScoreSortOrder> = _scoreSortOrder.asStateFlow()
+
+    private val _scoreOriginFilter = MutableStateFlow(
+        runCatching {
+            ScoreOriginFilter.valueOf(prefs.getString(KEY_SCORE_ORIGIN_FILTER, ScoreOriginFilter.ALL.name) ?: ScoreOriginFilter.ALL.name)
+        }.getOrDefault(ScoreOriginFilter.ALL)
+    )
+    val scoreOriginFilter: StateFlow<ScoreOriginFilter> = _scoreOriginFilter.asStateFlow()
     
     // Album Sort Order
     private val _albumSortOrder = MutableStateFlow(prefs.getString(KEY_ALBUM_SORT_ORDER, "TRACK_NUMBER") ?: "TRACK_NUMBER")
@@ -2530,6 +2573,21 @@ private val _autoCheckForUpdates = MutableStateFlow(ProductCapabilities.inAppUpd
     fun setPlaylistViewType(viewType: PlaylistViewType) {
         prefs.edit { putString(KEY_PLAYLIST_VIEW_TYPE, viewType.name) }
         _playlistViewType.value = viewType
+    }
+
+    fun setScoreViewType(viewType: ScoreViewType) {
+        prefs.edit { putString(KEY_SCORE_VIEW_TYPE, viewType.name) }
+        _scoreViewType.value = viewType
+    }
+
+    fun setScoreSortOrder(sortOrder: ScoreSortOrder) {
+        prefs.edit { putString(KEY_SCORE_SORT_ORDER, sortOrder.name) }
+        _scoreSortOrder.value = sortOrder
+    }
+
+    fun setScoreOriginFilter(filter: ScoreOriginFilter) {
+        prefs.edit { putString(KEY_SCORE_ORIGIN_FILTER, filter.name) }
+        _scoreOriginFilter.value = filter
     }
     
     fun setAlbumSortOrder(sortOrder: String) {
@@ -5138,6 +5196,15 @@ private val _autoCheckForUpdates = MutableStateFlow(ProductCapabilities.inAppUpd
         // Library Settings
         _albumViewType.value = AlbumViewType.valueOf(prefs.getString(KEY_ALBUM_VIEW_TYPE, AlbumViewType.GRID.name) ?: AlbumViewType.GRID.name)
         _artistViewType.value = ArtistViewType.valueOf(prefs.getString(KEY_ARTIST_VIEW_TYPE, ArtistViewType.GRID.name) ?: ArtistViewType.GRID.name)
+        _scoreViewType.value = runCatching {
+            ScoreViewType.valueOf(prefs.getString(KEY_SCORE_VIEW_TYPE, ScoreViewType.GRID.name) ?: ScoreViewType.GRID.name)
+        }.getOrDefault(ScoreViewType.GRID)
+        _scoreSortOrder.value = runCatching {
+            ScoreSortOrder.valueOf(prefs.getString(KEY_SCORE_SORT_ORDER, ScoreSortOrder.TITLE_ASC.name) ?: ScoreSortOrder.TITLE_ASC.name)
+        }.getOrDefault(ScoreSortOrder.TITLE_ASC)
+        _scoreOriginFilter.value = runCatching {
+            ScoreOriginFilter.valueOf(prefs.getString(KEY_SCORE_ORIGIN_FILTER, ScoreOriginFilter.ALL.name) ?: ScoreOriginFilter.ALL.name)
+        }.getOrDefault(ScoreOriginFilter.ALL)
         _albumSortOrder.value = prefs.getString(KEY_ALBUM_SORT_ORDER, "TRACK_NUMBER") ?: "TRACK_NUMBER"
         _artistCollaborationMode.value = prefs.getBoolean(KEY_ARTIST_COLLABORATION_MODE, false)
         _songsSortOrder.value = prefs.getString(KEY_SONGS_SORT_ORDER, "TITLE_ASC") ?: "TITLE_ASC"

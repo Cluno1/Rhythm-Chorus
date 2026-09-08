@@ -81,6 +81,7 @@ import io.github.cluno1.sonorus.shared.data.model.Artist
 import io.github.cluno1.sonorus.shared.data.model.Playlist
 import io.github.cluno1.sonorus.shared.data.model.Song
 import io.github.cluno1.sonorus.features.catalog.domain.CatalogLibraryScoreWork
+import io.github.cluno1.sonorus.features.catalog.presentation.components.ScoreWorkGridCard
 import io.github.cluno1.sonorus.shared.presentation.components.Material3SettingsGroup
 import io.github.cluno1.sonorus.shared.presentation.components.Material3SettingsItem
 import io.github.cluno1.sonorus.shared.presentation.components.SettingScope
@@ -107,6 +108,7 @@ data class UniversalSearchCatalogSource(
     val songs: List<Song>,
     val albums: List<Album>,
     val scoreWorks: List<CatalogLibraryScoreWork> = emptyList(),
+    val serverUrl: String? = null,
     val isLoading: Boolean = false,
 )
 
@@ -930,11 +932,11 @@ fun UniversalSearchScreen(
                                     LazyRow(horizontalArrangement = Arrangement.spacedBy(12.dp), modifier = Modifier.animateItem()) {
                                         items(matchedScoreWorks.take(6).size, key = { i -> matchedScoreWorks[i].workId }) { i ->
                                             val work = matchedScoreWorks[i]
-                                            SearchGridCard(
-                                                item = SearchGridItem("SCORE", work.title, work.artist.orEmpty(), work.coverUrl) { onCatalogScoreWorkClick(work) },
-                                                haptics = haptics,
-                                                context = context,
-                                                isAlbum = true,
+                                            ScoreWorkGridCard(
+                                                work = work,
+                                                trustedServerUrl = catalogSource?.serverUrl,
+                                                onClick = { onCatalogScoreWorkClick(work) },
+                                                modifier = Modifier.width(160.dp),
                                             )
                                         }
                                     }
@@ -1136,11 +1138,11 @@ fun UniversalSearchScreen(
                                     LazyRow(horizontalArrangement = Arrangement.spacedBy(12.dp), modifier = Modifier.animateItem()) {
                                         items(matchedScoreWorks.take(6).size, key = { i -> matchedScoreWorks[i].workId }) { i ->
                                             val work = matchedScoreWorks[i]
-                                            SearchGridCard(
-                                                item = SearchGridItem("SCORE", work.title, work.artist.orEmpty(), work.coverUrl) { onCatalogScoreWorkClick(work) },
-                                                haptics = haptics,
-                                                context = context,
-                                                isAlbum = true,
+                                            ScoreWorkGridCard(
+                                                work = work,
+                                                trustedServerUrl = catalogSource?.serverUrl,
+                                                onClick = { onCatalogScoreWorkClick(work) },
+                                                modifier = Modifier.width(160.dp),
                                             )
                                         }
                                     }

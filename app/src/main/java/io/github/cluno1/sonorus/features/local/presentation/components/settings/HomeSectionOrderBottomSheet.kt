@@ -133,7 +133,7 @@ fun HomeSectionOrderBottomSheet(
             "RECENTLY_PLAYED" -> Pair("Recently Played", MaterialSymbolIcon("history"))
             "DISCOVER" -> Pair("Discover Carousel", MaterialSymbolIcon("explore"))
             "ARTISTS" -> Pair("Top Artists", RhythmIcons.Artist)
-            "SCORES" -> Pair(context.getString(R.string.catalog_scores), MaterialSymbolIcon("score"))
+            "SCORES" -> Pair(context.getString(R.string.catalog_scores), RhythmIcons.Score)
             "NEW_RELEASES" -> Pair("New Releases", MaterialSymbolIcon("new_releases"))
             "RECENTLY_ADDED" -> Pair("Recently Added", RhythmIcons.Music.Album)
             "RECOMMENDED" -> Pair("Recommended", MaterialSymbolIcon("recommend"))

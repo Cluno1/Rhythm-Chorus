@@ -15,6 +15,7 @@ package io.github.cluno1.sonorus.features.local.presentation.screens
 import io.github.cluno1.sonorus.shared.presentation.components.icons.RhythmIcons
 import io.github.cluno1.sonorus.shared.presentation.components.icons.MaterialSymbolIcon
 import io.github.cluno1.sonorus.shared.presentation.components.icons.Icon
+import io.github.cluno1.sonorus.features.catalog.presentation.components.ScoreWorkGridCard
 import io.github.cluno1.sonorus.ui.LocalMiniPlayerPadding
 import io.github.cluno1.sonorus.features.streaming.presentation.components.StreamingServiceStateCard
 import io.github.cluno1.sonorus.features.streaming.data.repository.StreamingServiceSession
@@ -294,6 +295,7 @@ fun HomeScreen(
     onStreamingPlayQueue: (List<io.github.cluno1.sonorus.features.streaming.domain.model.StreamingSong>, Int, Boolean) -> Unit = { _, _, _ -> },
     onStreamingShuffleQueue: (List<io.github.cluno1.sonorus.features.streaming.domain.model.StreamingSong>) -> Unit = {},
     scoreWorks: List<io.github.cluno1.sonorus.features.catalog.domain.CatalogLibraryScoreWork> = emptyList(),
+    scoreArtworkServerUrl: String? = null,
     onScoreWorkClick: (io.github.cluno1.sonorus.features.catalog.domain.CatalogLibraryScoreWork) -> Unit = {},
     onViewAllScores: () -> Unit = {},
 ) {
@@ -646,6 +648,7 @@ fun HomeScreen(
                 onViewAllAlbums = onViewAllAlbums,
                 onViewAllArtists = onViewAllArtists,
                 scoreWorks = scoreWorks,
+                scoreArtworkServerUrl = scoreArtworkServerUrl,
                 onScoreWorkClick = onScoreWorkClick,
                 onViewAllScores = onViewAllScores,
                 onSearchClick = onSearchClick,
@@ -1369,6 +1372,7 @@ private fun ModernScrollableContent(
     onViewAllAlbums: () -> Unit,
     onViewAllArtists: () -> Unit,
     scoreWorks: List<io.github.cluno1.sonorus.features.catalog.domain.CatalogLibraryScoreWork>,
+    scoreArtworkServerUrl: String?,
     onScoreWorkClick: (io.github.cluno1.sonorus.features.catalog.domain.CatalogLibraryScoreWork) -> Unit,
     onViewAllScores: () -> Unit,
     onSearchClick: () -> Unit,
@@ -1616,23 +1620,32 @@ private fun ModernScrollableContent(
                     Column {
                         ModernSectionTitle(
                             title = stringResource(R.string.catalog_scores),
-                            subtitle = "可阅读的 MusicXML 乐谱",
+                            subtitle = stringResource(R.string.catalog_scores_home_subtitle),
                             viewAllAction = onViewAllScores,
                         )
-                        Spacer(Modifier.height(12.dp))
-                        LazyRow(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                        Spacer(Modifier.height(20.dp))
+                        val (scoreCardWidth, scoreCardHeight) = when (widthSizeClass) {
+                            WindowWidthSizeClass.Compact -> if (heightSizeClass == WindowHeightSizeClass.Compact) {
+                                140.dp to 238.dp
+                            } else {
+                                160.dp to 260.dp
+                            }
+                            WindowWidthSizeClass.Medium -> 180.dp to 280.dp
+                            WindowWidthSizeClass.Expanded -> 200.dp to 300.dp
+                            else -> 160.dp to 260.dp
+                        }
+                        LazyRow(
+                            contentPadding = PaddingValues(horizontal = 4.dp),
+                            horizontalArrangement = Arrangement.spacedBy(16.dp),
+                        ) {
                             items(scoreWorks.sortedByDescending { it.latestPublishedAt }.take(12), key = { it.workId }) { work ->
-                                Surface(
-                                    modifier = Modifier.width(160.dp).clickable { onScoreWorkClick(work) },
-                                    shape = RoundedCornerShape(18.dp),
-                                    color = MaterialTheme.colorScheme.surfaceContainer,
-                                ) {
-                                    Column(Modifier.padding(16.dp)) {
-                                        Icon(MaterialSymbolIcon("score"), contentDescription = null, modifier = Modifier.size(36.dp))
-                                        Text(work.title, maxLines = 2, overflow = TextOverflow.Ellipsis, modifier = Modifier.padding(top = 12.dp))
-                                        Text(stringResource(R.string.catalog_score_count, work.scoreCount), style = MaterialTheme.typography.bodySmall)
-                                    }
-                                }
+                                ScoreWorkGridCard(
+                                    work = work,
+                                    trustedServerUrl = scoreArtworkServerUrl,
+                                    onClick = { onScoreWorkClick(work) },
+                                    modifier = Modifier.width(scoreCardWidth),
+                                    cardHeight = scoreCardHeight,
+                                )
                             }
                         }
                     }

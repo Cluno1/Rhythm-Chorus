@@ -2066,6 +2066,7 @@ private fun LocalNavigationContent(
                                 }
                             },
                             scoreWorks = catalogState.scoreWorks,
+                            scoreArtworkServerUrl = catalogState.serverUrl,
                             onScoreWorkClick = { work ->
                                 val option = work.scoreOptions.firstOrNull { it.scoreId == work.defaultScoreId }
                                     ?: work.scoreOptions.firstOrNull()
@@ -2232,6 +2233,7 @@ private fun LocalNavigationContent(
                                 songs = nativeSongs,
                                 albums = nativeAlbums,
                                 scoreWorks = catalogState.scoreWorks,
+                                serverUrl = catalogState.serverUrl,
                                 isLoading = catalogState.loading,
                             ),
                             onLocalSongClick = { song ->
@@ -3572,8 +3574,10 @@ private fun LocalNavigationContent(
                         }) else null,
                         streamingFavoriteSongIds = streamingLikedSongIds,
                         scoreWorks = if (isStreamingMode) emptyList() else catalogState.scoreWorks,
-                        onScoreWorkClick = { work ->
-                            val option = work.scoreOptions.firstOrNull { it.scoreId == work.defaultScoreId }
+                        scoreArtworkServerUrl = catalogState.serverUrl,
+                        onScoreWorkClick = { work, initialOption ->
+                            val option = initialOption
+                                ?: work.scoreOptions.firstOrNull { it.scoreId == work.defaultScoreId }
                                 ?: work.scoreOptions.firstOrNull()
                             if (option != null) {
                                 navController.navigate(

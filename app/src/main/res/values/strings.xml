@@ -3111,9 +3111,20 @@
     <string name="sonorus_update_source_desc">Stable releases from Cluno1/Sonorus</string>
     <string name="catalog_scores">Scores</string>
     <string name="catalog_scores_empty">No readable scores yet</string>
-    <string name="catalog_score_count">%1$d scores</string>
     <string name="catalog_score_origin_edited">Edited score</string>
     <string name="catalog_score_origin_midi">MIDI score</string>
+    <string name="catalog_scores_home_subtitle">Readable MusicXML scores</string>
+    <string name="catalog_score_filter_all">All</string>
+    <string name="catalog_score_sort_recent">Published date</string>
+    <string name="catalog_score_sort_count">Score count</string>
+    <string name="catalog_score_show_grid">Show scores as a grid</string>
+    <string name="catalog_score_show_list">Show scores as a list</string>
+    <string name="catalog_score_sort">Sort scores</string>
+    <string name="catalog_open_score_description">%1$s, %2$s, %3$s. Open score</string>
+    <plurals name="catalog_score_count">
+        <item quantity="one">%1$d score</item>
+        <item quantity="other">%1$d scores</item>
+    </plurals>
     <string name="score_settings">Score settings</string>
     <string name="score_version">Score version</string>
     <string name="score_playback_end">When playback ends</string>

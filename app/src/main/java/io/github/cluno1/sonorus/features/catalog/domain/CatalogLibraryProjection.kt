@@ -88,3 +88,9 @@ private fun CatalogLibrarySong.stableArtworkUri(trustedServerUrl: String?): Uri?
 private fun CatalogLibraryAlbum.stableArtworkUri(trustedServerUrl: String?): Uri? =
     coverAssetId?.let(CatalogArtworkPolicy::uri)?.let(Uri::parse)
         ?: coverUrl.toSafeArtworkUri(trustedServerUrl)
+
+fun CatalogLibraryScoreWork.stableArtworkUri(trustedServerUrl: String?): Uri? =
+    coverAssetId
+        ?.let { runCatching { CatalogArtworkPolicy.uri(it) }.getOrNull() }
+        ?.let(Uri::parse)
+        ?: coverUrl.toSafeArtworkUri(trustedServerUrl)

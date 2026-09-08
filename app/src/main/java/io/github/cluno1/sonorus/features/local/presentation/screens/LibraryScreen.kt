@@ -206,7 +206,11 @@ import io.github.cluno1.sonorus.shared.data.model.findAlbumForSong
 import io.github.cluno1.sonorus.shared.data.model.AlbumViewType
 import io.github.cluno1.sonorus.shared.data.model.ArtistViewType
 import io.github.cluno1.sonorus.shared.data.model.PlaylistViewType
+import io.github.cluno1.sonorus.shared.data.model.ScoreOriginFilter
+import io.github.cluno1.sonorus.shared.data.model.ScoreSortOrder
+import io.github.cluno1.sonorus.shared.data.model.ScoreViewType
 import io.github.cluno1.sonorus.shared.data.model.AppSettings
+import io.github.cluno1.sonorus.features.catalog.domain.CatalogScoreOption
 import io.github.cluno1.sonorus.shared.presentation.components.bottomsheets.AddToPlaylistBottomSheet
 import io.github.cluno1.sonorus.shared.presentation.components.dialogs.CreatePlaylistDialog
 import io.github.cluno1.sonorus.shared.presentation.components.player.MiniPlayer
@@ -348,7 +352,8 @@ fun LibraryScreen(
     onStreamingSetFavorite: ((Song, Boolean) -> Unit)? = null,
     streamingFavoriteSongIds: Set<String> = emptySet(),
     scoreWorks: List<io.github.cluno1.sonorus.features.catalog.domain.CatalogLibraryScoreWork> = emptyList(),
-    onScoreWorkClick: (io.github.cluno1.sonorus.features.catalog.domain.CatalogLibraryScoreWork) -> Unit = {},
+    scoreArtworkServerUrl: String? = null,
+    onScoreWorkClick: (io.github.cluno1.sonorus.features.catalog.domain.CatalogLibraryScoreWork, CatalogScoreOption?) -> Unit = { _, _ -> },
 ) {
     val context = LocalContext.current
     val appSettings = remember { AppSettings.getInstance(context) }
@@ -802,16 +807,21 @@ fun LibraryScreen(
     val artistsGridState = rememberLazyGridState()
     val albumArtistsListState = rememberLazyListState()
     val albumArtistsGridState = rememberLazyGridState()
+    val scoresListState = rememberLazyListState()
+    val scoresGridState = rememberLazyGridState()
     val explorerListState = rememberLazyListState()
 
     val playlistViewType by appSettings.playlistViewType.collectAsState()
     val albumViewType by appSettings.albumViewType.collectAsState()
     val artistViewType by appSettings.artistViewType.collectAsState()
+    val scoreViewType by appSettings.scoreViewType.collectAsState()
+    val scoreSortOrder by appSettings.scoreSortOrder.collectAsState()
+    val scoreOriginFilter by appSettings.scoreOriginFilter.collectAsState()
 
 
 
     val isListAtTop by remember(
-        selectedTabIndex, visibleTabIds, playlistViewType, albumViewType, artistViewType
+        selectedTabIndex, visibleTabIds, playlistViewType, albumViewType, artistViewType, scoreViewType
     ) {
         derivedStateOf {
             when (visibleTabIds.getOrNull(selectedTabIndex)) {
@@ -837,6 +847,13 @@ fun LibraryScreen(
                         artistsGridState.firstVisibleItemIndex == 0 && artistsGridState.firstVisibleItemScrollOffset == 0
                     } else {
                         artistsListState.firstVisibleItemIndex == 0 && artistsListState.firstVisibleItemScrollOffset == 0
+                    }
+                }
+                "SCORES" -> {
+                    if (scoreViewType == ScoreViewType.GRID) {
+                        scoresGridState.firstVisibleItemIndex == 0 && scoresGridState.firstVisibleItemScrollOffset == 0
+                    } else {
+                        scoresListState.firstVisibleItemIndex == 0 && scoresListState.firstVisibleItemScrollOffset == 0
                     }
                 }
                 "ALBUM_ARTISTS" -> {
@@ -1007,7 +1024,7 @@ fun LibraryScreen(
                     )
                 },
                 actions = {
-                    val showShuffle = !showLibraryBottomBarAlways && !isSelectionMode && bottomBarSongs.isNotEmpty() && activeTabIdOuter != "ARTISTS" && activeTabIdOuter != "ALBUM_ARTISTS" && activeTabIdOuter != "ALBUMS"
+                    val showShuffle = !showLibraryBottomBarAlways && !isSelectionMode && bottomBarSongs.isNotEmpty() && activeTabIdOuter != "ARTISTS" && activeTabIdOuter != "ALBUM_ARTISTS" && activeTabIdOuter != "ALBUMS" && activeTabIdOuter != "SCORES"
 
                     AnimatedVisibility(
                         visible = showShuffle,
@@ -1069,6 +1086,43 @@ fun LibraryScreen(
                                 )
                             }
                             
+                            Spacer(modifier = Modifier.width(8.dp))
+                        }
+
+                        "SCORES" -> {
+                            val buttonScale by animateFloatAsState(
+                                targetValue = 1f,
+                                animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy),
+                                label = "scoreToggleScale",
+                            )
+                            FilledTonalIconButton(
+                                onClick = {
+                                    HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
+                                    appSettings.setScoreViewType(
+                                        if (scoreViewType == ScoreViewType.LIST) ScoreViewType.GRID else ScoreViewType.LIST,
+                                    )
+                                },
+                                colors = IconButtonDefaults.filledTonalIconButtonColors(
+                                    containerColor = MaterialTheme.colorScheme.tertiaryContainer,
+                                    contentColor = MaterialTheme.colorScheme.onTertiaryContainer,
+                                ),
+                                modifier = Modifier
+                                    .padding(end = 8.dp)
+                                    .size(42.dp)
+                                    .graphicsLayer {
+                                        scaleX = buttonScale
+                                        scaleY = buttonScale
+                                    },
+                            ) {
+                                Icon(
+                                    imageVector = if (scoreViewType == ScoreViewType.LIST) RhythmIcons.GridView else MaterialSymbolIcon("view_list", filled = true),
+                                    contentDescription = stringResource(
+                                        if (scoreViewType == ScoreViewType.LIST) R.string.catalog_score_show_grid
+                                        else R.string.catalog_score_show_list,
+                                    ),
+                                    modifier = Modifier.size(20.dp),
+                                )
+                            }
                             Spacer(modifier = Modifier.width(8.dp))
                         }
                         
@@ -1330,6 +1384,97 @@ fun LibraryScreen(
                         }
                     }
                 }
+
+                    if (currentTabId == "SCORES") {
+                        var showScoreSortMenu by remember { mutableStateOf(false) }
+                        val scoreSortKey = when (scoreSortOrder) {
+                            ScoreSortOrder.TITLE_ASC, ScoreSortOrder.TITLE_DESC -> "TITLE"
+                            ScoreSortOrder.PUBLISHED_ASC, ScoreSortOrder.PUBLISHED_DESC -> "PUBLISHED"
+                            ScoreSortOrder.SCORE_COUNT_ASC, ScoreSortOrder.SCORE_COUNT_DESC -> "SCORE_COUNT"
+                        }
+                        val scoreSortAscending = when (scoreSortOrder) {
+                            ScoreSortOrder.TITLE_ASC, ScoreSortOrder.PUBLISHED_ASC, ScoreSortOrder.SCORE_COUNT_ASC -> true
+                            else -> false
+                        }
+                        fun resolveScoreSortOrder(key: String, ascending: Boolean): ScoreSortOrder = when (key) {
+                            "PUBLISHED" -> if (ascending) ScoreSortOrder.PUBLISHED_ASC else ScoreSortOrder.PUBLISHED_DESC
+                            "SCORE_COUNT" -> if (ascending) ScoreSortOrder.SCORE_COUNT_ASC else ScoreSortOrder.SCORE_COUNT_DESC
+                            else -> if (ascending) ScoreSortOrder.TITLE_ASC else ScoreSortOrder.TITLE_DESC
+                        }
+
+                        Box {
+                            FilledTonalButton(
+                                onClick = {
+                                    HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
+                                    showScoreSortMenu = true
+                                },
+                                colors = ButtonDefaults.filledTonalButtonColors(
+                                    containerColor = MaterialTheme.colorScheme.primaryContainer,
+                                    contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                                ),
+                                contentPadding = PaddingValues(horizontal = 14.dp, vertical = 10.dp),
+                                modifier = Modifier.padding(end = 16.dp),
+                            ) {
+                                Icon(
+                                    imageVector = when (scoreSortKey) {
+                                        "PUBLISHED" -> RhythmIcons.DateRange
+                                        "SCORE_COUNT" -> RhythmIcons.Score
+                                        else -> RhythmIcons.SortByAlpha
+                                    },
+                                    contentDescription = stringResource(R.string.catalog_score_sort),
+                                    modifier = Modifier.size(20.dp),
+                                )
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Text(
+                                    text = when (scoreSortKey) {
+                                        "PUBLISHED" -> stringResource(R.string.catalog_score_sort_recent)
+                                        "SCORE_COUNT" -> stringResource(R.string.catalog_score_sort_count)
+                                        else -> stringResource(R.string.library_sort_title)
+                                    },
+                                    style = MaterialTheme.typography.labelLarge,
+                                    fontWeight = FontWeight.Medium,
+                                )
+                                Spacer(modifier = Modifier.width(4.dp))
+                                Icon(
+                                    imageVector = if (scoreSortAscending) RhythmIcons.ArrowUpward else RhythmIcons.ArrowDownward,
+                                    contentDescription = stringResource(
+                                        if (scoreSortAscending) R.string.library_sort_ascending else R.string.library_sort_descending,
+                                    ),
+                                    modifier = Modifier.size(18.dp),
+                                )
+                            }
+
+                            DropdownMenu(
+                                expanded = showScoreSortMenu,
+                                onDismissRequest = { showScoreSortMenu = false },
+                                shape = RoundedCornerShape(20.dp),
+                                modifier = Modifier
+                                    .widthIn(min = 250.dp)
+                                    .background(MaterialTheme.colorScheme.surfaceContainer)
+                                    .padding(8.dp),
+                            ) {
+                                RhythmSortMenuContent(
+                                    selectedKey = scoreSortKey,
+                                    isAscending = scoreSortAscending,
+                                    options = listOf(
+                                        RhythmSortOption("TITLE", context.getString(R.string.library_sort_title), RhythmIcons.SortByAlpha),
+                                        RhythmSortOption("PUBLISHED", context.getString(R.string.catalog_score_sort_recent), RhythmIcons.DateRange),
+                                        RhythmSortOption("SCORE_COUNT", context.getString(R.string.catalog_score_sort_count), RhythmIcons.Score),
+                                    ),
+                                    onKeySelected = { key ->
+                                        HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
+                                        appSettings.setScoreSortOrder(resolveScoreSortOrder(key, scoreSortAscending))
+                                        showScoreSortMenu = false
+                                    },
+                                    onDirectionToggled = { ascending ->
+                                        HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
+                                        appSettings.setScoreSortOrder(resolveScoreSortOrder(scoreSortKey, ascending))
+                                        showScoreSortMenu = false
+                                    },
+                                )
+                            }
+                        }
+                    }
                     
                     if (currentTabId == "PLAYLISTS") {
                         val playlistSortOrderString by appSettings.playlistSortOrder.collectAsState()
@@ -1538,7 +1683,7 @@ fun LibraryScreen(
                                             "PLAYLISTS" -> RhythmIcons.PlaylistFilled
                                             "ALBUMS" -> RhythmIcons.Music.Album
                                             "ARTISTS" -> RhythmIcons.Artist
-                                            "SCORES" -> MaterialSymbolIcon("score")
+                                            "SCORES" -> if (isSelected) RhythmIcons.ScoreFilled else RhythmIcons.Score
                                             "ALBUM_ARTISTS" -> MaterialSymbolIcon("person_pin")
                                             "DATES" -> RhythmIcons.CalendarMonth
                                             "EXPLORER" -> RhythmIcons.Folder
@@ -1945,7 +2090,14 @@ fun LibraryScreen(
                                     )
                                     "SCORES" -> CatalogScoreLibraryContent(
                                         scoreWorks = scoreWorks,
+                                        trustedServerUrl = scoreArtworkServerUrl,
+                                        viewType = scoreViewType,
+                                        sortOrder = scoreSortOrder,
+                                        originFilter = scoreOriginFilter,
+                                        onOriginFilterChange = appSettings::setScoreOriginFilter,
                                         onScoreWorkClick = onScoreWorkClick,
+                                        listState = scoresListState,
+                                        gridState = scoresGridState,
                                         bottomPadding = baseLibraryBottomPadding,
                                     )
                                     "ALBUM_ARTISTS" -> SingleCardArtistsContent(
