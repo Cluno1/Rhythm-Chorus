@@ -181,6 +181,59 @@ class CatalogDtoMapperTest {
     }
 
     @Test
+    fun mapsAllLocalizedLibraryLyrics() {
+        val song = LibrarySongDto(
+            workId = workId,
+            arrangementId = arrangementId,
+            renditionId = renditionId,
+            albumId = "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+            title = "Localized song",
+            artist = "Artist",
+            albumTitle = "Album",
+            durationMs = 1_000,
+            trackNo = 1,
+            coverUrl = null,
+            lyrics = "Amazing grace",
+            lyricsLanguage = "en",
+            lyricsTranslations = listOf(
+                LyricsTranslationDto("zh-hans", "奇异恩典"),
+                LyricsTranslationDto("zh-Hant", "奇異恩典"),
+            ),
+        )
+
+        val mapped = CatalogDtoMapper.librarySongs(
+            LibrarySongPageDto(listOf(song), null),
+        ).first.single()
+
+        assertEquals("en", mapped.lyricsLanguage)
+        assertEquals(listOf("zh-Hans", "zh-Hant"), mapped.lyricsTranslations?.map { it.language })
+        assertEquals(listOf("奇异恩典", "奇異恩典"), mapped.lyricsTranslations?.map { it.lyrics })
+    }
+
+    @Test
+    fun rejectsDuplicateLocalizedLibraryLyrics() {
+        val song = LibrarySongDto(
+            workId = workId,
+            arrangementId = arrangementId,
+            renditionId = renditionId,
+            albumId = "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+            title = "Localized song",
+            artist = null,
+            albumTitle = "Album",
+            durationMs = null,
+            trackNo = null,
+            coverUrl = null,
+            lyrics = "Default",
+            lyricsLanguage = "zh-Hans",
+            lyricsTranslations = listOf(LyricsTranslationDto("zh-hans", "Duplicate")),
+        )
+
+        assertThrows(IllegalArgumentException::class.java) {
+            CatalogDtoMapper.librarySongs(LibrarySongPageDto(listOf(song), null))
+        }
+    }
+
+    @Test
     fun rejectsNonMusicXmlAssetDeliveryMime() {
         assertThrows(IllegalArgumentException::class.java) {
             CatalogDtoMapper.assetDelivery(

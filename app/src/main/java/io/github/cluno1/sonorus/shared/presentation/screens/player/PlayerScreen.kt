@@ -262,6 +262,8 @@ fun PlayerScreen(
     // ManagedCatalogPlayer 暂保留（签名与回退兼容，编译期未使用不影响）。
     val playerThemeId by appSettings.playerThemeId.collectAsState()
     var showFullScreenLyrics by remember { mutableStateOf(false) }
+    val catalogLyricsLanguages by musicViewModel.catalogLyricsLanguages.collectAsState()
+    val selectedCatalogLyricsLanguage by musicViewModel.catalogLyricsLanguage.collectAsState()
 
     BackHandler(enabled = showFullScreenLyrics || expansionFraction > 0.5f) {
         if (showFullScreenLyrics) {
@@ -1013,6 +1015,9 @@ fun PlayerScreen(
                     android.util.Log.e("PlayerScreen", "Failed to navigate to lyrics settings", e)
                 }
             },
+            catalogLyricsLanguages = if (isCatalogItem) catalogLyricsLanguages else emptyList(),
+            selectedCatalogLyricsLanguage = selectedCatalogLyricsLanguage,
+            onCatalogLyricsLanguageSelect = musicViewModel::selectCatalogLyricsLanguage,
             canvasArtwork = canvasArtwork,
             canvasLoading = canvasLoading,
             modifier = Modifier.fillMaxSize()
