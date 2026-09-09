@@ -457,6 +457,7 @@ fun RemoteScoreScreen(
     onBackClick: () -> Unit,
     scoreLabel: String? = null,
     revisionLabel: String? = null,
+    revisionTimeLabel: String? = null,
     canOpenNewerRevision: Boolean = false,
     canOpenOlderRevision: Boolean = false,
     onOpenNewerRevision: () -> Unit = {},
@@ -573,11 +574,24 @@ fun RemoteScoreScreen(
                                     icon = RhythmIcons.Score,
                                     title = stringResource(R.string.score_version),
                                 ) {
-                                    Text(
-                                        revisionLabel,
-                                        style = MaterialTheme.typography.bodyMedium,
-                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                    )
+                                    Row(
+                                        modifier = Modifier.fillMaxWidth(),
+                                        horizontalArrangement = Arrangement.SpaceBetween,
+                                        verticalAlignment = Alignment.CenterVertically,
+                                    ) {
+                                        Text(
+                                            revisionLabel,
+                                            style = MaterialTheme.typography.bodyMedium,
+                                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                        )
+                                        revisionTimeLabel?.let { time ->
+                                            Text(
+                                                time,
+                                                style = MaterialTheme.typography.labelSmall,
+                                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                            )
+                                        }
+                                    }
                                     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                                         FilterChip(
                                             selected = !canOpenNewerRevision,

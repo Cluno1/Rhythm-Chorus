@@ -104,7 +104,7 @@ class ScoreLibraryUiModelTest {
     fun publishedTimeWithOffsetUsesDeviceTimeZone() {
         assertEquals(
             "2026-09-09 16:12",
-            formatScorePublishedAt(
+            formatScoreRevisionTime(
                 "2026-09-09T08:12:21.937599+00:00",
                 ZoneId.of("Asia/Shanghai"),
             ),
@@ -115,7 +115,7 @@ class ScoreLibraryUiModelTest {
     fun publishedTimeWithoutOffsetKeepsItsWallClockTime() {
         assertEquals(
             "2026-09-04 19:18",
-            formatScorePublishedAt(
+            formatScoreRevisionTime(
                 "2026-09-04 19:18:41.718752",
                 ZoneId.of("Asia/Shanghai"),
             ),

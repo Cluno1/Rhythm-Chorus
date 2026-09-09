@@ -3124,6 +3124,7 @@
         <item quantity="other">%1$d scores</item>
     </plurals>
     <string name="score_settings">Score settings</string>
+    <string name="score_selection">Score selection</string>
     <string name="score_version">Score version</string>
     <string name="score_revision_label">Revision %1$d</string>
     <string name="score_revision_newest">Newest</string>

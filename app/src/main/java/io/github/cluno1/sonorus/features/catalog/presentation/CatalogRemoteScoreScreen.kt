@@ -43,7 +43,7 @@ import java.time.format.DateTimeFormatter
 
 private val scorePublishedAtFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")
 
-internal fun formatScorePublishedAt(
+internal fun formatScoreRevisionTime(
     value: String,
     zoneId: ZoneId = ZoneId.systemDefault(),
 ): String {
@@ -119,6 +119,9 @@ fun CatalogRemoteScoreScreen(
             revisionLabel = history.getOrNull(selectedIndex)?.let {
                 stringResource(R.string.score_revision_label, it.revisionNo)
             },
+            revisionTimeLabel = history.getOrNull(selectedIndex)?.let {
+                formatScoreRevisionTime(it.createdAt)
+            },
             canOpenNewerRevision = selectedIndex > 0,
             canOpenOlderRevision = selectedIndex < history.lastIndex,
             onOpenNewerRevision = { selectedIndex-- },
@@ -144,7 +147,7 @@ fun CatalogRemoteScoreScreen(
                                     tint = MaterialTheme.colorScheme.primary,
                                 )
                                 Text(
-                                    stringResource(R.string.score_version),
+                                    stringResource(R.string.score_selection),
                                     style = MaterialTheme.typography.titleMedium,
                                     fontWeight = FontWeight.Bold,
                                 )
@@ -158,21 +161,10 @@ fun CatalogRemoteScoreScreen(
                                         selected = option.scoreId == selectedOption?.scoreId,
                                         onClick = { selectedScoreId = option.scoreId },
                                         label = {
-                                            Row(
-                                                horizontalArrangement = Arrangement.spacedBy(12.dp),
-                                                verticalAlignment = Alignment.CenterVertically,
-                                            ) {
-                                                Text(
-                                                    "${option.scoreLabel} · ${stringResource(R.string.score_revision_label, option.revisionNo)}",
-                                                    maxLines = 1,
-                                                )
-                                                Text(
-                                                    formatScorePublishedAt(option.publishedAt),
-                                                    style = MaterialTheme.typography.labelSmall,
-                                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                                    maxLines = 1,
-                                                )
-                                            }
+                                            Text(
+                                                "${option.scoreLabel} · ${stringResource(R.string.score_revision_label, option.revisionNo)}",
+                                                maxLines = 1,
+                                            )
                                         },
                                     )
                                 }
