@@ -1462,7 +1462,7 @@ fun ExpressivePlayerScreen(
                                                 isLast = true,
                                                 containerColor = controlsContainerColor,
                                                 contentColor = when { needsDarkSurfaces -> ambientControlContent; useAccentBackground -> accentFg; else -> monoFg },
-                                                icon = MaterialSymbolIcon("score", filled = true),
+                                                icon = RhythmIcons.Score,
                                                 contentDescription = "乐谱"
                                             )
                                         }
@@ -1705,7 +1705,7 @@ fun ExpressivePlayerScreen(
                                                     isFirst = isFirst,
                                                     isLast = isLast,
                                                     type = RhythmButtonType.Tonal,
-                                                    icon = MaterialSymbolIcon("score", filled = true),
+                                                    icon = RhythmIcons.Score,
                                                     iconSize = 20.dp,
                                                     text = null,
                                                     contentDescription = "乐谱",
@@ -2060,7 +2060,7 @@ fun ExpressivePlayerScreen(
                                                     isFirst = isFirst,
                                                     isLast = isLast,
                                                     type = RhythmButtonType.Tonal,
-                                                    icon = MaterialSymbolIcon("score", filled = true),
+                                                    icon = RhythmIcons.Score,
                                                     iconSize = 20.dp,
                                                     contentDescription = "乐谱",
                                                     containerColor = controlsContainerColor,
