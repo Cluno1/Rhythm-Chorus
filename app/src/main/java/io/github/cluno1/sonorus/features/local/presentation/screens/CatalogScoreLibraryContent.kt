@@ -40,9 +40,9 @@ import io.github.cluno1.sonorus.features.catalog.domain.CatalogLibraryScoreWork
 import io.github.cluno1.sonorus.features.catalog.domain.CatalogScoreOption
 import io.github.cluno1.sonorus.features.catalog.presentation.components.ScoreWorkGridCard
 import io.github.cluno1.sonorus.features.catalog.presentation.components.ScoreWorkListItem
+import io.github.cluno1.sonorus.features.catalog.presentation.availableScoreLabels
 import io.github.cluno1.sonorus.features.catalog.presentation.initialOptionFor
 import io.github.cluno1.sonorus.features.catalog.presentation.prepareCatalogScoreWorks
-import io.github.cluno1.sonorus.shared.data.model.ScoreOriginFilter
 import io.github.cluno1.sonorus.shared.data.model.ScoreSortOrder
 import io.github.cluno1.sonorus.shared.data.model.ScoreViewType
 import io.github.cluno1.sonorus.shared.presentation.components.common.ExpressiveScrollBar
@@ -57,8 +57,8 @@ internal fun CatalogScoreLibraryContent(
     trustedServerUrl: String?,
     viewType: ScoreViewType,
     sortOrder: ScoreSortOrder,
-    originFilter: ScoreOriginFilter,
-    onOriginFilterChange: (ScoreOriginFilter) -> Unit,
+    scoreLabelFilter: String?,
+    onScoreLabelFilterChange: (String?) -> Unit,
     onScoreWorkClick: (CatalogLibraryScoreWork, CatalogScoreOption?) -> Unit,
     listState: LazyListState,
     gridState: LazyGridState,
@@ -66,8 +66,11 @@ internal fun CatalogScoreLibraryContent(
 ) {
     val context = LocalContext.current
     val haptics = LocalHapticFeedback.current
-    val preparedScoreWorks = remember(scoreWorks, originFilter, sortOrder) {
-        prepareCatalogScoreWorks(scoreWorks, originFilter, sortOrder)
+    val scoreLabels = remember(scoreWorks) { availableScoreLabels(scoreWorks) }
+    val activeScoreLabel = scoreLabelFilter?.takeIf(scoreLabels::contains)
+    val scoreLabelFilters = remember(scoreLabels) { listOf<String?>(null) + scoreLabels }
+    val preparedScoreWorks = remember(scoreWorks, activeScoreLabel, sortOrder) {
+        prepareCatalogScoreWorks(scoreWorks, activeScoreLabel, sortOrder)
     }
 
     Column(modifier = Modifier.fillMaxSize()) {
@@ -77,21 +80,17 @@ internal fun CatalogScoreLibraryContent(
                 contentPadding = PaddingValues(horizontal = 16.dp, vertical = 6.dp),
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
             ) {
-                items(items = ScoreOriginFilter.entries, key = ScoreOriginFilter::name) { filter ->
-                    val selected = filter == originFilter
+                items(items = scoreLabelFilters, key = { it?.let { label -> "label:$label" } ?: "all_scores" }) { filter ->
+                    val selected = filter == activeScoreLabel
                     FilterChip(
                         selected = selected,
                         onClick = {
                             HapticUtils.performHapticFeedback(context, haptics, HapticType.LIGHT)
-                            onOriginFilterChange(filter)
+                            onScoreLabelFilterChange(filter)
                         },
                         label = {
                             Text(
-                                text = when (filter) {
-                                    ScoreOriginFilter.ALL -> stringResource(R.string.catalog_score_filter_all)
-                                    ScoreOriginFilter.EDITED -> stringResource(R.string.catalog_score_origin_edited)
-                                    ScoreOriginFilter.MIDI -> stringResource(R.string.catalog_score_origin_midi)
-                                },
+                                text = filter ?: stringResource(R.string.catalog_score_filter_all),
                                 maxLines = 1,
                                 overflow = TextOverflow.Ellipsis,
                             )
@@ -161,7 +160,7 @@ internal fun CatalogScoreLibraryContent(
                         ScoreWorkGridCard(
                             work = work,
                             trustedServerUrl = trustedServerUrl,
-                            onClick = { onScoreWorkClick(work, work.initialOptionFor(originFilter)) },
+                            onClick = { onScoreWorkClick(work, work.initialOptionFor(activeScoreLabel)) },
                             modifier = Modifier.fillMaxWidth().animateItem(),
                         )
                     }
@@ -193,7 +192,7 @@ internal fun CatalogScoreLibraryContent(
                         ScoreWorkListItem(
                             work = work,
                             trustedServerUrl = trustedServerUrl,
-                            onClick = { onScoreWorkClick(work, work.initialOptionFor(originFilter)) },
+                            onClick = { onScoreWorkClick(work, work.initialOptionFor(activeScoreLabel)) },
                             modifier = Modifier.animateItem(),
                             shape = groupedLibraryItemShape(index, preparedScoreWorks.size),
                         )

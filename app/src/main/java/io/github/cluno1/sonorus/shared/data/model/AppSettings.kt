@@ -74,12 +74,6 @@ enum class ScoreSortOrder {
     SCORE_COUNT_DESC,
 }
 
-enum class ScoreOriginFilter {
-    ALL,
-    EDITED,
-    MIDI,
-}
-
 /**
  * Enum for artist artwork source preferences
  */
@@ -214,7 +208,7 @@ class AppSettings private constructor(context: Context) {
         private const val KEY_PLAYLIST_VIEW_TYPE = "playlist_view_type"
         private const val KEY_SCORE_VIEW_TYPE = "score_view_type"
         private const val KEY_SCORE_SORT_ORDER = "score_sort_order"
-        private const val KEY_SCORE_ORIGIN_FILTER = "score_origin_filter"
+        private const val KEY_SCORE_LABEL_FILTER = "score_label_filter"
         private const val KEY_ALBUM_SORT_ORDER = "album_sort_order"
         private const val KEY_PLAYLIST_SORT_ORDER = "playlist_sort_order"
         private const val KEY_PLAYLIST_DETAIL_SORT_ORDER = "playlist_detail_sort_order"
@@ -892,12 +886,10 @@ class AppSettings private constructor(context: Context) {
     )
     val scoreSortOrder: StateFlow<ScoreSortOrder> = _scoreSortOrder.asStateFlow()
 
-    private val _scoreOriginFilter = MutableStateFlow(
-        runCatching {
-            ScoreOriginFilter.valueOf(prefs.getString(KEY_SCORE_ORIGIN_FILTER, ScoreOriginFilter.ALL.name) ?: ScoreOriginFilter.ALL.name)
-        }.getOrDefault(ScoreOriginFilter.ALL)
+    private val _scoreLabelFilter = MutableStateFlow(
+        prefs.getString(KEY_SCORE_LABEL_FILTER, null)?.takeIf(String::isNotBlank)
     )
-    val scoreOriginFilter: StateFlow<ScoreOriginFilter> = _scoreOriginFilter.asStateFlow()
+    val scoreLabelFilter: StateFlow<String?> = _scoreLabelFilter.asStateFlow()
     
     // Album Sort Order
     private val _albumSortOrder = MutableStateFlow(prefs.getString(KEY_ALBUM_SORT_ORDER, "TRACK_NUMBER") ?: "TRACK_NUMBER")
@@ -2585,9 +2577,13 @@ private val _autoCheckForUpdates = MutableStateFlow(ProductCapabilities.inAppUpd
         _scoreSortOrder.value = sortOrder
     }
 
-    fun setScoreOriginFilter(filter: ScoreOriginFilter) {
-        prefs.edit { putString(KEY_SCORE_ORIGIN_FILTER, filter.name) }
-        _scoreOriginFilter.value = filter
+    fun setScoreLabelFilter(scoreLabel: String?) {
+        val normalized = scoreLabel?.takeIf(String::isNotBlank)
+        prefs.edit {
+            if (normalized == null) remove(KEY_SCORE_LABEL_FILTER)
+            else putString(KEY_SCORE_LABEL_FILTER, normalized)
+        }
+        _scoreLabelFilter.value = normalized
     }
     
     fun setAlbumSortOrder(sortOrder: String) {
@@ -5202,9 +5198,7 @@ private val _autoCheckForUpdates = MutableStateFlow(ProductCapabilities.inAppUpd
         _scoreSortOrder.value = runCatching {
             ScoreSortOrder.valueOf(prefs.getString(KEY_SCORE_SORT_ORDER, ScoreSortOrder.TITLE_ASC.name) ?: ScoreSortOrder.TITLE_ASC.name)
         }.getOrDefault(ScoreSortOrder.TITLE_ASC)
-        _scoreOriginFilter.value = runCatching {
-            ScoreOriginFilter.valueOf(prefs.getString(KEY_SCORE_ORIGIN_FILTER, ScoreOriginFilter.ALL.name) ?: ScoreOriginFilter.ALL.name)
-        }.getOrDefault(ScoreOriginFilter.ALL)
+        _scoreLabelFilter.value = prefs.getString(KEY_SCORE_LABEL_FILTER, null)?.takeIf(String::isNotBlank)
         _albumSortOrder.value = prefs.getString(KEY_ALBUM_SORT_ORDER, "TRACK_NUMBER") ?: "TRACK_NUMBER"
         _artistCollaborationMode.value = prefs.getBoolean(KEY_ARTIST_COLLABORATION_MODE, false)
         _songsSortOrder.value = prefs.getString(KEY_SONGS_SORT_ORDER, "TITLE_ASC") ?: "TITLE_ASC"
