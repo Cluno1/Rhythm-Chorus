@@ -1861,7 +1861,7 @@ fun ExpressiveToggleButtonGroup(
                 isActive = lyricsVisible,
                 onClick = onToggleLyrics,
                 onLongClick = onLongClickLyrics,
-                icon = RhythmIcons.Player.Lyrics,
+                icon = RhythmIcons.Player.lyrics(lyricsVisible),
                 label = stringResource(R.string.player_chip_lyrics),
                 isDarkTheme = isDarkTheme,
                 isCompactHeight = isCompactHeight,

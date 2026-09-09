@@ -45,7 +45,10 @@ object RhythmIcons {
         val Repeat = MaterialSymbolIcon("repeat", defaultWeight = 500)
         val RepeatOne = MaterialSymbolIcon("repeat_one", defaultWeight = 500)
         val Lyrics = MaterialSymbolIcon("lyrics")
+        val LyricsActive = Lyrics.filled()
         val Stop = MaterialSymbolIcon("stop", filled = true)
+
+        fun lyrics(isActive: Boolean): MaterialSymbolIcon = if (isActive) LyricsActive else Lyrics
 
         // Volume controls
         val VolumeUp = MaterialSymbolIcon("volume_up")

@@ -1431,7 +1431,7 @@ fun ExpressivePlayerScreen(
                                             isLast = false,
                                             containerColor = controlsContainerColor,
                                             contentColor = when { needsDarkSurfaces -> ambientControlContent; useAccentBackground -> accentFg; else -> monoFg },
-                                            icon = RhythmIcons.Player.Lyrics,
+                                            icon = RhythmIcons.Player.lyrics(showLyricsView),
                                             contentDescription = stringResource(R.string.expressiveplayerscreen_lyrics)
                                         )
                                         RhythmButtonWeighted(
@@ -1670,7 +1670,7 @@ fun ExpressivePlayerScreen(
                                                     isFirst = isFirst,
                                                     isLast = isLast,
                                                     type = RhythmButtonType.Tonal,
-                                                    icon = RhythmIcons.Player.Lyrics,
+                                                    icon = RhythmIcons.Player.lyrics(showLyricsView),
                                                     iconSize = 20.dp,
                                                     text = null,
                                                     contentDescription = stringResource(R.string.expressiveplayerscreen_lyrics),
@@ -2027,7 +2027,7 @@ fun ExpressivePlayerScreen(
                                                     isFirst = isFirst,
                                                     isLast = isLast,
                                                     type = RhythmButtonType.Tonal,
-                                                    icon = RhythmIcons.Player.Lyrics,
+                                                    icon = RhythmIcons.Player.lyrics(showLyricsView),
                                                     iconSize = 20.dp,
                                                     contentDescription = stringResource(R.string.expressiveplayerscreen_lyrics),
                                                     containerColor = if (showLyricsView) primaryColor.copy(alpha = 0.35f) else controlsContainerColor,
