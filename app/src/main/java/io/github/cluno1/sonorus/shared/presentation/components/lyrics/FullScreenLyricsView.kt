@@ -90,6 +90,9 @@ fun FullScreenLyricsView(
     onClose: () -> Unit,
     onShowLyricsEditor: () -> Unit,
     onNavigateToLyricsSettings: () -> Unit,
+    catalogLyricsLanguages: List<String> = emptyList(),
+    selectedCatalogLyricsLanguage: String? = null,
+    onCatalogLyricsLanguageSelect: (String) -> Unit = {},
     modifier: Modifier = Modifier,
     canvasArtwork: CanvasArtwork? = null,
     canvasLoading: Boolean = false
@@ -400,6 +403,12 @@ fun FullScreenLyricsView(
                                 modifier = Modifier.size(24.dp)
                             )
                         }
+                        CatalogLyricsLanguageMenu(
+                            languages = catalogLyricsLanguages,
+                            selectedLanguage = selectedCatalogLyricsLanguage,
+                            onLanguageSelect = onCatalogLyricsLanguageSelect,
+                            modifier = Modifier.align(Alignment.CenterEnd),
+                        )
                     }
 
                     // Centered content Column
@@ -888,6 +897,16 @@ fun FullScreenLyricsView(
 
                     Spacer(modifier = Modifier.width(12.dp))
 
+                    CatalogLyricsLanguageMenu(
+                        languages = catalogLyricsLanguages,
+                        selectedLanguage = selectedCatalogLyricsLanguage,
+                        onLanguageSelect = onCatalogLyricsLanguageSelect,
+                    )
+
+                    if (catalogLyricsLanguages.size > 1) {
+                        Spacer(modifier = Modifier.width(8.dp))
+                    }
+
                     // Close button: Material 3 FilledTonalIconButton
                     FilledTonalIconButton(
                         onClick = {
@@ -1308,6 +1327,71 @@ fun FullScreenLyricsView(
             }
         }
     }
+}
+
+
+@Composable
+private fun CatalogLyricsLanguageMenu(
+    languages: List<String>,
+    selectedLanguage: String?,
+    onLanguageSelect: (String) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    if (languages.size <= 1) return
+    var expanded by remember { mutableStateOf(false) }
+    Box(modifier = modifier) {
+        FilledTonalIconButton(
+            onClick = { expanded = true },
+            modifier = Modifier.size(40.dp),
+        ) {
+            Icon(
+                imageVector = MaterialSymbolIcon("translate"),
+                contentDescription = stringResource(R.string.cd_change_language),
+                modifier = Modifier.size(22.dp),
+            )
+        }
+        DropdownMenu(
+            expanded = expanded,
+            onDismissRequest = { expanded = false },
+        ) {
+            languages.forEach { language ->
+                DropdownMenuItem(
+                    text = {
+                        Text(
+                            text = catalogLyricsLanguageLabel(language),
+                            maxLines = 1,
+                        )
+                    },
+                    onClick = {
+                        expanded = false
+                        onLanguageSelect(language)
+                    },
+                    leadingIcon = {
+                        Text(
+                            text = language,
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    },
+                    trailingIcon = if (language.equals(selectedLanguage, ignoreCase = true)) {
+                        {
+                            Icon(
+                                imageVector = MaterialSymbolIcon("check"),
+                                contentDescription = null,
+                            )
+                        }
+                    } else {
+                        null
+                    },
+                )
+            }
+        }
+    }
+}
+
+private fun catalogLyricsLanguageLabel(languageTag: String): String {
+    val locale = Locale.forLanguageTag(languageTag)
+    return locale.getDisplayName(Locale.getDefault()).takeIf(String::isNotBlank) ?: languageTag
 }
 
 

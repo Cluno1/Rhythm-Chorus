@@ -962,6 +962,8 @@ private fun LocalNavigationContent(
                     title = song.title,
                     subtitle = song.artist ?: "未知艺术家",
                     lyrics = song.lyrics,
+                    lyricsLanguage = song.lyricsLanguage,
+                    lyricsTranslations = song.lyricsTranslations,
                 ),
                 playback = CatalogPlaybackItem(
                     renditionId = song.renditionId,

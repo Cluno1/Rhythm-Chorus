@@ -25,6 +25,7 @@ import io.github.cluno1.sonorus.shared.data.model.AutoEQProfile
 import io.github.cluno1.sonorus.util.AutoEQManager
 import android.util.LruCache
 import androidx.core.net.toUri
+import androidx.core.os.ConfigurationCompat
 import coil.Coil
 import coil.request.ImageRequest
 import androidx.lifecycle.AndroidViewModel
@@ -54,6 +55,8 @@ import io.github.cluno1.sonorus.features.catalog.domain.CatalogPlaybackPolicy
 import io.github.cluno1.sonorus.features.catalog.domain.RhythmNowPlayingItem
 import io.github.cluno1.sonorus.features.catalog.domain.RhythmQueueEntry
 import io.github.cluno1.sonorus.features.catalog.domain.isCatalogLibrarySong
+import io.github.cluno1.sonorus.features.catalog.domain.lyricsVariants
+import io.github.cluno1.sonorus.features.catalog.domain.selectCatalogLyricsVariant
 import io.github.cluno1.sonorus.features.catalog.domain.toStableCatalogSongId
 import io.github.cluno1.sonorus.features.catalog.data.local.CatalogQueueStore
 import io.github.cluno1.sonorus.features.local.presentation.player.PlaybackControlStateMachine
@@ -110,6 +113,7 @@ import java.time.Duration
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import java.util.Calendar
+import java.util.Locale
 import java.io.File
 import java.util.concurrent.atomic.AtomicBoolean
 import io.github.cluno1.sonorus.shared.data.model.LyricsData
@@ -305,6 +309,10 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
     // Lyrics
     private val _currentLyrics = MutableStateFlow<LyricsData?>(null)
     val currentLyrics: StateFlow<LyricsData?> = _currentLyrics.asStateFlow()
+    private val _catalogLyricsLanguages = MutableStateFlow<List<String>>(emptyList())
+    val catalogLyricsLanguages: StateFlow<List<String>> = _catalogLyricsLanguages.asStateFlow()
+    private val _catalogLyricsLanguage = MutableStateFlow<String?>(null)
+    val catalogLyricsLanguage: StateFlow<String?> = _catalogLyricsLanguage.asStateFlow()
     private val _deviceLyricsCandidates = MutableStateFlow<List<DeviceLyricsCandidate>>(emptyList())
     val deviceLyricsCandidates: StateFlow<List<DeviceLyricsCandidate>> = _deviceLyricsCandidates.asStateFlow()
     private var deviceLyricsCandidateIndex = -1
@@ -4288,15 +4296,13 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
                         it.playback.toMediaItem().mediaId == songId
                     }
                     _catalogNowPlaying.value = catalogEntry?.nowPlaying
+                    applyCatalogLyrics(catalogEntry?.nowPlaying)
                     if (catalogEntry != null) {
                         if (mediaController?.playWhenReady == true) {
                             io.github.cluno1.sonorus.features.catalog.data.CatalogAutoCacheWorker.enqueue(
                                 getApplication(),
                                 catalogEntry.nowPlaying,
                             )
-                        }
-                        _currentLyrics.value = catalogEntry.nowPlaying.lyrics?.let {
-                            LyricsData(plainLyrics = it, syncedLyrics = null, source = "Catalog")
                         }
                     }
                     if (catalogEntry == null) {
@@ -5953,9 +5959,7 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
                 _currentSong.value = songs[validIndex]
                 val activeCatalog = catalogByMediaId[songs[validIndex].id]
                 _catalogNowPlaying.value = activeCatalog?.nowPlaying
-                _currentLyrics.value = activeCatalog?.nowPlaying?.lyrics?.let {
-                    LyricsData(plainLyrics = it, syncedLyrics = null, source = "Catalog")
-                }
+                applyCatalogLyrics(activeCatalog?.nowPlaying)
                 _isFavorite.value = _favoriteSongs.value.contains(
                     songs[validIndex].id.toStableCatalogSongId()
                 )
@@ -6037,9 +6041,7 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
                 _catalogNowPlaying.value = entries[validIndex].nowPlaying
                 _currentQueue.value = Queue(displaySongs, validIndex)
                 _currentSong.value = displaySongs[validIndex]
-                _currentLyrics.value = entries[validIndex].nowPlaying.lyrics?.let {
-                    LyricsData(plainLyrics = it, syncedLyrics = null, source = "Catalog")
-                }
+                applyCatalogLyrics(entries[validIndex].nowPlaying)
                 _isFavorite.value = _favoriteSongs.value.contains(
                     displaySongs[validIndex].id.toStableCatalogSongId()
                 )
@@ -6066,6 +6068,7 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
 
         _catalogQueue.value = emptyList()
         _catalogNowPlaying.value = null
+        applyCatalogLyrics(null)
         io.github.cluno1.sonorus.features.catalog.data.local.CatalogQueueStore(getApplication()).clear()
 
         if (!canStartPlayback("playQueue")) {
@@ -8034,6 +8037,40 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
             fetchLyricsForCurrentSong()
         }
     }
+
+    fun selectCatalogLyricsLanguage(language: String) {
+        val nowPlaying = _catalogNowPlaying.value ?: return
+        applyCatalogLyrics(nowPlaying, language)
+    }
+
+    private fun applyCatalogLyrics(
+        nowPlaying: RhythmNowPlayingItem?,
+        requestedLanguage: String? = null,
+    ) {
+        val variants = nowPlaying?.lyricsVariants().orEmpty()
+        _catalogLyricsLanguages.value = variants.map { it.language }
+        val selected = requestedLanguage?.let { requested ->
+            variants.firstOrNull { it.language.equals(requested, ignoreCase = true) }
+        } ?: selectCatalogLyricsVariant(variants, preferredCatalogLyricsLanguageTags())
+        _catalogLyricsLanguage.value = selected?.language
+        _currentLyrics.value = selected?.let { variant ->
+            LyricsData(
+                plainLyrics = variant.lyrics,
+                syncedLyrics = null,
+                source = if (variant.language == "und") "Catalog" else "Catalog · ${variant.language}",
+            )
+        }
+    }
+
+    private fun preferredCatalogLyricsLanguageTags(): List<String> {
+        val locales = ConfigurationCompat.getLocales(getApplication<Application>().resources.configuration)
+        return buildList {
+            for (index in 0 until locales.size()) {
+                locales[index]?.toLanguageTag()?.takeIf(String::isNotBlank)?.let(::add)
+            }
+            if (isEmpty()) add(Locale.getDefault().toLanguageTag())
+        }
+    }
     
     /**
      * Fetches lyrics for the current song if settings allow, with automatic retry logic
@@ -8047,9 +8084,7 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
             deviceLyricsCandidateIndex = -1
         }
         if (song.id.startsWith("rhythm-catalog:")) {
-            _currentLyrics.value = _catalogNowPlaying.value?.lyrics?.let {
-                LyricsData(plainLyrics = it, syncedLyrics = null, source = "Catalog")
-            }
+            applyCatalogLyrics(_catalogNowPlaying.value, _catalogLyricsLanguage.value)
             _isLoadingLyrics.value = false
             return
         }

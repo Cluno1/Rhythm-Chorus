@@ -175,6 +175,13 @@ data class CatalogLibrarySong(
     val coverUrl: String?,
     val lyrics: String?,
     val coverAssetId: String? = null,
+    val lyricsLanguage: String? = null,
+    val lyricsTranslations: List<CatalogLyricsTranslation>? = emptyList(),
+)
+
+data class CatalogLyricsTranslation(
+    val language: String,
+    val lyrics: String,
 )
 
 /** A server-owned album/release. Work remains hidden from the native browsing surface. */
@@ -244,6 +251,8 @@ data class RhythmNowPlayingItem(
     val title: String,
     val subtitle: String,
     val lyrics: String? = null,
+    val lyricsLanguage: String? = null,
+    val lyricsTranslations: List<CatalogLyricsTranslation>? = emptyList(),
 )
 
 data class RhythmQueueEntry(

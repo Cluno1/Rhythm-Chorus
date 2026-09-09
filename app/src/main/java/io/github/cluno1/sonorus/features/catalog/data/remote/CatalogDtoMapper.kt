@@ -8,6 +8,7 @@ import io.github.cluno1.sonorus.features.catalog.domain.CatalogLibraryAlbum
 import io.github.cluno1.sonorus.features.catalog.domain.CatalogLibrarySong
 import io.github.cluno1.sonorus.features.catalog.domain.CatalogLibraryScoreWork
 import io.github.cluno1.sonorus.features.catalog.domain.CatalogScoreOption
+import io.github.cluno1.sonorus.features.catalog.domain.CatalogLyricsTranslation
 import io.github.cluno1.sonorus.features.catalog.domain.CatalogPage
 import io.github.cluno1.sonorus.features.catalog.domain.CatalogPlaybackPolicy
 import io.github.cluno1.sonorus.features.catalog.domain.Part
@@ -21,6 +22,7 @@ import io.github.cluno1.sonorus.features.catalog.domain.WorkAlias
 import io.github.cluno1.sonorus.features.catalog.domain.WorkBundle
 import io.github.cluno1.sonorus.features.catalog.domain.WorkCredit
 import io.github.cluno1.sonorus.features.catalog.domain.WorkSummary
+import io.github.cluno1.sonorus.features.catalog.domain.normalizeCatalogLyricsLanguageTag
 import java.util.UUID
 
 internal object CatalogDtoMapper {
@@ -271,22 +273,49 @@ internal object CatalogDtoMapper {
         },
     )
 
-    private fun librarySong(dto: LibrarySongDto) = CatalogLibrarySong(
-        workId = uuid(dto.workId, "library_song.work_id"),
-        arrangementId = uuid(dto.arrangementId, "library_song.arrangement_id"),
-        renditionId = uuid(dto.renditionId, "library_song.rendition_id"),
-        albumId = uuid(dto.albumId, "library_song.album_id"),
-        title = text(dto.title, "library_song.title"),
-        artist = dto.artist?.trim()?.takeIf { it.isNotEmpty() },
-        albumTitle = text(dto.albumTitle, "library_song.album_title"),
-        durationMs = dto.durationMs?.also {
-            require(it >= 0) { "library_song.duration_ms must not be negative" }
-        },
-        trackNo = dto.trackNo?.also { require(it > 0) { "library_song.track_no must be positive" } },
-        coverUrl = dto.coverUrl?.trim()?.takeIf { it.isNotEmpty() },
-        lyrics = dto.lyrics?.takeIf { it.isNotBlank() },
-        coverAssetId = optionalUuid(dto.coverAssetId, "library_song.cover_asset_id"),
-    )
+    private fun librarySong(dto: LibrarySongDto): CatalogLibrarySong {
+        val lyrics = dto.lyrics?.takeIf { it.isNotBlank() }
+        val lyricsLanguage = lyrics?.let {
+            normalizeCatalogLyricsLanguageTag(dto.lyricsLanguage ?: "und")
+        }
+        val lyricsTranslations = dto.lyricsTranslations.orEmpty().map { translation ->
+            CatalogLyricsTranslation(
+                language = normalizeCatalogLyricsLanguageTag(
+                    text(translation.language, "library_song.lyrics_translation.language"),
+                ),
+                lyrics = text(translation.lyrics, "library_song.lyrics_translation.lyrics"),
+            )
+        }
+        val languages = buildList {
+            lyricsLanguage?.let(::add)
+            addAll(lyricsTranslations.map(CatalogLyricsTranslation::language))
+        }
+        require(languages.distinctBy(String::lowercase).size == languages.size) {
+            "library_song lyrics languages must be unique"
+        }
+        require(lyrics != null || lyricsTranslations.isEmpty()) {
+            "library_song translations require default lyrics"
+        }
+
+        return CatalogLibrarySong(
+            workId = uuid(dto.workId, "library_song.work_id"),
+            arrangementId = uuid(dto.arrangementId, "library_song.arrangement_id"),
+            renditionId = uuid(dto.renditionId, "library_song.rendition_id"),
+            albumId = uuid(dto.albumId, "library_song.album_id"),
+            title = text(dto.title, "library_song.title"),
+            artist = dto.artist?.trim()?.takeIf { it.isNotEmpty() },
+            albumTitle = text(dto.albumTitle, "library_song.album_title"),
+            durationMs = dto.durationMs?.also {
+                require(it >= 0) { "library_song.duration_ms must not be negative" }
+            },
+            trackNo = dto.trackNo?.also { require(it > 0) { "library_song.track_no must be positive" } },
+            coverUrl = dto.coverUrl?.trim()?.takeIf { it.isNotEmpty() },
+            lyrics = lyrics,
+            coverAssetId = optionalUuid(dto.coverAssetId, "library_song.cover_asset_id"),
+            lyricsLanguage = lyricsLanguage,
+            lyricsTranslations = lyricsTranslations,
+        )
+    }
 
     private fun libraryAlbum(dto: LibraryAlbumDto) = CatalogLibraryAlbum(
         id = uuid(dto.id, "library_album.id"),
