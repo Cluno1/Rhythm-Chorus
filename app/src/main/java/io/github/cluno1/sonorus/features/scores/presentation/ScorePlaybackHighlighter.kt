@@ -25,6 +25,7 @@ internal fun findScorePlaybackHighlightBeats(
     tracks: List<Track>,
     notationLayout: ScoreNotationLayout,
     activePositions: List<ScorePlaybackBeatPosition>,
+    voiceSourcePartIndexesByTrack: Map<Int, List<Int>> = emptyMap(),
 ): List<Beat> {
     if (activePositions.isEmpty()) return emptyList()
 
@@ -38,12 +39,14 @@ internal fun findScorePlaybackHighlightBeats(
             .flatMap { staff -> staff.bars.toList() }
             .maxOfOrNull { bar -> bar.voices.length.toInt() }
             ?: 1
-        val voicePartIndexes = resolveScoreVoicePartIndexes(
-            trackName = track.name.ifBlank { track.shortName },
-            trackIndex = track.index.toInt(),
-            voiceCount = maxVoiceCount,
-            notationLayout = notationLayout,
-        )
+        val voicePartIndexes = voiceSourcePartIndexesByTrack[track.index.toInt()]
+            ?.forVoiceCount(maxVoiceCount, track.index.toInt())
+            ?: resolveScoreVoicePartIndexes(
+                trackName = track.name.ifBlank { track.shortName },
+                trackIndex = track.index.toInt(),
+                voiceCount = maxVoiceCount,
+                notationLayout = notationLayout,
+            )
 
         track.staves.forEach { staff ->
             staff.bars.forEach { bar ->

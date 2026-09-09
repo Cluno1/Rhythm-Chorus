@@ -23,19 +23,27 @@ import kotlin.math.roundToInt
  */
 internal object ChoirScoreDisplayProjector {
     fun project(source: ByteArray, selectedTrackIndexes: Set<Int>): ByteArray {
+        return projectWithMapping(source, selectedTrackIndexes).musicXml
+    }
+
+    fun projectWithMapping(
+        source: ByteArray,
+        selectedTrackIndexes: Set<Int>,
+    ): ChoirDisplayProjection {
         require(selectedTrackIndexes.isNotEmpty())
 
         val document = parse(source)
-        val root = document.documentElement ?: return source
-        val partList = root.directChild("part-list") ?: return source
+        val root = document.documentElement ?: return ChoirDisplayProjection(source, emptyList())
+        val partList = root.directChild("part-list") ?: return ChoirDisplayProjection(source, emptyList())
         val partDefinitions = partList.directChildren("score-part")
         val parts = root.directChildren("part")
         val selected = selectedTrackIndexes
             .filter { it in parts.indices && it in partDefinitions.indices }
             .sorted()
-        if (selected.isEmpty()) return source
+        if (selected.isEmpty()) return ChoirDisplayProjection(source, emptyList())
 
-        val groups = choirGroups(selected, parts.size)
+        val sourceParts = describeParts(partDefinitions, parts)
+        val groups = choirGroups(selected, sourceParts)
         val divisions = findDivisions(parts, selected) ?: DEFAULT_DIVISIONS
         val snapGrid = (divisions / SNAP_DIVISOR).coerceAtLeast(1)
         val mergedDefinitions = mutableListOf<Element>()
@@ -43,50 +51,205 @@ internal object ChoirScoreDisplayProjector {
 
         groups.forEachIndexed { groupIndex, group ->
             val sourceIndexes = group.sourceIndexes
-            val id = "rhythm-merged-${groupIndex + 1}"
-            val label = sourceIndexes.joinToString("+") { SATB_LABELS.getOrElse(it) { (it + 1).toString() } }
+            val isSingleton = sourceIndexes.size == 1
+            val id = if (isSingleton) {
+                parts[sourceIndexes.single()].getAttribute("id")
+            } else {
+                "rhythm-merged-${groupIndex + 1}"
+            }
             mergedDefinitions += clonePartDefinition(
                 source = partDefinitions[sourceIndexes.first()],
                 id = id,
-                label = label
+                label = group.label,
+                rekeyInstruments = !isSingleton,
             )
-            mergedParts += mergeParts(
-                document = document,
-                sourceParts = sourceIndexes.map { parts[it] },
-                id = id,
-                divisions = divisions,
-                snapGrid = snapGrid,
-                clef = group.clef
-            )
+            mergedParts += if (isSingleton) {
+                (parts[sourceIndexes.single()].cloneNode(true) as Element).apply {
+                    setAttribute("id", id)
+                }
+            } else {
+                mergeParts(
+                    document = document,
+                    sourceParts = sourceIndexes.map { parts[it] },
+                    id = id,
+                    divisions = divisions,
+                    snapGrid = snapGrid,
+                    clef = group.clef,
+                )
+            }
         }
 
         partList.removeAllChildren()
         mergedDefinitions.forEach(partList::appendChild)
         root.directChildren("part").forEach(root::removeChild)
         mergedParts.forEach(root::appendChild)
-        return serialize(document)
+        return ChoirDisplayProjection(
+            musicXml = serialize(document),
+            groups = groups.map { group ->
+                ChoirDisplayGroup(
+                    sourcePartIndexes = group.sourceIndexes,
+                    colorPartIndexes = group.sourceIndexes.map { index ->
+                        sourceParts[index].role?.colorIndex ?: fallbackColorIndex(index)
+                    },
+                    label = group.label,
+                )
+            },
+        )
     }
 
-    private fun choirGroups(selected: List<Int>, partCount: Int): List<ChoirGroup> {
-        if (partCount == SATB_LABELS.size) {
-            return listOf(
-                ChoirGroup(selected.filter { it <= ALTO_INDEX }, Clef("G", "2")),
-                ChoirGroup(selected.filter { it >= TENOR_INDEX }, Clef("F", "4"))
-            ).filter { it.sourceIndexes.isNotEmpty() }
+    fun trackLabels(source: ByteArray): List<String> {
+        val document = parse(source)
+        val root = document.documentElement ?: return emptyList()
+        val definitions = root.directChild("part-list")?.directChildren("score-part") ?: return emptyList()
+        val parts = root.directChildren("part")
+        return describeParts(definitions, parts).map(SourcePart::displayLabel)
+    }
+
+    fun trackColorIndexes(source: ByteArray): List<Int> {
+        val document = parse(source)
+        val root = document.documentElement ?: return emptyList()
+        val definitions = root.directChild("part-list")?.directChildren("score-part") ?: return emptyList()
+        val parts = root.directChildren("part")
+        return describeParts(definitions, parts).map { part ->
+            part.role?.colorIndex ?: fallbackColorIndex(part.index)
         }
-        return listOf(ChoirGroup(selected, clef = null))
     }
 
-    private fun clonePartDefinition(source: Element, id: String, label: String): Element {
+    private fun choirGroups(selected: List<Int>, parts: List<SourcePart>): List<ChoirGroup> {
+        val selectedSet = selected.toSet()
+        val grouped = mutableSetOf<Int>()
+        val groups = mutableListOf<ChoirGroup>()
+
+        fun addRolePair(first: PartRole, second: PartRole, clef: Clef) {
+            val indexes = listOfNotNull(
+                parts.singleOrNull { it.role == first }?.index,
+                parts.singleOrNull { it.role == second }?.index,
+            ).filter { it in selectedSet }
+            if (indexes.isEmpty()) return
+            grouped += indexes
+            groups += ChoirGroup(
+                sourceIndexes = indexes.sorted(),
+                clef = clef,
+                label = indexes.joinToString("+") { index ->
+                    checkNotNull(parts[index].role).label
+                },
+            )
+        }
+
+        addRolePair(PartRole.SOPRANO, PartRole.ALTO, Clef("G", "2"))
+        addRolePair(PartRole.TENOR, PartRole.BASS, Clef("F", "4"))
+
+        selected.filterNot { it in grouped }.forEach { index ->
+            groups += ChoirGroup(
+                sourceIndexes = listOf(index),
+                clef = parts[index].clef,
+                label = parts[index].displayLabel,
+            )
+        }
+
+        // Keep extras in their source order while still placing each SATB pair at the first
+        // source index it owns. This yields Lead / S+A / T+B for five-part choir scores.
+        return groups.sortedBy { it.sourceIndexes.minOrNull() ?: Int.MAX_VALUE }
+    }
+
+    private fun describeParts(
+        definitions: List<Element>,
+        parts: List<Element>,
+    ): List<SourcePart> {
+        val available = minOf(definitions.size, parts.size)
+        val names = (0 until available).map { definitions[it].directChild("part-name")?.textContent.orEmpty() }
+        val clefs = (0 until available).map { index -> parts[index].primaryClef() }
+        val explicitRoles = names.map(::explicitPartRole)
+        val roles = explicitRoles.toMutableList()
+
+        val hasExplicitSatb = SATB_ROLES.all { role -> explicitRoles.count { it == role } == 1 }
+        if (!hasExplicitSatb && available == SATB_ROLES.size) {
+            SATB_ROLES.forEachIndexed { index, role -> roles[index] = role }
+        } else if (
+            !hasExplicitSatb &&
+            available > SATB_ROLES.size &&
+            explicitRoles.none { it in SATB_ROLES }
+        ) {
+            findGenericSatbBlock(clefs)?.let { blockStart ->
+                SATB_ROLES.forEachIndexed { offset, role -> roles[blockStart + offset] = role }
+                if (blockStart > 0) {
+                    val possibleLead = blockStart - 1
+                    if (roles[possibleLead] == null && clefs[possibleLead]?.sign == "G") {
+                        roles[possibleLead] = PartRole.LEAD
+                    }
+                }
+            }
+        }
+
+        return (0 until available).map { index ->
+            val rawName = names[index].replace('\u00A0', ' ').trim()
+            val role = roles[index]
+            val displayLabel = when {
+                rawName.isNotEmpty() && !rawName.isGenericPartName() -> rawName
+                role != null -> role.label
+                else -> (index + 1).toString()
+            }
+            SourcePart(index, displayLabel, clefs[index], role)
+        }
+    }
+
+    private fun findGenericSatbBlock(clefs: List<Clef?>): Int? {
+        val signs = clefs.map { it?.sign }
+        val preferred = listOf("G", "G", "F", "F")
+        val tenorTreble = listOf("G", "G", "G", "F")
+        return signs.windowed(SATB_ROLES.size).indexOfFirst { it == preferred }
+            .takeIf { it >= 0 }
+            ?: signs.windowed(SATB_ROLES.size).indexOfFirst { it == tenorTreble }
+                .takeIf { it >= 0 }
+    }
+
+    private fun explicitPartRole(name: String): PartRole? {
+        val normalized = name.replace('\u00A0', ' ').trim().lowercase()
+        val compact = normalized.replace(ROLE_SEPARATOR, "")
+        return when (compact) {
+            "s", "sop", "soprano", "女高音" -> PartRole.SOPRANO
+            "a", "alto", "女低音" -> PartRole.ALTO
+            "t", "tenor", "男高音" -> PartRole.TENOR
+            "b", "bass", "男低音" -> PartRole.BASS
+            "melody", "lead", "solo", "主旋律", "领唱", "領唱" -> PartRole.LEAD
+            else -> null
+        }
+    }
+
+    private fun String.isGenericPartName(): Boolean {
+        val normalized = replace('\u00A0', ' ').trim()
+        return normalized.isEmpty() ||
+            normalized.contains("SmartMusic SoftSynth", ignoreCase = true) ||
+            normalized.equals("Piano", ignoreCase = true) ||
+            normalized.equals("Pno", ignoreCase = true) ||
+            GENERIC_STAFF_NAME.matches(normalized) ||
+            GENERIC_INSTRUMENT_NAME.matches(normalized)
+    }
+
+    private fun Element.primaryClef(): Clef? {
+        val clef = getElementsByTagName("clef").elements().firstOrNull() ?: return null
+        val sign = clef.directChild("sign")?.textContent?.trim().orEmpty()
+        val line = clef.directChild("line")?.textContent?.trim().orEmpty()
+        return sign.takeIf(String::isNotBlank)?.let { Clef(it, line) }
+    }
+
+    private fun clonePartDefinition(
+        source: Element,
+        id: String,
+        label: String,
+        rekeyInstruments: Boolean,
+    ): Element {
         val result = source.cloneNode(true) as Element
         result.setAttribute("id", id)
         result.setDirectChildText("part-name", label)
         result.setDirectChildText("part-abbreviation", label)
-        result.getElementsByTagName("score-instrument").elements().forEachIndexed { index, element ->
-            element.setAttribute("id", "$id-instrument-${index + 1}")
-        }
-        result.getElementsByTagName("midi-instrument").elements().forEachIndexed { index, element ->
-            element.setAttribute("id", "$id-instrument-${index + 1}")
+        if (rekeyInstruments) {
+            result.getElementsByTagName("score-instrument").elements().forEachIndexed { index, element ->
+                element.setAttribute("id", "$id-instrument-${index + 1}")
+            }
+            result.getElementsByTagName("midi-instrument").elements().forEachIndexed { index, element ->
+                element.setAttribute("id", "$id-instrument-${index + 1}")
+            }
         }
         return result
     }
@@ -312,11 +475,34 @@ internal object ChoirScoreDisplayProjector {
     private val NOTE_ELEMENTS_AFTER_STAFF = setOf(
         "beam", "notations", "lyric", "play", "listen"
     )
-    private data class ChoirGroup(val sourceIndexes: List<Int>, val clef: Clef?)
+    private data class SourcePart(
+        val index: Int,
+        val displayLabel: String,
+        val clef: Clef?,
+        val role: PartRole?,
+    )
+    private data class ChoirGroup(
+        val sourceIndexes: List<Int>,
+        val clef: Clef?,
+        val label: String,
+    )
     private data class Clef(val sign: String, val line: String)
-    private val SATB_LABELS = listOf("S", "A", "T", "B")
-    private const val ALTO_INDEX = 1
-    private const val TENOR_INDEX = 2
+    private enum class PartRole(val label: String, val colorIndex: Int) {
+        SOPRANO("S", 0),
+        ALTO("A", 1),
+        TENOR("T", 2),
+        BASS("B", 3),
+        LEAD("Lead", 4),
+    }
+    private val SATB_ROLES = listOf(
+        PartRole.SOPRANO,
+        PartRole.ALTO,
+        PartRole.TENOR,
+        PartRole.BASS,
+    )
+    private val ROLE_SEPARATOR = Regex("[\\s._-]+")
+    private val GENERIC_STAFF_NAME = Regex("""\[?Staff\s+\d+]?""", RegexOption.IGNORE_CASE)
+    private val GENERIC_INSTRUMENT_NAME = Regex("Instrument\\s*\\d+", RegexOption.IGNORE_CASE)
     private const val SNAP_DIVISOR = 4 // quarter-note divisions / 4 = sixteenth note
     private const val DEFAULT_DIVISIONS = 480
     private const val ACCESS_EXTERNAL_DTD = "http://javax.xml.XMLConstants/property/accessExternalDTD"
@@ -324,3 +510,16 @@ internal object ChoirScoreDisplayProjector {
     private const val ACCESS_EXTERNAL_STYLESHEET =
         "http://javax.xml.XMLConstants/property/accessExternalStylesheet"
 }
+
+internal data class ChoirDisplayProjection(
+    val musicXml: ByteArray,
+    val groups: List<ChoirDisplayGroup>,
+)
+
+internal data class ChoirDisplayGroup(
+    val sourcePartIndexes: List<Int>,
+    val colorPartIndexes: List<Int>,
+    val label: String,
+)
+
+private fun fallbackColorIndex(sourceIndex: Int): Int = sourceIndex

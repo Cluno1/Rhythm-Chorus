@@ -20,7 +20,10 @@ internal data class ScoreTrackOption(
     val label: String
 )
 
-internal fun buildScoreTrackOptions(trackNames: List<String>): List<ScoreTrackOption> {
+internal fun buildScoreTrackOptions(
+    trackNames: List<String>,
+    inferredLabels: List<String> = emptyList(),
+): List<ScoreTrackOption> {
     val useSatbLabels = trackNames.size == SATB_LABELS.size && trackNames.all {
         it.isGenericTrackName()
     }
@@ -30,6 +33,7 @@ internal fun buildScoreTrackOptions(trackNames: List<String>): List<ScoreTrackOp
         val label = when {
             useSatbLabels -> SATB_LABELS[index]
             name.isNotEmpty() && !name.isGenericTrackName() -> name
+            !inferredLabels.getOrNull(index).isNullOrBlank() -> checkNotNull(inferredLabels[index])
             else -> (index + 1).toString()
         }
         ScoreTrackOption(index = index, label = label)

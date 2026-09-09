@@ -39,6 +39,16 @@ class ScoreTrackOptionsTest {
     }
 
     @Test
+    fun `uses inferred roles for generic five part score`() {
+        val options = buildScoreTrackOptions(
+            trackNames = List(5) { "SmartMusic SoftSynth" },
+            inferredLabels = listOf("Lead", "S", "A", "T", "B"),
+        )
+
+        assertEquals(listOf("Lead", "S", "A", "T", "B"), options.map { it.label })
+    }
+
+    @Test
     fun `allows multiple visible parts while keeping at least one selected`() {
         val sopranoOnly = 1 shl 0
         val sopranoAndBass = toggleScoreTrackSelectionMask(

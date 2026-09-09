@@ -33,7 +33,7 @@ class ChoirScoreDisplayProjectorTest {
 
         assertEquals(2, parts.size)
         assertEquals(listOf("S", "B"), result.documentElement.descendants("part-name").map { it.textContent })
-        assertTrue(parts.all { it.descendants("voice").map(Element::getTextContent).toSet() == setOf("1") })
+        assertTrue(parts.all { it.descendants("backup").isEmpty() })
         assertEquals(listOf("G", "F"), result.documentElement.descendants("sign").map { it.textContent })
     }
 
@@ -47,28 +47,120 @@ class ChoirScoreDisplayProjectorTest {
         )
     }
 
+    @Test
+    fun `keeps lord god almighty lead separate and merges satb pairs`() {
+        val projection = ChoirScoreDisplayProjector.projectWithMapping(
+            source = scoreXml(
+                duration = 480,
+                names = List(5) { "SmartMusic SoftSynth" },
+                clefSigns = listOf("G", "G", "G", "F", "F"),
+            ).encodeToByteArray(),
+            selectedTrackIndexes = (0 until 5).toSet(),
+        )
+        val result = parse(projection.musicXml)
+        val parts = result.documentElement.directChildren("part")
+
+        assertEquals(3, parts.size)
+        assertEquals(
+            listOf("Lead", "S+A", "T+B"),
+            result.documentElement.descendants("part-name").map { it.textContent },
+        )
+        assertEquals(
+            listOf(emptySet(), setOf("1", "2"), setOf("1", "2")),
+            parts.map { part -> part.descendants("voice").map { it.textContent }.toSet() },
+        )
+        assertEquals(
+            listOf(listOf(0), listOf(1, 2), listOf(3, 4)),
+            projection.groups.map { it.sourcePartIndexes },
+        )
+        assertEquals(
+            listOf(listOf(4), listOf(0, 1), listOf(2, 3)),
+            projection.groups.map { it.colorPartIndexes },
+        )
+    }
+
+    @Test
+    fun `keeps two and three part scores on separate staves`() {
+        listOf(
+            listOf("G", "F"),
+            listOf("G", "G", "F"),
+        ).forEach { clefs ->
+            val projection = ChoirScoreDisplayProjector.projectWithMapping(
+                source = scoreXml(
+                    duration = 480,
+                    names = List(clefs.size) { "SmartMusic SoftSynth" },
+                    clefSigns = clefs,
+                ).encodeToByteArray(),
+                selectedTrackIndexes = clefs.indices.toSet(),
+            )
+
+            assertEquals(clefs.size, projection.groups.size)
+            assertTrue(projection.groups.all { it.sourcePartIndexes.size == 1 })
+        }
+    }
+
+    @Test
+    fun `merges a recognized satb block and preserves sixth part extras`() {
+        val projection = ChoirScoreDisplayProjector.projectWithMapping(
+            source = scoreXml(
+                duration = 480,
+                names = List(6) { "[Staff 1]" },
+                clefSigns = listOf("G", "G", "G", "F", "G", "G"),
+            ).encodeToByteArray(),
+            selectedTrackIndexes = (0 until 6).toSet(),
+        )
+
+        assertEquals(
+            listOf(listOf(0, 1), listOf(2, 3), listOf(4), listOf(5)),
+            projection.groups.map { it.sourcePartIndexes },
+        )
+        assertEquals(listOf("S+A", "T+B", "5", "6"), projection.groups.map { it.label })
+    }
+
+    @Test
+    fun `preserves every unknown part instead of flattening them`() {
+        val projection = ChoirScoreDisplayProjector.projectWithMapping(
+            source = scoreXml(
+                duration = 480,
+                names = List(6) { "SmartMusic SoftSynth" },
+                clefSigns = List(6) { "F" },
+            ).encodeToByteArray(),
+            selectedTrackIndexes = (0 until 6).toSet(),
+        )
+
+        assertEquals(6, projection.groups.size)
+        assertTrue(projection.groups.all { it.sourcePartIndexes.size == 1 })
+    }
+
     private fun project(selected: Set<Int>, duration: Int = 480) =
-        DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(
-            ByteArrayInputStream(
-                ChoirScoreDisplayProjector.project(
-                    source = scoreXml(duration).encodeToByteArray(),
-                    selectedTrackIndexes = selected
-                )
+        parse(
+            ChoirScoreDisplayProjector.project(
+                source = scoreXml(duration).encodeToByteArray(),
+                selectedTrackIndexes = selected
             )
         )
 
-    private fun scoreXml(duration: Int): String {
-        val definitions = (0 until 4).joinToString("") { index ->
-            "<score-part id=\"P$index\"><part-name>P$index</part-name></score-part>"
+    private fun parse(source: ByteArray) =
+        DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(ByteArrayInputStream(source))
+
+    private fun scoreXml(
+        duration: Int,
+        names: List<String> = List(4) { index -> "P$index" },
+        clefSigns: List<String> = listOf("G", "G", "F", "F"),
+    ): String {
+        require(names.size == clefSigns.size)
+        val definitions = names.indices.joinToString("") { index ->
+            "<score-part id=\"P$index\"><part-name>${names[index]}</part-name></score-part>"
         }
-        val parts = (0 until 4).joinToString("") { index ->
+        val parts = names.indices.joinToString("") { index ->
+            val clefSign = clefSigns[index]
             """
                 <part id="P$index">
                   <measure number="1">
                     <attributes>
                       <divisions>480</divisions><key><fifths>0</fifths></key>
                       <time><beats>4</beats><beat-type>4</beat-type></time>
-                      <clef><sign>${if (index < 2) "G" else "F"}</sign><line>${if (index < 2) "2" else "4"}</line></clef>
+                      <clef><sign>$clefSign</sign><line>${if (clefSign == "F") "4" else "2"}</line></clef>
                     </attributes>
                     <note><pitch><step>${if (index % 2 == 0) "D" else "C"}</step><octave>4</octave></pitch><duration>$duration</duration><type>quarter</type></note>
                     <barline location="right"><bar-style>light-heavy</bar-style></barline>
