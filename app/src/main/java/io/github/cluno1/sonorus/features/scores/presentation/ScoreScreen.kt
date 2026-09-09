@@ -24,6 +24,7 @@ import android.media.AudioFocusRequest
 import android.media.AudioManager
 import android.view.View
 import android.widget.RelativeLayout
+import android.widget.ScrollView
 import android.util.Log
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.verticalScroll
@@ -111,7 +112,7 @@ private enum class ScorePlaybackStatus {
     ERROR
 }
 
-private enum class ScorePlaybackIndicatorMode {
+internal enum class ScorePlaybackIndicatorMode {
     LINE,
     PULSE,
 }
@@ -1811,17 +1812,6 @@ internal fun isAlphaTabRenderSizeReady(
     outerScrollWidth > 0 &&
     outerScrollHeight > 0
 
-private const val SCORE_FOLLOW_VIEWPORT_FRACTION = 0.36
-
-internal fun scoreFollowScrollOffset(
-    viewportHeightPx: Int,
-    density: Float,
-): Double = if (viewportHeightPx > 0 && density > 0f) {
-    -(viewportHeightPx / density * SCORE_FOLLOW_VIEWPORT_FRACTION)
-} else {
-    0.0
-}
-
 private class AlphaTabRenderReadiness(
     private val displayView: AlphaTabView,
     private val outerScroll: View,
@@ -1904,6 +1894,9 @@ private class AlphaTabRenderReadiness(
 private data class AlphaTabScoreViewState(
     val playbackOverlay: ScorePlaybackOverlayView,
     val renderReadiness: AlphaTabRenderReadiness,
+    val playbackScrollHandler: ScorePlaybackScrollHandler?,
+    val renderSurface: View?,
+    val renderSurfaceLayoutListener: View.OnLayoutChangeListener?,
 )
 
 @Composable
@@ -1985,13 +1978,18 @@ private fun AlphaTabScore(
                     api.settings.player.enableCursor =
                         !editMode
                     api.settings.player.enableAnimatedBeatCursor = !editMode
-                    api.settings.player.scrollMode = if (editMode) ScrollMode.Off else ScrollMode.Smooth
+                    // A custom handler below performs smooth vertical following. Continuous keeps
+                    // alphaTab's cursor callbacks enabled without installing its faulty Android
+                    // Smooth overflow calculation.
+                    api.settings.player.scrollMode = if (editMode) ScrollMode.Off else ScrollMode.Continuous
                     api.settings.player.enableElementHighlighting = false
                     api.settings.player.enableUserInteraction = editMode
                     // Playback pulse markers and edit hit-testing both need note-head bounds.
                     api.settings.core.includeNoteBounds = true
                     barCursorFillColor = AndroidColor.TRANSPARENT
-                    beatCursorFillColor = AndroidColor.rgb(225, 29, 72)
+                    // The overlay owns the playback line; alphaTab's Android View Animation can
+                    // stop drawing near the end of a long vertically rendered score.
+                    beatCursorFillColor = AndroidColor.TRANSPARENT
                     if (!editMode) {
                         api.playerReady.on {
                             playbackController.onDisplayPlayerReady(displayView)
@@ -2037,14 +2035,36 @@ private fun AlphaTabScore(
                             post { onNoteSelected(noteId) }
                         }
                     }
-                    api.updateSettings()
                     val outerScroll = findViewById<View>(net.alphatab.R.id.outerScroll)
+                    val innerScroll = findViewById<ScrollView>(net.alphatab.R.id.innerScroll)
+                    val playbackScrollHandler = if (!editMode) {
+                        ScorePlaybackScrollHandler(displayView, innerScroll).also { handler ->
+                            api.customCursorHandler = ScorePlaybackCursorHandler(playbackOverlay)
+                            api.customScrollHandler = handler
+                        }
+                    } else {
+                        null
+                    }
+                    api.updateSettings()
+                    var renderSurfaceLayoutListener: View.OnLayoutChangeListener? = null
+                    var playbackRenderSurface: View? = null
                     if (!editMode) {
                         val renderWrapper = findViewById<RelativeLayout>(net.alphatab.R.id.renderWrapper)
                         val renderSurface = findViewById<View>(net.alphatab.R.id.renderSurface)
+                        playbackRenderSurface = renderSurface
+                        renderSurfaceLayoutListener = View.OnLayoutChangeListener {
+                                _, _, top, _, bottom, _, oldTop, _, oldBottom ->
+                            if (bottom - top != oldBottom - oldTop) {
+                                updateScorePlaybackCanvasLayout(
+                                    renderSurface = renderSurface,
+                                    renderWrapper = renderWrapper,
+                                    playbackOverlay = playbackOverlay,
+                                    innerScroll = innerScroll,
+                                )
+                            }
+                        }
                         outerScroll.setBackgroundColor(AndroidColor.WHITE)
-                        findViewById<View>(net.alphatab.R.id.innerScroll)
-                            .setBackgroundColor(AndroidColor.WHITE)
+                        innerScroll.setBackgroundColor(AndroidColor.WHITE)
                         renderWrapper.setBackgroundColor(AndroidColor.WHITE)
                         renderSurface.setBackgroundColor(AndroidColor.WHITE)
                         api.postRenderFinished.on {
@@ -2058,9 +2078,18 @@ private fun AlphaTabScore(
                                 )
                                 if (playbackOverlay.parent == null) {
                                     renderWrapper.addView(playbackOverlay, overlayLayout)
+                                    renderSurface.addOnLayoutChangeListener(
+                                        checkNotNull(renderSurfaceLayoutListener),
+                                    )
                                 } else {
                                     playbackOverlay.layoutParams = overlayLayout
                                 }
+                                updateScorePlaybackCanvasLayout(
+                                    renderSurface = renderSurface,
+                                    renderWrapper = renderWrapper,
+                                    playbackOverlay = playbackOverlay,
+                                    innerScroll = innerScroll,
+                                )
                                 playbackOverlay.refresh(displayView.api.renderer.boundsLookup)
                                 if (BuildConfig.DEBUG) {
                                     Log.d(
@@ -2088,23 +2117,18 @@ private fun AlphaTabScore(
                     tag = AlphaTabScoreViewState(
                         playbackOverlay = playbackOverlay,
                         renderReadiness = renderReadiness,
+                        playbackScrollHandler = playbackScrollHandler,
+                        renderSurface = playbackRenderSurface,
+                        renderSurfaceLayoutListener = renderSurfaceLayoutListener,
                     )
                     renderReadiness.start()
                 }
             },
             update = { displayView ->
                 if (!editMode) {
-                    val cursorColor = if (playbackIndicatorMode == ScorePlaybackIndicatorMode.LINE) {
-                        AndroidColor.rgb(225, 29, 72)
-                    } else {
-                        AndroidColor.TRANSPARENT
-                    }
-                    if (displayView.beatCursorFillColor != cursorColor) {
-                        displayView.beatCursorFillColor = cursorColor
-                        displayView.api.updateSettings()
-                    }
                     val playbackOverlay =
                         (displayView.tag as AlphaTabScoreViewState).playbackOverlay
+                    playbackOverlay.setMode(playbackIndicatorMode)
                     if (playbackIndicatorMode == ScorePlaybackIndicatorMode.LINE) {
                         playbackOverlay.showBeats(
                             emptyList(),
@@ -2129,12 +2153,36 @@ private fun AlphaTabScore(
                 }
             },
             onRelease = { view ->
-                (view.tag as? AlphaTabScoreViewState)?.renderReadiness?.release()
+                (view.tag as? AlphaTabScoreViewState)?.let { state ->
+                    state.renderReadiness.release()
+                    state.playbackScrollHandler?.close()
+                    if (state.renderSurfaceLayoutListener != null) {
+                        state.renderSurface?.removeOnLayoutChangeListener(
+                            state.renderSurfaceLayoutListener,
+                        )
+                    }
+                }
                 playbackController.detachDisplay(view)
                 view.api.destroy()
             }
         )
     }
+}
+
+private fun updateScorePlaybackCanvasLayout(
+    renderSurface: View,
+    renderWrapper: RelativeLayout,
+    playbackOverlay: ScorePlaybackOverlayView,
+    innerScroll: ScrollView,
+) {
+    val width = renderSurface.width
+    val height = renderSurface.height
+    if (width <= 0 || height <= 0) return
+    playbackOverlay.layoutParams = RelativeLayout.LayoutParams(width, height)
+    renderWrapper.minimumHeight = scoreFollowContentMinHeight(
+        scoreHeightPx = height,
+        viewportHeightPx = innerScroll.height,
+    )
 }
 
 @Composable
