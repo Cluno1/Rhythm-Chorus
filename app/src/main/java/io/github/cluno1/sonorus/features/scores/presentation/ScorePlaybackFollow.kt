@@ -48,12 +48,23 @@ internal fun scoreFollowContentMinHeight(scoreHeightPx: Int, viewportHeightPx: I
 internal class ScorePlaybackScrollHandler(
     private val displayView: AlphaTabView,
     private val scrollView: ScrollView,
+    initiallyEnabled: Boolean = true,
 ) : IScrollHandler {
     private val density = displayView.resources.displayMetrics.density
     private var scrollAnimator: ObjectAnimator? = null
     private var lastSystemIndex: Int? = null
+    private var followEnabled = initiallyEnabled
+
+    fun setEnabled(enabled: Boolean) {
+        if (followEnabled == enabled) return
+        followEnabled = enabled
+        scrollAnimator?.cancel()
+        scrollAnimator = null
+        lastSystemIndex = null
+    }
 
     override fun forceScrollTo(currentBeatBounds: BeatBounds) {
+        if (!followEnabled) return
         scrollAnimator?.cancel()
         scrollAnimator = null
         scrollView.scrollTo(0, systemStartScroll(currentBeatBounds))
@@ -68,6 +79,7 @@ internal class ScorePlaybackScrollHandler(
         actualBeatCursorEndX: Double,
         actualBeatCursorTransitionDuration: Double,
     ) {
+        if (!followEnabled) return
         val system = startBeat.barBounds.masterBarBounds.staffSystemBounds ?: return
         val systemIndex = system.index.toInt()
         if (lastSystemIndex == systemIndex && actualBeatCursorTransitionDuration > 0.0) return

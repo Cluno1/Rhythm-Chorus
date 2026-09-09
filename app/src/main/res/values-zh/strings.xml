@@ -2739,6 +2739,9 @@
     <string name="score_playback_indicator">播放条</string>
     <string name="score_playback_indicator_default">默认</string>
     <string name="score_playback_indicator_pulse">跳动</string>
+    <string name="score_playback_scroll">乐谱滚动</string>
+    <string name="score_playback_scroll_follow">跟随滚动</string>
+    <string name="score_playback_scroll_off">不滚动</string>
     <string name="score_playback_speed">播放速度</string>
     <string name="score_playback_speed_target">目标速度</string>
     <string name="score_playback_speed_original">原速：%1$d BPM</string>

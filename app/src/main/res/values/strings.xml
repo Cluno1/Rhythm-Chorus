@@ -2975,6 +2975,9 @@
     <string name="score_playback_indicator">Playhead</string>
     <string name="score_playback_indicator_default">Default</string>
     <string name="score_playback_indicator_pulse">Pulse</string>
+    <string name="score_playback_scroll">Score scrolling</string>
+    <string name="score_playback_scroll_follow">Follow playback</string>
+    <string name="score_playback_scroll_off">Do not scroll</string>
     <string name="score_playback_speed">Playback speed</string>
     <string name="score_playback_speed_target">Target speed</string>
     <string name="score_playback_speed_original">Original: %1$d BPM</string>
