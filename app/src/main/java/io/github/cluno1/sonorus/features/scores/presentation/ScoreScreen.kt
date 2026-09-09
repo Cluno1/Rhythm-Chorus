@@ -78,7 +78,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.core.view.doOnLayout
+import io.github.cluno1.sonorus.BuildConfig
 import io.github.cluno1.sonorus.R
 import io.github.cluno1.sonorus.features.scores.data.BundledScoreLoader
 import io.github.cluno1.sonorus.features.scores.data.BundledScoreVariant
@@ -1725,6 +1725,98 @@ private fun ScoreError(
     }
 }
 
+internal fun isAlphaTabRenderSizeReady(
+    displayAttached: Boolean,
+    outerScrollAttached: Boolean,
+    outerScrollWidth: Int,
+    outerScrollHeight: Int,
+): Boolean = displayAttached &&
+    outerScrollAttached &&
+    outerScrollWidth > 0 &&
+    outerScrollHeight > 0
+
+private class AlphaTabRenderReadiness(
+    private val displayView: AlphaTabView,
+    private val outerScroll: View,
+    private val tracksToRender: List<Track>,
+) {
+    private var completed = false
+    private var released = false
+    private var renderPosted = false
+
+    private val renderRunnable = Runnable {
+        renderPosted = false
+        if (released || completed || !isReady()) return@Runnable
+
+        completed = true
+        removeListeners()
+        if (BuildConfig.DEBUG) {
+            Log.d(
+                SCORE_DISPLAY_TAG,
+                "visible AlphaTab ready outer=${outerScroll.measuredWidth}x${outerScroll.measuredHeight} " +
+                    "tracks=${tracksToRender.size}",
+            )
+        }
+        displayView.tracks = tracksToRender
+    }
+
+    private val layoutListener = View.OnLayoutChangeListener { _, _, _, _, _, _, _, _, _ ->
+        requestRenderIfReady()
+    }
+
+    private val attachListener = object : View.OnAttachStateChangeListener {
+        override fun onViewAttachedToWindow(view: View) {
+            requestRenderIfReady()
+        }
+
+        override fun onViewDetachedFromWindow(view: View) {
+            release()
+        }
+    }
+
+    fun start() {
+        outerScroll.addOnLayoutChangeListener(layoutListener)
+        outerScroll.addOnAttachStateChangeListener(attachListener)
+        if (!requestRenderIfReady() && BuildConfig.DEBUG) {
+            Log.d(
+                SCORE_DISPLAY_TAG,
+                "waiting for visible AlphaTab outer=${outerScroll.measuredWidth}x${outerScroll.measuredHeight} " +
+                    "tracks=${tracksToRender.size}",
+            )
+        }
+    }
+
+    fun release() {
+        if (released) return
+        released = true
+        displayView.removeCallbacks(renderRunnable)
+        removeListeners()
+    }
+
+    private fun requestRenderIfReady(): Boolean {
+        if (released || completed || renderPosted || !isReady()) return false
+        renderPosted = displayView.post(renderRunnable)
+        return renderPosted
+    }
+
+    private fun isReady(): Boolean = isAlphaTabRenderSizeReady(
+        displayAttached = displayView.isAttachedToWindow,
+        outerScrollAttached = outerScroll.isAttachedToWindow,
+        outerScrollWidth = outerScroll.measuredWidth,
+        outerScrollHeight = outerScroll.measuredHeight,
+    )
+
+    private fun removeListeners() {
+        outerScroll.removeOnLayoutChangeListener(layoutListener)
+        outerScroll.removeOnAttachStateChangeListener(attachListener)
+    }
+}
+
+private data class AlphaTabScoreViewState(
+    val playbackOverlay: ScorePlaybackOverlayView,
+    val renderReadiness: AlphaTabRenderReadiness,
+)
+
 @Composable
 private fun AlphaTabScore(
     loadedScore: LoadedScore,
@@ -1796,7 +1888,6 @@ private fun AlphaTabScore(
                     setBackgroundColor(AndroidColor.WHITE)
                     val displayView = this
                     val playbackOverlay = ScorePlaybackOverlayView(context)
-                    tag = playbackOverlay
                     api.settings.player.playerMode = if (editMode) {
                         PlayerMode.Disabled
                     } else {
@@ -1852,36 +1943,49 @@ private fun AlphaTabScore(
                         }
                     }
                     api.updateSettings()
-                    doOnLayout {
-                        if (!editMode) {
-                            val renderWrapper = findViewById<RelativeLayout>(net.alphatab.R.id.renderWrapper)
-                            val renderSurface = findViewById<View>(net.alphatab.R.id.renderSurface)
-                            findViewById<View>(net.alphatab.R.id.outerScroll)
-                                .setBackgroundColor(AndroidColor.WHITE)
-                            findViewById<View>(net.alphatab.R.id.innerScroll)
-                                .setBackgroundColor(AndroidColor.WHITE)
-                            renderWrapper.setBackgroundColor(AndroidColor.WHITE)
-                            renderSurface.setBackgroundColor(AndroidColor.WHITE)
-                            api.postRenderFinished.on {
-                                // Adding a sibling while alphaTab creates its first render
-                                // surface can invalidate the lazy bitmap placeholders. Wait
-                                // until that surface is complete before installing the overlay.
-                                renderSurface.post {
-                                    val overlayLayout = RelativeLayout.LayoutParams(
-                                        renderSurface.width,
-                                        renderSurface.height,
+                    val outerScroll = findViewById<View>(net.alphatab.R.id.outerScroll)
+                    if (!editMode) {
+                        val renderWrapper = findViewById<RelativeLayout>(net.alphatab.R.id.renderWrapper)
+                        val renderSurface = findViewById<View>(net.alphatab.R.id.renderSurface)
+                        outerScroll.setBackgroundColor(AndroidColor.WHITE)
+                        findViewById<View>(net.alphatab.R.id.innerScroll)
+                            .setBackgroundColor(AndroidColor.WHITE)
+                        renderWrapper.setBackgroundColor(AndroidColor.WHITE)
+                        renderSurface.setBackgroundColor(AndroidColor.WHITE)
+                        api.postRenderFinished.on {
+                            // Adding a sibling while alphaTab creates its first render
+                            // surface can invalidate the lazy bitmap placeholders. Wait
+                            // until that surface is complete before installing the overlay.
+                            renderSurface.post {
+                                val overlayLayout = RelativeLayout.LayoutParams(
+                                    renderSurface.width,
+                                    renderSurface.height,
+                                )
+                                if (playbackOverlay.parent == null) {
+                                    renderWrapper.addView(playbackOverlay, overlayLayout)
+                                } else {
+                                    playbackOverlay.layoutParams = overlayLayout
+                                }
+                                playbackOverlay.refresh(displayView.api.renderer.boundsLookup)
+                                if (BuildConfig.DEBUG) {
+                                    Log.d(
+                                        SCORE_DISPLAY_TAG,
+                                        "visible AlphaTab rendered surface=${renderSurface.width}x${renderSurface.height}",
                                     )
-                                    if (playbackOverlay.parent == null) {
-                                        renderWrapper.addView(playbackOverlay, overlayLayout)
-                                    } else {
-                                        playbackOverlay.layoutParams = overlayLayout
-                                    }
-                                    playbackOverlay.refresh(displayView.api.renderer.boundsLookup)
                                 }
                             }
                         }
-                        tracks = tracksToRender
                     }
+                    val renderReadiness = AlphaTabRenderReadiness(
+                        displayView = displayView,
+                        outerScroll = outerScroll,
+                        tracksToRender = tracksToRender,
+                    )
+                    tag = AlphaTabScoreViewState(
+                        playbackOverlay = playbackOverlay,
+                        renderReadiness = renderReadiness,
+                    )
+                    renderReadiness.start()
                 }
             },
             update = { displayView ->
@@ -1895,7 +1999,8 @@ private fun AlphaTabScore(
                         displayView.beatCursorFillColor = cursorColor
                         displayView.api.updateSettings()
                     }
-                    val playbackOverlay = displayView.tag as ScorePlaybackOverlayView
+                    val playbackOverlay =
+                        (displayView.tag as AlphaTabScoreViewState).playbackOverlay
                     if (playbackIndicatorMode == ScorePlaybackIndicatorMode.LINE) {
                         playbackOverlay.showBeats(
                             emptyList(),
@@ -1920,6 +2025,7 @@ private fun AlphaTabScore(
                 }
             },
             onRelease = { view ->
+                (view.tag as? AlphaTabScoreViewState)?.renderReadiness?.release()
                 playbackController.detachDisplay(view)
                 view.api.destroy()
             }
