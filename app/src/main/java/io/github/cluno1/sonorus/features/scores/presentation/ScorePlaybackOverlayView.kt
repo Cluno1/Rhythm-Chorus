@@ -4,23 +4,38 @@ package io.github.cluno1.sonorus.features.scores.presentation
 
 import alphaTab.model.Beat
 import alphaTab.rendering.utils.BoundsLookup
+import android.animation.ValueAnimator
 import android.content.Context
 import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
 import android.graphics.RectF
 import android.view.View
+import android.view.animation.DecelerateInterpolator
 import kotlin.math.max
 
-/** Recolors active note heads without asking alphaTab to rerender the score every beat. */
+/** Pulses around active note heads without covering or changing their original glyphs. */
 internal class ScorePlaybackOverlayView(context: Context) : View(context) {
     private val density = resources.displayMetrics.density
-    private val noteHeadPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+    private val pulseRingPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
         color = Color.rgb(225, 29, 72)
-        style = Paint.Style.FILL
+        style = Paint.Style.STROKE
+        strokeWidth = 2f * density
     }
+    private val animatedMarker = RectF()
     private var activeBeats: List<Beat> = emptyList()
     private var markers: List<RectF> = emptyList()
+    private var pulseProgress = 0f
+    private val pulseAnimator = ValueAnimator.ofFloat(0f, 1f).apply {
+        duration = 520L
+        repeatCount = ValueAnimator.INFINITE
+        repeatMode = ValueAnimator.REVERSE
+        interpolator = DecelerateInterpolator()
+        addUpdateListener { animation ->
+            pulseProgress = animation.animatedValue as Float
+            invalidate()
+        }
+    }
 
     init {
         isClickable = false
@@ -46,11 +61,11 @@ internal class ScorePlaybackOverlayView(context: Context) : View(context) {
                         val noteHead = noteBounds.noteHeadBounds
                         val centerX = (noteHead.x + noteHead.w / 2.0) * density
                         val centerY = (noteHead.y + noteHead.h / 2.0) * density
-                        // Some alphaTab glyphs report a point-sized note-head bound. Keep a
-                        // compact oval fallback so it covers the glyph instead of becoming
-                        // invisible, while remaining much smaller than the old pulse ring.
-                        val halfWidth = max(noteHead.w * density / 2.0, 5.0 * density)
-                        val halfHeight = max(noteHead.h * density / 2.0, 3.5 * density)
+                        // Keep the ring outside the glyph. The minimum size also handles
+                        // alphaTab glyphs which report a point-sized note-head bound.
+                        val ringGap = 2.5 * density
+                        val halfWidth = max(noteHead.w * density / 2.0, 5.0 * density) + ringGap
+                        val halfHeight = max(noteHead.h * density / 2.0, 3.5 * density) + ringGap
                         RectF(
                             (centerX - halfWidth).toFloat(),
                             (centerY - halfHeight).toFloat(),
@@ -63,14 +78,42 @@ internal class ScorePlaybackOverlayView(context: Context) : View(context) {
         } else {
             emptyList()
         }
+        updatePulseAnimation()
         bringToFront()
         invalidate()
     }
 
+    private fun updatePulseAnimation() {
+        if (markers.isEmpty()) {
+            pulseAnimator.cancel()
+            pulseProgress = 0f
+        } else if (isAttachedToWindow && !pulseAnimator.isRunning) {
+            pulseAnimator.start()
+        }
+    }
+
+    override fun onAttachedToWindow() {
+        super.onAttachedToWindow()
+        updatePulseAnimation()
+    }
+
+    override fun onDetachedFromWindow() {
+        pulseAnimator.cancel()
+        super.onDetachedFromWindow()
+    }
+
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
+        val expansion = pulseProgress * 2.5f * density
+        pulseRingPaint.alpha = (220f - pulseProgress * 80f).toInt()
         markers.forEach { marker ->
-            canvas.drawOval(marker, noteHeadPaint)
+            animatedMarker.set(
+                marker.left - expansion,
+                marker.top - expansion,
+                marker.right + expansion,
+                marker.bottom + expansion,
+            )
+            canvas.drawOval(animatedMarker, pulseRingPaint)
         }
     }
 }
