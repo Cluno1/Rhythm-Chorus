@@ -2858,6 +2858,9 @@
     </plurals>
     <string name="score_settings">樂譜設定</string>
     <string name="score_version">樂譜版本</string>
+    <string name="score_revision_label">修訂 %1$d</string>
+    <string name="score_revision_newest">最新</string>
+    <string name="score_revision_older">舊版</string>
     <string name="score_playback_end">播放結束</string>
     <string name="score_pause_at_end">播完暫停</string>
     <string name="score_loop_current">循環目前樂譜</string>

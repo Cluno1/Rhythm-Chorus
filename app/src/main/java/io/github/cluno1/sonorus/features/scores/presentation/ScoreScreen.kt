@@ -23,13 +23,17 @@ import android.view.View
 import android.widget.RelativeLayout
 import android.util.Log
 import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
@@ -37,8 +41,12 @@ import androidx.compose.foundation.layout.widthIn
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilledIconButton
+import androidx.compose.material3.FilledTonalIconButton
 import androidx.compose.material3.FilterChip
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedButton
@@ -61,12 +69,15 @@ import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.core.view.doOnLayout
 import io.github.cluno1.sonorus.R
 import io.github.cluno1.sonorus.features.scores.data.BundledScoreLoader
@@ -398,15 +409,45 @@ fun RemoteScoreScreen(
 
     Scaffold(
         modifier = modifier,
+        contentWindowInsets = WindowInsets(0, 0, 0, 0),
         topBar = {
             if (loaded == null || soundFont == null || failed) {
                 TopAppBar(
-                    title = { Text(if (revisionLabel == null) title else "$title · $revisionLabel") },
-                    navigationIcon = {
-                        IconButton(onClick = onBackClick) {
-                            Icon(RhythmIcons.Back, contentDescription = stringResource(R.string.score_back))
+                    title = {
+                        Column {
+                            Text(
+                                title,
+                                style = MaterialTheme.typography.titleMedium,
+                                fontWeight = FontWeight.Bold,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis,
+                            )
+                            revisionLabel?.let {
+                                Text(
+                                    it,
+                                    style = MaterialTheme.typography.labelMedium,
+                                    color = MaterialTheme.colorScheme.primary,
+                                )
+                            }
                         }
-                    }
+                    },
+                    navigationIcon = {
+                        FilledTonalIconButton(
+                            onClick = onBackClick,
+                            modifier = Modifier.padding(start = 12.dp),
+                            colors = IconButtonDefaults.filledTonalIconButtonColors(
+                                containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+                            ),
+                        ) {
+                            Icon(
+                                RhythmIcons.Back,
+                                contentDescription = stringResource(R.string.score_back),
+                            )
+                        }
+                    },
+                    colors = TopAppBarDefaults.topAppBarColors(
+                        containerColor = MaterialTheme.colorScheme.background,
+                    ),
                 )
             }
         },
@@ -443,15 +484,35 @@ fun RemoteScoreScreen(
                         viewMode = ScoreViewMode.OCR,
                         onEditingChange = {},
                         allowEditing = false,
-                        title = if (revisionLabel == null) title else "$title · $revisionLabel",
+                        title = title,
+                        subtitle = revisionLabel,
                         onBackClick = onBackClick,
                         scoreSettingsContent = {
                             scoreSettingsContent()
                             if (revisionLabel != null) {
-                                Text(revisionLabel, style = MaterialTheme.typography.titleSmall)
-                                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                                    TextButton(onClick = onOpenNewerRevision, enabled = canOpenNewerRevision) { Text("最新") }
-                                    TextButton(onClick = onOpenOlderRevision, enabled = canOpenOlderRevision) { Text("旧版") }
+                                ScoreSettingsCard(
+                                    icon = RhythmIcons.Score,
+                                    title = stringResource(R.string.score_version),
+                                ) {
+                                    Text(
+                                        revisionLabel,
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    )
+                                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                                        FilterChip(
+                                            selected = !canOpenNewerRevision,
+                                            onClick = onOpenNewerRevision,
+                                            enabled = canOpenNewerRevision,
+                                            label = { Text(stringResource(R.string.score_revision_newest)) },
+                                        )
+                                        FilterChip(
+                                            selected = canOpenNewerRevision,
+                                            onClick = onOpenOlderRevision,
+                                            enabled = canOpenOlderRevision,
+                                            label = { Text(stringResource(R.string.score_revision_older)) },
+                                        )
+                                    }
                                 }
                             }
                         },
@@ -487,6 +548,7 @@ private fun ScoreReadyContent(
     onEditingChange: (Boolean) -> Unit,
     allowEditing: Boolean = true,
     title: String? = null,
+    subtitle: String? = null,
     onBackClick: (() -> Unit)? = null,
     scoreSettingsContent: @Composable () -> Unit = {},
     modifier: Modifier = Modifier
@@ -694,6 +756,7 @@ private fun ScoreReadyContent(
     Column(modifier = modifier) {
         ScorePlaybackControls(
             title = title,
+            subtitle = subtitle,
             onBackClick = onBackClick,
             viewMode = viewMode,
             playbackVariant = playbackVariant,
@@ -942,7 +1005,7 @@ private fun ScoreEditControls(
 ) {
     Surface(
         modifier = modifier,
-        color = MaterialTheme.colorScheme.surfaceContainerLow
+        color = MaterialTheme.colorScheme.surfaceContainerHigh
     ) {
         Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)) {
             Row(
@@ -1078,11 +1141,12 @@ private fun ScoreEditStaffControls(
 
     Surface(
         modifier = modifier,
-        color = MaterialTheme.colorScheme.surfaceContainerLow
+        shape = RoundedCornerShape(28.dp),
+        color = MaterialTheme.colorScheme.surfaceContainerHigh
     ) {
         Column(
-            modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
-            verticalArrangement = Arrangement.spacedBy(6.dp)
+            modifier = Modifier.padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(10.dp)
         ) {
             Row(
                 modifier = Modifier
@@ -1157,11 +1221,12 @@ private fun ScoreTrackControls(
 
     Surface(
         modifier = modifier,
+        shape = RoundedCornerShape(28.dp),
         color = MaterialTheme.colorScheme.surfaceContainerLow
     ) {
         Column(
-            modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
-            verticalArrangement = Arrangement.spacedBy(6.dp)
+            modifier = Modifier.padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(10.dp)
         ) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -1311,6 +1376,7 @@ private fun ScoreTrackControls(
 @Composable
 private fun ScorePlaybackControls(
     title: String?,
+    subtitle: String?,
     onBackClick: (() -> Unit)?,
     viewMode: ScoreViewMode,
     playbackVariant: BundledScoreVariant,
@@ -1327,24 +1393,78 @@ private fun ScorePlaybackControls(
     modifier: Modifier = Modifier
 ) {
     var showSettings by rememberSaveable { mutableStateOf(false) }
+    val statusLabel = stringResource(
+        when (status) {
+            ScorePlaybackStatus.PREPARING -> R.string.score_playback_preparing
+            ScorePlaybackStatus.READY -> R.string.score_playback_ready
+            ScorePlaybackStatus.PLAYING -> R.string.score_playback_playing
+            ScorePlaybackStatus.PAUSED -> R.string.score_playback_paused
+            ScorePlaybackStatus.ERROR -> R.string.score_playback_error
+        }
+    )
     Surface(
         modifier = modifier,
-        color = MaterialTheme.colorScheme.surfaceContainer
+        color = MaterialTheme.colorScheme.background,
+        shadowElevation = 2.dp,
     ) {
         Row(
-            modifier = Modifier.fillMaxWidth().statusBarsPadding().padding(horizontal = 8.dp, vertical = 2.dp),
-            horizontalArrangement = Arrangement.spacedBy(4.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .statusBarsPadding()
+                .heightIn(min = 64.dp)
+                .padding(horizontal = 16.dp, vertical = 8.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
             if (onBackClick != null) {
-                IconButton(onClick = onBackClick) {
-                    Icon(RhythmIcons.Back, contentDescription = stringResource(R.string.score_back))
+                FilledTonalIconButton(
+                    onClick = onBackClick,
+                    modifier = Modifier.size(48.dp),
+                    colors = IconButtonDefaults.filledTonalIconButtonColors(
+                        containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+                    ),
+                ) {
+                    Icon(
+                        RhythmIcons.Back,
+                        contentDescription = stringResource(R.string.score_back),
+                        modifier = Modifier.size(24.dp),
+                    )
                 }
             }
-            IconButton(
+
+            Column(
+                modifier = Modifier.weight(1f),
+                verticalArrangement = Arrangement.Center,
+            ) {
+                Text(
+                    text = title ?: stringResource(R.string.catalog_scores),
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                )
+                Text(
+                    text = listOfNotNull(subtitle, statusLabel).joinToString(" • "),
+                    style = MaterialTheme.typography.labelMedium,
+                    color = if (status == ScorePlaybackStatus.ERROR) {
+                        MaterialTheme.colorScheme.error
+                    } else {
+                        MaterialTheme.colorScheme.primary
+                    },
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                )
+            }
+
+            FilledIconButton(
                 onClick = onPlayPause,
                 enabled = interactionEnabled && status in setOf(
                     ScorePlaybackStatus.READY, ScorePlaybackStatus.PLAYING, ScorePlaybackStatus.PAUSED
+                ),
+                modifier = Modifier.size(48.dp),
+                colors = IconButtonDefaults.filledIconButtonColors(
+                    containerColor = MaterialTheme.colorScheme.primary,
+                    contentColor = MaterialTheme.colorScheme.onPrimary,
                 ),
             ) {
                 Icon(
@@ -1352,62 +1472,163 @@ private fun ScorePlaybackControls(
                     contentDescription = stringResource(
                         if (status == ScorePlaybackStatus.PLAYING) R.string.score_pause else R.string.score_play
                     ),
+                    modifier = Modifier.size(25.dp),
                 )
             }
-            IconButton(
+            FilledTonalIconButton(
                 onClick = onStop,
                 enabled = interactionEnabled && status in setOf(
                     ScorePlaybackStatus.PLAYING, ScorePlaybackStatus.PAUSED
                 ),
-            ) {
-                Icon(RhythmIcons.Stop, contentDescription = stringResource(R.string.score_stop))
-            }
-            Text(
-                text = title ?: stringResource(
-                    when (status) {
-                        ScorePlaybackStatus.PREPARING -> R.string.score_playback_preparing
-                        ScorePlaybackStatus.READY -> R.string.score_playback_ready
-                        ScorePlaybackStatus.PLAYING -> R.string.score_playback_playing
-                        ScorePlaybackStatus.PAUSED -> R.string.score_playback_paused
-                        ScorePlaybackStatus.ERROR -> R.string.score_playback_error
-                    }
+                modifier = Modifier.size(48.dp),
+                colors = IconButtonDefaults.filledTonalIconButtonColors(
+                    containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                    contentColor = MaterialTheme.colorScheme.onSecondaryContainer,
                 ),
-                style = MaterialTheme.typography.bodySmall,
-                modifier = Modifier.weight(1f),
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-            )
-            IconButton(onClick = { showSettings = true }) {
-                Icon(RhythmIcons.Settings, contentDescription = stringResource(R.string.score_settings))
+            ) {
+                Icon(
+                    RhythmIcons.Stop,
+                    contentDescription = stringResource(R.string.score_stop),
+                    modifier = Modifier.size(23.dp),
+                )
+            }
+            FilledTonalIconButton(
+                onClick = { showSettings = true },
+                modifier = Modifier.size(48.dp),
+                colors = IconButtonDefaults.filledTonalIconButtonColors(
+                    containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+                ),
+            ) {
+                Icon(
+                    RhythmIcons.Settings,
+                    contentDescription = stringResource(R.string.score_settings),
+                    modifier = Modifier.size(24.dp),
+                )
             }
         }
     }
     if (showSettings) {
         ModalBottomSheet(onDismissRequest = { showSettings = false }) {
             Column(
-                modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp).padding(bottom = 32.dp),
-                verticalArrangement = Arrangement.spacedBy(12.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .verticalScroll(rememberScrollState())
+                    .padding(horizontal = 20.dp)
+                    .navigationBarsPadding()
+                    .padding(bottom = 24.dp),
+                verticalArrangement = Arrangement.spacedBy(16.dp),
             ) {
-                Text(stringResource(R.string.score_settings), style = MaterialTheme.typography.titleLarge)
-                settingsContent()
-                if (viewMode == ScoreViewMode.COMPARE) {
-                    Text(stringResource(R.string.score_playback_source), style = MaterialTheme.typography.titleSmall)
-                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        ScoreModeChip(playbackVariant == BundledScoreVariant.OCR, { onPlaybackVariantChange(BundledScoreVariant.OCR) }, stringResource(R.string.score_source_ocr), interactionEnabled)
-                        ScoreModeChip(playbackVariant == BundledScoreVariant.MIDI, { onPlaybackVariantChange(BundledScoreVariant.MIDI) }, stringResource(R.string.score_source_midi), interactionEnabled)
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(12.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Surface(
+                        modifier = Modifier.size(48.dp),
+                        shape = CircleShape,
+                        color = MaterialTheme.colorScheme.primaryContainer,
+                    ) {
+                        Box(contentAlignment = Alignment.Center) {
+                            Icon(
+                                RhythmIcons.SettingsFilled,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.onPrimaryContainer,
+                            )
+                        }
+                    }
+                    Column {
+                        Text(
+                            stringResource(R.string.score_settings),
+                            style = MaterialTheme.typography.headlineSmall,
+                            fontWeight = FontWeight.Bold,
+                        )
+                        title?.let {
+                            Text(
+                                text = listOfNotNull(it, subtitle).joinToString(" • "),
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis,
+                            )
+                        }
                     }
                 }
-                Text(stringResource(R.string.score_playback_indicator), style = MaterialTheme.typography.titleSmall)
-                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    ScoreModeChip(indicatorMode == ScorePlaybackIndicatorMode.LINE, { onIndicatorModeChange(ScorePlaybackIndicatorMode.LINE) }, stringResource(R.string.score_playback_indicator_default), interactionEnabled)
-                    ScoreModeChip(indicatorMode == ScorePlaybackIndicatorMode.PULSE, { onIndicatorModeChange(ScorePlaybackIndicatorMode.PULSE) }, stringResource(R.string.score_playback_indicator_pulse), interactionEnabled)
+                settingsContent()
+                if (viewMode == ScoreViewMode.COMPARE) {
+                    ScoreSettingsCard(
+                        icon = RhythmIcons.MusicNote,
+                        title = stringResource(R.string.score_playback_source),
+                    ) {
+                        Row(
+                            modifier = Modifier.horizontalScroll(rememberScrollState()),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        ) {
+                            ScoreModeChip(playbackVariant == BundledScoreVariant.OCR, { onPlaybackVariantChange(BundledScoreVariant.OCR) }, stringResource(R.string.score_source_ocr), interactionEnabled)
+                            ScoreModeChip(playbackVariant == BundledScoreVariant.MIDI, { onPlaybackVariantChange(BundledScoreVariant.MIDI) }, stringResource(R.string.score_source_midi), interactionEnabled)
+                        }
+                    }
                 }
-                Text(stringResource(R.string.score_playback_end), style = MaterialTheme.typography.titleSmall)
-                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    ScoreModeChip(endBehavior == ScorePlaybackEndBehavior.PAUSE_AT_END, { onEndBehaviorChange(ScorePlaybackEndBehavior.PAUSE_AT_END) }, stringResource(R.string.score_pause_at_end), interactionEnabled)
-                    ScoreModeChip(endBehavior == ScorePlaybackEndBehavior.LOOP_CURRENT, { onEndBehaviorChange(ScorePlaybackEndBehavior.LOOP_CURRENT) }, stringResource(R.string.score_loop_current), interactionEnabled)
+                ScoreSettingsCard(
+                    icon = RhythmIcons.Tune,
+                    title = stringResource(R.string.score_playback_indicator),
+                ) {
+                    Row(
+                        modifier = Modifier.horizontalScroll(rememberScrollState()),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    ) {
+                        ScoreModeChip(indicatorMode == ScorePlaybackIndicatorMode.LINE, { onIndicatorModeChange(ScorePlaybackIndicatorMode.LINE) }, stringResource(R.string.score_playback_indicator_default), interactionEnabled)
+                        ScoreModeChip(indicatorMode == ScorePlaybackIndicatorMode.PULSE, { onIndicatorModeChange(ScorePlaybackIndicatorMode.PULSE) }, stringResource(R.string.score_playback_indicator_pulse), interactionEnabled)
+                    }
+                    HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.55f))
+                    Text(
+                        stringResource(R.string.score_playback_end),
+                        style = MaterialTheme.typography.titleSmall,
+                    )
+                    Row(
+                        modifier = Modifier.horizontalScroll(rememberScrollState()),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    ) {
+                        ScoreModeChip(endBehavior == ScorePlaybackEndBehavior.PAUSE_AT_END, { onEndBehaviorChange(ScorePlaybackEndBehavior.PAUSE_AT_END) }, stringResource(R.string.score_pause_at_end), interactionEnabled)
+                        ScoreModeChip(endBehavior == ScorePlaybackEndBehavior.LOOP_CURRENT, { onEndBehaviorChange(ScorePlaybackEndBehavior.LOOP_CURRENT) }, stringResource(R.string.score_loop_current), interactionEnabled)
+                    }
                 }
             }
+        }
+    }
+}
+
+@Composable
+private fun ScoreSettingsCard(
+    icon: io.github.cluno1.sonorus.shared.presentation.components.icons.MaterialSymbolIcon,
+    title: String,
+    modifier: Modifier = Modifier,
+    content: @Composable () -> Unit,
+) {
+    Surface(
+        modifier = modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(28.dp),
+        color = MaterialTheme.colorScheme.surfaceContainerHigh,
+    ) {
+        Column(
+            modifier = Modifier.padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp),
+        ) {
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(10.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Icon(
+                    imageVector = icon,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.size(22.dp),
+                )
+                Text(
+                    text = title,
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                )
+            }
+            content()
         }
     }
 }
@@ -1563,12 +1784,15 @@ private fun AlphaTabScore(
     }
     Surface(
         modifier = modifier,
-        color = MaterialTheme.colorScheme.surfaceContainerLowest
+        // A score is paper, not a themed surface. alphaTab's glyph palette is authored for
+        // dark ink and becomes unreadable when a dark app surface shows through its canvas.
+        color = androidx.compose.ui.graphics.Color.White,
     ) {
         AndroidView(
             modifier = Modifier.fillMaxSize(),
             factory = { context ->
                 AlphaTabView(context, null).apply {
+                    setBackgroundColor(AndroidColor.WHITE)
                     val displayView = this
                     val playbackOverlay = ScorePlaybackOverlayView(context)
                     tag = playbackOverlay
@@ -1589,8 +1813,12 @@ private fun AlphaTabScore(
                     // alphaTab renders secondary voices with 100/255 alpha by default.
                     // Explicit per-voice styles carry enhanced colors; this fallback keeps
                     // any unstyled secondary glyph black instead of gray.
-                    api.settings.display.resources.secondaryGlyphColor =
-                        AlphaTabColor(0.0, 0.0, 0.0, 255.0)
+                    val scoreInk = AlphaTabColor(0.0, 0.0, 0.0, 255.0)
+                    api.settings.display.resources.staffLineColor = scoreInk
+                    api.settings.display.resources.barSeparatorColor = scoreInk
+                    api.settings.display.resources.mainGlyphColor = scoreInk
+                    api.settings.display.resources.secondaryGlyphColor = scoreInk
+                    api.settings.display.resources.scoreInfoColor = scoreInk
                     if (editMode) {
                         // On touch screens alphaTab only emits noteMouseDown when the finger
                         // lands inside the small note-head bounds. Treat the wider beat hitbox
@@ -1627,6 +1855,12 @@ private fun AlphaTabScore(
                         if (!editMode) {
                             val renderWrapper = findViewById<RelativeLayout>(net.alphatab.R.id.renderWrapper)
                             val renderSurface = findViewById<View>(net.alphatab.R.id.renderSurface)
+                            findViewById<View>(net.alphatab.R.id.outerScroll)
+                                .setBackgroundColor(AndroidColor.WHITE)
+                            findViewById<View>(net.alphatab.R.id.innerScroll)
+                                .setBackgroundColor(AndroidColor.WHITE)
+                            renderWrapper.setBackgroundColor(AndroidColor.WHITE)
+                            renderSurface.setBackgroundColor(AndroidColor.WHITE)
                             api.postRenderFinished.on {
                                 // Adding a sibling while alphaTab creates its first render
                                 // surface can invalidate the lazy bitmap placeholders. Wait
