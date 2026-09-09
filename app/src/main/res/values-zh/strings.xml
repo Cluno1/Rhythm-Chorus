@@ -2863,6 +2863,7 @@
         <item quantity="other">%1$d 份歌谱</item>
     </plurals>
     <string name="score_settings">乐谱设置</string>
+    <string name="score_selection">乐谱选择</string>
     <string name="score_version">谱面版本</string>
     <string name="score_revision_label">修订 %1$d</string>
     <string name="score_revision_newest">最新</string>
