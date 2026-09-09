@@ -2857,6 +2857,9 @@
     <string name="score_settings">樂譜設定</string>
     <string name="score_selection">樂譜選擇</string>
     <string name="score_version">樂譜版本</string>
+    <string name="score_playback_scroll">樂譜捲動</string>
+    <string name="score_playback_scroll_follow">跟隨捲動</string>
+    <string name="score_playback_scroll_off">不捲動</string>
     <string name="score_playback_speed">播放速度</string>
     <string name="score_playback_speed_target">目標速度</string>
     <string name="score_playback_speed_original">原速：%1$d BPM</string>

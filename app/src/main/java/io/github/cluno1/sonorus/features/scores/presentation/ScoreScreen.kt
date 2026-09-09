@@ -689,6 +689,7 @@ private fun ScoreReadyContent(
     var playbackIndicatorMode by rememberSaveable {
         mutableStateOf(ScorePlaybackIndicatorMode.LINE)
     }
+    var followScrollEnabled by rememberSaveable { mutableStateOf(true) }
     var playbackEndBehavior by rememberSaveable { mutableStateOf(ScorePlaybackEndBehavior.PAUSE_AT_END) }
     // View-local on purpose: the previous release saved a single track index in this slot,
     // which is not compatible with the new multi-select bit mask after an app upgrade.
@@ -907,11 +908,13 @@ private fun ScoreReadyContent(
             playbackVariant = playbackVariant,
             status = playbackStatus,
             indicatorMode = playbackIndicatorMode,
+            followScrollEnabled = followScrollEnabled,
             sourceBpm = displayedSourceBpm,
             targetBpm = targetPlaybackBpm,
             hasCustomBpm = customPlaybackBpm != null,
             onPlaybackVariantChange = { playbackVariant = it },
             onIndicatorModeChange = { playbackIndicatorMode = it },
+            onFollowScrollChange = { followScrollEnabled = it },
             onTargetBpmChange = { bpm ->
                 customPlaybackBpm = bpm.coerceIn(
                     MIN_SCORE_PLAYBACK_BPM,
@@ -1025,6 +1028,7 @@ private fun ScoreReadyContent(
                         notationLayout = notationLayout,
                         partColorMode = partColorMode,
                         playbackIndicatorMode = playbackIndicatorMode,
+                        followScrollEnabled = followScrollEnabled,
                         playbackController = playbackController,
                         mergedDisplayScore = currentMergedScores?.get(BundledScoreVariant.OCR),
                         selectedTrackIndexes = selectedTrackIndexes,
@@ -1058,6 +1062,7 @@ private fun ScoreReadyContent(
                         notationLayout = notationLayout,
                         partColorMode = partColorMode,
                         playbackIndicatorMode = playbackIndicatorMode,
+                        followScrollEnabled = followScrollEnabled,
                         playbackController = playbackController,
                         mergedDisplayScore = currentMergedScores?.get(BundledScoreVariant.MIDI),
                         selectedTrackIndexes = selectedTrackIndexes,
@@ -1083,6 +1088,7 @@ private fun ScoreReadyContent(
                         notationLayout = notationLayout,
                         partColorMode = partColorMode,
                         playbackIndicatorMode = playbackIndicatorMode,
+                        followScrollEnabled = followScrollEnabled,
                         playbackController = playbackController,
                         mergedDisplayScore = currentMergedScores?.get(BundledScoreVariant.OCR),
                         selectedTrackIndexes = selectedTrackIndexes,
@@ -1097,6 +1103,7 @@ private fun ScoreReadyContent(
                         notationLayout = notationLayout,
                         partColorMode = partColorMode,
                         playbackIndicatorMode = playbackIndicatorMode,
+                        followScrollEnabled = followScrollEnabled,
                         playbackController = playbackController,
                         mergedDisplayScore = currentMergedScores?.get(BundledScoreVariant.MIDI),
                         selectedTrackIndexes = selectedTrackIndexes,
@@ -1527,11 +1534,13 @@ private fun ScorePlaybackControls(
     playbackVariant: BundledScoreVariant,
     status: ScorePlaybackStatus,
     indicatorMode: ScorePlaybackIndicatorMode,
+    followScrollEnabled: Boolean,
     sourceBpm: Int,
     targetBpm: Int,
     hasCustomBpm: Boolean,
     onPlaybackVariantChange: (BundledScoreVariant) -> Unit,
     onIndicatorModeChange: (ScorePlaybackIndicatorMode) -> Unit,
+    onFollowScrollChange: (Boolean) -> Unit,
     onTargetBpmChange: (Int) -> Unit,
     onResetBpm: () -> Unit,
     endBehavior: ScorePlaybackEndBehavior,
@@ -1742,6 +1751,28 @@ private fun ScorePlaybackControls(
                         ScoreModeChip(endBehavior == ScorePlaybackEndBehavior.LOOP_CURRENT, { onEndBehaviorChange(ScorePlaybackEndBehavior.LOOP_CURRENT) }, stringResource(R.string.score_loop_current), interactionEnabled)
                     }
                 }
+                ScoreSettingsCard(
+                    icon = RhythmIcons.Actions.SwapVert,
+                    title = stringResource(R.string.score_playback_scroll),
+                ) {
+                    Row(
+                        modifier = Modifier.horizontalScroll(rememberScrollState()),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    ) {
+                        ScoreModeChip(
+                            selected = followScrollEnabled,
+                            onClick = { onFollowScrollChange(true) },
+                            label = stringResource(R.string.score_playback_scroll_follow),
+                            enabled = interactionEnabled,
+                        )
+                        ScoreModeChip(
+                            selected = !followScrollEnabled,
+                            onClick = { onFollowScrollChange(false) },
+                            label = stringResource(R.string.score_playback_scroll_off),
+                            enabled = interactionEnabled,
+                        )
+                    }
+                }
                 ScorePlaybackTempoCard(
                     sourceBpm = sourceBpm,
                     targetBpm = targetBpm,
@@ -1896,6 +1927,7 @@ private fun ScoreComparePane(
     notationLayout: ScoreNotationLayout,
     partColorMode: ScorePartColorMode,
     playbackIndicatorMode: ScorePlaybackIndicatorMode,
+    followScrollEnabled: Boolean,
     playbackController: ScorePlaybackController,
     mergedDisplayScore: MergedDisplayScore?,
     selectedTrackIndexes: Set<Int>,
@@ -1926,6 +1958,7 @@ private fun ScoreComparePane(
                 notationLayout = notationLayout,
                 partColorMode = partColorMode,
                 playbackIndicatorMode = playbackIndicatorMode,
+                followScrollEnabled = followScrollEnabled,
                 playbackController = playbackController,
                 mergedDisplayScore = mergedDisplayScore,
                 selectedTrackIndexes = selectedTrackIndexes,
@@ -2083,6 +2116,7 @@ private fun AlphaTabScore(
     notationLayout: ScoreNotationLayout,
     partColorMode: ScorePartColorMode,
     playbackIndicatorMode: ScorePlaybackIndicatorMode,
+    followScrollEnabled: Boolean,
     playbackController: ScorePlaybackController,
     mergedDisplayScore: MergedDisplayScore?,
     selectedTrackIndexes: Set<Int>,
@@ -2217,7 +2251,11 @@ private fun AlphaTabScore(
                     val outerScroll = findViewById<View>(net.alphatab.R.id.outerScroll)
                     val innerScroll = findViewById<ScrollView>(net.alphatab.R.id.innerScroll)
                     val playbackScrollHandler = if (!editMode) {
-                        ScorePlaybackScrollHandler(displayView, innerScroll).also { handler ->
+                        ScorePlaybackScrollHandler(
+                            displayView = displayView,
+                            scrollView = innerScroll,
+                            initiallyEnabled = followScrollEnabled,
+                        ).also { handler ->
                             api.customCursorHandler = ScorePlaybackCursorHandler(playbackOverlay)
                             api.customScrollHandler = handler
                         }
@@ -2305,8 +2343,9 @@ private fun AlphaTabScore(
             },
             update = { displayView ->
                 if (!editMode) {
-                    val playbackOverlay =
-                        (displayView.tag as AlphaTabScoreViewState).playbackOverlay
+                    val viewState = displayView.tag as AlphaTabScoreViewState
+                    val playbackOverlay = viewState.playbackOverlay
+                    viewState.playbackScrollHandler?.setEnabled(followScrollEnabled)
                     playbackOverlay.setMode(playbackIndicatorMode)
                     if (playbackIndicatorMode == ScorePlaybackIndicatorMode.LINE) {
                         playbackOverlay.showBeats(
