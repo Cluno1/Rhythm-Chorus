@@ -87,31 +87,64 @@ internal class LoadedScore(
     val canonicalMusicXml: ByteArray,
     private val displayMusicXml: ByteArray
 ) {
-    private val mergedDisplayScores = mutableMapOf<Int, Score>()
+    val displayPartLabels: List<String> by lazy {
+        ChoirScoreDisplayProjector.trackLabels(displayMusicXml)
+    }
+    val displayPartColorIndexesByTrack: Map<Int, List<Int>> by lazy {
+        ChoirScoreDisplayProjector.trackColorIndexes(displayMusicXml)
+            .mapIndexed { trackIndex, colorIndex -> trackIndex to listOf(colorIndex) }
+            .toMap()
+    }
+    val fallbackMergedDisplayScore: MergedDisplayScore by lazy {
+        MergedDisplayScore(
+            score = displayScore,
+            sourcePartIndexesByTrack = displayScore.tracks.toList().associate { track ->
+                val trackIndex = track.index.toInt()
+                trackIndex to listOf(trackIndex)
+            },
+            colorPartIndexesByTrack = displayPartColorIndexesByTrack,
+        )
+    }
+    private val mergedDisplayScores = mutableMapOf<Int, MergedDisplayScore>()
 
-    suspend fun loadMergedDisplayScore(selectedTrackIndexes: Set<Int>): Score =
+    suspend fun loadMergedDisplayScore(selectedTrackIndexes: Set<Int>): MergedDisplayScore =
         withContext(Dispatchers.Default) {
             val selectionMask = selectedTrackIndexes.fold(0) { mask, index ->
                 mask or (1 shl index)
             }
             synchronized(mergedDisplayScores) {
                 mergedDisplayScores[selectionMask]
-            } ?: ScoreLoader.loadScoreFromBytes(
-                Uint8Array(
-                    ChoirScoreDisplayProjector.project(
-                        source = displayMusicXml,
-                        selectedTrackIndexes = selectedTrackIndexes
-                    ).toUByteArray()
-                ),
-                Settings().apply {
-                    player.playerMode = PlayerMode.Disabled
-                    player.enableCursor = false
-                    player.enableUserInteraction = false
-                }
-            ).also { score ->
+            } ?: ChoirScoreDisplayProjector.projectWithMapping(
+                source = displayMusicXml,
+                selectedTrackIndexes = selectedTrackIndexes,
+            ).let { projection ->
+                val score = ScoreLoader.loadScoreFromBytes(
+                    Uint8Array(projection.musicXml.toUByteArray()),
+                    Settings().apply {
+                        player.playerMode = PlayerMode.Disabled
+                        player.enableCursor = false
+                        player.enableUserInteraction = false
+                    },
+                )
+                MergedDisplayScore(
+                    score = score,
+                    sourcePartIndexesByTrack = projection.groups.mapIndexed { trackIndex, group ->
+                        trackIndex to group.sourcePartIndexes
+                    }.toMap(),
+                    colorPartIndexesByTrack = projection.groups.mapIndexed { trackIndex, group ->
+                        trackIndex to group.colorPartIndexes
+                    }.toMap(),
+                )
+            }.also { mergedScore ->
                 synchronized(mergedDisplayScores) {
-                    mergedDisplayScores[selectionMask] = score
+                    mergedDisplayScores[selectionMask] = mergedScore
                 }
             }
         }
 }
+
+internal data class MergedDisplayScore(
+    val score: Score,
+    val sourcePartIndexesByTrack: Map<Int, List<Int>>,
+    val colorPartIndexesByTrack: Map<Int, List<Int>>,
+)

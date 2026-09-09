@@ -87,6 +87,7 @@ import io.github.cluno1.sonorus.R
 import io.github.cluno1.sonorus.features.scores.data.BundledScoreLoader
 import io.github.cluno1.sonorus.features.scores.data.BundledScoreVariant
 import io.github.cluno1.sonorus.features.scores.data.LoadedScore
+import io.github.cluno1.sonorus.features.scores.data.MergedDisplayScore
 import io.github.cluno1.sonorus.features.scores.data.ScoreEditSession
 import io.github.cluno1.sonorus.features.scores.data.ScoreNoteRef
 import io.github.cluno1.sonorus.features.scores.data.ScoreSourceMap
@@ -121,7 +122,7 @@ private enum class ScorePlaybackEndBehavior { PAUSE_AT_END, LOOP_CURRENT }
 
 private data class MergedDisplayProjection(
     val trackIndexes: Set<Int>,
-    val scores: Map<BundledScoreVariant, Score>
+    val scores: Map<BundledScoreVariant, MergedDisplayScore>
 )
 
 private class ScorePlaybackController(private val context: Context) {
@@ -675,9 +676,10 @@ private fun ScoreReadyContent(
     }
 
     val playbackScore = checkNotNull(activeScores[playbackVariant])
-    val trackOptions = remember(playbackScore.displayScore) {
+    val trackOptions = remember(playbackScore.displayScore, playbackScore.displayPartLabels) {
         buildScoreTrackOptions(
-            playbackScore.displayScore.tracks.toList().map { it.name }
+            trackNames = playbackScore.displayScore.tracks.toList().map { it.name },
+            inferredLabels = playbackScore.displayPartLabels,
         )
     }
     val effectiveSelectedTrackMask = trackOptions.takeIf { it.isNotEmpty() }?.let {
@@ -704,7 +706,7 @@ private fun ScoreReadyContent(
         }
         mergedDisplayProjection = null
         val projectedScores = runCatching {
-            mutableMapOf<BundledScoreVariant, Score>().apply {
+            mutableMapOf<BundledScoreVariant, MergedDisplayScore>().apply {
                 activeScores.forEach { (variant, score) ->
                     this[variant] = score.loadMergedDisplayScore(visibleTrackIndexes)
                 }
@@ -712,7 +714,7 @@ private fun ScoreReadyContent(
         }.getOrElse { error ->
             if (error is CancellationException) throw error
             Log.e(SCORE_DISPLAY_TAG, "merged score projection failed; using separate tracks", error)
-            activeScores.mapValues { it.value.displayScore }
+            activeScores.mapValues { it.value.fallbackMergedDisplayScore }
         }
         mergedDisplayProjection = MergedDisplayProjection(
             trackIndexes = visibleTrackIndexes,
@@ -1720,7 +1722,7 @@ private fun ScoreComparePane(
     partColorMode: ScorePartColorMode,
     playbackIndicatorMode: ScorePlaybackIndicatorMode,
     playbackController: ScorePlaybackController,
-    mergedDisplayScore: Score?,
+    mergedDisplayScore: MergedDisplayScore?,
     selectedTrackIndexes: Set<Int>,
     modifier: Modifier = Modifier
 ) {
@@ -1907,7 +1909,7 @@ private fun AlphaTabScore(
     partColorMode: ScorePartColorMode,
     playbackIndicatorMode: ScorePlaybackIndicatorMode,
     playbackController: ScorePlaybackController,
-    mergedDisplayScore: Score?,
+    mergedDisplayScore: MergedDisplayScore?,
     selectedTrackIndexes: Set<Int>,
     editMode: Boolean = false,
     canonicalNotes: List<ScoreNoteRef> = emptyList(),
@@ -1919,7 +1921,7 @@ private fun AlphaTabScore(
         ScoreLoading(modifier)
         return
     }
-    val displayScore = mergedDisplayScore ?: loadedScore.displayScore
+    val displayScore = mergedDisplayScore?.score ?: loadedScore.displayScore
     val allTracks = displayScore.tracks.toList()
     val tracksToRender = when (notationLayout) {
         ScoreNotationLayout.MERGED_STAVES -> allTracks
@@ -1933,7 +1935,9 @@ private fun AlphaTabScore(
     applyScorePartColors(
         tracks = tracksToRender,
         notationLayout = notationLayout,
-        colorMode = partColorMode
+        colorMode = partColorMode,
+        voiceColorIndexesByTrack = mergedDisplayScore?.colorPartIndexesByTrack
+            ?: loadedScore.displayPartColorIndexesByTrack,
     )
     if (editMode && selectedNoteId != null) {
         val selectedColor = checkNotNull(AlphaTabColor.fromJson("#4f6bff"))
@@ -2143,6 +2147,8 @@ private fun AlphaTabScore(
                                 tracks = tracksToRender,
                                 notationLayout = notationLayout,
                                 activePositions = positions,
+                                voiceSourcePartIndexesByTrack =
+                                    mergedDisplayScore?.sourcePartIndexesByTrack.orEmpty(),
                             )
                             playbackOverlay.showBeats(
                                 pulseBeats,

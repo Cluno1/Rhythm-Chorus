@@ -37,5 +37,14 @@ class ScorePartColorsTest {
             listOf("#4f6bff", "#ed168c", "#f59f00", "#12b886"),
             (0..3).map { scorePartColorHex(it, ScorePartColorMode.ENHANCED) }
         )
+        assertEquals("#7e57c2", scorePartColorHex(4, ScorePartColorMode.ENHANCED))
+        assertEquals("#0097a7", scorePartColorHex(5, ScorePartColorMode.ENHANCED))
+    }
+
+    @Test
+    fun explicitProjectionMappingWinsOverMergedTrackPosition() {
+        assertEquals(listOf(2, 3), listOf(2, 3).forVoiceCount(2, fallbackIndex = 1))
+        assertEquals(listOf(4, 4), listOf(4).forVoiceCount(2, fallbackIndex = 0))
+        assertEquals(listOf(1, 1), listOf(0, 1, 2).forVoiceCount(2, fallbackIndex = 1))
     }
 }
