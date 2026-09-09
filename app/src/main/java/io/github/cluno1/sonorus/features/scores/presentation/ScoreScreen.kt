@@ -2105,7 +2105,8 @@ private data class AlphaTabScoreViewState(
     val playbackOverlay: ScorePlaybackOverlayView,
     val renderReadiness: AlphaTabRenderReadiness,
     val playbackScrollHandler: ScorePlaybackScrollHandler?,
-    val renderSurface: View?,
+    val scrollRenderRecovery: ScoreScrollRenderRecovery,
+    val renderSurface: View,
     val renderSurfaceLayoutListener: View.OnLayoutChangeListener?,
 )
 
@@ -2250,6 +2251,13 @@ private fun AlphaTabScore(
                     }
                     val outerScroll = findViewById<View>(net.alphatab.R.id.outerScroll)
                     val innerScroll = findViewById<ScrollView>(net.alphatab.R.id.innerScroll)
+                    val renderWrapper =
+                        findViewById<RelativeLayout>(net.alphatab.R.id.renderWrapper)
+                    val renderSurface = findViewById<View>(net.alphatab.R.id.renderSurface)
+                    val scrollRenderRecovery = ScoreScrollRenderRecovery(
+                        renderSurface = renderSurface,
+                        scrollView = innerScroll,
+                    )
                     val playbackScrollHandler = if (!editMode) {
                         ScorePlaybackScrollHandler(
                             displayView = displayView,
@@ -2264,11 +2272,7 @@ private fun AlphaTabScore(
                     }
                     api.updateSettings()
                     var renderSurfaceLayoutListener: View.OnLayoutChangeListener? = null
-                    var playbackRenderSurface: View? = null
                     if (!editMode) {
-                        val renderWrapper = findViewById<RelativeLayout>(net.alphatab.R.id.renderWrapper)
-                        val renderSurface = findViewById<View>(net.alphatab.R.id.renderSurface)
-                        playbackRenderSurface = renderSurface
                         renderSurfaceLayoutListener = View.OnLayoutChangeListener {
                                 _, _, top, _, bottom, _, oldTop, _, oldBottom ->
                             if (bottom - top != oldBottom - oldTop) {
@@ -2335,9 +2339,11 @@ private fun AlphaTabScore(
                         playbackOverlay = playbackOverlay,
                         renderReadiness = renderReadiness,
                         playbackScrollHandler = playbackScrollHandler,
-                        renderSurface = playbackRenderSurface,
+                        scrollRenderRecovery = scrollRenderRecovery,
+                        renderSurface = renderSurface,
                         renderSurfaceLayoutListener = renderSurfaceLayoutListener,
                     )
+                    scrollRenderRecovery.start()
                     renderReadiness.start()
                 }
             },
@@ -2376,8 +2382,9 @@ private fun AlphaTabScore(
                 (view.tag as? AlphaTabScoreViewState)?.let { state ->
                     state.renderReadiness.release()
                     state.playbackScrollHandler?.close()
+                    state.scrollRenderRecovery.close()
                     if (state.renderSurfaceLayoutListener != null) {
-                        state.renderSurface?.removeOnLayoutChangeListener(
+                        state.renderSurface.removeOnLayoutChangeListener(
                             state.renderSurfaceLayoutListener,
                         )
                     }
