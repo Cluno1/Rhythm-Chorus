@@ -206,7 +206,6 @@ import io.github.cluno1.sonorus.shared.data.model.findAlbumForSong
 import io.github.cluno1.sonorus.shared.data.model.AlbumViewType
 import io.github.cluno1.sonorus.shared.data.model.ArtistViewType
 import io.github.cluno1.sonorus.shared.data.model.PlaylistViewType
-import io.github.cluno1.sonorus.shared.data.model.ScoreOriginFilter
 import io.github.cluno1.sonorus.shared.data.model.ScoreSortOrder
 import io.github.cluno1.sonorus.shared.data.model.ScoreViewType
 import io.github.cluno1.sonorus.shared.data.model.AppSettings
@@ -816,7 +815,7 @@ fun LibraryScreen(
     val artistViewType by appSettings.artistViewType.collectAsState()
     val scoreViewType by appSettings.scoreViewType.collectAsState()
     val scoreSortOrder by appSettings.scoreSortOrder.collectAsState()
-    val scoreOriginFilter by appSettings.scoreOriginFilter.collectAsState()
+    val scoreLabelFilter by appSettings.scoreLabelFilter.collectAsState()
 
 
 
@@ -2093,8 +2092,8 @@ fun LibraryScreen(
                                         trustedServerUrl = scoreArtworkServerUrl,
                                         viewType = scoreViewType,
                                         sortOrder = scoreSortOrder,
-                                        originFilter = scoreOriginFilter,
-                                        onOriginFilterChange = appSettings::setScoreOriginFilter,
+                                        scoreLabelFilter = scoreLabelFilter,
+                                        onScoreLabelFilterChange = appSettings::setScoreLabelFilter,
                                         onScoreWorkClick = onScoreWorkClick,
                                         listState = scoresListState,
                                         gridState = scoresGridState,

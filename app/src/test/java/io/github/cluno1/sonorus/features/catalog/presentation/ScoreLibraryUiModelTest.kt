@@ -2,41 +2,40 @@ package io.github.cluno1.sonorus.features.catalog.presentation
 
 import io.github.cluno1.sonorus.features.catalog.domain.CatalogLibraryScoreWork
 import io.github.cluno1.sonorus.features.catalog.domain.CatalogScoreOption
-import io.github.cluno1.sonorus.shared.data.model.ScoreOriginFilter
 import io.github.cluno1.sonorus.shared.data.model.ScoreSortOrder
 import org.junit.Assert.assertEquals
-import org.junit.Assert.assertTrue
 import org.junit.Test
+import java.time.ZoneId
 
 class ScoreLibraryUiModelTest {
     @Test
-    fun dualSourceWorkRemainsSingleItemForEachMatchingFilter() {
+    fun dualLabelWorkRemainsSingleItemForEachMatchingFilter() {
         val work = scoreWork(
             id = "work-a",
             title = "Alpha",
             options = listOf(
-                scoreOption("edited", "musicxml_import"),
-                scoreOption("midi", "midi_transcription"),
+                scoreOption("rough", "ocr", scoreLabel = "粗谱"),
+                scoreOption("edited", "midi_transcription", scoreLabel = "精校谱"),
             ),
         )
 
-        assertEquals(1, prepareCatalogScoreWorks(listOf(work), ScoreOriginFilter.EDITED, ScoreSortOrder.TITLE_ASC).size)
-        assertEquals(1, prepareCatalogScoreWorks(listOf(work), ScoreOriginFilter.MIDI, ScoreSortOrder.TITLE_ASC).size)
+        assertEquals(1, prepareCatalogScoreWorks(listOf(work), "粗谱", ScoreSortOrder.TITLE_ASC).size)
+        assertEquals(1, prepareCatalogScoreWorks(listOf(work), "精校谱", ScoreSortOrder.TITLE_ASC).size)
     }
 
     @Test
-    fun filteredNavigationSelectsAnOptionFromTheActiveOrigin() {
-        val edited = scoreOption("edited", "musicxml_import", preferred = true)
-        val midi = scoreOption("midi", "midi_transcription")
+    fun filteredNavigationSelectsAnOptionWithTheActiveBackendLabel() {
+        val rough = scoreOption("rough", "ocr", scoreLabel = "粗谱", preferred = true)
+        val edited = scoreOption("edited", "midi_transcription", scoreLabel = "精校谱")
         val work = scoreWork(
             id = "work-a",
             title = "Alpha",
-            defaultScoreId = edited.scoreId,
-            options = listOf(edited, midi),
+            defaultScoreId = rough.scoreId,
+            options = listOf(rough, edited),
         )
 
-        assertEquals(midi.scoreId, work.initialOptionFor(ScoreOriginFilter.MIDI)?.scoreId)
-        assertEquals(edited.scoreId, work.initialOptionFor(ScoreOriginFilter.EDITED)?.scoreId)
+        assertEquals(edited.scoreId, work.initialOptionFor("精校谱")?.scoreId)
+        assertEquals(rough.scoreId, work.initialOptionFor("粗谱")?.scoreId)
     }
 
     @Test
@@ -60,7 +59,7 @@ class ScoreLibraryUiModelTest {
         )
 
         assertEquals(latest.scoreId, work.latestPublishedOption()?.scoreId)
-        assertEquals(latest.scoreId, work.initialOptionFor(ScoreOriginFilter.ALL)?.scoreId)
+        assertEquals(latest.scoreId, work.initialOptionFor(null)?.scoreId)
     }
 
     @Test
@@ -70,22 +69,57 @@ class ScoreLibraryUiModelTest {
 
         assertEquals(
             listOf("a", "b"),
-            prepareCatalogScoreWorks(listOf(beta, alpha), ScoreOriginFilter.ALL, ScoreSortOrder.TITLE_ASC).map { it.workId },
+            prepareCatalogScoreWorks(listOf(beta, alpha), null, ScoreSortOrder.TITLE_ASC).map { it.workId },
         )
         assertEquals(
             listOf("b", "a"),
-            prepareCatalogScoreWorks(listOf(alpha, beta), ScoreOriginFilter.ALL, ScoreSortOrder.PUBLISHED_DESC).map { it.workId },
+            prepareCatalogScoreWorks(listOf(alpha, beta), null, ScoreSortOrder.PUBLISHED_DESC).map { it.workId },
         )
         assertEquals(
             listOf("b", "a"),
-            prepareCatalogScoreWorks(listOf(alpha, beta), ScoreOriginFilter.ALL, ScoreSortOrder.SCORE_COUNT_DESC).map { it.workId },
+            prepareCatalogScoreWorks(listOf(alpha, beta), null, ScoreSortOrder.SCORE_COUNT_DESC).map { it.workId },
         )
     }
 
     @Test
-    fun editedFilterTreatsOnlyMidiTranscriptionAsMidi() {
-        val imported = scoreOption("imported", "musicxml_import")
-        assertTrue(imported.matchesScoreOrigin(ScoreOriginFilter.EDITED))
+    fun availableFiltersUseDistinctBackendLabelsInResponseOrder() {
+        val first = scoreWork(
+            id = "a",
+            title = "Alpha",
+            options = listOf(
+                scoreOption("rough-a", "ocr", scoreLabel = "粗谱"),
+                scoreOption("edited-a", "midi_transcription", scoreLabel = "精校谱"),
+            ),
+        )
+        val second = scoreWork(
+            id = "b",
+            title = "Beta",
+            options = listOf(scoreOption("rough-b", "unexpected_origin", scoreLabel = "粗谱")),
+        )
+
+        assertEquals(listOf("粗谱", "精校谱"), availableScoreLabels(listOf(first, second)))
+    }
+
+    @Test
+    fun publishedTimeWithOffsetUsesDeviceTimeZone() {
+        assertEquals(
+            "2026-09-09 16:12",
+            formatScorePublishedAt(
+                "2026-09-09T08:12:21.937599+00:00",
+                ZoneId.of("Asia/Shanghai"),
+            ),
+        )
+    }
+
+    @Test
+    fun publishedTimeWithoutOffsetKeepsItsWallClockTime() {
+        assertEquals(
+            "2026-09-04 19:18",
+            formatScorePublishedAt(
+                "2026-09-04 19:18:41.718752",
+                ZoneId.of("Asia/Shanghai"),
+            ),
+        )
     }
 
     private fun scoreWork(
@@ -111,6 +145,7 @@ class ScoreLibraryUiModelTest {
     private fun scoreOption(
         id: String,
         origin: String,
+        scoreLabel: String = "Score $id",
         preferred: Boolean = false,
         publishedAt: String = "2026-01-01",
     ) = CatalogScoreOption(
@@ -118,7 +153,7 @@ class ScoreLibraryUiModelTest {
         arrangementName = "Arrangement $id",
         scoreId = "score-$id",
         revisionId = "revision-$id",
-        scoreLabel = "Score $id",
+        scoreLabel = scoreLabel,
         origin = origin,
         partCount = 1,
         revisionNo = 1,

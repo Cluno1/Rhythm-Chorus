@@ -2,19 +2,16 @@ package io.github.cluno1.sonorus.features.catalog.presentation
 
 import io.github.cluno1.sonorus.features.catalog.domain.CatalogLibraryScoreWork
 import io.github.cluno1.sonorus.features.catalog.domain.CatalogScoreOption
-import io.github.cluno1.sonorus.shared.data.model.ScoreOriginFilter
 import io.github.cluno1.sonorus.shared.data.model.ScoreSortOrder
 
-private const val MIDI_TRANSCRIPTION_ORIGIN = "midi_transcription"
+fun availableScoreLabels(scoreWorks: List<CatalogLibraryScoreWork>): List<String> =
+    scoreWorks.flatMap { work -> work.scoreOptions.map(CatalogScoreOption::scoreLabel) }.distinct()
 
-fun CatalogScoreOption.matchesScoreOrigin(filter: ScoreOriginFilter): Boolean = when (filter) {
-    ScoreOriginFilter.ALL -> true
-    ScoreOriginFilter.MIDI -> origin.equals(MIDI_TRANSCRIPTION_ORIGIN, ignoreCase = true)
-    ScoreOriginFilter.EDITED -> !origin.equals(MIDI_TRANSCRIPTION_ORIGIN, ignoreCase = true)
-}
+fun CatalogScoreOption.matchesScoreLabel(scoreLabel: String?): Boolean =
+    scoreLabel == null || this.scoreLabel == scoreLabel
 
-fun CatalogLibraryScoreWork.matchesScoreOrigin(filter: ScoreOriginFilter): Boolean =
-    filter == ScoreOriginFilter.ALL || scoreOptions.any { it.matchesScoreOrigin(filter) }
+fun CatalogLibraryScoreWork.matchesScoreLabel(scoreLabel: String?): Boolean =
+    scoreLabel == null || scoreOptions.any { it.matchesScoreLabel(scoreLabel) }
 
 fun CatalogLibraryScoreWork.latestPublishedOption(): CatalogScoreOption? =
     scoreOptions.maxWithOrNull(
@@ -23,8 +20,8 @@ fun CatalogLibraryScoreWork.latestPublishedOption(): CatalogScoreOption? =
             .thenBy { it.scoreId },
     )
 
-fun CatalogLibraryScoreWork.initialOptionFor(filter: ScoreOriginFilter): CatalogScoreOption? {
-    val matching = scoreOptions.filter { it.matchesScoreOrigin(filter) }
+fun CatalogLibraryScoreWork.initialOptionFor(scoreLabel: String?): CatalogScoreOption? {
+    val matching = scoreOptions.filter { it.matchesScoreLabel(scoreLabel) }
     return matching.maxWithOrNull(
         compareBy<CatalogScoreOption> { it.publishedAt }
             .thenBy { it.revisionNo }
@@ -34,10 +31,10 @@ fun CatalogLibraryScoreWork.initialOptionFor(filter: ScoreOriginFilter): Catalog
 
 fun prepareCatalogScoreWorks(
     scoreWorks: List<CatalogLibraryScoreWork>,
-    originFilter: ScoreOriginFilter,
+    scoreLabelFilter: String?,
     sortOrder: ScoreSortOrder,
 ): List<CatalogLibraryScoreWork> {
-    val filtered = scoreWorks.filter { it.matchesScoreOrigin(originFilter) }
+    val filtered = scoreWorks.filter { it.matchesScoreLabel(scoreLabelFilter) }
     return when (sortOrder) {
         ScoreSortOrder.TITLE_ASC -> filtered.sortedWith(
             compareBy(String.CASE_INSENSITIVE_ORDER, CatalogLibraryScoreWork::title)

@@ -36,6 +36,28 @@ import androidx.compose.material3.FilterChip
 import io.github.cluno1.sonorus.shared.presentation.components.common.M3CircularLoader
 import io.github.cluno1.sonorus.shared.presentation.components.icons.Icon
 import io.github.cluno1.sonorus.shared.presentation.components.icons.RhythmIcons
+import java.time.LocalDateTime
+import java.time.OffsetDateTime
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
+
+private val scorePublishedAtFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")
+
+internal fun formatScorePublishedAt(
+    value: String,
+    zoneId: ZoneId = ZoneId.systemDefault(),
+): String {
+    val normalized = value.trim().replace(' ', 'T')
+    return runCatching {
+        OffsetDateTime.parse(normalized)
+            .atZoneSameInstant(zoneId)
+            .format(scorePublishedAtFormatter)
+    }.getOrElse {
+        runCatching {
+            LocalDateTime.parse(normalized).format(scorePublishedAtFormatter)
+        }.getOrDefault(value)
+    }
+}
 
 @Composable
 fun CatalogRemoteScoreScreen(
@@ -136,9 +158,21 @@ fun CatalogRemoteScoreScreen(
                                         selected = option.scoreId == selectedOption?.scoreId,
                                         onClick = { selectedScoreId = option.scoreId },
                                         label = {
-                                            Text(
-                                                "${option.scoreLabel} · ${stringResource(R.string.score_revision_label, option.revisionNo)}"
-                                            )
+                                            Row(
+                                                horizontalArrangement = Arrangement.spacedBy(12.dp),
+                                                verticalAlignment = Alignment.CenterVertically,
+                                            ) {
+                                                Text(
+                                                    "${option.scoreLabel} · ${stringResource(R.string.score_revision_label, option.revisionNo)}",
+                                                    maxLines = 1,
+                                                )
+                                                Text(
+                                                    formatScorePublishedAt(option.publishedAt),
+                                                    style = MaterialTheme.typography.labelSmall,
+                                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                                    maxLines = 1,
+                                                )
+                                            }
                                         },
                                     )
                                 }

@@ -3111,8 +3111,6 @@
     <string name="sonorus_update_source_desc">Stable releases from Cluno1/Sonorus</string>
     <string name="catalog_scores">Scores</string>
     <string name="catalog_scores_empty">No readable scores yet</string>
-    <string name="catalog_score_origin_edited">Edited score</string>
-    <string name="catalog_score_origin_midi">MIDI score</string>
     <string name="catalog_scores_home_subtitle">Readable MusicXML scores</string>
     <string name="catalog_score_filter_all">All</string>
     <string name="catalog_score_sort_recent">Published date</string>

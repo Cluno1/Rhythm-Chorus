@@ -248,13 +248,6 @@ fun ScoreWorkListItem(
 @Composable
 private fun scoreWorkMetadata(work: CatalogLibraryScoreWork): String {
     val scoreCount = pluralStringResource(R.plurals.catalog_score_count, work.scoreCount, work.scoreCount)
-    val origins = buildList {
-        if (work.scoreOptions.any { !it.origin.equals("midi_transcription", ignoreCase = true) }) {
-            add(stringResource(R.string.catalog_score_origin_edited))
-        }
-        if (work.scoreOptions.any { it.origin.equals("midi_transcription", ignoreCase = true) }) {
-            add(stringResource(R.string.catalog_score_origin_midi))
-        }
-    }
-    return (listOf(scoreCount) + origins).joinToString(" · ")
+    val scoreLabels = work.scoreOptions.map { it.scoreLabel }.distinct()
+    return (listOf(scoreCount) + scoreLabels).joinToString(" · ")
 }

@@ -2851,8 +2851,6 @@
     <string name="sonorus_update_source_desc">来自 Cluno1/Sonorus 的稳定版本</string>
     <string name="catalog_scores">歌谱</string>
     <string name="catalog_scores_empty">暂无可阅读歌谱</string>
-    <string name="catalog_score_origin_edited">精校谱</string>
-    <string name="catalog_score_origin_midi">MIDI 谱</string>
     <string name="catalog_scores_home_subtitle">可阅读的 MusicXML 歌谱</string>
     <string name="catalog_score_filter_all">全部</string>
     <string name="catalog_score_sort_recent">发布时间</string>
