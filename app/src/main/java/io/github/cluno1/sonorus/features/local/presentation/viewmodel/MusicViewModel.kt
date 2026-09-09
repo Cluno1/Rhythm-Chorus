@@ -130,6 +130,10 @@ import io.github.cluno1.sonorus.util.LyricsParser
 import io.github.cluno1.sonorus.util.ServiceStartUtils
 import io.github.cluno1.sonorus.utils.StatusBroadcaster
 import io.github.cluno1.sonorus.shared.data.repository.PlaybackStatsRepository
+import io.github.cluno1.sonorus.shared.data.repository.PlaybackActivityKind
+import io.github.cluno1.sonorus.shared.data.repository.PlaybackDurationAccumulator
+import io.github.cluno1.sonorus.shared.data.repository.PlaybackMediaKind
+import io.github.cluno1.sonorus.shared.data.repository.PlaybackSubject
 
 class MusicViewModel(application: Application) : AndroidViewModel(application) {
 
@@ -360,10 +364,10 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     // Playback session tracking for accurate stats
-    private var currentPlaybackStartTime: Long = 0L
-    private var currentPlaybackAccumulatedTime: Long = 0L
-    private var currentPlaybackSongId: String? = null
-    private var isCurrentlyPlaying: Boolean = false
+    private var currentPlaybackSubject: PlaybackSubject? = null
+    private var currentPlaybackRecentSong: Song? = null
+    private var currentPlaybackAddedToRecent = false
+    private val currentPlaybackDuration = PlaybackDurationAccumulator()
 
     // Broadcast receiver for service/widget state changes
     private val favoriteChangeReceiver = object : BroadcastReceiver() {
@@ -4293,6 +4297,21 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
                 )
             }
 
+            val transitionSong = mediaItem?.let(::resolveSongFromMediaItem)
+            val transitionCatalogEntry = mediaItem?.mediaId?.let { mediaId ->
+                val stableMediaId = mediaId.toStableCatalogSongId()
+                _catalogQueue.value.firstOrNull {
+                    it.playback.toMediaItem().mediaId.toStableCatalogSongId() == stableMediaId
+                }
+            }
+            val transitionSubject = transitionSong?.toPlaybackSubject(transitionCatalogEntry)
+            if (transitionSubject == null) {
+                finalizePlaybackTracking()
+            } else if (currentPlaybackSubject?.subjectId != transitionSubject.subjectId) {
+                finalizePlaybackTracking()
+                startPlaybackTracking(transitionSubject, transitionSong)
+            }
+
             if (mediaItem?.mediaId != null && mediaItem.mediaId == _currentSong.value?.id) {
                 Log.d(TAG, "Ignoring media item transition for same song: ${mediaItem.mediaId}")
                 return
@@ -4305,38 +4324,27 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
                 stopPlaybackWatchdog()
             }
             
-            // Finalize stats for the previous song before switching
-            finalizePlaybackTracking()
-            
             // Reset progress to 0 for immediate UI feedback
             _progress.value = 0f
             
             // Update current song and queue position
             mediaItem?.let { item ->
                 val songId = item.mediaId
-                val song = resolveSongFromMediaItem(item)
+                val song = transitionSong ?: resolveSongFromMediaItem(item)
                 
                 if (song != null) {
                     _currentSong.value = song
-                    val catalogEntry = _catalogQueue.value.firstOrNull {
-                        it.playback.toMediaItem().mediaId == songId
+                    val catalogEntry = transitionCatalogEntry ?: _catalogQueue.value.firstOrNull {
+                        it.playback.toMediaItem().mediaId.toStableCatalogSongId() ==
+                            songId.toStableCatalogSongId()
                     }
                     _catalogNowPlaying.value = catalogEntry?.nowPlaying
                     applyCatalogLyrics(catalogEntry?.nowPlaying)
                     if (catalogEntry != null) {
                         if (mediaController?.playWhenReady == true) {
-                            io.github.cluno1.sonorus.features.catalog.data.CatalogAutoCacheWorker.enqueue(
-                                getApplication(),
-                                catalogEntry.nowPlaying,
-                            )
+                            enqueueCatalogAutoCache(catalogEntry.nowPlaying)
                         }
                     }
-                    if (catalogEntry == null) {
-                        // Legacy user-state models are Song keyed and must not receive catalog IDs.
-                        startPlaybackTracking(song.id)
-                        updateRecentlyPlayed(song)
-                    }
-
                     // Apply default playback speed if enabled for new songs
                     if (appSettings.useDefaultPlaybackSpeed.value) {
                         val defaultSpeed = appSettings.defaultPlaybackSpeed.value
@@ -4395,12 +4403,10 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
             // Track play/pause for accurate stats
             if (isPlaying) {
                 _catalogNowPlaying.value?.let { catalogItem ->
-                    io.github.cluno1.sonorus.features.catalog.data.CatalogAutoCacheWorker.enqueue(
-                        getApplication(),
-                        catalogItem,
-                    )
+                    enqueueCatalogAutoCache(catalogItem)
                 }
                 resumePlaybackTracking()
+                addCurrentPlaybackToRecentIfNeeded()
                 startProgressUpdates()
             } else {
                 pausePlaybackTracking()
@@ -5368,35 +5374,18 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     /**
-     * Calculate actual playback time for the current song
-     * Returns the accumulated listening time in milliseconds
-     */
-    private fun calculateActualPlaybackTime(): Long {
-        if (!isCurrentlyPlaying || currentPlaybackStartTime == 0L) {
-            return currentPlaybackAccumulatedTime
-        }
-        
-        // Add time since last play started
-        val currentTime = System.currentTimeMillis()
-        val additionalTime = (currentTime - currentPlaybackStartTime).coerceAtLeast(0L)
-        val totalTime = currentPlaybackAccumulatedTime + additionalTime
-        
-        // Cap at a reasonable maximum (4 hours) to prevent bugs from causing massive values
-        val maxReasonableDuration = 4 * 60 * 60 * 1000L // 4 hours in milliseconds
-        return totalTime.coerceAtMost(maxReasonableDuration)
-    }
-    
-    /**
      * Start tracking playback time for a new song
-     * Note: We don't set isCurrentlyPlaying here - that's handled by onIsPlayingChanged
+     * The identity snapshot is retained so Catalog items do not need a MediaStore lookup later.
      * to ensure we only track actual playback time, not buffering/loading time
      */
-    private fun startPlaybackTracking(songId: String) {
-        val now = System.currentTimeMillis()
-        currentPlaybackSongId = songId
-        currentPlaybackAccumulatedTime = 0L
+    private fun startPlaybackTracking(subject: PlaybackSubject, recentSong: Song) {
+        currentPlaybackDuration.consume(SystemClock.elapsedRealtime())
+        currentPlaybackSubject = subject
+        currentPlaybackRecentSong = recentSong
+        currentPlaybackAddedToRecent = false
         
         // Report playback start for streaming items
+        val songId = subject.subjectId
         if (songId.startsWith("streaming://") || songId.contains("::")) {
             viewModelScope.launch(kotlinx.coroutines.Dispatchers.IO) {
                 try {
@@ -5411,13 +5400,10 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
         // Check if player is actually playing right now
         val actuallyPlaying = mediaController?.isPlaying == true
         if (actuallyPlaying) {
-            currentPlaybackStartTime = now
-            isCurrentlyPlaying = true
-            Log.d(TAG, "Started playback tracking for song: $songId at $now (playing)")
+            currentPlaybackDuration.resume(SystemClock.elapsedRealtime())
+            addCurrentPlaybackToRecentIfNeeded()
+            Log.d(TAG, "Started playback tracking for song: $songId (playing)")
         } else {
-            // Reset start time - will be set when playback actually starts
-            currentPlaybackStartTime = 0L
-            isCurrentlyPlaying = false
             Log.d(TAG, "Started playback tracking for song: $songId (not playing yet)")
         }
     }
@@ -5426,10 +5412,9 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
      * Resume playback tracking (after pause or when playback starts)
      */
     private fun resumePlaybackTracking() {
-        if (currentPlaybackSongId != null && !isCurrentlyPlaying) {
-            currentPlaybackStartTime = System.currentTimeMillis()
-            isCurrentlyPlaying = true
-            Log.d(TAG, "Resumed playback tracking at ${currentPlaybackStartTime}")
+        if (currentPlaybackSubject != null && !currentPlaybackDuration.isRunning) {
+            currentPlaybackDuration.resume(SystemClock.elapsedRealtime())
+            Log.d(TAG, "Resumed playback tracking")
         }
     }
     
@@ -5437,12 +5422,9 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
      * Pause playback tracking
      */
     private fun pausePlaybackTracking() {
-        if (isCurrentlyPlaying && currentPlaybackStartTime > 0) {
-            val now = System.currentTimeMillis()
-            val sessionDuration = now - currentPlaybackStartTime
-            currentPlaybackAccumulatedTime += sessionDuration
-            isCurrentlyPlaying = false
-            Log.d(TAG, "Paused playback tracking. Session duration: ${sessionDuration}ms, Total accumulated: ${currentPlaybackAccumulatedTime}ms")
+        if (currentPlaybackDuration.isRunning) {
+            currentPlaybackDuration.pause(SystemClock.elapsedRealtime())
+            Log.d(TAG, "Paused playback tracking")
         }
     }
     
@@ -5450,22 +5432,19 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
      * Finalize playback tracking and record stats for the previous song
      */
     private fun finalizePlaybackTracking() {
-        val songId = currentPlaybackSongId
-        if (songId != null) {
-            val actualDuration = calculateActualPlaybackTime()
+        val subject = currentPlaybackSubject
+        if (subject != null) {
+            val songId = subject.subjectId
+            val actualDuration = currentPlaybackDuration.consume(SystemClock.elapsedRealtime())
             
             // Only record if meaningful playback occurred (more than 3 seconds)
             if (actualDuration >= 3000) {
-                val song = _songs.value.find { it.id == songId } ?: _recentlyPlayed.value.find { it.id == songId }
-                if (song != null) {
-                    Log.d(TAG, "Finalizing playback for '${song.title}': ${actualDuration}ms actual listening time")
-                    playbackStatsRepository.recordPlayback(
-                        song = song,
-                        durationMs = actualDuration
-                    )
-                } else {
-                    Log.d(TAG, "Song not found for finalization: $songId")
-                }
+                Log.d(TAG, "Finalizing playback for '${subject.title}': ${actualDuration}ms actual listening time")
+                playbackStatsRepository.recordPlayback(
+                    subject = subject,
+                    activityKind = PlaybackActivityKind.AUDIO_LISTEN,
+                    durationMs = actualDuration,
+                )
                 
                 // Report playback stop/scrobble for streaming items
                 if (songId.startsWith("streaming://") || songId.contains("::")) {
@@ -5483,20 +5462,28 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
             }
             
             // Reset tracking
-            currentPlaybackSongId = null
-            currentPlaybackStartTime = 0L
-            currentPlaybackAccumulatedTime = 0L
-            isCurrentlyPlaying = false
+            currentPlaybackSubject = null
+            currentPlaybackRecentSong = null
+            currentPlaybackAddedToRecent = false
         }
     }
 
+    private fun addCurrentPlaybackToRecentIfNeeded() {
+        val song = currentPlaybackRecentSong ?: return
+        if (currentPlaybackAddedToRecent) return
+        currentPlaybackAddedToRecent = true
+        updateRecentlyPlayed(song)
+    }
+
     private fun updateRecentlyPlayed(song: Song) {
-        if (song.id.startsWith("rhythm-catalog:")) return
         viewModelScope.launch {
             try {
+                val recentSong = song.toRecentPlaybackSnapshot()
                 val currentList = _recentlyPlayed.value.toMutableList()
-                currentList.removeIf { it.id == song.id }
-                currentList.add(0, song)
+                currentList.removeIf {
+                    it.id.toStableCatalogSongId() == recentSong.id.toStableCatalogSongId()
+                }
+                currentList.add(0, recentSong)
                 if (currentList.size > 50) {
                     currentList.removeAt(currentList.size - 1)
                 }
@@ -5508,15 +5495,55 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
                 appSettings.updateLastPlayedTimestamp(System.currentTimeMillis())
                 
                 // Log the update
-                Log.d(TAG, "Updated recently played: ${currentList.size} songs, latest: ${song.title}")
+                Log.d(TAG, "Updated recently played: ${currentList.size} songs, latest: ${recentSong.title}")
                 
                 // Update various stats (but not playback time stats - those are tracked separately now)
-                updateDailyStats(song)
-                updateListeningStats(song)
+                if (!recentSong.isCatalogLibrarySong()) {
+                    updateDailyStats(recentSong)
+                    updateListeningStats(recentSong)
+                }
             } catch (e: Exception) {
                 Log.e(TAG, "Error updating recently played", e)
             }
         }
+    }
+
+    private fun Song.toRecentPlaybackSnapshot(): Song {
+        val stableId = id.toStableCatalogSongId()
+        if (!stableId.startsWith(CATALOG_SONG_ID_PREFIX)) return this
+        val renditionId = stableId.removePrefix(CATALOG_SONG_ID_PREFIX)
+        return copy(
+            id = stableId,
+            uri = Uri.parse(CatalogPlaybackPolicy.deferredUri(renditionId)),
+            path = null,
+        )
+    }
+
+    private fun Song.toPlaybackSubject(catalogEntry: RhythmQueueEntry?): PlaybackSubject {
+        val stableId = id.toStableCatalogSongId()
+        val isCatalog = stableId.startsWith(CATALOG_SONG_ID_PREFIX)
+        val renditionId = stableId.takeIf { isCatalog }?.removePrefix(CATALOG_SONG_ID_PREFIX)
+        return PlaybackSubject(
+            subjectId = stableId,
+            mediaKind = if (isCatalog) PlaybackMediaKind.CATALOG_AUDIO else PlaybackMediaKind.LOCAL_AUDIO,
+            title = catalogEntry?.nowPlaying?.title ?: title,
+            artist = catalogEntry?.nowPlaying?.subtitle ?: artist,
+            collection = catalogEntry?.playback?.arrangementName ?: album,
+            artworkUri = artworkUri?.toString() ?: catalogEntry?.playback?.artworkUrl,
+            genre = genre,
+            workId = catalogEntry?.nowPlaying?.workId,
+            renditionId = renditionId,
+        )
+    }
+
+    private fun enqueueCatalogAutoCache(item: RhythmNowPlayingItem) {
+        // A recent-playback fallback deliberately persists only rendition identity. It can still
+        // use cached audio or refresh playback, but cannot run the Work/Arrangement cache job.
+        if (item.workId.isBlank() || item.arrangementId.isBlank()) return
+        io.github.cluno1.sonorus.features.catalog.data.CatalogAutoCacheWorker.enqueue(
+            getApplication(),
+            item,
+        )
     }
     
     private data class AlbumArtColorRequest(
@@ -5987,10 +6014,7 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
                 io.github.cluno1.sonorus.features.catalog.data.local.CatalogQueueStore(getApplication())
                     .saveUnified(songs, catalogByMediaId, validIndex, positionMs)
                 activeCatalog?.takeIf { startPlayback }?.let {
-                    io.github.cluno1.sonorus.features.catalog.data.CatalogAutoCacheWorker.enqueue(
-                        getApplication(),
-                        it.nowPlaying,
-                    )
+                    enqueueCatalogAutoCache(it.nowPlaying)
                 }
                 if (startPlayback) startProgressUpdates()
             } ?: Log.w(TAG, "MediaController unavailable for unified playback")
@@ -6069,10 +6093,7 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
                 io.github.cluno1.sonorus.features.catalog.data.local.CatalogQueueStore(getApplication())
                     .save(entries, validIndex, positionMs)
                 if (startPlayback) {
-                    io.github.cluno1.sonorus.features.catalog.data.CatalogAutoCacheWorker.enqueue(
-                        getApplication(),
-                        entries[validIndex].nowPlaying,
-                    )
+                    enqueueCatalogAutoCache(entries[validIndex].nowPlaying)
                 }
                 if (startPlayback) startProgressUpdates()
             } ?: Log.w(TAG, "MediaController unavailable for catalog playback")

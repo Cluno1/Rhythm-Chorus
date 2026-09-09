@@ -134,10 +134,12 @@ import io.github.cluno1.sonorus.shared.presentation.components.player.SleepTimer
 import io.github.cluno1.sonorus.features.local.presentation.screens.LibraryScreen
 import io.github.cluno1.sonorus.features.local.presentation.screens.HomeScreen
 import io.github.cluno1.sonorus.features.catalog.domain.CatalogPlaybackItem
+import io.github.cluno1.sonorus.features.catalog.domain.CATALOG_SONG_ID_PREFIX
 import io.github.cluno1.sonorus.features.catalog.domain.RhythmNowPlayingItem
 import io.github.cluno1.sonorus.features.catalog.domain.RhythmQueueEntry
 import io.github.cluno1.sonorus.features.catalog.domain.CatalogPlaybackPolicy
 import io.github.cluno1.sonorus.features.catalog.domain.isCatalogLibrarySong
+import io.github.cluno1.sonorus.features.catalog.domain.toStableCatalogSongId
 import io.github.cluno1.sonorus.features.catalog.domain.toRhythmAlbum
 import io.github.cluno1.sonorus.features.catalog.domain.toRhythmSong
 import io.github.cluno1.sonorus.features.catalog.presentation.CatalogServerSettingsScreen
@@ -952,7 +954,7 @@ private fun LocalNavigationContent(
     }
 
     val catalogQueueEntryForSong: (Song) -> RhythmQueueEntry? = { displaySong ->
-        catalogSongByDisplayId[displaySong.id]?.let { song ->
+        catalogSongByDisplayId[displaySong.id.toStableCatalogSongId()]?.let { song ->
             RhythmQueueEntry(
                 nowPlaying = RhythmNowPlayingItem(
                     workId = song.workId,
@@ -982,6 +984,33 @@ private fun LocalNavigationContent(
                     ),
                 ),
             )
+        } ?: displaySong.takeIf(Song::isCatalogLibrarySong)?.let { recentSong ->
+            val stableId = recentSong.id.toStableCatalogSongId()
+            val renditionId = stableId.removePrefix(CATALOG_SONG_ID_PREFIX)
+            RhythmQueueEntry(
+                nowPlaying = RhythmNowPlayingItem(
+                    workId = "",
+                    arrangementId = recentSong.albumId,
+                    renditionId = renditionId,
+                    assetId = null,
+                    title = recentSong.title,
+                    subtitle = recentSong.artist,
+                ),
+                playback = CatalogPlaybackItem(
+                    renditionId = renditionId,
+                    assetId = null,
+                    title = recentSong.title,
+                    artist = recentSong.artist,
+                    arrangementName = recentSong.album,
+                    playbackUrl = CatalogPlaybackPolicy.deferredUri(renditionId),
+                    cacheKey = null,
+                    mediaType = recentSong.codec?.takeIf(CatalogPlaybackPolicy::isPlayableMediaType)
+                        ?: "audio/mpeg",
+                    durationMs = recentSong.duration,
+                    albumId = recentSong.albumId,
+                    artworkUrl = recentSong.artworkUri?.toString(),
+                ),
+            )
         }
     }
     val playCatalogQueue: (List<Song>, Int, Boolean) -> Unit = playQueue@{ requestedSongs, startIndex, shuffle ->
@@ -992,7 +1021,7 @@ private fun LocalNavigationContent(
             val orderedSongs = if (shuffle) requestedSongs.shuffled() else requestedSongs
             val effectiveStartIndex = if (shuffle) 0 else validStartIndex
             val missingCatalogIdentity = orderedSongs.any {
-                it.isCatalogLibrarySong() && catalogSongByDisplayId[it.id] == null
+                it.isCatalogLibrarySong() && catalogQueueEntryForSong(it) == null
             }
             if (missingCatalogIdentity) {
                 coroutineScope.launch { snackbarHostState.showSnackbar("Catalog 歌曲身份已过期，请刷新曲库") }
@@ -2207,6 +2236,7 @@ private fun LocalNavigationContent(
                     ),
                 ) { backStackEntry ->
                     CatalogRemoteScoreScreen(
+                        workId = backStackEntry.arguments?.getString("workId")?.let(Uri::decode).orEmpty(),
                         revisionId = backStackEntry.arguments?.getString("revisionId")?.let(Uri::decode).orEmpty(),
                         title = backStackEntry.arguments?.getString("title")?.let(Uri::decode) ?: "远程谱面",
                         scoreLabel = backStackEntry.arguments?.getString("scoreLabel")?.let(Uri::decode).orEmpty(),

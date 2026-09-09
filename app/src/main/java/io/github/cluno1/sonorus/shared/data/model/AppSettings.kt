@@ -1527,9 +1527,12 @@ class AppSettings private constructor(context: Context) {
         val title: String,
         val artist: String,
         val album: String,
+        val albumId: String? = null,
         val duration: Long,
         val uri: String,
-        val artworkUri: String?
+        val artworkUri: String?,
+        val genre: String? = null,
+        val codec: String? = null,
     )
 
     private fun Song.toRecentSongSnapshot(): RecentSongSnapshot {
@@ -1538,9 +1541,12 @@ class AppSettings private constructor(context: Context) {
             title = title,
             artist = artist,
             album = album,
+            albumId = albumId,
             duration = duration,
             uri = uri.toString(),
-            artworkUri = artworkUri?.toString()
+            artworkUri = artworkUri?.toString(),
+            genre = genre,
+            codec = codec,
         )
     }
 
@@ -1551,9 +1557,12 @@ class AppSettings private constructor(context: Context) {
                 title = title,
                 artist = artist,
                 album = album,
+                albumId = albumId.orEmpty(),
                 duration = duration,
                 uri = uri.toUri(),
-                artworkUri = artworkUri?.takeIf { it.isNotBlank() }?.let(Uri::parse)
+                artworkUri = artworkUri?.takeIf { it.isNotBlank() }?.let(Uri::parse),
+                genre = genre,
+                codec = codec,
             )
         }.getOrNull()
     }
@@ -4469,6 +4478,7 @@ private val _autoCheckForUpdates = MutableStateFlow(ProductCapabilities.inAppUpd
 
         return key == KEY_LAST_PLAYED_TIMESTAMP ||
             key == KEY_RECENTLY_PLAYED ||
+            key == KEY_RECENTLY_PLAYED_SONG_CACHE ||
             key == KEY_LISTENING_TIME ||
             key == KEY_SONGS_PLAYED ||
             key == KEY_UNIQUE_ARTISTS ||

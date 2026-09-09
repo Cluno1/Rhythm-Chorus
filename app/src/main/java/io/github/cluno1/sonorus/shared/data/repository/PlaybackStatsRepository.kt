@@ -60,6 +60,32 @@ enum class StatsTimeRange(val displayName: String, val daysBack: Int) {
     }
 }
 
+enum class PlaybackMediaKind {
+    LOCAL_AUDIO,
+    CATALOG_AUDIO,
+    SCORE,
+}
+
+enum class PlaybackActivityKind {
+    AUDIO_LISTEN,
+    SCORE_VIEW,
+    SCORE_LISTEN,
+}
+
+data class PlaybackSubject(
+    val subjectId: String,
+    val mediaKind: PlaybackMediaKind,
+    val title: String,
+    val artist: String? = null,
+    val collection: String? = null,
+    val artworkUri: String? = null,
+    val genre: String? = null,
+    val workId: String? = null,
+    val renditionId: String? = null,
+    val scoreId: String? = null,
+    val revisionId: String? = null,
+)
+
 /**
  * Repository for tracking and analyzing playback statistics
  * Provides comprehensive stats tracking for songs and listening habits
@@ -106,10 +132,19 @@ class PlaybackStatsRepository private constructor(private val context: Context) 
         val songTitle: String? = null,
         val artistName: String? = null,
         val albumName: String? = null,
-        val genre: String? = null
+        val genre: String? = null,
+        val artworkUri: String? = null,
+        val mediaKind: PlaybackMediaKind? = null,
+        val activityKind: PlaybackActivityKind? = null,
+        val workId: String? = null,
+        val renditionId: String? = null,
+        val scoreId: String? = null,
+        val revisionId: String? = null,
     ) {
         fun startMillis(): Long = startTimestamp ?: (timestamp - durationMs).coerceAtLeast(0L)
         fun endMillis(): Long = endTimestamp ?: timestamp
+        fun resolvedActivityKind(): PlaybackActivityKind =
+            activityKind ?: PlaybackActivityKind.AUDIO_LISTEN
     }
     
     /**
@@ -241,7 +276,11 @@ class PlaybackStatsRepository private constructor(private val context: Context) 
         val peakDayOfWeek: String?,
         val peakDayDurationMs: Long,
         val peakHour: Int?,
-        val dailyDistribution: List<DailyListeningBucket>
+        val dailyDistribution: List<DailyListeningBucket>,
+        val scoreViewingDurationMs: Long = 0L,
+        val scoreListeningDurationMs: Long = 0L,
+        val scoreViewCount: Int = 0,
+        val scorePlayCount: Int = 0,
     )
     
     /**
@@ -252,36 +291,54 @@ class PlaybackStatsRepository private constructor(private val context: Context) 
         durationMs: Long,
         timestamp: Long = System.currentTimeMillis()
     ) {
-        if (song.id.isBlank() || durationMs <= 0) return
-        
+        recordPlayback(
+            subject = PlaybackSubject(
+                subjectId = song.id,
+                mediaKind = PlaybackMediaKind.LOCAL_AUDIO,
+                title = song.title,
+                artist = song.artist,
+                collection = song.album,
+                artworkUri = song.artworkUri?.toString(),
+                genre = song.genre,
+            ),
+            activityKind = PlaybackActivityKind.AUDIO_LISTEN,
+            durationMs = durationMs,
+            timestamp = timestamp,
+            genre = song.genre,
+        )
+    }
+
+    fun recordPlayback(
+        subject: PlaybackSubject,
+        activityKind: PlaybackActivityKind,
+        durationMs: Long,
+        timestamp: Long = System.currentTimeMillis(),
+        genre: String? = null,
+    ) {
+        if (subject.subjectId.isBlank() || durationMs <= 0) return
+
         val coercedTimestamp = timestamp.coerceAtLeast(0L)
         val coercedDuration = durationMs.coerceIn(0L, MAX_REASONABLE_EVENT_DURATION_MS)
-        val start = (coercedTimestamp - coercedDuration).coerceAtLeast(0L)
-        
         val event = PlaybackEvent(
-            songId = song.id,
+            songId = subject.subjectId,
             timestamp = coercedTimestamp,
             durationMs = coercedDuration,
-            startTimestamp = start,
+            startTimestamp = (coercedTimestamp - coercedDuration).coerceAtLeast(0L),
             endTimestamp = coercedTimestamp,
-            songTitle = song.title,
-            artistName = song.artist,
-            albumName = song.album,
-            genre = song.genre
+            songTitle = subject.title,
+            artistName = subject.artist,
+            albumName = subject.collection,
+            genre = genre ?: subject.genre,
+            artworkUri = subject.artworkUri,
+            mediaKind = subject.mediaKind,
+            activityKind = activityKind,
+            workId = subject.workId,
+            renditionId = subject.renditionId,
+            scoreId = subject.scoreId,
+            revisionId = subject.revisionId,
         )
-        
-        synchronized(fileLock) {
-            val events = readEventsLocked()
-            
-            // Clean old events
-            val cutoff = coercedTimestamp - MAX_HISTORY_AGE_MS
-            if (cutoff > 0) {
-                events.removeAll { it.endMillis() < cutoff }
-            }
-            
-            events += event
-            writeEventsLocked(events)
-        }
+
+        appendEvent(event, coercedTimestamp)
     }
     
     /**
@@ -307,18 +364,12 @@ class PlaybackStatsRepository private constructor(private val context: Context) 
             songTitle = title,
             artistName = artist,
             albumName = album,
-            genre = genre
+            genre = genre,
+            mediaKind = PlaybackMediaKind.LOCAL_AUDIO,
+            activityKind = PlaybackActivityKind.AUDIO_LISTEN,
         )
-        
-        synchronized(fileLock) {
-            val events = readEventsLocked()
-            val cutoff = timestamp - MAX_HISTORY_AGE_MS
-            if (cutoff > 0) {
-                events.removeAll { it.endMillis() < cutoff }
-            }
-            events += event
-            writeEventsLocked(events)
-        }
+
+        appendEvent(event, timestamp)
     }
     
     /**
@@ -359,12 +410,23 @@ class PlaybackStatsRepository private constructor(private val context: Context) 
                 endTimestamp = clippedEnd
             )
         }
+
+        // Older events did not have an activity field and remain ordinary audio listening.
+        val audioEvents = filteredEvents.filter {
+            it.resolvedActivityKind() == PlaybackActivityKind.AUDIO_LISTEN
+        }
+        val scoreViewEvents = filteredEvents.filter {
+            it.resolvedActivityKind() == PlaybackActivityKind.SCORE_VIEW
+        }
+        val scoreListenEvents = filteredEvents.filter {
+            it.resolvedActivityKind() == PlaybackActivityKind.SCORE_LISTEN
+        }
         
         // Build song map for lookups
         val songMap = songs.associateBy { it.id }
         
         // Group events by song
-        val eventsBySong = filteredEvents.groupBy { it.songId }
+        val eventsBySong = audioEvents.groupBy { it.songId }
         
         // Merge overlapping segments per song
         val segmentsBySong = eventsBySong.mapValues { (_, events) ->
@@ -397,7 +459,7 @@ class PlaybackStatsRepository private constructor(private val context: Context) 
         // Top songs
         val topSongs = segmentsBySong.mapNotNull { (songId, segments) ->
             val song = songMap[songId]
-            val event = filteredEvents.find { it.songId == songId }
+            val event = audioEvents.find { it.songId == songId }
             val title = song?.title ?: event?.songTitle ?: "Unknown"
             val artist = song?.artist ?: event?.artistName ?: "Unknown Artist"
             
@@ -405,7 +467,7 @@ class PlaybackStatsRepository private constructor(private val context: Context) 
                 songId = songId,
                 title = title,
                 artist = artist,
-                albumArtUri = song?.artworkUri?.toString(),
+                albumArtUri = song?.artworkUri?.toString() ?: event?.artworkUri,
                 totalDurationMs = segments.sumOf { it.durationMs },
                 playCount = segments.size
             )
@@ -421,7 +483,7 @@ class PlaybackStatsRepository private constructor(private val context: Context) 
 
         segmentsBySong.forEach { (songId, segments) ->
             val rawArtist = songMap[songId]?.artist
-                ?: filteredEvents.find { it.songId == songId }?.artistName
+                ?: audioEvents.find { it.songId == songId }?.artistName
             val resolvedArtists = if (rawArtist.isNullOrBlank()) {
                 listOf("Unknown Artist")
             } else {
@@ -455,15 +517,17 @@ class PlaybackStatsRepository private constructor(private val context: Context) 
         // Top albums
         val albumGroups = segmentsBySong.entries.groupBy { (songId, _) ->
             songMap[songId]?.album 
-                ?: filteredEvents.find { it.songId == songId }?.albumName 
+                ?: audioEvents.find { it.songId == songId }?.albumName
                 ?: "Unknown Album"
         }
         val topAlbums = albumGroups.map { (album, songEntries) ->
             val allSegments = songEntries.flatMap { it.value }
-            val firstSong = songEntries.firstOrNull()?.let { songMap[it.key] }
+            val firstEntry = songEntries.firstOrNull()
+            val firstSong = firstEntry?.let { songMap[it.key] }
+            val firstEvent = firstEntry?.let { entry -> audioEvents.find { it.songId == entry.key } }
             AlbumPlaybackSummary(
                 album = album,
-                albumArtUri = firstSong?.artworkUri?.toString(),
+                albumArtUri = firstSong?.artworkUri?.toString() ?: firstEvent?.artworkUri,
                 totalDurationMs = allSegments.sumOf { it.durationMs },
                 playCount = allSegments.size,
                 uniqueSongs = songEntries.size
@@ -476,7 +540,7 @@ class PlaybackStatsRepository private constructor(private val context: Context) 
 
         segmentsBySong.forEach { (songId, segments) ->
             val rawGenre = songMap[songId]?.genre
-                ?: filteredEvents.find { it.songId == songId }?.genre
+                ?: audioEvents.find { it.songId == songId }?.genre
             val resolvedGenres = GenreUtils.splitGenres(rawGenre).ifEmpty { listOf("Unknown") }
             val songDuration = segments.sumOf { it.durationMs }
             val songPlayCount = segments.size
@@ -542,6 +606,19 @@ class PlaybackStatsRepository private constructor(private val context: Context) 
         // Daily distribution (hour buckets)
         val dailyDistribution = computeDailyDistribution(mergedSpans, zoneId)
         val peakHour = dailyDistribution.maxByOrNull { it.totalDurationMs }?.startHour
+
+        val scoreViewSegments = scoreViewEvents.groupBy { it.songId }.mapValues { (_, events) ->
+            mergeSongEvents(events)
+        }
+        val scoreListenSegments = scoreListenEvents.groupBy { it.songId }.mapValues { (_, events) ->
+            mergeSongEvents(events)
+        }
+        val scoreViewingDuration = mergeSpans(
+            scoreViewSegments.values.flatten().map { PlaybackSpan(it.startMillis, it.endMillis) }
+        ).sumOf { it.durationMs }
+        val scoreListeningDuration = mergeSpans(
+            scoreListenSegments.values.flatten().map { PlaybackSpan(it.startMillis, it.endMillis) }
+        ).sumOf { it.durationMs }
         
         val summary = PlaybackStatsSummary(
             range = range,
@@ -571,7 +648,11 @@ class PlaybackStatsRepository private constructor(private val context: Context) 
             peakDayOfWeek = peakDayLabel,
             peakDayDurationMs = peakDayDuration,
             peakHour = peakHour,
-            dailyDistribution = dailyDistribution
+            dailyDistribution = dailyDistribution,
+            scoreViewingDurationMs = scoreViewingDuration,
+            scoreListeningDurationMs = scoreListeningDuration,
+            scoreViewCount = scoreViewSegments.values.sumOf { it.size },
+            scorePlayCount = scoreListenSegments.values.sumOf { it.size },
         )
         
         _statsSummary.value = summary
@@ -592,6 +673,7 @@ class PlaybackStatsRepository private constructor(private val context: Context) 
         // Filter events for this song and time range
         val songEvents = allEvents.filter { event ->
             event.songId == songId &&
+            event.resolvedActivityKind() == PlaybackActivityKind.AUDIO_LISTEN &&
             event.endMillis() >= (startBound ?: Long.MIN_VALUE) &&
             event.startMillis() <= endBound
         }.mapNotNull { event ->
@@ -682,6 +764,18 @@ class PlaybackStatsRepository private constructor(private val context: Context) 
     private fun writeEventsLocked(events: List<PlaybackEvent>) {
         runCatching {
             historyFile.writeText(gson.toJson(events))
+        }
+    }
+
+    private fun appendEvent(event: PlaybackEvent, timestamp: Long) {
+        synchronized(fileLock) {
+            val events = readEventsLocked()
+            val cutoff = timestamp - MAX_HISTORY_AGE_MS
+            if (cutoff > 0) {
+                events.removeAll { it.endMillis() < cutoff }
+            }
+            events += event
+            writeEventsLocked(events)
         }
     }
     

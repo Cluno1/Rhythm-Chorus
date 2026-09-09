@@ -201,7 +201,12 @@ private fun StatsPageContent(
                 ) {
                     CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
                 }
-            } else if (statsSummary == null || statsSummary!!.totalPlayCount == 0) {
+            } else if (
+                statsSummary == null ||
+                (statsSummary!!.totalPlayCount == 0 &&
+                    statsSummary!!.scoreViewCount == 0 &&
+                    statsSummary!!.scorePlayCount == 0)
+            ) {
                 EmptyStatsView()
             } else {
                 val stats = statsSummary!!
@@ -218,27 +223,35 @@ private fun StatsPageContent(
                             modifier = Modifier.weight(1f),
                             verticalArrangement = Arrangement.spacedBy(24.dp)
                         ) {
-                            ListeningOverviewCard(
-                                stats = stats, 
-                                previousStats = previousSummary,
-                                useHoursFormat = useHoursFormat
-                            )
+                            if (stats.totalPlayCount > 0) {
+                                ListeningOverviewCard(
+                                    stats = stats,
+                                    previousStats = previousSummary,
+                                    useHoursFormat = useHoursFormat,
+                                )
+                            }
 
-                            ListeningHabitsCard(
-                                stats = stats,
-                                useHoursFormat = useHoursFormat
-                            )
+                            ScoreActivityCard(stats, useHoursFormat)
+
+                            if (stats.totalPlayCount > 0) {
+                                ListeningHabitsCard(
+                                    stats = stats,
+                                    useHoursFormat = useHoursFormat,
+                                )
+                            }
                         }
 
                         Column(
                             modifier = Modifier.weight(1f),
                             verticalArrangement = Arrangement.spacedBy(24.dp)
                         ) {
-                            CategoryMetricsSection(
-                                stats = stats, 
-                                artists = artists,
-                                useHoursFormat = useHoursFormat
-                            )
+                            if (stats.totalPlayCount > 0) {
+                                CategoryMetricsSection(
+                                    stats = stats,
+                                    artists = artists,
+                                    useHoursFormat = useHoursFormat,
+                                )
+                            }
                         }
                     }
                 } else {
@@ -249,28 +262,100 @@ private fun StatsPageContent(
                             .padding(horizontal = 20.dp),
                         verticalArrangement = Arrangement.spacedBy(24.dp)
                     ) {
-                        ListeningOverviewCard(
-                            stats = stats, 
-                            previousStats = previousSummary,
-                            useHoursFormat = useHoursFormat
-                        )
+                        if (stats.totalPlayCount > 0) {
+                            ListeningOverviewCard(
+                                stats = stats,
+                                previousStats = previousSummary,
+                                useHoursFormat = useHoursFormat,
+                            )
+                        }
 
-                        CategoryMetricsSection(
-                            stats = stats, 
-                            artists = artists,
-                            useHoursFormat = useHoursFormat
-                        )
+                        ScoreActivityCard(stats, useHoursFormat)
 
-                        ListeningHabitsCard(
-                            stats = stats,
-                            useHoursFormat = useHoursFormat
-                        )
+                        if (stats.totalPlayCount > 0) {
+                            CategoryMetricsSection(
+                                stats = stats,
+                                artists = artists,
+                                useHoursFormat = useHoursFormat,
+                            )
+
+                            ListeningHabitsCard(
+                                stats = stats,
+                                useHoursFormat = useHoursFormat,
+                            )
+                        }
                         
                         Spacer(modifier = Modifier.height(32.dp + LocalMiniPlayerPadding.current.calculateBottomPadding()))
                     }
                 }
             }
         }
+    }
+}
+
+@Composable
+private fun ScoreActivityCard(
+    stats: PlaybackStatsRepository.PlaybackStatsSummary,
+    useHoursFormat: Boolean,
+) {
+    if (stats.scoreViewCount == 0 && stats.scorePlayCount == 0) return
+
+    val items = listOf(
+        Material3SettingsItem(
+            leadingContent = {
+                Icon(
+                    MaterialSymbolIcon("visibility"),
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.secondary,
+                )
+            },
+            title = { Text(stringResource(R.string.stats_score_viewing_time)) },
+            description = {
+                Text(stringResource(R.string.stats_score_sessions, stats.scoreViewCount))
+            },
+            trailingContent = {
+                Text(
+                    formatDuration(stats.scoreViewingDurationMs, useHoursFormat),
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                )
+            },
+        ),
+        Material3SettingsItem(
+            leadingContent = {
+                Icon(
+                    MaterialSymbolIcon("graphic_eq"),
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.secondary,
+                )
+            },
+            title = { Text(stringResource(R.string.stats_score_listening_time)) },
+            description = {
+                Text(stringResource(R.string.stats_score_sessions, stats.scorePlayCount))
+            },
+            trailingContent = {
+                Text(
+                    formatDuration(stats.scoreListeningDurationMs, useHoursFormat),
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                )
+            },
+        ),
+    )
+
+    Column(
+        modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp),
+    ) {
+        Text(
+            text = stringResource(R.string.stats_score_activity),
+            style = MaterialTheme.typography.titleLarge,
+            fontWeight = FontWeight.Bold,
+        )
+        Material3SettingsGroup(
+            items = items,
+            containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
+        )
     }
 }
 

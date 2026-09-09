@@ -22,6 +22,7 @@ import android.graphics.Color as AndroidColor
 import android.media.AudioAttributes
 import android.media.AudioFocusRequest
 import android.media.AudioManager
+import android.os.SystemClock
 import android.view.View
 import android.widget.RelativeLayout
 import android.widget.ScrollView
@@ -63,6 +64,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
@@ -98,6 +100,13 @@ import io.github.cluno1.sonorus.shared.presentation.components.icons.Icon
 import io.github.cluno1.sonorus.shared.presentation.components.icons.RhythmIcons
 import io.github.cluno1.sonorus.ui.LocalMiniPlayerPadding
 import androidx.compose.ui.platform.LocalContext
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
+import io.github.cluno1.sonorus.shared.data.repository.PlaybackActivityKind
+import io.github.cluno1.sonorus.shared.data.repository.PlaybackDurationAccumulator
+import io.github.cluno1.sonorus.shared.data.repository.PlaybackStatsRepository
+import io.github.cluno1.sonorus.shared.data.repository.PlaybackSubject
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.launch
 
@@ -127,7 +136,50 @@ private data class MergedDisplayProjection(
     val scores: Map<BundledScoreVariant, MergedDisplayScore>
 )
 
-private class ScorePlaybackController(private val context: Context) {
+private class ScoreUsageRecorder(
+    private val repository: PlaybackStatsRepository,
+    private val subject: PlaybackSubject,
+) {
+    private val viewingDuration = PlaybackDurationAccumulator()
+    private val listeningDuration = PlaybackDurationAccumulator()
+    private var closed = false
+
+    fun onViewVisible() {
+        if (!closed) viewingDuration.resume(SystemClock.elapsedRealtime())
+    }
+
+    fun onViewHidden() {
+        if (!closed) viewingDuration.pause(SystemClock.elapsedRealtime())
+    }
+
+    fun onPlaybackStarted() {
+        if (!closed) listeningDuration.resume(SystemClock.elapsedRealtime())
+    }
+
+    fun onPlaybackPaused() {
+        if (!closed) listeningDuration.pause(SystemClock.elapsedRealtime())
+    }
+
+    fun close() {
+        if (closed) return
+        closed = true
+        val now = SystemClock.elapsedRealtime()
+        val viewingMs = viewingDuration.consume(now)
+        val listeningMs = listeningDuration.consume(now)
+        if (viewingMs >= SCORE_STATS_MIN_DURATION_MS) {
+            repository.recordPlayback(subject, PlaybackActivityKind.SCORE_VIEW, viewingMs)
+        }
+        if (listeningMs >= SCORE_STATS_MIN_DURATION_MS) {
+            repository.recordPlayback(subject, PlaybackActivityKind.SCORE_LISTEN, listeningMs)
+        }
+    }
+}
+
+private class ScorePlaybackController(
+    private val context: Context,
+    private val onPlaybackStarted: () -> Unit = {},
+    private val onPlaybackPaused: () -> Unit = {},
+) {
     private var view: AlphaTabView? = null
     private var score: Score? = null
     private var playerIsReady = false
@@ -181,6 +233,7 @@ private class ScorePlaybackController(private val context: Context) {
             score = null
             playerIsReady = false
             isPlaying = false
+            onPlaybackPaused()
             completionTracker.reset()
             abandonAudioFocus()
         }
@@ -240,6 +293,7 @@ private class ScorePlaybackController(private val context: Context) {
     fun stop() {
         completionTracker.reset()
         isPlaying = false
+        onPlaybackPaused()
         resumeAfterTransientFocusLoss = false
         view?.api?.stop()
         abandonAudioFocus()
@@ -250,6 +304,7 @@ private class ScorePlaybackController(private val context: Context) {
         if (this.view === view) {
             completionTracker.markFinished()
             isPlaying = false
+            onPlaybackPaused()
             resumeAfterTransientFocusLoss = false
             abandonAudioFocus()
             resetDisplayPosition()
@@ -260,6 +315,7 @@ private class ScorePlaybackController(private val context: Context) {
         if (this.view === view) {
             completionTracker.reset()
             isPlaying = true
+            onPlaybackStarted()
             updateDisplayPlaybackState(playing = true)
         }
     }
@@ -267,6 +323,7 @@ private class ScorePlaybackController(private val context: Context) {
     fun onPlayerPaused(view: AlphaTabView) {
         if (this.view === view) {
             isPlaying = false
+            onPlaybackPaused()
             updateDisplayPlaybackState(playing = false)
             if (!resumeAfterTransientFocusLoss) abandonAudioFocus()
         }
@@ -457,6 +514,7 @@ private class ScorePlaybackController(private val context: Context) {
         val currentView = view ?: return
         if (!isPlaying) return
         isPlaying = false
+        onPlaybackPaused()
         currentView.post {
             if (view === currentView) currentView.api.playPause()
         }
@@ -499,6 +557,7 @@ fun RemoteScoreScreen(
     onOpenOlderRevision: () -> Unit = {},
     scoreSettingsContent: @Composable () -> Unit = {},
     expectedPartCount: Int? = null,
+    playbackSubject: PlaybackSubject? = null,
     modifier: Modifier = Modifier,
 ) {
     val context = LocalContext.current
@@ -644,6 +703,7 @@ fun RemoteScoreScreen(
                                 }
                             }
                         },
+                        playbackSubject = playbackSubject,
                         modifier = Modifier.fillMaxWidth().weight(1f),
                     )
                 }
@@ -679,6 +739,7 @@ private fun ScoreReadyContent(
     subtitle: String? = null,
     onBackClick: (() -> Unit)? = null,
     scoreSettingsContent: @Composable () -> Unit = {},
+    playbackSubject: PlaybackSubject? = null,
     modifier: Modifier = Modifier
 ) {
     var activeScores by remember(scores) { mutableStateOf(scores) }
@@ -702,8 +763,39 @@ private fun ScoreReadyContent(
         mutableStateOf<Map<BundledScoreVariant, Set<Int>>>(emptyMap())
     }
     val context = LocalContext.current
-    val playbackController = remember(context) {
-        ScorePlaybackController(context.applicationContext)
+    val scoreUsageRecorder = remember(context, playbackSubject) {
+        playbackSubject?.let {
+            ScoreUsageRecorder(
+                repository = PlaybackStatsRepository.getInstance(context.applicationContext),
+                subject = it,
+            )
+        }
+    }
+    val lifecycleOwner = LocalLifecycleOwner.current
+    DisposableEffect(lifecycleOwner, scoreUsageRecorder) {
+        val observer = LifecycleEventObserver { _, event ->
+            when (event) {
+                Lifecycle.Event.ON_START -> scoreUsageRecorder?.onViewVisible()
+                Lifecycle.Event.ON_STOP -> scoreUsageRecorder?.onViewHidden()
+                else -> Unit
+            }
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        if (lifecycleOwner.lifecycle.currentState.isAtLeast(Lifecycle.State.STARTED)) {
+            scoreUsageRecorder?.onViewVisible()
+        }
+        onDispose {
+            lifecycleOwner.lifecycle.removeObserver(observer)
+            scoreUsageRecorder?.onViewHidden()
+            scoreUsageRecorder?.close()
+        }
+    }
+    val playbackController = remember(context, scoreUsageRecorder) {
+        ScorePlaybackController(
+            context = context.applicationContext,
+            onPlaybackStarted = { scoreUsageRecorder?.onPlaybackStarted() },
+            onPlaybackPaused = { scoreUsageRecorder?.onPlaybackPaused() },
+        )
     }
     val coroutineScope = rememberCoroutineScope()
     var editSession by remember { mutableStateOf<ScoreEditSession?>(null) }
@@ -2566,6 +2658,7 @@ private fun AlphaTabView.loadSoundFontWhenPlayerExists(
 private const val SCORE_PLAYBACK_TAG = "ScorePlayback"
 private const val SCORE_DISPLAY_TAG = "ScoreDisplay"
 private const val SCORE_EDIT_TAG = "ScoreEdit"
+private const val SCORE_STATS_MIN_DURATION_MS = 3_000L
 private const val SOUND_FONT_PLAYER_MAX_ATTEMPTS = 60
 private const val SOUND_FONT_PLAYER_RETRY_MS = 500L
 private const val SCORE_PLAYBACK_BUFFER_MS = 1_500.0

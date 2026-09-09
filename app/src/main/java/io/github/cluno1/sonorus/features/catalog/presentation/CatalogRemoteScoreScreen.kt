@@ -36,6 +36,8 @@ import androidx.compose.material3.FilterChip
 import io.github.cluno1.sonorus.shared.presentation.components.common.M3CircularLoader
 import io.github.cluno1.sonorus.shared.presentation.components.icons.Icon
 import io.github.cluno1.sonorus.shared.presentation.components.icons.RhythmIcons
+import io.github.cluno1.sonorus.shared.data.repository.PlaybackMediaKind
+import io.github.cluno1.sonorus.shared.data.repository.PlaybackSubject
 import java.time.LocalDateTime
 import java.time.OffsetDateTime
 import java.time.ZoneId
@@ -61,6 +63,7 @@ internal fun formatScoreRevisionTime(
 
 @Composable
 fun CatalogRemoteScoreScreen(
+    workId: String,
     revisionId: String,
     title: String,
     scoreLabel: String,
@@ -174,6 +177,19 @@ fun CatalogRemoteScoreScreen(
                 }
             },
             expectedPartCount = activePartCount,
+            playbackSubject = history.getOrNull(selectedIndex)?.let { revision ->
+                PlaybackSubject(
+                    subjectId = "rhythm-score:score:${revision.scoreId}",
+                    mediaKind = PlaybackMediaKind.SCORE,
+                    title = scoreWork?.title ?: title,
+                    artist = scoreWork?.artist,
+                    collection = selectedOption?.scoreLabel ?: scoreLabel.takeIf(String::isNotBlank),
+                    artworkUri = scoreWork?.coverUrl,
+                    workId = scoreWork?.workId ?: workId,
+                    scoreId = revision.scoreId,
+                    revisionId = revision.id,
+                )
+            },
             modifier = modifier,
         )
         error != null -> Box(modifier.fillMaxSize(), contentAlignment = Alignment.Center) {

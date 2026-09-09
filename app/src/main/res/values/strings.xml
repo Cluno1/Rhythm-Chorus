@@ -1179,6 +1179,10 @@
     <string name="stats_this_month">This Month</string>
     <string name="stats_all_time">All Time</string>
     <string name="stats_total_listening_time">Total Listening Time</string>
+    <string name="stats_score_activity">Score activity</string>
+    <string name="stats_score_viewing_time">Score viewing time</string>
+    <string name="stats_score_listening_time">Score listening time</string>
+    <string name="stats_score_sessions">%1$d sessions</string>
 
 
 <string name="playlist_ask_each_time">Ask each time</string>

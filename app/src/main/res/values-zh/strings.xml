@@ -1219,6 +1219,10 @@
     <string name="stats_this_month">本月</string>
     <string name="stats_all_time">所有时间</string>
     <string name="stats_total_listening_time">总收听时间</string>
+    <string name="stats_score_activity">歌谱活动</string>
+    <string name="stats_score_viewing_time">看谱时长</string>
+    <string name="stats_score_listening_time">听谱时长</string>
+    <string name="stats_score_sessions">%1$d 次</string>
     <!-- Cache Management Complete -->
     
     <!-- Queue Playback Settings -->
