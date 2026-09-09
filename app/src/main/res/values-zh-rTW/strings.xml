@@ -265,7 +265,15 @@
     <string name="settings_root">根</string>
     <string name="settings_scan_behavior">掃描行為</string>
     <string name="settings_include_hidden_whitelisted_media">包括隱藏和 .nomedia 文件</string>
-    <string name="settings_include_hidden_whitelisted_media_desc">在完整媒體掃描期間啟用掃描隱藏和 .nomedia 音訊路徑（在白名單資料夾中效果最強）。</string>
+    <string name="settings_include_hidden_whitelisted_media_desc">同時掃描已授權白名單資料夾中的隱藏路徑和 .nomedia 資料夾。</string>
+    <string name="settings_full_rescan_now">立即完整重掃</string>
+    <string name="settings_full_rescan_desc">重新查詢 MediaStore 並掃描已授權的白名單資料夾；掃描失敗時保留原有曲庫。</string>
+    <string name="settings_full_rescan_running">正在重建本機音樂索引…</string>
+    <string name="settings_full_rescan_result">%1$d 首歌曲 · MediaStore 候選 %2$d · 授權資料夾 %3$d/%4$d</string>
+    <string name="settings_full_rescan_filter_result">已過濾：格式 %1$d · 時長 %2$d · 位元率 %3$d · 資料夾規則 %4$d · 重複 %5$d · 無法讀取 %6$d</string>
+    <string name="settings_full_rescan_source_warning">授權資料夾失敗 %1$d 個 · 保留原有項目 %2$d 個</string>
+    <string name="settings_full_rescan_failed_result">掃描失敗 · 已保留原有 %1$d 首歌曲</string>
+    <string name="settings_scan_folder_permission_failed">無法保留對此資料夾的讀取權限</string>
     <!-- Settings - Spotify -->
     
     <!-- Settings - About -->

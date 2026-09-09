@@ -28,7 +28,6 @@ import android.content.Intent
 import android.content.ActivityNotFoundException
 import android.net.Uri
 import android.os.Build
-import android.provider.DocumentsContract
 import android.util.Log
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -131,6 +130,7 @@ import io.github.cluno1.sonorus.shared.presentation.components.bottomsheets.Lice
 import io.github.cluno1.sonorus.shared.presentation.components.bottomsheets.UpdateBottomSheet
 import io.github.cluno1.sonorus.ui.utils.LazyListStateSaver
 import io.github.cluno1.sonorus.features.local.presentation.viewmodel.MusicViewModel
+import io.github.cluno1.sonorus.features.local.data.device.DeviceScanFolderAccess
 import io.github.cluno1.sonorus.shared.presentation.components.common.ExpressiveShapeProvider
 import io.github.cluno1.sonorus.shared.presentation.components.common.ExpressiveShapes
 import io.github.cluno1.sonorus.shared.presentation.components.common.buildSplashBackdropShapes
@@ -228,6 +228,8 @@ fun MediaScanSettingsScreen(onBackClick: () -> Unit) {
     val includeHiddenWhitelistedMedia by appSettings.includeHiddenWhitelistedMedia.collectAsState()
     val allowedFormats by appSettings.allowedFormats.collectAsState()
     val minimumDuration by appSettings.minimumDuration.collectAsState()
+    val isLibraryRefreshing by musicViewModel.isLibraryRefreshing.collectAsState()
+    val scanDiagnostics by musicViewModel.scanDiagnostics.collectAsState()
 
     val enabledKnownCount = allowedFormats.count { it in ALL_KNOWN_FORMATS }
 
@@ -261,38 +263,20 @@ fun MediaScanSettingsScreen(onBackClick: () -> Unit) {
         if (result.resultCode == Activity.RESULT_OK) {
             result.data?.data?.let { uri ->
                 try {
-                    val docId = DocumentsContract.getTreeDocumentId(uri)
-                    val split = docId.split(":")
-
-                    if (split.size >= 2) {
-                        val storageType = split[0] // e.g., "primary", "home", or specific SD card ID
-                        val relativePath = split[1] // e.g., "Music/MyFolder"
-
-                        // Build the full path based on storage type
-                        val fullPath = when (storageType) {
-                            "primary" -> "/storage/emulated/0/$relativePath"
-                            "home" -> "/storage/emulated/0/$relativePath"
-                            else -> {
-                                // For SD cards or other storage, try to construct path
-                                // This is a best-effort approach
-                                if (storageType.contains("-")) {
-                                    // SD card UUID format
-                                    "/storage/$storageType/$relativePath"
-                                } else {
-                                    // Fallback to emulated storage
-                                    "/storage/emulated/0/$relativePath"
-                                }
-                            }
-                        }
-
-                        if (currentMode == MediaScanMode.BLACKLIST) {
-                            appSettings.addFolderToBlacklist(fullPath)
-                        } else {
-                            appSettings.addFolderToWhitelist(fullPath)
-                        }
+                    val folderAccess = DeviceScanFolderAccess(context)
+                    if (currentMode == MediaScanMode.BLACKLIST) {
+                        appSettings.addFolderToBlacklist(folderAccess.displayPath(uri))
+                    } else {
+                        val root = folderAccess.add(uri)
+                        appSettings.addFolderToWhitelist(root.displayPath)
                     }
                 } catch (e: Exception) {
-                    Log.e("MediaScanSettingsScreen", "Error parsing folder path", e)
+                    Log.e("MediaScanSettingsScreen", "Unable to retain folder access", e)
+                    Toast.makeText(
+                        context,
+                        context.getString(R.string.settings_scan_folder_permission_failed),
+                        Toast.LENGTH_LONG,
+                    ).show()
                 }
             }
         }
@@ -414,6 +398,10 @@ fun MediaScanSettingsScreen(onBackClick: () -> Unit) {
                         HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT)
                         try {
                             val intent = Intent(Intent.ACTION_OPEN_DOCUMENT_TREE)
+                                .addFlags(
+                                    Intent.FLAG_GRANT_READ_URI_PERMISSION or
+                                        Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION,
+                                )
                             folderPickerLauncher.launch(intent)
                         } catch (e: ActivityNotFoundException) {
                             Toast.makeText(context, context.getString(R.string.error_no_document_app), Toast.LENGTH_LONG).show()
@@ -432,6 +420,7 @@ fun MediaScanSettingsScreen(onBackClick: () -> Unit) {
                             }
                         } else {
                             whitelistedFolders.forEach { folder ->
+                                DeviceScanFolderAccess(context).removeByDisplayPath(folder)
                                 appSettings.removeFolderFromWhitelist(folder)
                             }
                         }
@@ -516,6 +505,50 @@ fun MediaScanSettingsScreen(onBackClick: () -> Unit) {
             }
 
             item {
+                val fullRescanDescription = when {
+                    isLibraryRefreshing -> context.getString(R.string.settings_full_rescan_running)
+                    scanDiagnostics.completedAtMs > 0L && scanDiagnostics.failed -> context.getString(
+                        R.string.settings_full_rescan_failed_result,
+                        scanDiagnostics.preservedPreviousSongs,
+                    )
+                    scanDiagnostics.completedAtMs > 0L -> buildString {
+                        append(
+                            context.getString(
+                                R.string.settings_full_rescan_result,
+                                scanDiagnostics.acceptedSongs,
+                                scanDiagnostics.mediaStoreCandidates,
+                                scanDiagnostics.authorizedFolderAccepted,
+                                scanDiagnostics.authorizedFolderCandidates,
+                            ),
+                        )
+                        append('\n')
+                        append(
+                            context.getString(
+                                R.string.settings_full_rescan_filter_result,
+                                scanDiagnostics.filteredByFormat,
+                                scanDiagnostics.filteredByDuration,
+                                scanDiagnostics.filteredByBitrate,
+                                scanDiagnostics.filteredByFolderRule,
+                                scanDiagnostics.duplicates,
+                                scanDiagnostics.unreadableFiles,
+                            ),
+                        )
+                        if (
+                            scanDiagnostics.failedAuthorizedFolders > 0 ||
+                            scanDiagnostics.preservedPreviousSongs > 0
+                        ) {
+                            append('\n')
+                            append(
+                                context.getString(
+                                    R.string.settings_full_rescan_source_warning,
+                                    scanDiagnostics.failedAuthorizedFolders,
+                                    scanDiagnostics.preservedPreviousSongs,
+                                ),
+                            )
+                        }
+                    }
+                    else -> context.getString(R.string.settings_full_rescan_desc)
+                }
                 val scanBehaviorItems = listOf(
                     toMaterial3SettingsItem(
                         context = context,
@@ -540,6 +573,21 @@ fun MediaScanSettingsScreen(onBackClick: () -> Unit) {
                                 showDurationBottomSheet = true
                             }
                         )
+                    ),
+                    Material3SettingsItem(
+                        icon = MaterialSymbolIcon("refresh", filled = true),
+                        title = { Text(context.getString(R.string.settings_full_rescan_now)) },
+                        description = { Text(fullRescanDescription) },
+                        trailingContent = if (isLibraryRefreshing) {
+                            { CircularProgressIndicator(modifier = Modifier.size(24.dp), strokeWidth = 2.dp) }
+                        } else null,
+                        enabled = !isLibraryRefreshing,
+                        onClick = {
+                            if (!isLibraryRefreshing) {
+                                HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT)
+                                musicViewModel.refreshLibrary(showMediaScanLoader = false)
+                            }
+                        },
                     )
                 )
 
@@ -1016,6 +1064,7 @@ fun MediaScanSettingsScreen(onBackClick: () -> Unit) {
                                             if (currentMode == MediaScanMode.BLACKLIST) {
                                                 appSettings.removeFolderFromBlacklist(folder)
                                             } else {
+                                                DeviceScanFolderAccess(context).removeByDisplayPath(folder)
                                                 appSettings.removeFolderFromWhitelist(folder)
                                             }
                                         },
@@ -1128,6 +1177,10 @@ fun MediaScanSettingsScreen(onBackClick: () -> Unit) {
                                 HapticUtils.performHapticFeedback(context, haptic, HapticType.HEAVY)
                                 try {
                                     val intent = Intent(Intent.ACTION_OPEN_DOCUMENT_TREE)
+                                        .addFlags(
+                                            Intent.FLAG_GRANT_READ_URI_PERMISSION or
+                                                Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION,
+                                        )
                                     folderPickerLauncher.launch(intent)
                                 } catch (e: ActivityNotFoundException) {
                                     Toast.makeText(context, context.getString(R.string.error_no_document_app), Toast.LENGTH_LONG).show()
@@ -1157,6 +1210,7 @@ fun MediaScanSettingsScreen(onBackClick: () -> Unit) {
                                         }
                                     } else {
                                         whitelistedFolders.forEach { folder ->
+                                            DeviceScanFolderAccess(context).removeByDisplayPath(folder)
                                             appSettings.removeFolderFromWhitelist(folder)
                                         }
                                     }

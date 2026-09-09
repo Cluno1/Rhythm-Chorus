@@ -68,6 +68,7 @@ import io.github.cluno1.sonorus.shared.data.repository.StatsTimeRange
 import io.github.cluno1.sonorus.shared.presentation.screens.settings.rhythmGuardFormatDurationFromMinutes
 import io.github.cluno1.sonorus.activities.RhythmGuardTimeoutActivity
 import io.github.cluno1.sonorus.features.catalog.domain.CatalogPlaybackPolicy
+import io.github.cluno1.sonorus.features.local.data.device.DeviceDocumentPolicy
 import androidx.core.net.toUri
 
 @OptIn(UnstableApi::class)
@@ -2507,7 +2508,7 @@ notificationManager.createNotificationChannel(sleepTimerChannel)
                             io.github.cluno1.sonorus.features.catalog.data.CatalogCredentialsStore(
                                 this@MediaPlaybackService,
                             ).loadServerUrl(),
-                        ) || allowsDeviceMediaStoreItem(resolved)
+                        ) || allowsDeviceMediaStoreItem(resolved) || allowsAuthorizedDeviceDocument(resolved)
                     ) {
                         resolved
                     } else {
@@ -2538,6 +2539,13 @@ notificationManager.createNotificationChannel(sleepTimerChannel)
                 } ?: false
             }.getOrDefault(false)
         }
+
+        private fun allowsAuthorizedDeviceDocument(mediaItem: MediaItem): Boolean =
+            DeviceDocumentPolicy.allowsPersistedRead(
+                context = this@MediaPlaybackService,
+                mediaId = mediaItem.mediaId,
+                uri = mediaItem.localConfiguration?.uri,
+            )
         
         override fun onGetLibraryRoot(
             session: MediaLibrarySession,

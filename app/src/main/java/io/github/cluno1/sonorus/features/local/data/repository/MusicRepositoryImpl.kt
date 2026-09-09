@@ -5,6 +5,7 @@
 
 package io.github.cluno1.sonorus.features.local.data.repository
 import io.github.cluno1.sonorus.shared.data.model.ScanProgress
+import io.github.cluno1.sonorus.shared.data.model.MediaScanDiagnostics
 import io.github.cluno1.sonorus.core.domain.scan.MediaScanEngine
 import io.github.cluno1.sonorus.core.domain.backup.BackupRestoreManager
 
@@ -103,6 +104,7 @@ import io.github.cluno1.sonorus.features.local.data.database.entity.SongEntity
 import io.github.cluno1.sonorus.features.local.data.database.entity.toEntity
 import io.github.cluno1.sonorus.features.local.data.database.entity.SongArtistEntity
 import io.github.cluno1.sonorus.features.local.data.device.DeviceLyricsCandidate
+import io.github.cluno1.sonorus.features.local.data.device.DeviceScanFolderAccess
 import io.github.cluno1.sonorus.features.local.data.device.DeviceMetadataRepository
 import io.github.cluno1.sonorus.features.local.data.device.DeviceMetadataMatcher
 import io.github.cluno1.sonorus.features.local.data.device.DeviceMetadataPolicy
@@ -173,6 +175,8 @@ class MusicRepository(context: Context) {
     
     private val _scanProgress = MutableStateFlow(ScanProgress(0, 0, ScanPhase.Idle))
     val scanProgress: StateFlow<ScanProgress> = _scanProgress.asStateFlow()
+    private val _scanDiagnostics = MutableStateFlow(MediaScanDiagnostics())
+    val scanDiagnostics: StateFlow<MediaScanDiagnostics> = _scanDiagnostics.asStateFlow()
 
         private val appSettings: AppSettings by lazy { AppSettings.getInstance(context) }
     private val mediaScanEngine: MediaScanEngine by lazy { 
@@ -180,6 +184,11 @@ class MusicRepository(context: Context) {
             repositoryScope.launch {
                 engine.scanProgress.collect { progress ->
                     _scanProgress.value = progress
+                }
+            }
+            repositoryScope.launch {
+                engine.scanDiagnostics.collect { diagnostics ->
+                    _scanDiagnostics.value = diagnostics
                 }
             }
         }
@@ -861,14 +870,15 @@ class MusicRepository(context: Context) {
             context.checkSelfPermission(android.Manifest.permission.READ_EXTERNAL_STORAGE)
         }
         
-        if (!hasPermission) {
-            Log.w(TAG, "MediaStore permission not granted. Cannot scan music library.")
-            // Return empty list with error indication
+        val hasAuthorizedWhitelistRoots =
+            appSettings.mediaScanMode.value == MediaScanMode.WHITELIST &&
+                DeviceScanFolderAccess(context).roots().isNotEmpty()
+        if (!hasPermission && !hasAuthorizedWhitelistRoots) {
+            Log.w(TAG, "No MediaStore permission or authorized whitelist folder is available")
             _scanProgress.value = ScanProgress(0, 0, ScanPhase.PermissionDenied, 0)
-            return@withContext emptyList()
+            return@withContext cachedSongs ?: loadSongsFromRoom().orEmpty()
         }
 
-        val appSettings = AppSettings.getInstance(context)
         var shouldForceRefresh = forceRefresh
 
         if (appSettings.consumePendingFullMediaRescanRequest()) {
@@ -900,24 +910,13 @@ class MusicRepository(context: Context) {
             return@withContext emptyList()
         }
         
-        val startTime = System.currentTimeMillis()
-        val songs = mutableListOf<Song>()
-        val errors = mutableListOf<Pair<Int, Exception>>()
-        val seenIds = mutableSetOf<String>()
-        val seenPaths = mutableSetOf<String>()
-        var duplicatesFound = 0
-        var filteredByFormat = 0
-        var filteredByQuality = 0
-
-        val mediaScanMode: MediaScanMode = appSettings.mediaScanMode.value
-        val whitelistedFolders = appSettings.whitelistedFolders.value
-        val includeHiddenWhitelistedMedia = appSettings.includeHiddenWhitelistedMedia.value
-        
         Log.d(TAG, "Executing scan via MediaScanEngine")
         val scanned = mediaScanEngine.performScan(
             forceRefresh = shouldForceRefresh,
             allowedFormats = allowedFormats,
-            minimumDuration = minimumDuration
+            minimumBitrate = minimumBitrate,
+            minimumDuration = minimumDuration,
+            includeMediaStore = hasPermission,
         )
         val projected = deviceMetadataRepository.projectArtwork(scanned)
         cachedSongs = projected
@@ -939,7 +938,8 @@ class MusicRepository(context: Context) {
         val songs = mediaScanEngine.performScan(
             forceRefresh = false,
             allowedFormats = allowedFormats,
-            minimumDuration = minimumDuration
+            minimumBitrate = minimumBitrate,
+            minimumDuration = minimumDuration,
         )
         val projected = deviceMetadataRepository.projectArtwork(songs)
         cachedSongs = projected
@@ -2460,6 +2460,15 @@ class MusicRepository(context: Context) {
             minimumBitrate = minimumBitrate,
             minimumDuration = minimumDuration
         )
+        if (
+            !mediaScanEngine.scanDiagnostics.value.failed &&
+            _scanProgress.value.stage != ScanPhase.PermissionDenied
+        ) {
+            roomDb.withTransaction {
+                roomDb.songArtistDao().deleteAll()
+                roomDb.artistDao().deleteAll()
+            }
+        }
         val albums = loadAlbums()
         val artists = loadArtists()
         Log.d(TAG, "Music data refresh complete.")
@@ -6296,15 +6305,10 @@ class MusicRepository(context: Context) {
 
     private suspend fun invalidatePersistentLibraryCachesForForcedRescan() {
         try {
-            roomDb.withTransaction {
-                songDao.deleteAll()
-                roomDb.songArtistDao().deleteAll()
-                roomDb.artistDao().deleteAll()
-            }
             genrePrefs.edit { clear() }
             libraryScanPrefs.edit { clear() }
             clearInMemoryCaches()
-            Log.i(TAG, "Invalidated Room + metadata caches for forced full media rescan")
+            Log.i(TAG, "Invalidated derived metadata caches for forced full media rescan")
         } catch (e: Exception) {
             Log.e(TAG, "Failed to invalidate persistent caches for forced media rescan", e)
         }
@@ -6403,26 +6407,19 @@ class MusicRepository(context: Context) {
      * Clears all song cache data from Room database.
      * Call this when the user explicitly clears cache from settings.
      */
-    fun clearSongCacheData() {
+    suspend fun clearSongCacheData() = withContext(Dispatchers.IO) {
         try {
-            repositoryScope.launch {
-                try {
-                    roomDb.withTransaction {
-                        songDao.deleteAll()
-                        roomDb.songArtistDao().deleteAll()
-                        roomDb.artistDao().deleteAll()
-                    }
-                    genrePrefs.edit { clear() }
-                    artworkPrefs.edit { clear() }
-                    libraryScanPrefs.edit { clear() }
-                    clearEmbeddedArtworkFileCaches()
-                    clearInMemoryCaches()
-                    Log.d(TAG, "Cleared Room song/artist/link tables and metadata caches")
-                } catch (e: Exception) {
-                    Log.e(TAG, "Error clearing Room database", e)
-                }
+            roomDb.withTransaction {
+                songDao.deleteAll()
+                roomDb.songArtistDao().deleteAll()
+                roomDb.artistDao().deleteAll()
             }
-            Log.d(TAG, "Scheduled full song cache clear (Room, metadata, in-memory)")
+            genrePrefs.edit { clear() }
+            artworkPrefs.edit { clear() }
+            libraryScanPrefs.edit { clear() }
+            clearEmbeddedArtworkFileCaches()
+            clearInMemoryCaches()
+            Log.d(TAG, "Cleared Room song/artist/link tables and metadata caches")
         } catch (e: Exception) {
             Log.e(TAG, "Error clearing song cache data", e)
         }

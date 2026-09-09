@@ -272,7 +272,15 @@
     <string name="settings_root">Root</string>
     <string name="settings_scan_behavior">Scan Behavior</string>
     <string name="settings_include_hidden_whitelisted_media">Include Hidden &amp; .nomedia Files</string>
-    <string name="settings_include_hidden_whitelisted_media_desc">Enable scanning hidden and .nomedia audio paths during full media scans (strongest effect in whitelist folders).</string>
+    <string name="settings_include_hidden_whitelisted_media_desc">Also scan hidden paths and .nomedia folders inside authorized whitelist folders.</string>
+    <string name="settings_full_rescan_now">Full rescan now</string>
+    <string name="settings_full_rescan_desc">Requery MediaStore and rescan authorized whitelist folders. The previous library is kept if scanning fails.</string>
+    <string name="settings_full_rescan_running">Rebuilding the local music index…</string>
+    <string name="settings_full_rescan_result">%1$d songs · MediaStore candidates %2$d · authorized folders %3$d/%4$d</string>
+    <string name="settings_full_rescan_filter_result">Filtered: format %1$d · duration %2$d · bitrate %3$d · folder rules %4$d · duplicates %5$d · unreadable %6$d</string>
+    <string name="settings_full_rescan_source_warning">Authorized folders failed %1$d · kept %2$d previous entries</string>
+    <string name="settings_full_rescan_failed_result">Scan failed · kept %1$d previous songs</string>
+    <string name="settings_scan_folder_permission_failed">Could not retain read access to this folder</string>
     <string name="settings_audio_formats">Audio Formats</string>
     <string name="settings_allowed_formats">Allowed Formats</string>
     <string name="settings_allowed_formats_desc">%1$d of %2$d formats enabled</string>

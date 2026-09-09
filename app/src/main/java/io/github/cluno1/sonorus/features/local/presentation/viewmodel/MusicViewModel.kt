@@ -49,6 +49,7 @@ import io.github.cluno1.sonorus.shared.data.model.MediaScanMode
 import io.github.cluno1.sonorus.shared.data.model.ScanPhase
 import io.github.cluno1.sonorus.features.local.data.repository.MusicRepository
 import io.github.cluno1.sonorus.features.local.data.device.DeviceLyricsCandidate
+import io.github.cluno1.sonorus.features.local.data.device.DeviceDocumentPolicy
 import io.github.cluno1.sonorus.features.local.data.device.DeviceMetadataPolicy
 import io.github.cluno1.sonorus.features.catalog.domain.CATALOG_SONG_ID_PREFIX
 import io.github.cluno1.sonorus.features.catalog.domain.CatalogPlaybackPolicy
@@ -300,6 +301,7 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
     
     // Media scanning progress
     val scanProgress = repository.scanProgress
+    val scanDiagnostics = repository.scanDiagnostics
     val lastScanTimestamp = appSettings.lastScanTimestamp
     val lastScanDuration = appSettings.lastScanDuration
     
@@ -5976,7 +5978,8 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
                     trustedServerUrl = serverUrl,
                 )
             } else {
-                CatalogPlaybackPolicy.allowsDeviceMediaStoreItem(song.id, song.uri.toString())
+                CatalogPlaybackPolicy.allowsDeviceMediaStoreItem(song.id, song.uri.toString()) ||
+                    DeviceDocumentPolicy.allowsPersistedRead(getApplication(), song.id, song.uri)
             }
         }
         if (!accepted) {

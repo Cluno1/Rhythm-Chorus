@@ -6,20 +6,25 @@
 package io.github.cluno1.sonorus.core.domain.scan
 
 import android.content.Context
-import android.database.Cursor
+import android.media.MediaMetadataRetriever
 import android.net.Uri
 import android.os.Build
+import android.provider.DocumentsContract
 import android.provider.MediaStore
 import android.util.Log
+import androidx.documentfile.provider.DocumentFile
 import androidx.room.withTransaction
+import io.github.cluno1.sonorus.features.local.data.device.DeviceDocumentPolicy
+import io.github.cluno1.sonorus.features.local.data.device.DeviceScanFolderAccess
+import io.github.cluno1.sonorus.features.local.data.device.DeviceScanRoot
 import io.github.cluno1.sonorus.features.local.data.database.RhythmDatabase
 import io.github.cluno1.sonorus.features.local.data.database.entity.SongEntity
 import io.github.cluno1.sonorus.shared.data.model.AppSettings
+import io.github.cluno1.sonorus.shared.data.model.MediaScanDiagnostics
 import io.github.cluno1.sonorus.shared.data.model.MediaScanMode
 import io.github.cluno1.sonorus.shared.data.model.ScanPhase
 import io.github.cluno1.sonorus.shared.data.model.ScanProgress
 import io.github.cluno1.sonorus.shared.data.model.Song
-import io.github.cluno1.sonorus.util.AudioFormatDetector
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -27,6 +32,8 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.yield
 import kotlinx.coroutines.withContext
 import java.io.File
+import java.util.ArrayDeque
+import java.util.Locale
 import androidx.core.net.toUri
 import androidx.core.content.edit
 
@@ -45,6 +52,9 @@ class MediaScanEngine(
     companion object {
         private const val TAG = "MediaScanEngine"
         private const val BATCH_SIZE = 100
+        private const val MAX_SAF_SCAN_DEPTH = 64
+        private val SUPPORTED_AUDIO_EXTENSIONS =
+            AppSettings.defaultAllowedFormats() + setOf("mp4", "mkv")
 
         fun mediaScanSelection(minimumDuration: Long = 0L): String {
             val baseSelection = "(${MediaStore.Audio.Media.IS_MUSIC} = 1 OR ${MediaStore.Audio.Media.MIME_TYPE} LIKE 'audio/%' OR ${MediaStore.Audio.Media.MIME_TYPE} = 'video/mp4' OR ${MediaStore.Audio.Media.MIME_TYPE} = 'video/x-matroska' OR ${MediaStore.Audio.Media.MIME_TYPE} = 'application/x-matroska')"
@@ -58,6 +68,8 @@ class MediaScanEngine(
 
     private val _scanProgress = MutableStateFlow(ScanProgress(0, 0, ScanPhase.Idle))
     val scanProgress: StateFlow<ScanProgress> = _scanProgress.asStateFlow()
+    private val _scanDiagnostics = MutableStateFlow(MediaScanDiagnostics())
+    val scanDiagnostics: StateFlow<MediaScanDiagnostics> = _scanDiagnostics.asStateFlow()
 
     /**
      * Performs a high-performance differential or full media scan.
@@ -65,23 +77,31 @@ class MediaScanEngine(
     suspend fun performScan(
         forceRefresh: Boolean = false,
         allowedFormats: Set<String>? = null,
-        minimumDuration: Long = 0L
+        minimumBitrate: Int = 0,
+        minimumDuration: Long = 0L,
+        includeMediaStore: Boolean = true,
     ): List<Song> = withContext(Dispatchers.IO) {
         val startTime = System.currentTimeMillis()
         Log.d(TAG, "Starting media scan (forceRefresh=$forceRefresh, minimumDuration=${minimumDuration}ms)")
         _scanProgress.value = ScanProgress(0, 0, ScanPhase.Songs, 0)
 
-        // Query existing DB entries into an O(1) Map by ID
-        val existingDbSongs = if (!forceRefresh) {
-            database.songDao().getAllSongs().associateBy { it.id }
-        } else {
-            emptyMap()
-        }
+        val persistedSongs = database.songDao().getAllSongs()
+        // Query existing DB entries into an O(1) Map by ID for differential scans.
+        val existingDbSongs = if (!forceRefresh) persistedSongs.associateBy { it.id } else emptyMap()
 
         val mediaScanMode = appSettings.mediaScanMode.value
         val whitelistedFolders = appSettings.whitelistedFolders.value
         val blacklistedFolders = appSettings.blacklistedFolders.value
         val blacklistedSongs = appSettings.blacklistedSongs.value
+        val includeHiddenWhitelistedMedia = appSettings.includeHiddenWhitelistedMedia.value
+        val authorizedRoots = if (mediaScanMode == MediaScanMode.WHITELIST) {
+            val configuredFolders = whitelistedFolders.map(::normalizePath).toSet()
+            DeviceScanFolderAccess(context).roots().filter { root ->
+                normalizePath(root.displayPath) in configuredFolders
+            }
+        } else {
+            emptyList()
+        }
 
         val collection = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             MediaStore.Audio.Media.getContentUri(MediaStore.VOLUME_EXTERNAL)
@@ -120,15 +140,40 @@ class MediaScanEngine(
         val seenPaths = mutableSetOf<String>()
 
         var rawMediaStoreCount = 0
+        var authorizedFolderCandidates = 0
+        var authorizedFolderAccepted = 0
+        var filteredByFormat = 0
+        var filteredByDuration = 0
+        var filteredByBitrate = 0
+        var filteredByFolderRule = 0
+        var duplicates = 0
+        var unreadableFiles = 0
+        var failedAuthorizedFolders = 0
+        var preservedPreviousSongs = 0
+        var mediaStoreSucceeded = false
+        var mediaStoreFailed = false
+        val failedRoots = mutableListOf<DeviceScanRoot>()
 
         try {
-            context.contentResolver.query(collection, projection, selection, null, sortOrder)?.use { cursor ->
+            if (includeMediaStore) {
+                val cursor = try {
+                    context.contentResolver.query(collection, projection, selection, null, sortOrder)
+                } catch (e: Exception) {
+                    mediaStoreFailed = true
+                    Log.e(TAG, "MediaStore query failed; retaining its previous rows", e)
+                    null
+                }
+                if (cursor == null) {
+                    mediaStoreFailed = true
+                } else cursor.use { cursor ->
+                    mediaStoreSucceeded = true
                 val totalCount = cursor.count
                 rawMediaStoreCount = totalCount
                 Log.d(TAG, "MediaStore query found $totalCount candidates")
                 _scanProgress.value = ScanProgress(0, totalCount, ScanPhase.Songs, 0)
 
                 val colId = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media._ID)
+                val colDisplayName = cursor.getColumnIndex(MediaStore.MediaColumns.DISPLAY_NAME)
                 val colTitle = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.TITLE)
                 val colArtist = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.ARTIST)
                 val colAlbum = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.ALBUM)
@@ -150,33 +195,63 @@ class MediaScanEngine(
                 while (cursor.moveToNext()) {
                     processed++
                     val id = cursor.getLong(colId).toString()
-                    if (seenIds.contains(id) || blacklistedSongs.contains(id)) continue
+                    if (seenIds.contains(id)) {
+                        duplicates++
+                        continue
+                    }
+                    if (blacklistedSongs.contains(id)) {
+                        filteredByFolderRule++
+                        continue
+                    }
 
                     val path = if (colData >= 0) cursor.getString(colData) else null
+                    if (allowedFormats != null) {
+                        val candidateName = path?.takeIf(String::isNotBlank)
+                            ?: if (colDisplayName >= 0) cursor.getString(colDisplayName).orEmpty() else ""
+                        val extension = candidateName.substringAfterLast('.', "").lowercase(Locale.ROOT)
+                        if (extension.isBlank() || extension !in allowedFormats) {
+                            filteredByFormat++
+                            continue
+                        }
+                    }
                     if (path != null) {
-                        val normPath = path.lowercase()
-                        if (seenPaths.contains(normPath)) continue
-
-                        if (allowedFormats != null) {
-                            val ext = path.substringAfterLast('.', "").lowercase()
-                            if (ext.isNotEmpty() && !allowedFormats.contains(ext)) continue
+                        val normPath = normalizePath(path)
+                        if (seenPaths.contains(normPath)) {
+                            duplicates++
+                            continue
                         }
 
                         if (mediaScanMode == MediaScanMode.WHITELIST && whitelistedFolders.isNotEmpty()) {
-                            val isWhitelisted = whitelistedFolders.any { normPath.startsWith(it.lowercase()) }
-                            if (!isWhitelisted) continue
+                            val isWhitelisted = whitelistedFolders.any { isWithinFolder(normPath, it) }
+                            if (!isWhitelisted) {
+                                filteredByFolderRule++
+                                continue
+                            }
                         }
 
                         if (mediaScanMode == MediaScanMode.BLACKLIST && blacklistedFolders.isNotEmpty()) {
-                            val isBlacklisted = blacklistedFolders.any { normPath.startsWith(it.lowercase()) }
-                            if (isBlacklisted) continue
+                            val isBlacklisted = blacklistedFolders.any { isWithinFolder(normPath, it) }
+                            if (isBlacklisted) {
+                                filteredByFolderRule++
+                                continue
+                            }
                         }
 
                         seenPaths.add(normPath)
                     }
 
                     val duration = cursor.getLong(colDuration)
-                    if (minimumDuration > 0 && duration < minimumDuration) continue
+                    if (minimumDuration > 0 && duration < minimumDuration) {
+                        filteredByDuration++
+                        continue
+                    }
+
+                    val contentUri = Uri.withAppendedPath(collection, id)
+                    val bitrate = if (minimumBitrate > 0) readBitrate(contentUri) else null
+                    if (minimumBitrate > 0 && bitrate != null && bitrate < minimumBitrate * 1000) {
+                        filteredByBitrate++
+                        continue
+                    }
 
                     val rawDateModified = cursor.getLong(colDateModified)
                     val dateModified = if (rawDateModified in 1..99_999_999_999L) rawDateModified * 1000L else rawDateModified
@@ -305,7 +380,7 @@ class MediaScanEngine(
                             }
                         }
 
-                        val contentUri = Uri.withAppendedPath(collection, id).toString()
+                        val contentUriString = contentUri.toString()
                         val defaultArtworkUri = Uri.withAppendedPath(
                             ("content://media/external/audio/albumart").toUri(),
                             albumId
@@ -314,7 +389,7 @@ class MediaScanEngine(
                         val initialArtworkUri = if (preferSongArtwork) {
                             io.github.cluno1.sonorus.util.MediaUtils.getCachedEmbeddedAlbumArtUri(
                                 cacheDir = context.filesDir,
-                                songUri = (contentUri).toUri(),
+                                songUri = contentUri,
                                 lossless = losslessArtwork,
                                 exactMatchOnly = false
                             )?.toString() ?: defaultArtworkUri
@@ -329,7 +404,7 @@ class MediaScanEngine(
                             album = album,
                             albumId = albumId,
                             duration = duration,
-                            uri = contentUri,
+                            uri = contentUriString,
                             artworkUri = initialArtworkUri,
                             trackNumber = trackNumber,
                             year = year,
@@ -337,7 +412,7 @@ class MediaScanEngine(
                             dateAdded = dateAdded,
                             dateModified = finalDateModified,
                             albumArtist = albumArtist,
-                            bitrate = null,
+                            bitrate = bitrate,
                             sampleRate = null,
                             channels = null,
                             codec = null,
@@ -353,6 +428,70 @@ class MediaScanEngine(
                         _scanProgress.value = ScanProgress(processed, totalCount, ScanPhase.Songs, 0)
                         lastProgressEmitTime = nowTime
                         yield()
+                    }
+                }
+            }
+            }
+
+            if (authorizedRoots.isNotEmpty()) {
+                val safResult = scanAuthorizedRoots(
+                    roots = authorizedRoots,
+                    includeHidden = includeHiddenWhitelistedMedia,
+                    allowedFormats = allowedFormats,
+                    minimumBitrate = minimumBitrate,
+                    minimumDuration = minimumDuration,
+                    blacklistedSongs = blacklistedSongs,
+                    seenIds = seenIds,
+                    seenPaths = seenPaths,
+                    existingSongs = persistedSongs.associateBy(SongEntity::id),
+                )
+                scannedSongs += safResult.songs
+                authorizedFolderCandidates += safResult.candidates
+                authorizedFolderAccepted += safResult.songs.size
+                filteredByFormat += safResult.filteredByFormat
+                filteredByDuration += safResult.filteredByDuration
+                filteredByBitrate += safResult.filteredByBitrate
+                filteredByFolderRule += safResult.filteredByFolderRule
+                duplicates += safResult.duplicates
+                unreadableFiles += safResult.unreadable
+                failedAuthorizedFolders += safResult.failedRoots.size
+                preservedPreviousSongs += safResult.preservedPrevious
+                failedRoots += safResult.failedRoots
+            }
+
+            val authorizedFolderSucceeded =
+                authorizedRoots.isNotEmpty() && failedRoots.size < authorizedRoots.size
+            if (!mediaStoreSucceeded && !authorizedFolderSucceeded) {
+                _scanProgress.value = ScanProgress(0, 0, ScanPhase.Error, 0)
+                _scanDiagnostics.value = MediaScanDiagnostics(
+                    mediaStoreCandidates = rawMediaStoreCount,
+                    authorizedFolderCandidates = authorizedFolderCandidates,
+                    acceptedSongs = persistedSongs.size,
+                    failedAuthorizedFolders = failedAuthorizedFolders,
+                    preservedPreviousSongs = persistedSongs.size,
+                    durationMs = System.currentTimeMillis() - startTime,
+                    completedAtMs = System.currentTimeMillis(),
+                    failed = true,
+                )
+                return@withContext persistedSongs.map(SongEntity::toSongModel)
+            }
+
+            if (mediaStoreFailed) {
+                persistedSongs.filterNot { it.id.startsWith(DeviceDocumentPolicy.MEDIA_ID_PREFIX) }
+                    .forEach { entity ->
+                        if (seenIds.add(entity.id)) {
+                            scannedSongs += entity
+                            entity.path?.let { seenPaths += normalizePath(it) }
+                            preservedPreviousSongs++
+                        }
+                    }
+            }
+            failedRoots.forEach { failedRoot ->
+                persistedSongs.filter { belongsToRoot(it, failedRoot) }.forEach { entity ->
+                    if (seenIds.add(entity.id)) {
+                        scannedSongs += entity
+                        entity.path?.let { seenPaths += normalizePath(it) }
+                        preservedPreviousSongs++
                     }
                 }
             }
@@ -383,35 +522,403 @@ class MediaScanEngine(
             val totalDuration = System.currentTimeMillis() - startTime
             Log.d(TAG, "Scan completed: ${scannedSongs.size} songs processed in ${totalDuration}ms")
             _scanProgress.value = ScanProgress(scannedSongs.size, scannedSongs.size, ScanPhase.Complete, totalDuration)
+            _scanDiagnostics.value = MediaScanDiagnostics(
+                mediaStoreCandidates = rawMediaStoreCount,
+                authorizedFolderCandidates = authorizedFolderCandidates,
+                authorizedFolderAccepted = authorizedFolderAccepted,
+                acceptedSongs = scannedSongs.size,
+                filteredByFormat = filteredByFormat,
+                filteredByDuration = filteredByDuration,
+                filteredByBitrate = filteredByBitrate,
+                filteredByFolderRule = filteredByFolderRule,
+                duplicates = duplicates,
+                unreadableFiles = unreadableFiles,
+                failedAuthorizedFolders = failedAuthorizedFolders,
+                preservedPreviousSongs = preservedPreviousSongs,
+                durationMs = totalDuration,
+                completedAtMs = System.currentTimeMillis(),
+            )
 
-            scannedSongs.map { entity ->
-                Song(
-                    id = entity.id,
-                    title = entity.title,
-                    artist = entity.artist,
-                    album = entity.album,
-                    albumId = entity.albumId,
-                    duration = entity.duration,
-                    uri = (entity.uri).toUri(),
-                    artworkUri = entity.artworkUri?.let { (it).toUri() },
-                    trackNumber = entity.trackNumber,
-                    year = entity.year,
-                    genre = entity.genre,
-                    dateAdded = entity.dateAdded,
-                    dateModified = entity.dateModified,
-                    albumArtist = entity.albumArtist,
-                    bitrate = entity.bitrate,
-                    sampleRate = entity.sampleRate,
-                    channels = entity.channels,
-                    codec = entity.codec,
-                    discNumber = entity.discNumber,
-                    path = entity.path
-                )
-            }
+            scannedSongs.map(SongEntity::toSongModel)
         } catch (e: Exception) {
             Log.e(TAG, "Error during media scan", e)
             _scanProgress.value = ScanProgress(0, 0, ScanPhase.Error, 0)
-            emptyList()
+            val totalDuration = System.currentTimeMillis() - startTime
+            _scanDiagnostics.value = MediaScanDiagnostics(
+                mediaStoreCandidates = rawMediaStoreCount,
+                authorizedFolderCandidates = authorizedFolderCandidates,
+                acceptedSongs = persistedSongs.size,
+                filteredByFormat = filteredByFormat,
+                filteredByDuration = filteredByDuration,
+                filteredByBitrate = filteredByBitrate,
+                filteredByFolderRule = filteredByFolderRule,
+                duplicates = duplicates,
+                unreadableFiles = unreadableFiles,
+                failedAuthorizedFolders = failedAuthorizedFolders,
+                preservedPreviousSongs = persistedSongs.size,
+                durationMs = totalDuration,
+                completedAtMs = System.currentTimeMillis(),
+                failed = true,
+            )
+            persistedSongs.map(SongEntity::toSongModel)
         }
     }
+
+    private data class SafScanResult(
+        val songs: List<SongEntity>,
+        val candidates: Int,
+        val filteredByFormat: Int,
+        val filteredByDuration: Int,
+        val filteredByBitrate: Int,
+        val filteredByFolderRule: Int,
+        val duplicates: Int,
+        val unreadable: Int,
+        val preservedPrevious: Int,
+        val failedRoots: List<DeviceScanRoot>,
+    )
+
+    private data class MutableSafCounters(
+        var candidates: Int = 0,
+        var filteredByFormat: Int = 0,
+        var filteredByDuration: Int = 0,
+        var filteredByBitrate: Int = 0,
+        var filteredByFolderRule: Int = 0,
+        var duplicates: Int = 0,
+        var unreadable: Int = 0,
+        var preservedPrevious: Int = 0,
+    )
+
+    private data class DocumentQueueEntry(
+        val document: DocumentFile,
+        val depth: Int,
+    )
+
+    private fun scanAuthorizedRoots(
+        roots: List<DeviceScanRoot>,
+        includeHidden: Boolean,
+        allowedFormats: Set<String>?,
+        minimumBitrate: Int,
+        minimumDuration: Long,
+        blacklistedSongs: List<String>,
+        seenIds: MutableSet<String>,
+        seenPaths: MutableSet<String>,
+        existingSongs: Map<String, SongEntity>,
+    ): SafScanResult {
+        val songs = mutableListOf<SongEntity>()
+        val failedRoots = mutableListOf<DeviceScanRoot>()
+        val totals = MutableSafCounters()
+
+        roots.distinctBy(DeviceScanRoot::treeUri).forEach { root ->
+            val rootSongs = mutableListOf<SongEntity>()
+            val rootCounters = MutableSafCounters()
+            val rootSeenIds = (seenIds + songs.map(SongEntity::id)).toMutableSet()
+            val rootSeenPaths = (seenPaths + songs.mapNotNull(SongEntity::path)).toMutableSet()
+
+            val succeeded = runCatching {
+                val treeUri = Uri.parse(root.treeUri)
+                val tree = DocumentFile.fromTreeUri(context, treeUri)
+                    ?: error("Unable to open authorized document tree")
+                check(tree.exists() && tree.isDirectory && tree.canRead()) {
+                    "Authorized document tree is not readable"
+                }
+
+                val queue = ArrayDeque<DocumentQueueEntry>()
+                val visited = mutableSetOf<String>()
+                queue.addLast(DocumentQueueEntry(tree, 0))
+
+                while (queue.isNotEmpty()) {
+                    val (directory, depth) = queue.removeFirst()
+                    if (depth > MAX_SAF_SCAN_DEPTH || !visited.add(directory.uri.toString())) continue
+                    if (!includeHidden && directory.name.orEmpty().startsWith('.')) {
+                        rootCounters.filteredByFolderRule++
+                        continue
+                    }
+
+                    val children = directory.listFiles()
+                    if (!includeHidden && children.any { it.name.equals(".nomedia", ignoreCase = true) }) {
+                        rootCounters.filteredByFolderRule++
+                        continue
+                    }
+
+                    children.forEach { child ->
+                        if (child.isDirectory) {
+                            if (!includeHidden && child.name.orEmpty().startsWith('.')) {
+                                rootCounters.filteredByFolderRule++
+                            } else {
+                                queue.addLast(DocumentQueueEntry(child, depth + 1))
+                            }
+                            return@forEach
+                        }
+                        if (!child.isFile) return@forEach
+
+                        rootCounters.candidates++
+                        val name = child.name.orEmpty()
+                        if (!includeHidden && name.startsWith('.')) {
+                            rootCounters.filteredByFolderRule++
+                            return@forEach
+                        }
+                        val enabledFormats = allowedFormats ?: SUPPORTED_AUDIO_EXTENSIONS
+                        val extension = name.substringAfterLast('.', "").lowercase(Locale.ROOT)
+                        if (extension.isBlank() || extension !in enabledFormats) {
+                            rootCounters.filteredByFormat++
+                            return@forEach
+                        }
+                        val uri = child.uri
+                        val id = DeviceDocumentPolicy.mediaId(uri)
+                        if (id in rootSeenIds) {
+                            rootCounters.duplicates++
+                            return@forEach
+                        }
+                        if (id in blacklistedSongs) {
+                            rootCounters.filteredByFolderRule++
+                            return@forEach
+                        }
+
+                        val rawPath = DeviceScanFolderAccess.rawPath(uri)?.let(::normalizePath)
+                        if (rawPath != null && rawPath in rootSeenPaths) {
+                            rootCounters.duplicates++
+                            return@forEach
+                        }
+
+                        if (!canOpenDocument(uri)) {
+                            rootCounters.unreadable++
+                            existingSongs[id]?.let { previous ->
+                                rootSongs += previous
+                                rootSeenIds += id
+                                previous.path?.let(rootSeenPaths::add)
+                                rootCounters.preservedPrevious++
+                            }
+                            return@forEach
+                        }
+
+                        val metadata = readDocumentMetadata(child, extension)
+                        if (minimumDuration > 0 && metadata.durationMs < minimumDuration) {
+                            rootCounters.filteredByDuration++
+                            return@forEach
+                        }
+                        if (
+                            minimumBitrate > 0 &&
+                            metadata.bitrate != null &&
+                            metadata.bitrate < minimumBitrate * 1000
+                        ) {
+                            rootCounters.filteredByBitrate++
+                            return@forEach
+                        }
+
+                        val previous = existingSongs[id]
+                        val modifiedAt = child.lastModified().takeIf { it > 0L }
+                            ?: previous?.dateModified?.takeIf { it > 0L }
+                            ?: System.currentTimeMillis()
+                        val entity = SongEntity(
+                            id = id,
+                            title = metadata.title,
+                            artist = metadata.artist,
+                            album = metadata.album,
+                            albumId = "document_album_${(metadata.album.lowercase(Locale.ROOT) + "|" + metadata.artist.lowercase(Locale.ROOT)).hashCode()}",
+                            duration = metadata.durationMs,
+                            uri = uri.toString(),
+                            artworkUri = previous?.artworkUri,
+                            trackNumber = metadata.trackNumber,
+                            year = metadata.year,
+                            genre = metadata.genre ?: previous?.genre,
+                            dateAdded = previous?.dateAdded?.takeIf { it > 0L } ?: modifiedAt,
+                            dateModified = modifiedAt,
+                            albumArtist = metadata.albumArtist,
+                            bitrate = metadata.bitrate,
+                            sampleRate = metadata.sampleRate,
+                            channels = metadata.channels,
+                            codec = metadata.codec,
+                            discNumber = metadata.discNumber,
+                            path = rawPath,
+                        )
+                        rootSongs += entity
+                        rootSeenIds += id
+                        rawPath?.let(rootSeenPaths::add)
+                    }
+                }
+            }.onFailure { error ->
+                Log.w(TAG, "Authorized folder scan failed for provider ${Uri.parse(root.treeUri).authority}", error)
+            }.isSuccess
+
+            if (succeeded) {
+                songs += rootSongs
+                seenIds += rootSongs.map(SongEntity::id)
+                seenPaths += rootSongs.mapNotNull(SongEntity::path)
+                totals.add(rootCounters)
+            } else {
+                failedRoots += root
+            }
+        }
+
+        return SafScanResult(
+            songs = songs,
+            candidates = totals.candidates,
+            filteredByFormat = totals.filteredByFormat,
+            filteredByDuration = totals.filteredByDuration,
+            filteredByBitrate = totals.filteredByBitrate,
+            filteredByFolderRule = totals.filteredByFolderRule,
+            duplicates = totals.duplicates,
+            unreadable = totals.unreadable,
+            preservedPrevious = totals.preservedPrevious,
+            failedRoots = failedRoots,
+        )
+    }
+
+    private fun MutableSafCounters.add(other: MutableSafCounters) {
+        candidates += other.candidates
+        filteredByFormat += other.filteredByFormat
+        filteredByDuration += other.filteredByDuration
+        filteredByBitrate += other.filteredByBitrate
+        filteredByFolderRule += other.filteredByFolderRule
+        duplicates += other.duplicates
+        unreadable += other.unreadable
+        preservedPrevious += other.preservedPrevious
+    }
+
+    private data class DocumentMetadata(
+        val title: String,
+        val artist: String,
+        val album: String,
+        val albumArtist: String?,
+        val durationMs: Long,
+        val bitrate: Int?,
+        val sampleRate: Int?,
+        val channels: Int?,
+        val codec: String,
+        val year: Int,
+        val genre: String?,
+        val trackNumber: Int,
+        val discNumber: Int,
+    )
+
+    private fun readDocumentMetadata(file: DocumentFile, extension: String): DocumentMetadata {
+        val retriever = MediaMetadataRetriever()
+        val fallbackTitle = file.name.orEmpty().substringBeforeLast('.', file.name.orEmpty())
+            .ifBlank { "Unknown" }
+        return try {
+            retriever.setDataSource(context, file.uri)
+            val rawTrack = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_CD_TRACK_NUMBER)
+                ?.substringBefore('/')?.toIntOrNull() ?: 0
+            val title = normalizeMetadata(
+                retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_TITLE),
+            )?.takeUnless { it.equals("<unknown>", ignoreCase = true) } ?: fallbackTitle
+            val artist = normalizeMetadata(
+                retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_ARTIST),
+            )?.takeUnless { it.equals("<unknown>", ignoreCase = true) } ?: "Unknown Artist"
+            val album = normalizeMetadata(
+                retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_ALBUM),
+            )?.takeUnless { it.equals("<unknown>", ignoreCase = true) } ?: "Unknown Album"
+            DocumentMetadata(
+                title = title,
+                artist = artist,
+                album = album,
+                albumArtist = normalizeMetadata(
+                    retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_ALBUMARTIST),
+                ),
+                durationMs = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION)
+                    ?.toLongOrNull()?.coerceAtLeast(0L) ?: 0L,
+                bitrate = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_BITRATE)
+                    ?.toIntOrNull()?.takeIf { it > 0 },
+                sampleRate = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                    retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_SAMPLERATE)
+                        ?.toIntOrNull()?.takeIf { it > 0 }
+                } else null,
+                channels = null,
+                codec = extension.uppercase(Locale.ROOT),
+                year = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_YEAR)
+                    ?.take(4)?.toIntOrNull() ?: 0,
+                genre = normalizeMetadata(retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_GENRE)),
+                trackNumber = if (rawTrack >= 1000) rawTrack % 1000 else rawTrack,
+                discNumber = if (rawTrack >= 1000) {
+                    rawTrack / 1000
+                } else {
+                    retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DISC_NUMBER)
+                        ?.substringBefore('/')?.toIntOrNull()?.coerceAtLeast(1) ?: 1
+                },
+            )
+        } catch (e: Exception) {
+            Log.d(TAG, "Using fallback metadata for an authorized audio document", e)
+            DocumentMetadata(
+                title = fallbackTitle,
+                artist = "Unknown Artist",
+                album = "Unknown Album",
+                albumArtist = null,
+                durationMs = 0L,
+                bitrate = null,
+                sampleRate = null,
+                channels = null,
+                codec = extension.uppercase(Locale.ROOT),
+                year = 0,
+                genre = null,
+                trackNumber = 0,
+                discNumber = 1,
+            )
+        } finally {
+            runCatching { retriever.release() }
+        }
+    }
+
+    private fun canOpenDocument(uri: Uri): Boolean = runCatching {
+        context.contentResolver.openFileDescriptor(uri, "r")?.use { true } ?: false
+    }.getOrDefault(false)
+
+    private fun readBitrate(uri: Uri): Int? {
+        val retriever = MediaMetadataRetriever()
+        return try {
+            retriever.setDataSource(context, uri)
+            retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_BITRATE)
+                ?.toIntOrNull()?.takeIf { it > 0 }
+        } catch (_: Exception) {
+            null
+        } finally {
+            runCatching { retriever.release() }
+        }
+    }
+
+    private fun normalizeMetadata(value: String?): String? =
+        value?.let { io.github.cluno1.sonorus.util.MetadataHeuristics.normalizeMetadataText(it) }
+            ?.trim()?.takeIf(String::isNotBlank)
+
+    private fun normalizePath(path: String): String =
+        DeviceScanFolderAccess.normalizePath(appSettings.normalizeStoragePath(path)).lowercase(Locale.ROOT)
+
+    private fun isWithinFolder(path: String, folder: String): Boolean {
+        if (!folder.trim().startsWith('/')) return false
+        val normalizedFolder = normalizePath(folder)
+        return path == normalizedFolder || path.startsWith("$normalizedFolder/")
+    }
+
+    private fun belongsToRoot(entity: SongEntity, root: DeviceScanRoot): Boolean {
+        if (!entity.id.startsWith(DeviceDocumentPolicy.MEDIA_ID_PREFIX)) return false
+        val itemUri = runCatching { Uri.parse(entity.uri) }.getOrNull() ?: return false
+        val rootUri = runCatching { Uri.parse(root.treeUri) }.getOrNull() ?: return false
+        if (itemUri.authority != rootUri.authority) return false
+        val itemTreeId = runCatching { DocumentsContract.getTreeDocumentId(itemUri) }.getOrNull()
+        val rootTreeId = runCatching { DocumentsContract.getTreeDocumentId(rootUri) }.getOrNull()
+        return itemTreeId != null && itemTreeId == rootTreeId
+    }
+
+    private fun SongEntity.toSongModel(): Song = Song(
+        id = id,
+        title = title,
+        artist = artist,
+        album = album,
+        albumId = albumId,
+        duration = duration,
+        uri = uri.toUri(),
+        artworkUri = artworkUri?.toUri(),
+        trackNumber = trackNumber,
+        year = year,
+        genre = genre,
+        dateAdded = dateAdded,
+        dateModified = dateModified,
+        albumArtist = albumArtist,
+        bitrate = bitrate,
+        sampleRate = sampleRate,
+        channels = channels,
+        codec = codec,
+        discNumber = discNumber,
+        path = path,
+    )
+
 }

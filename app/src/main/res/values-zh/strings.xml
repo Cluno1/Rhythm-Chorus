@@ -265,7 +265,15 @@
     <string name="settings_root">根目录</string>
     <string name="settings_scan_behavior">扫描行为</string>
     <string name="settings_include_hidden_whitelisted_media">包括隐藏和 .nomedia 文件</string>
-    <string name="settings_include_hidden_whitelisted_media_desc">在完整媒体扫描期间启用扫描隐藏和 .nomedia 音频路径（在白名单文件夹中效果最强）。</string>
+    <string name="settings_include_hidden_whitelisted_media_desc">同时扫描已授权白名单文件夹中的隐藏路径和 .nomedia 文件夹。</string>
+    <string name="settings_full_rescan_now">立即完整重扫</string>
+    <string name="settings_full_rescan_desc">重新查询 MediaStore 并扫描已授权的白名单文件夹；扫描失败时保留原有曲库。</string>
+    <string name="settings_full_rescan_running">正在重建本地音乐索引…</string>
+    <string name="settings_full_rescan_result">%1$d 首歌曲 · MediaStore 候选 %2$d · 授权文件夹 %3$d/%4$d</string>
+    <string name="settings_full_rescan_filter_result">已过滤：格式 %1$d · 时长 %2$d · 码率 %3$d · 文件夹规则 %4$d · 重复 %5$d · 无法读取 %6$d</string>
+    <string name="settings_full_rescan_source_warning">授权文件夹失败 %1$d 个 · 保留原有条目 %2$d 个</string>
+    <string name="settings_full_rescan_failed_result">扫描失败 · 已保留原有 %1$d 首歌曲</string>
+    <string name="settings_scan_folder_permission_failed">无法保留对此文件夹的读取权限</string>
     <!-- Settings - Spotify -->
     
     <!-- Settings - About -->
