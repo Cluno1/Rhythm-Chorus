@@ -4,6 +4,7 @@ package io.github.cluno1.sonorus.features.scores.presentation
 
 import alphaTab.AlphaTabView
 import alphaTab.PlayerMode
+import alphaTab.ScrollMode
 import alphaTab.Settings
 import alphaTab.collections.List as AlphaTabList
 import alphaTab.core.ecmaScript.Uint8Array
@@ -12,6 +13,8 @@ import alphaTab.model.Track
 import alphaTab.model.NoteStyle
 import alphaTab.model.NoteSubElement
 import alphaTab.model.Color as AlphaTabColor
+import alphaTab.synth.IExternalMediaHandler
+import alphaTab.synth.IExternalMediaSynthOutput
 import alphaTab.synth.PlayerState
 import android.content.Context
 import android.content.Intent
@@ -128,6 +131,8 @@ private class ScorePlaybackController(private val context: Context) {
     private val completionTracker = ScorePlaybackCompletionTracker()
     private val displayBindings = mutableMapOf<AlphaTabView, ScorePlaybackDisplayBinding>()
     private var currentTick = 0.0
+    private var currentTime = 0.0
+    private var endTime = 0.0
     private var activePositions: List<ScorePlaybackBeatPosition> = emptyList()
     private val audioManager = context.getSystemService(Context.AUDIO_SERVICE) as AudioManager
     private var audioFocusRequest: AudioFocusRequest? = null
@@ -160,6 +165,7 @@ private class ScorePlaybackController(private val context: Context) {
         this.view = view
         this.score = score
         playerIsReady = false
+        endTime = 0.0
         completionTracker.reset()
         resetDisplayPosition()
     }
@@ -228,25 +234,32 @@ private class ScorePlaybackController(private val context: Context) {
         if (this.view === view) {
             completionTracker.reset()
             isPlaying = true
+            updateDisplayPlaybackState(playing = true)
         }
     }
 
     fun onPlayerPaused(view: AlphaTabView) {
         if (this.view === view) {
             isPlaying = false
+            updateDisplayPlaybackState(playing = false)
             if (!resumeAfterTransientFocusLoss) abandonAudioFocus()
         }
     }
 
-    fun onPlayerPositionChanged(view: AlphaTabView, tick: Double) {
+    fun onPlayerPositionChanged(
+        view: AlphaTabView,
+        tick: Double,
+        time: Double,
+        totalTime: Double,
+    ) {
         if (this.view !== view) return
         currentTick = tick
+        currentTime = time
+        endTime = totalTime
         displayBindings.forEach { (displayView, binding) ->
             displayView.post {
                 if (displayBindings[displayView] === binding) {
-                    // Pulse mode keeps alphaTab's cursor transparent, but still uses its
-                    // position internally so automatic scrolling follows the active beat.
-                    displayView.api.tickPosition = tick
+                    updateDisplayPosition(displayView, binding)
                 }
             }
         }
@@ -259,11 +272,8 @@ private class ScorePlaybackController(private val context: Context) {
             displayView.post {
                 if (displayBindings[displayView] !== binding) return@post
                 when (binding.mode) {
-                    ScorePlaybackIndicatorMode.LINE -> displayView.api.scrollToCursor()
-                    ScorePlaybackIndicatorMode.PULSE -> {
-                        binding.onPulsePositions(positions)
-                        displayView.api.scrollToCursor()
-                    }
+                    ScorePlaybackIndicatorMode.LINE -> Unit
+                    ScorePlaybackIndicatorMode.PULSE -> binding.onPulsePositions(positions)
                 }
             }
         }
@@ -278,10 +288,22 @@ private class ScorePlaybackController(private val context: Context) {
         displayBindings[view] = binding
         view.post {
             if (displayBindings[view] !== binding) return@post
-            when (mode) {
-                ScorePlaybackIndicatorMode.LINE -> view.api.tickPosition = currentTick
-                ScorePlaybackIndicatorMode.PULSE -> onPulsePositions(activePositions)
+            configureDisplayOutput(view, binding)
+            updateDisplayPosition(view, binding)
+            if (isPlaying) view.api.play() else view.api.pause()
+            if (mode == ScorePlaybackIndicatorMode.PULSE) {
+                onPulsePositions(activePositions)
             }
+        }
+    }
+
+    fun onDisplayPlayerReady(view: AlphaTabView) {
+        val binding = displayBindings[view] ?: return
+        view.post {
+            if (displayBindings[view] !== binding) return@post
+            configureDisplayOutput(view, binding)
+            updateDisplayPosition(view, binding)
+            if (isPlaying) view.api.play() else view.api.pause()
         }
     }
 
@@ -291,15 +313,54 @@ private class ScorePlaybackController(private val context: Context) {
 
     private fun resetDisplayPosition() {
         currentTick = 0.0
+        currentTime = 0.0
         activePositions = emptyList()
         displayBindings.forEach { (displayView, binding) ->
             displayView.post {
                 if (displayBindings[displayView] !== binding) return@post
-                when (binding.mode) {
-                    ScorePlaybackIndicatorMode.LINE -> displayView.api.tickPosition = 0.0
-                    ScorePlaybackIndicatorMode.PULSE -> binding.onPulsePositions(emptyList())
+                displayView.api.pause()
+                configureDisplayOutput(displayView, binding)
+                updateDisplayPosition(displayView, binding)
+                if (binding.mode == ScorePlaybackIndicatorMode.PULSE) {
+                    binding.onPulsePositions(emptyList())
                 }
             }
+        }
+    }
+
+    private fun updateDisplayPlaybackState(playing: Boolean) {
+        displayBindings.forEach { (displayView, binding) ->
+            displayView.post {
+                if (displayBindings[displayView] !== binding) return@post
+                configureDisplayOutput(displayView, binding)
+                if (playing) displayView.api.play() else displayView.api.pause()
+            }
+        }
+    }
+
+    private fun configureDisplayOutput(
+        displayView: AlphaTabView,
+        binding: ScorePlaybackDisplayBinding,
+    ): IExternalMediaSynthOutput? {
+        val output = displayView.api.player?.output as? IExternalMediaSynthOutput ?: return null
+        binding.externalMediaHandler.duration = endTime
+        if (output.handler !== binding.externalMediaHandler) {
+            output.handler = binding.externalMediaHandler
+        }
+        return output
+    }
+
+    private fun updateDisplayPosition(
+        displayView: AlphaTabView,
+        binding: ScorePlaybackDisplayBinding,
+    ) {
+        val output = configureDisplayOutput(displayView, binding)
+        if (output != null && endTime > 0.0) {
+            output.updatePosition(currentTime)
+        } else {
+            // The display player might not be ready yet. Keep the cursor correct until its
+            // external-media output becomes available, then switch to time-based updates.
+            displayView.api.tickPosition = currentTick
         }
     }
 
@@ -368,7 +429,22 @@ private class ScorePlaybackController(private val context: Context) {
 private data class ScorePlaybackDisplayBinding(
     val mode: ScorePlaybackIndicatorMode,
     val onPulsePositions: (List<ScorePlaybackBeatPosition>) -> Unit,
+    val externalMediaHandler: ScoreDisplayExternalMediaHandler = ScoreDisplayExternalMediaHandler(),
 )
+
+private class ScoreDisplayExternalMediaHandler : IExternalMediaHandler {
+    var duration: Double = 0.0
+    override val backingTrackDuration: Double
+        get() = duration
+    override var playbackRate: Double = 1.0
+    override var masterVolume: Double = 1.0
+
+    override fun seekTo(time: Double) = Unit
+
+    override fun play() = Unit
+
+    override fun pause() = Unit
+}
 
 /** Read-only projection of an immutable server ScoreRevision. */
 @OptIn(ExperimentalMaterial3Api::class)
@@ -1735,10 +1811,22 @@ internal fun isAlphaTabRenderSizeReady(
     outerScrollWidth > 0 &&
     outerScrollHeight > 0
 
+private const val SCORE_FOLLOW_VIEWPORT_FRACTION = 0.36
+
+internal fun scoreFollowScrollOffset(
+    viewportHeightPx: Int,
+    density: Float,
+): Double = if (viewportHeightPx > 0 && density > 0f) {
+    -(viewportHeightPx / density * SCORE_FOLLOW_VIEWPORT_FRACTION)
+} else {
+    0.0
+}
+
 private class AlphaTabRenderReadiness(
     private val displayView: AlphaTabView,
     private val outerScroll: View,
     private val tracksToRender: List<Track>,
+    private val onReady: (viewportHeightPx: Int) -> Unit = {},
 ) {
     private var completed = false
     private var released = false
@@ -1757,6 +1845,7 @@ private class AlphaTabRenderReadiness(
                     "tracks=${tracksToRender.size}",
             )
         }
+        onReady(outerScroll.measuredHeight)
         displayView.tracks = tracksToRender
     }
 
@@ -1895,13 +1984,19 @@ private fun AlphaTabScore(
                     }
                     api.settings.player.enableCursor =
                         !editMode
-                    api.settings.player.enableAnimatedBeatCursor = false
+                    api.settings.player.enableAnimatedBeatCursor = !editMode
+                    api.settings.player.scrollMode = if (editMode) ScrollMode.Off else ScrollMode.Smooth
                     api.settings.player.enableElementHighlighting = false
                     api.settings.player.enableUserInteraction = editMode
                     // Playback pulse markers and edit hit-testing both need note-head bounds.
                     api.settings.core.includeNoteBounds = true
                     barCursorFillColor = AndroidColor.TRANSPARENT
                     beatCursorFillColor = AndroidColor.rgb(225, 29, 72)
+                    if (!editMode) {
+                        api.playerReady.on {
+                            playbackController.onDisplayPlayerReady(displayView)
+                        }
+                    }
                     // alphaTab renders secondary voices with 100/255 alpha by default.
                     // Explicit per-voice styles carry enhanced colors; this fallback keeps
                     // any unstyled secondary glyph black instead of gray.
@@ -1980,6 +2075,15 @@ private fun AlphaTabScore(
                         displayView = displayView,
                         outerScroll = outerScroll,
                         tracksToRender = tracksToRender,
+                        onReady = { viewportHeightPx ->
+                            if (!editMode) {
+                                api.settings.player.scrollOffsetY = scoreFollowScrollOffset(
+                                    viewportHeightPx = viewportHeightPx,
+                                    density = resources.displayMetrics.density,
+                                )
+                                api.updateSettings()
+                            }
+                        },
                     )
                     tag = AlphaTabScoreViewState(
                         playbackOverlay = playbackOverlay,
@@ -2100,7 +2204,12 @@ private fun ScorePlaybackEngine(
                     post { onStatusChange(nextStatus) }
                 }
                 api.playerPositionChanged.on { event ->
-                    controller.onPlayerPositionChanged(playerView, event.currentTick)
+                    controller.onPlayerPositionChanged(
+                        view = playerView,
+                        tick = event.currentTick,
+                        time = event.currentTime,
+                        totalTime = event.endTime,
+                    )
                 }
                 api.activeBeatsChanged.on { event ->
                     controller.onActiveBeatsChanged(
