@@ -16,4 +16,10 @@ class RhythmIconsTest {
         assertFalse(inactive.filled)
         assertTrue(active.filled)
     }
+
+    @Test
+    fun scoreIconUsesAudioFileInsteadOfScoreboardSymbol() {
+        assertEquals("audio_file", RhythmIcons.Score.name)
+        assertFalse(RhythmIcons.Score.filled)
+    }
 }
