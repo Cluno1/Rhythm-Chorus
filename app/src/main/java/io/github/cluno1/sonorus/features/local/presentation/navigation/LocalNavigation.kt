@@ -143,6 +143,7 @@ import io.github.cluno1.sonorus.features.catalog.domain.toRhythmSong
 import io.github.cluno1.sonorus.features.catalog.presentation.CatalogServerSettingsScreen
 import io.github.cluno1.sonorus.features.catalog.presentation.CatalogRemoteScoreScreen
 import io.github.cluno1.sonorus.features.catalog.presentation.CatalogViewModel
+import io.github.cluno1.sonorus.features.catalog.presentation.latestPublishedOption
 import io.github.cluno1.sonorus.core.ProductCapabilities
 import io.github.cluno1.sonorus.core.ProductRoutePolicy
 import io.github.cluno1.sonorus.shared.presentation.screens.RhythmStatsScreen
@@ -244,9 +245,16 @@ sealed class Screen(val route: String) {
     object Player : Screen("player")
     object Settings : Screen("settings")
     object CatalogSettings : Screen("catalog_settings")
-    object CatalogScore : Screen("catalog_score/{workId}/{scoreId}/{revisionId}?title={title}&parts={parts}") {
-        fun createRoute(workId: String, scoreId: String, revisionId: String, title: String, parts: Int) =
-            "catalog_score/${Uri.encode(workId)}/${Uri.encode(scoreId)}/${Uri.encode(revisionId)}?title=${Uri.encode(title)}&parts=$parts"
+    object CatalogScore : Screen("catalog_score/{workId}/{scoreId}/{revisionId}?title={title}&scoreLabel={scoreLabel}&parts={parts}") {
+        fun createRoute(
+            workId: String,
+            scoreId: String,
+            revisionId: String,
+            title: String,
+            scoreLabel: String,
+            parts: Int,
+        ) = "catalog_score/${Uri.encode(workId)}/${Uri.encode(scoreId)}/${Uri.encode(revisionId)}" +
+            "?title=${Uri.encode(title)}&scoreLabel=${Uri.encode(scoreLabel)}&parts=$parts"
     }
     object AddToPlaylist : Screen("add_to_playlist")
     object PlaylistDetail : Screen("playlist/{playlistId}") {
@@ -1391,7 +1399,8 @@ private fun LocalNavigationContent(
                                             item.workId,
                                             score.id,
                                             revId,
-                                            "${bundle.work.canonicalTitle} · ${score.label}",
+                                            bundle.work.canonicalTitle,
+                                            score.label,
                                             arr.parts.size,
                                         )
                                     ) { launchSingleTop = true }
@@ -2068,10 +2077,16 @@ private fun LocalNavigationContent(
                             scoreWorks = catalogState.scoreWorks,
                             scoreArtworkServerUrl = catalogState.serverUrl,
                             onScoreWorkClick = { work ->
-                                val option = work.scoreOptions.firstOrNull { it.scoreId == work.defaultScoreId }
-                                    ?: work.scoreOptions.firstOrNull()
+                                val option = work.latestPublishedOption()
                                 if (option != null) navController.navigate(
-                                    Screen.CatalogScore.createRoute(work.workId, option.scoreId, option.revisionId, work.title, option.partCount)
+                                    Screen.CatalogScore.createRoute(
+                                        work.workId,
+                                        option.scoreId,
+                                        option.revisionId,
+                                        work.title,
+                                        option.scoreLabel,
+                                        option.partCount,
+                                    )
                                 )
                             },
                             onViewAllScores = {
@@ -2185,12 +2200,14 @@ private fun LocalNavigationContent(
                         navArgument("scoreId") { type = NavType.StringType },
                         navArgument("revisionId") { type = NavType.StringType },
                         navArgument("title") { type = NavType.StringType; defaultValue = "远程谱面" },
+                        navArgument("scoreLabel") { type = NavType.StringType; defaultValue = "" },
                         navArgument("parts") { type = NavType.IntType; defaultValue = 0 },
                     ),
                 ) { backStackEntry ->
                     CatalogRemoteScoreScreen(
                         revisionId = backStackEntry.arguments?.getString("revisionId")?.let(Uri::decode).orEmpty(),
                         title = backStackEntry.arguments?.getString("title")?.let(Uri::decode) ?: "远程谱面",
+                        scoreLabel = backStackEntry.arguments?.getString("scoreLabel")?.let(Uri::decode).orEmpty(),
                         expectedPartCount = backStackEntry.arguments?.getInt("parts") ?: 0,
                         scoreWork = catalogState.scoreWorks.firstOrNull {
                             it.workId == backStackEntry.arguments?.getString("workId")?.let(Uri::decode)
@@ -2248,10 +2265,16 @@ private fun LocalNavigationContent(
                                 navController.navigate(Screen.AlbumDetail.createRoute(album.id, album.title))
                             },
                             onCatalogScoreWorkClick = { work ->
-                                val option = work.scoreOptions.firstOrNull { it.scoreId == work.defaultScoreId }
-                                    ?: work.scoreOptions.firstOrNull()
+                                val option = work.latestPublishedOption()
                                 if (option != null) navController.navigate(
-                                    Screen.CatalogScore.createRoute(work.workId, option.scoreId, option.revisionId, work.title, option.partCount)
+                                    Screen.CatalogScore.createRoute(
+                                        work.workId,
+                                        option.scoreId,
+                                        option.revisionId,
+                                        work.title,
+                                        option.scoreLabel,
+                                        option.partCount,
+                                    )
                                 )
                             },
                             onLocalArtistClick = { artist -> navController.navigate(Screen.ArtistDetail.createRoute(artist.name)) },
@@ -3575,10 +3598,8 @@ private fun LocalNavigationContent(
                         streamingFavoriteSongIds = streamingLikedSongIds,
                         scoreWorks = if (isStreamingMode) emptyList() else catalogState.scoreWorks,
                         scoreArtworkServerUrl = catalogState.serverUrl,
-                        onScoreWorkClick = { work, initialOption ->
-                            val option = initialOption
-                                ?: work.scoreOptions.firstOrNull { it.scoreId == work.defaultScoreId }
-                                ?: work.scoreOptions.firstOrNull()
+                        onScoreWorkClick = { work, _ ->
+                            val option = work.latestPublishedOption()
                             if (option != null) {
                                 navController.navigate(
                                     Screen.CatalogScore.createRoute(
@@ -3586,6 +3607,7 @@ private fun LocalNavigationContent(
                                         option.scoreId,
                                         option.revisionId,
                                         work.title,
+                                        option.scoreLabel,
                                         option.partCount,
                                     )
                                 ) { launchSingleTop = true }

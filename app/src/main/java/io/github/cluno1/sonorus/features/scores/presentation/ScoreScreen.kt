@@ -377,6 +377,7 @@ fun RemoteScoreScreen(
     title: String,
     canonicalMusicXml: ByteArray,
     onBackClick: () -> Unit,
+    scoreLabel: String? = null,
     revisionLabel: String? = null,
     canOpenNewerRevision: Boolean = false,
     canOpenOlderRevision: Boolean = false,
@@ -422,7 +423,7 @@ fun RemoteScoreScreen(
                                 maxLines = 1,
                                 overflow = TextOverflow.Ellipsis,
                             )
-                            revisionLabel?.let {
+                            scoreLabel?.let {
                                 Text(
                                     it,
                                     style = MaterialTheme.typography.labelMedium,
@@ -485,7 +486,7 @@ fun RemoteScoreScreen(
                         onEditingChange = {},
                         allowEditing = false,
                         title = title,
-                        subtitle = revisionLabel,
+                        subtitle = scoreLabel,
                         onBackClick = onBackClick,
                         scoreSettingsContent = {
                             scoreSettingsContent()
@@ -1444,7 +1445,7 @@ private fun ScorePlaybackControls(
                     overflow = TextOverflow.Ellipsis,
                 )
                 Text(
-                    text = listOfNotNull(subtitle, statusLabel).joinToString(" • "),
+                    text = subtitle ?: statusLabel,
                     style = MaterialTheme.typography.labelMedium,
                     color = if (status == ScorePlaybackStatus.ERROR) {
                         MaterialTheme.colorScheme.error

@@ -41,6 +41,7 @@ import io.github.cluno1.sonorus.shared.presentation.components.icons.RhythmIcons
 fun CatalogRemoteScoreScreen(
     revisionId: String,
     title: String,
+    scoreLabel: String,
     expectedPartCount: Int,
     scoreWork: CatalogLibraryScoreWork? = null,
     initialScoreId: String? = null,
@@ -89,9 +90,10 @@ fun CatalogRemoteScoreScreen(
 
     when {
         bytes != null -> RemoteScoreScreen(
-            title = title,
+            title = scoreWork?.title ?: title,
             canonicalMusicXml = checkNotNull(bytes),
             onBackClick = onBack,
+            scoreLabel = selectedOption?.scoreLabel ?: scoreLabel.takeIf(String::isNotBlank),
             revisionLabel = history.getOrNull(selectedIndex)?.let {
                 stringResource(R.string.score_revision_label, it.revisionNo)
             },
@@ -142,7 +144,7 @@ fun CatalogRemoteScoreScreen(
                                         onClick = { selectedScoreId = option.scoreId },
                                         label = {
                                             Text(
-                                                "$origin · ${option.arrangementName} · ${stringResource(R.string.score_revision_label, option.revisionNo)}"
+                                                "${option.scoreLabel} · $origin · ${option.arrangementName} · ${stringResource(R.string.score_revision_label, option.revisionNo)}"
                                             )
                                         },
                                     )

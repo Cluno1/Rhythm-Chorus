@@ -16,15 +16,20 @@ fun CatalogScoreOption.matchesScoreOrigin(filter: ScoreOriginFilter): Boolean = 
 fun CatalogLibraryScoreWork.matchesScoreOrigin(filter: ScoreOriginFilter): Boolean =
     filter == ScoreOriginFilter.ALL || scoreOptions.any { it.matchesScoreOrigin(filter) }
 
+fun CatalogLibraryScoreWork.latestPublishedOption(): CatalogScoreOption? =
+    scoreOptions.maxWithOrNull(
+        compareBy<CatalogScoreOption> { it.publishedAt }
+            .thenBy { it.revisionNo }
+            .thenBy { it.scoreId },
+    )
+
 fun CatalogLibraryScoreWork.initialOptionFor(filter: ScoreOriginFilter): CatalogScoreOption? {
     val matching = scoreOptions.filter { it.matchesScoreOrigin(filter) }
-    return matching.firstOrNull { it.scoreId == defaultScoreId }
-        ?: matching.firstOrNull(CatalogScoreOption::preferred)
-        ?: matching.maxWithOrNull(
-            compareBy<CatalogScoreOption> { it.publishedAt }
-                .thenBy { it.revisionNo }
-                .thenBy { it.scoreId },
-        )
+    return matching.maxWithOrNull(
+        compareBy<CatalogScoreOption> { it.publishedAt }
+            .thenBy { it.revisionNo }
+            .thenBy { it.scoreId },
+    )
 }
 
 fun prepareCatalogScoreWorks(

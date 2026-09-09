@@ -18,6 +18,7 @@ Rhythm 视觉真值来自同一应用、同一设备状态下的专辑详情页�
 - 深色详情：`.../artifacts/06-after-score-detail-dark.png`
 - 深色设置：`.../artifacts/07-after-score-settings-dark.png`
 - 1.3 倍字体：`.../artifacts/08-after-font-scale-1.3x.png`
+- 生产字段契约：`.../artifacts/12-title-score-label-contract.png`
 
 源图与实现图均为 1080 × 2424；并排对比图为 2160 × 2424，无需密度归一化。原生 Android 页面不使用 CSS viewport，设备像素、系统字体比例和状态栏条件均保持一致。
 
@@ -38,7 +39,9 @@ Rhythm 视觉真值来自同一应用、同一设备状态下的专辑详情页�
 | 间距与布局 | 移除 Scaffold 重复顶部 inset；操作区采用 48dp 圆形按钮并保留谱面主体面积；1.3 倍字体无重叠。 |
 | 色彩与 token | chrome、主操作、tonal 操作、容器和圆角均使用现有 Material 3 / Rhythm token，没有新建平行配色。 |
 | 图标与资产 | 全部复用 `RhythmIcons`；MusicXML 仍由 alphaTab 渲染，没有占位图或伪造资产。 |
-| 文案与内容 | 标题、修订、播放状态、版本导航信息保留；新增英文、简体中文、繁体中文修订文案。 |
+| 文案与内容 | 主标题和谱名分字段展示；修订导航保留在设置中，播放状态保留在按钮状态与无障碍语义中；新增英文、简体中文、繁体中文修订文案。 |
+
+追加字段验收：详情页主标题使用 `Work.canonical_title`，副标题使用当前 `Score.label`。生产 `gmusic:325` 的验证画面为“這是天父世界 / GMUSIC OCR”；总览入口通过 `published_at` 最大值选择默认 ScoreOption。
 
 ## 修正历史
 
@@ -51,4 +54,3 @@ Rhythm 视觉真值来自同一应用、同一设备状态下的专辑详情页�
 ## 交互与稳定性
 
 通过 ADB/UI Automator 验证播放、暂停、停止、打开设置和设置滚动；语义树可识别 `Play score`、`Pause`、`Stop`、`Score settings`。Logcat 未发现 Fatal Exception。原生页面不适用浏览器 Console。截图和语义检查不能替代 TalkBack、2.0 倍字体及 iQOO 真机完整无障碍验收。
-
