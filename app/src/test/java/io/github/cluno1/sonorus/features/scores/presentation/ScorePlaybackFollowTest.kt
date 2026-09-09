@@ -1,5 +1,6 @@
 package io.github.cluno1.sonorus.features.scores.presentation
 
+import alphaTab.midi.MidiTickLookupFindBeatResultCursorMode
 import org.junit.Assert.assertEquals
 import org.junit.Test
 
@@ -17,5 +18,47 @@ class ScorePlaybackFollowTest {
     fun invalidViewportDoesNotCreateAnOffset() {
         assertEquals(0.0, scoreFollowScrollOffset(viewportHeightPx = 0, density = 2f), 0.0)
         assertEquals(0.0, scoreFollowScrollOffset(viewportHeightPx = 1600, density = 0f), 0.0)
+    }
+
+    @Test
+    fun tailSpaceLetsFinalSystemReachTheSameReadingPosition() {
+        assertEquals(1024, scoreFollowTailSpace(viewportHeightPx = 1600))
+        assertEquals(
+            13_024,
+            scoreFollowContentMinHeight(scoreHeightPx = 12_000, viewportHeightPx = 1600),
+        )
+        assertEquals(0, scoreFollowTailSpace(viewportHeightPx = 0))
+    }
+
+    @Test
+    fun cursorTransitionStaysContinuousAndRejectsInvalidDurations() {
+        assertEquals(
+            ScoreCursorTransition(targetX = 140.0, durationMillis = 800L),
+            stableScoreCursorTransition(
+                startX = 100.0,
+                endX = 120.0,
+                durationMillis = 400.0,
+                cursorMode = MidiTickLookupFindBeatResultCursorMode.ToNextBext,
+            ),
+        )
+        assertEquals(
+            ScoreCursorTransition(targetX = 120.0, durationMillis = 0L),
+            stableScoreCursorTransition(
+                startX = 100.0,
+                endX = 120.0,
+                durationMillis = -1.0,
+                cursorMode = MidiTickLookupFindBeatResultCursorMode.ToEndOfBeat,
+            ),
+        )
+        assertEquals(
+            ScoreCursorTransition(targetX = 120.0, durationMillis = 400L),
+            stableScoreCursorTransition(
+                startX = 100.0,
+                endX = 120.0,
+                durationMillis = 400.0,
+                cursorMode = MidiTickLookupFindBeatResultCursorMode.ToNextBext,
+                hasFollowingBeat = false,
+            ),
+        )
     }
 }

@@ -12,11 +12,16 @@ import android.graphics.Paint
 import android.graphics.RectF
 import android.view.View
 import android.view.animation.DecelerateInterpolator
+import android.view.animation.LinearInterpolator
 import kotlin.math.max
 
 /** Pulses around active note heads without covering or changing their original glyphs. */
 internal class ScorePlaybackOverlayView(context: Context) : View(context) {
     private val density = resources.displayMetrics.density
+    private val playbackLinePaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+        color = Color.rgb(225, 29, 72)
+        style = Paint.Style.FILL
+    }
     private val pulseRingPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
         color = Color.rgb(225, 29, 72)
         style = Paint.Style.STROKE
@@ -25,7 +30,13 @@ internal class ScorePlaybackOverlayView(context: Context) : View(context) {
     private val animatedMarker = RectF()
     private var activeBeats: List<Beat> = emptyList()
     private var markers: List<RectF> = emptyList()
+    private var mode = ScorePlaybackIndicatorMode.LINE
+    private var playbackLineVisible = false
+    private var playbackLineX = 0f
+    private var playbackLineTop = 0f
+    private var playbackLineHeight = 0f
     private var pulseProgress = 0f
+    private var playbackLineAnimator: ValueAnimator? = null
     private val pulseAnimator = ValueAnimator.ofFloat(0f, 1f).apply {
         duration = 520L
         repeatCount = ValueAnimator.INFINITE
@@ -42,6 +53,53 @@ internal class ScorePlaybackOverlayView(context: Context) : View(context) {
         isFocusable = false
         importantForAccessibility = IMPORTANT_FOR_ACCESSIBILITY_NO
         setWillNotDraw(false)
+    }
+
+    fun setMode(mode: ScorePlaybackIndicatorMode) {
+        if (this.mode == mode) return
+        this.mode = mode
+        if (mode != ScorePlaybackIndicatorMode.LINE) {
+            playbackLineAnimator?.cancel()
+        }
+        updatePulseAnimation()
+        invalidate()
+    }
+
+    fun placePlaybackLine(x: Double, y: Double, height: Double) {
+        playbackLineAnimator?.cancel()
+        playbackLineAnimator = null
+        playbackLineX = (x * density).toFloat()
+        playbackLineTop = (y * density).toFloat()
+        playbackLineHeight = (height * density).toFloat()
+        playbackLineVisible = true
+        bringToFront()
+        invalidate()
+    }
+
+    fun animatePlaybackLine(targetX: Double, durationMillis: Long) {
+        val targetPx = (targetX * density).toFloat()
+        playbackLineAnimator?.cancel()
+        if (durationMillis <= 0L || !targetPx.isFinite()) {
+            if (targetPx.isFinite()) playbackLineX = targetPx
+            invalidate()
+            return
+        }
+        playbackLineAnimator = ValueAnimator.ofFloat(playbackLineX, targetPx).apply {
+            duration = durationMillis
+            interpolator = LinearInterpolator()
+            addUpdateListener { animation ->
+                playbackLineX = animation.animatedValue as Float
+                invalidate()
+            }
+            start()
+        }
+    }
+
+    fun hidePlaybackLine() {
+        playbackLineAnimator?.cancel()
+        playbackLineAnimator = null
+        playbackLineVisible = false
+        invalidate()
     }
 
     fun showBeats(beats: List<Beat>, lookup: BoundsLookup?) {
@@ -84,7 +142,7 @@ internal class ScorePlaybackOverlayView(context: Context) : View(context) {
     }
 
     private fun updatePulseAnimation() {
-        if (markers.isEmpty()) {
+        if (markers.isEmpty() || mode != ScorePlaybackIndicatorMode.PULSE) {
             pulseAnimator.cancel()
             pulseProgress = 0f
         } else if (isAttachedToWindow && !pulseAnimator.isRunning) {
@@ -98,12 +156,25 @@ internal class ScorePlaybackOverlayView(context: Context) : View(context) {
     }
 
     override fun onDetachedFromWindow() {
+        playbackLineAnimator?.cancel()
+        playbackLineAnimator = null
         pulseAnimator.cancel()
         super.onDetachedFromWindow()
     }
 
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
+        if (mode == ScorePlaybackIndicatorMode.LINE && playbackLineVisible) {
+            val halfWidth = max(1f, density * 0.75f)
+            canvas.drawRect(
+                playbackLineX - halfWidth,
+                playbackLineTop,
+                playbackLineX + halfWidth,
+                playbackLineTop + playbackLineHeight,
+                playbackLinePaint,
+            )
+            return
+        }
         val expansion = pulseProgress * 2.5f * density
         pulseRingPaint.alpha = (220f - pulseProgress * 80f).toInt()
         markers.forEach { marker ->
