@@ -132,19 +132,12 @@ fun CatalogRemoteScoreScreen(
                                 horizontalArrangement = Arrangement.spacedBy(8.dp),
                             ) {
                                 work.scoreOptions.forEach { option ->
-                                    val origin = stringResource(
-                                        if (option.origin == "midi_transcription") {
-                                            R.string.catalog_score_origin_midi
-                                        } else {
-                                            R.string.catalog_score_origin_edited
-                                        }
-                                    )
                                     FilterChip(
                                         selected = option.scoreId == selectedOption?.scoreId,
                                         onClick = { selectedScoreId = option.scoreId },
                                         label = {
                                             Text(
-                                                "${option.scoreLabel} · $origin · ${option.arrangementName} · ${stringResource(R.string.score_revision_label, option.revisionNo)}"
+                                                "${option.scoreLabel} · ${stringResource(R.string.score_revision_label, option.revisionNo)}"
                                             )
                                         },
                                     )
