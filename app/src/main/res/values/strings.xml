@@ -2975,6 +2975,11 @@
     <string name="score_playback_indicator">Playhead</string>
     <string name="score_playback_indicator_default">Default</string>
     <string name="score_playback_indicator_pulse">Pulse</string>
+    <string name="score_playback_speed">Playback speed</string>
+    <string name="score_playback_speed_target">Target speed</string>
+    <string name="score_playback_speed_original">Original: %1$d BPM</string>
+    <string name="score_playback_speed_reset">Restore original</string>
+    <string name="score_playback_speed_range">Enter %1$d–%2$d BPM</string>
     <string name="score_staff_display">Display</string>
     <string name="score_staff_all">All staves</string>
     <string name="score_staff_current">Selected parts</string>

@@ -2739,6 +2739,11 @@
     <string name="score_playback_indicator">播放条</string>
     <string name="score_playback_indicator_default">默认</string>
     <string name="score_playback_indicator_pulse">跳动</string>
+    <string name="score_playback_speed">播放速度</string>
+    <string name="score_playback_speed_target">目标速度</string>
+    <string name="score_playback_speed_original">原速：%1$d BPM</string>
+    <string name="score_playback_speed_reset">恢复原速</string>
+    <string name="score_playback_speed_range">请输入 %1$d–%2$d BPM</string>
     <string name="score_staff_display">谱表</string>
     <string name="score_staff_all">全部谱表</string>
     <string name="score_staff_current">选中声部</string>
