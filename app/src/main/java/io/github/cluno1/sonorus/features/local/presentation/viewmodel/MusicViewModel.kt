@@ -81,6 +81,7 @@ import io.github.cluno1.sonorus.util.RhythmLyricsParser
 import com.google.common.util.concurrent.ListenableFuture
 import com.google.common.util.concurrent.MoreExecutors
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.async
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -156,6 +157,7 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
 
     companion object {
         private const val TAG = "MusicViewModel"
+        private const val COLOR_SOURCE_ALBUM_ART = "ALBUM_ART"
         /**
          * Threshold above which we skip per-item moveMediaItem calls and use
          * a single setMediaItems call instead. moveMediaItem triggers an IPC
@@ -1242,6 +1244,30 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
                 Log.e(TAG, "Critical error during ViewModel initialization", e)
                 handleInitializationFailure(e)
             }
+        }
+
+        // Keep artwork-derived colors tied to the actual current song rather than to a single
+        // Media3 transition callback. This also refreshes immediately when ALBUM_ART is selected
+        // while a song is already active, and collectLatest prevents a slow previous artwork
+        // request from overwriting the palette after a quick song change.
+        viewModelScope.launch {
+            combine(
+                appSettings.colorSource,
+                currentSong,
+            ) { colorSource, song ->
+                AlbumArtColorRequest(
+                    enabled = colorSource == COLOR_SOURCE_ALBUM_ART,
+                    songId = song?.id,
+                    songTitle = song?.title,
+                    artworkUri = song?.artworkUri,
+                )
+            }
+                .distinctUntilChanged()
+                .collectLatest { request ->
+                    if (request.enabled) {
+                        refreshAlbumArtColors(request)
+                    }
+                }
         }
         
         // Dynamically update library artwork when preferSongArtwork or isLosslessArtworkActive changes.
@@ -4335,9 +4361,6 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
                     // Fetch lyrics for the new song
                     fetchLyricsForCurrentSong()
                     
-                    // Extract colors from album art if enabled
-                    extractColorsFromAlbumArt(song)
-                    
                     // Force a duration update - prefer controller.duration
                     mediaController?.let { controller ->
                         val controllerDuration = controller.duration.takeIf { it > 0 }
@@ -5496,72 +5519,69 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
     
-    /**
-     * Extract colors from album artwork and update theme if color source is set to ALBUM_ART
-     */
-    private fun extractColorsFromAlbumArt(song: Song) {
-        // Only extract if color source is set to ALBUM_ART
-        if (appSettings.colorSource.value != "ALBUM_ART") {
+    private data class AlbumArtColorRequest(
+        val enabled: Boolean,
+        val songId: String?,
+        val songTitle: String?,
+        val artworkUri: Uri?,
+    )
+
+    /** Extracts the active artwork through the same Coil pipeline used by the UI. */
+    private suspend fun refreshAlbumArtColors(request: AlbumArtColorRequest) {
+        // Keep the last successful artwork palette while no playback item is selected. The next
+        // non-null current song will refresh it, preserving the app's existing cold-start look.
+        if (request.songId == null) return
+
+        val artworkUri = request.artworkUri
+        if (artworkUri == null || artworkUri == Uri.EMPTY) {
+            clearAlbumArtColorsIfCurrent(request, "No artwork URI")
             return
         }
-        
-        viewModelScope.launch(Dispatchers.IO) {
-            try {
-                val artworkUri = song.artworkUri
-                if (artworkUri == null) {
-                    Log.d(TAG, "No artwork URI for song: ${song.title}")
-                    return@launch
-                }
-                
-                // Load bitmap from URI (local via ContentResolver, streaming via Coil).
+
+        val colorsJson = try {
+            withContext(Dispatchers.IO) {
                 val context = getApplication<Application>().applicationContext
-                val isRemote = artworkUri.scheme == "http" || artworkUri.scheme == "https"
-                val bitmap = if (isRemote) {
-                    try {
-                        val request = coil.request.ImageRequest.Builder(context)
-                            .data(artworkUri.toString())
-                            .size(512)
-                            .allowHardware(false)
-                            .build()
-                        val result = Coil.imageLoader(context).execute(request)
-                        (result.drawable as? android.graphics.drawable.BitmapDrawable)?.bitmap
-                    } catch (e: Exception) {
-                        Log.e(TAG, "Failed to load remote artwork: $artworkUri", e)
-                        null
-                    }
-                } else {
-                    try {
-                        context.contentResolver.openInputStream(artworkUri)?.use { inputStream ->
-                            android.graphics.BitmapFactory.decodeStream(inputStream)
-                        }
-                    } catch (e: Exception) {
-                        Log.e(TAG, "Failed to load bitmap from URI: $artworkUri", e)
-                        null
-                    }
+                val imageRequest = ImageRequest.Builder(context)
+                    // Keep Uri typed so CatalogArtworkFetcher and AudioArtworkFetcher participate.
+                    .data(artworkUri)
+                    .size(512)
+                    .allowHardware(false)
+                    .build()
+                val result = Coil.imageLoader(context).execute(imageRequest)
+                val bitmap = (result.drawable as? android.graphics.drawable.BitmapDrawable)?.bitmap
+                val extractedColors = bitmap?.let {
+                    io.github.cluno1.sonorus.util.ColorExtractor.extractColorsFromBitmap(it)
                 }
-                
-                if (bitmap == null) {
-                    Log.d(TAG, "Could not decode bitmap for song: ${song.title}")
-                    return@launch
-                }
-                
-                // Extract colors using ColorExtractor utility
-                val extractedColors = io.github.cluno1.sonorus.util.ColorExtractor.extractColorsFromBitmap(bitmap)
-                
-                if (extractedColors != null) {
-                    // Convert to JSON and save to settings
-                    val colorsJson = io.github.cluno1.sonorus.util.ColorExtractor.colorsToJson(extractedColors)
-                    appSettings.setExtractedAlbumColors(colorsJson)
-                    Log.d(TAG, "Successfully extracted and saved colors from: ${song.title}")
-                } else {
-                    Log.w(TAG, "Failed to extract colors from: ${song.title}")
-                }
-                
-            } catch (e: Exception) {
-                Log.e(TAG, "Error extracting colors from album art", e)
+                extractedColors?.let(io.github.cluno1.sonorus.util.ColorExtractor::colorsToJson)
             }
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            Log.e(TAG, "Failed to load artwork colors from $artworkUri", e)
+            null
+        }
+
+        if (!isCurrentAlbumArtColorRequest(request)) return
+
+        if (colorsJson != null) {
+            appSettings.setExtractedAlbumColors(colorsJson)
+            Log.d(TAG, "Successfully extracted and saved colors from: ${request.songTitle}")
+        } else {
+            Log.w(TAG, "Could not extract artwork colors from: ${request.songTitle}")
+            appSettings.setExtractedAlbumColors(null)
         }
     }
+
+    private fun clearAlbumArtColorsIfCurrent(request: AlbumArtColorRequest, reason: String) {
+        if (!isCurrentAlbumArtColorRequest(request)) return
+        appSettings.setExtractedAlbumColors(null)
+        Log.d(TAG, "$reason for song: ${request.songTitle}")
+    }
+
+    private fun isCurrentAlbumArtColorRequest(request: AlbumArtColorRequest): Boolean =
+        appSettings.colorSource.value == COLOR_SOURCE_ALBUM_ART &&
+            _currentSong.value?.id == request.songId &&
+            _currentSong.value?.artworkUri == request.artworkUri
 
     private fun updateDailyStats(song: Song) {
         viewModelScope.launch {
