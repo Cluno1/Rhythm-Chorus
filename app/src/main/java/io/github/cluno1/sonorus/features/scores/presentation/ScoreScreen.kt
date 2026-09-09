@@ -868,6 +868,8 @@ private fun ScoreReadyContent(
             interactionEnabled = editSession == null,
             settingsContent = {
                 scoreSettingsContent()
+            },
+            settingsFooterContent = {
                 if (editSession == null) {
                     ScoreTrackControls(
                         trackOptions = trackOptions,
@@ -1313,40 +1315,28 @@ private fun ScoreTrackControls(
 ) {
     if (trackOptions.size <= 1) return
 
-    Surface(
+    ScoreSettingsCard(
+        icon = RhythmIcons.Equalizer,
+        title = stringResource(R.string.score_part_settings),
         modifier = modifier,
-        shape = RoundedCornerShape(28.dp),
-        color = MaterialTheme.colorScheme.surfaceContainerLow
-    ) {
-        Column(
-            modifier = Modifier.padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(10.dp)
-        ) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    text = stringResource(R.string.score_part_settings),
-                    style = MaterialTheme.typography.labelLarge
+        trailingContent = {
+            OutlinedButton(onClick = { onExpandedChange(!expanded) }) {
+                Icon(
+                    imageVector = if (expanded) RhythmIcons.ExpandLess else RhythmIcons.ExpandMore,
+                    contentDescription = null,
+                    modifier = Modifier.size(20.dp)
                 )
-                OutlinedButton(onClick = { onExpandedChange(!expanded) }) {
-                    Icon(
-                        imageVector = if (expanded) RhythmIcons.ExpandLess else RhythmIcons.ExpandMore,
-                        contentDescription = null,
-                        modifier = Modifier.size(20.dp)
-                    )
-                    Text(
-                        text = stringResource(
-                            if (expanded) R.string.score_controls_collapse
-                            else R.string.score_controls_expand
-                        ),
-                        modifier = Modifier.padding(start = 6.dp)
-                    )
-                }
+                Text(
+                    text = stringResource(
+                        if (expanded) R.string.score_controls_collapse
+                        else R.string.score_controls_expand
+                    ),
+                    modifier = Modifier.padding(start = 6.dp)
+                )
             }
-            if (!expanded) return@Column
+        },
+    ) {
+        if (expanded) {
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -1484,6 +1474,7 @@ private fun ScorePlaybackControls(
     onStop: () -> Unit,
     interactionEnabled: Boolean,
     settingsContent: @Composable () -> Unit,
+    settingsFooterContent: @Composable () -> Unit,
     modifier: Modifier = Modifier
 ) {
     var showSettings by rememberSaveable { mutableStateOf(false) }
@@ -1685,6 +1676,7 @@ private fun ScorePlaybackControls(
                         ScoreModeChip(endBehavior == ScorePlaybackEndBehavior.LOOP_CURRENT, { onEndBehaviorChange(ScorePlaybackEndBehavior.LOOP_CURRENT) }, stringResource(R.string.score_loop_current), interactionEnabled)
                     }
                 }
+                settingsFooterContent()
             }
         }
     }
@@ -1695,6 +1687,7 @@ private fun ScoreSettingsCard(
     icon: io.github.cluno1.sonorus.shared.presentation.components.icons.MaterialSymbolIcon,
     title: String,
     modifier: Modifier = Modifier,
+    trailingContent: @Composable () -> Unit = {},
     content: @Composable () -> Unit,
 ) {
     Surface(
@@ -1707,20 +1700,27 @@ private fun ScoreSettingsCard(
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
             Row(
-                horizontalArrangement = Arrangement.spacedBy(10.dp),
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                Icon(
-                    imageVector = icon,
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.size(22.dp),
-                )
-                Text(
-                    text = title,
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold,
-                )
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(10.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Icon(
+                        imageVector = icon,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.size(22.dp),
+                    )
+                    Text(
+                        text = title,
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold,
+                    )
+                }
+                trailingContent()
             }
             content()
         }
