@@ -27,6 +27,7 @@ import android.widget.RelativeLayout
 import android.widget.ScrollView
 import android.util.Log
 import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -78,6 +79,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
@@ -136,6 +138,7 @@ private class ScorePlaybackController(private val context: Context) {
     private var currentTime = 0.0
     private var endTime = 0.0
     private var activePositions: List<ScorePlaybackBeatPosition> = emptyList()
+    private var playbackSpeed = 1.0
     private val audioManager = context.getSystemService(Context.AUDIO_SERVICE) as AudioManager
     private var audioFocusRequest: AudioFocusRequest? = null
     private var isPlaying = false
@@ -186,6 +189,7 @@ private class ScorePlaybackController(private val context: Context) {
     fun onPlayerReady(view: AlphaTabView) {
         if (this.view === view) {
             playerIsReady = true
+            view.api.playbackSpeed = playbackSpeed
             applyMutedTracks()
         }
     }
@@ -193,6 +197,26 @@ private class ScorePlaybackController(private val context: Context) {
     fun setMutedTrackIndexes(indexes: Set<Int>) {
         mutedTrackIndexes = indexes
         applyMutedTracks()
+    }
+
+    fun setPlaybackSpeed(speed: Double) {
+        val safeSpeed = speed.takeIf { it.isFinite() && it > 0.0 } ?: 1.0
+        if (safeSpeed == playbackSpeed) return
+        playbackSpeed = safeSpeed
+        val currentView = view
+        currentView?.post {
+            if (view === currentView && playerIsReady) {
+                currentView.api.playbackSpeed = playbackSpeed
+            }
+        }
+        displayBindings.forEach { (displayView, binding) ->
+            displayView.post {
+                if (displayBindings[displayView] === binding) {
+                    applyPlaybackSpeedToDisplay(displayView, binding)
+                }
+            }
+        }
+        Log.i(SCORE_PLAYBACK_TAG, "playback speed=${"%.4f".format(safeSpeed)}x")
     }
 
     fun playPause() {
@@ -290,6 +314,7 @@ private class ScorePlaybackController(private val context: Context) {
         displayBindings[view] = binding
         view.post {
             if (displayBindings[view] !== binding) return@post
+            applyPlaybackSpeedToDisplay(view, binding)
             configureDisplayOutput(view, binding)
             updateDisplayPosition(view, binding)
             if (isPlaying) view.api.play() else view.api.pause()
@@ -303,6 +328,7 @@ private class ScorePlaybackController(private val context: Context) {
         val binding = displayBindings[view] ?: return
         view.post {
             if (displayBindings[view] !== binding) return@post
+            applyPlaybackSpeedToDisplay(view, binding)
             configureDisplayOutput(view, binding)
             updateDisplayPosition(view, binding)
             if (isPlaying) view.api.play() else view.api.pause()
@@ -346,10 +372,19 @@ private class ScorePlaybackController(private val context: Context) {
     ): IExternalMediaSynthOutput? {
         val output = displayView.api.player?.output as? IExternalMediaSynthOutput ?: return null
         binding.externalMediaHandler.duration = endTime
+        binding.externalMediaHandler.playbackRate = playbackSpeed
         if (output.handler !== binding.externalMediaHandler) {
             output.handler = binding.externalMediaHandler
         }
         return output
+    }
+
+    private fun applyPlaybackSpeedToDisplay(
+        displayView: AlphaTabView,
+        binding: ScorePlaybackDisplayBinding,
+    ) {
+        binding.externalMediaHandler.playbackRate = playbackSpeed
+        runCatching { displayView.api.playbackSpeed = playbackSpeed }
     }
 
     private fun updateDisplayPosition(
@@ -690,6 +725,19 @@ private fun ScoreReadyContent(
     }
 
     val playbackScore = checkNotNull(activeScores[playbackVariant])
+    val playbackSourceBpm = remember(playbackScore.playbackScore) {
+        normalizedScoreSourceBpm(playbackScore.playbackScore.tempo)
+    }
+    val displayedSourceBpm = remember(playbackSourceBpm) {
+        displayedScoreSourceBpm(playbackSourceBpm)
+    }
+    var customPlaybackBpm by rememberSaveable { mutableStateOf<Int?>(null) }
+    val targetPlaybackBpm = customPlaybackBpm ?: displayedSourceBpm
+    val playbackSpeed = remember(playbackSourceBpm, customPlaybackBpm) {
+        customPlaybackBpm?.let { targetBpm ->
+            scorePlaybackSpeedForTargetBpm(playbackSourceBpm, targetBpm)
+        } ?: 1.0
+    }
     val trackOptions = remember(playbackScore.displayScore, playbackScore.displayPartLabels) {
         buildScoreTrackOptions(
             trackNames = playbackScore.displayScore.tracks.toList().map { it.name },
@@ -742,6 +790,9 @@ private fun ScoreReadyContent(
 
     LaunchedEffect(playbackVariant, mutedTrackIndexes) {
         playbackController.setMutedTrackIndexes(mutedTrackIndexes)
+    }
+    LaunchedEffect(playbackController, playbackSpeed) {
+        playbackController.setPlaybackSpeed(playbackSpeed)
     }
 
     val editSaveSuccess = stringResource(R.string.score_edit_save_success)
@@ -856,8 +907,18 @@ private fun ScoreReadyContent(
             playbackVariant = playbackVariant,
             status = playbackStatus,
             indicatorMode = playbackIndicatorMode,
+            sourceBpm = displayedSourceBpm,
+            targetBpm = targetPlaybackBpm,
+            hasCustomBpm = customPlaybackBpm != null,
             onPlaybackVariantChange = { playbackVariant = it },
             onIndicatorModeChange = { playbackIndicatorMode = it },
+            onTargetBpmChange = { bpm ->
+                customPlaybackBpm = bpm.coerceIn(
+                    MIN_SCORE_PLAYBACK_BPM,
+                    MAX_SCORE_PLAYBACK_BPM,
+                )
+            },
+            onResetBpm = { customPlaybackBpm = null },
             endBehavior = playbackEndBehavior,
             onEndBehaviorChange = { playbackEndBehavior = it },
             onPlayPause = { playbackController.playPause() },
@@ -1466,8 +1527,13 @@ private fun ScorePlaybackControls(
     playbackVariant: BundledScoreVariant,
     status: ScorePlaybackStatus,
     indicatorMode: ScorePlaybackIndicatorMode,
+    sourceBpm: Int,
+    targetBpm: Int,
+    hasCustomBpm: Boolean,
     onPlaybackVariantChange: (BundledScoreVariant) -> Unit,
     onIndicatorModeChange: (ScorePlaybackIndicatorMode) -> Unit,
+    onTargetBpmChange: (Int) -> Unit,
+    onResetBpm: () -> Unit,
     endBehavior: ScorePlaybackEndBehavior,
     onEndBehaviorChange: (ScorePlaybackEndBehavior) -> Unit,
     onPlayPause: () -> Unit,
@@ -1676,8 +1742,103 @@ private fun ScorePlaybackControls(
                         ScoreModeChip(endBehavior == ScorePlaybackEndBehavior.LOOP_CURRENT, { onEndBehaviorChange(ScorePlaybackEndBehavior.LOOP_CURRENT) }, stringResource(R.string.score_loop_current), interactionEnabled)
                     }
                 }
+                ScorePlaybackTempoCard(
+                    sourceBpm = sourceBpm,
+                    targetBpm = targetBpm,
+                    hasCustomBpm = hasCustomBpm,
+                    enabled = interactionEnabled,
+                    onTargetBpmChange = onTargetBpmChange,
+                    onResetBpm = onResetBpm,
+                )
                 settingsFooterContent()
             }
+        }
+    }
+}
+
+@Composable
+private fun ScorePlaybackTempoCard(
+    sourceBpm: Int,
+    targetBpm: Int,
+    hasCustomBpm: Boolean,
+    enabled: Boolean,
+    onTargetBpmChange: (Int) -> Unit,
+    onResetBpm: () -> Unit,
+) {
+    var input by remember(targetBpm) { mutableStateOf(targetBpm.toString()) }
+    val parsedInput = input.toIntOrNull()
+    val inputIsValid = parsedInput != null &&
+        parsedInput in MIN_SCORE_PLAYBACK_BPM..MAX_SCORE_PLAYBACK_BPM
+
+    ScoreSettingsCard(
+        icon = RhythmIcons.Player.Speed,
+        title = stringResource(R.string.score_playback_speed),
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            OutlinedTextField(
+                value = input,
+                onValueChange = { value ->
+                    if (value.length <= 3 && value.all(Char::isDigit)) {
+                        input = value
+                        value.toIntOrNull()
+                            ?.takeIf { it in MIN_SCORE_PLAYBACK_BPM..MAX_SCORE_PLAYBACK_BPM }
+                            ?.let(onTargetBpmChange)
+                    }
+                },
+                modifier = Modifier.weight(1f),
+                enabled = enabled,
+                singleLine = true,
+                isError = input.isNotEmpty() && !inputIsValid,
+                label = { Text(stringResource(R.string.score_playback_speed_target)) },
+                suffix = { Text("BPM") },
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+            )
+            TextButton(
+                onClick = onResetBpm,
+                enabled = enabled && hasCustomBpm,
+            ) {
+                Text(stringResource(R.string.score_playback_speed_reset))
+            }
+        }
+        Text(
+            text = stringResource(R.string.score_playback_speed_original, sourceBpm),
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+        Row(
+            modifier = Modifier.horizontalScroll(rememberScrollState()),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            listOf(-5, -1, 1, 5).forEach { delta ->
+                OutlinedButton(
+                    onClick = {
+                        onTargetBpmChange(
+                            (targetBpm + delta).coerceIn(
+                                MIN_SCORE_PLAYBACK_BPM,
+                                MAX_SCORE_PLAYBACK_BPM,
+                            )
+                        )
+                    },
+                    enabled = enabled,
+                ) {
+                    Text(if (delta > 0) "+$delta" else delta.toString())
+                }
+            }
+        }
+        if (input.isNotEmpty() && !inputIsValid) {
+            Text(
+                text = stringResource(
+                    R.string.score_playback_speed_range,
+                    MIN_SCORE_PLAYBACK_BPM,
+                    MAX_SCORE_PLAYBACK_BPM,
+                ),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.error,
+            )
         }
     }
 }
