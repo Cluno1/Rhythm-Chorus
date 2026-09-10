@@ -93,7 +93,10 @@ import io.github.cluno1.sonorus.features.scores.data.BundledScoreVariant
 import io.github.cluno1.sonorus.features.scores.data.LoadedScore
 import io.github.cluno1.sonorus.features.scores.data.MergedDisplayScore
 import io.github.cluno1.sonorus.features.scores.data.ScoreEditSession
+import io.github.cluno1.sonorus.features.scores.data.ScoreGlobalSettings
 import io.github.cluno1.sonorus.features.scores.data.ScoreNoteRef
+import io.github.cluno1.sonorus.features.scores.data.ScoreScopedSettings
+import io.github.cluno1.sonorus.features.scores.data.ScoreSettingsStore
 import io.github.cluno1.sonorus.features.scores.data.ScoreSourceMap
 import io.github.cluno1.sonorus.infrastructure.service.MediaPlaybackService
 import io.github.cluno1.sonorus.shared.presentation.components.icons.Icon
@@ -745,24 +748,64 @@ private fun ScoreReadyContent(
     var activeScores by remember(scores) { mutableStateOf(scores) }
     val ocrScore = checkNotNull(activeScores[BundledScoreVariant.OCR])
     val midiScore = checkNotNull(activeScores[BundledScoreVariant.MIDI])
+    val context = LocalContext.current
+    val scoreSettingsStore = remember(context) { ScoreSettingsStore(context) }
+    val scoreSettingsId = playbackSubject?.scoreId
+    val initialGlobalSettings = remember(scoreSettingsStore) {
+        scoreSettingsStore.loadGlobal()
+    }
+    val initialScopedSettings = remember(scoreSettingsStore, scoreSettingsId) {
+        scoreSettingsId?.let(scoreSettingsStore::loadScore) ?: ScoreScopedSettings()
+    }
     var playbackVariant by rememberSaveable { mutableStateOf(BundledScoreVariant.OCR) }
     var playbackStatus by remember { mutableStateOf(ScorePlaybackStatus.PREPARING) }
-    var playbackIndicatorMode by rememberSaveable {
-        mutableStateOf(ScorePlaybackIndicatorMode.LINE)
+    var playbackIndicatorMode by remember {
+        mutableStateOf(
+            runCatching {
+                ScorePlaybackIndicatorMode.valueOf(initialGlobalSettings.playbackIndicatorMode)
+            }.getOrDefault(ScorePlaybackIndicatorMode.LINE)
+        )
     }
-    var followScrollEnabled by rememberSaveable { mutableStateOf(true) }
-    var playbackEndBehavior by rememberSaveable { mutableStateOf(ScorePlaybackEndBehavior.PAUSE_AT_END) }
-    // View-local on purpose: the previous release saved a single track index in this slot,
-    // which is not compatible with the new multi-select bit mask after an app upgrade.
-    var staffMode by remember { mutableStateOf(ScoreStaffMode.ALL_STAVES) }
-    var notationLayout by remember { mutableStateOf(ScoreNotationLayout.SEPARATE_PARTS) }
-    var partColorMode by remember { mutableStateOf(ScorePartColorMode.DEFAULT) }
-    var selectedTrackMask by remember { mutableIntStateOf(1) }
+    var followScrollEnabled by remember {
+        mutableStateOf(initialGlobalSettings.followScrollEnabled)
+    }
+    var playbackEndBehavior by remember {
+        mutableStateOf(
+            runCatching {
+                ScorePlaybackEndBehavior.valueOf(initialGlobalSettings.playbackEndBehavior)
+            }.getOrDefault(ScorePlaybackEndBehavior.PAUSE_AT_END)
+        )
+    }
+    var staffMode by remember(scoreSettingsId) {
+        mutableStateOf(
+            runCatching { ScoreStaffMode.valueOf(initialScopedSettings.staffMode) }
+                .getOrDefault(ScoreStaffMode.ALL_STAVES)
+        )
+    }
+    var notationLayout by remember {
+        mutableStateOf(
+            runCatching { ScoreNotationLayout.valueOf(initialGlobalSettings.notationLayout) }
+                .getOrDefault(ScoreNotationLayout.SEPARATE_PARTS)
+        )
+    }
+    var partColorMode by remember {
+        mutableStateOf(
+            runCatching { ScorePartColorMode.valueOf(initialGlobalSettings.partColorMode) }
+                .getOrDefault(ScorePartColorMode.DEFAULT)
+        )
+    }
+    var selectedTrackMask by remember(scoreSettingsId) {
+        mutableIntStateOf(initialScopedSettings.selectedTrackMask)
+    }
     var trackControlsExpanded by rememberSaveable { mutableStateOf(false) }
-    var mutedTracksByVariant by remember {
-        mutableStateOf<Map<BundledScoreVariant, Set<Int>>>(emptyMap())
+    var mutedTracksByVariant by remember(scoreSettingsId) {
+        mutableStateOf(
+            initialScopedSettings.mutedTrackIndexesByVariant.mapNotNull { (variant, indexes) ->
+                runCatching { BundledScoreVariant.valueOf(variant) }.getOrNull()
+                    ?.let { it to indexes.toSet() }
+            }.toMap()
+        )
     }
-    val context = LocalContext.current
     val scoreUsageRecorder = remember(context, playbackSubject) {
         playbackSubject?.let {
             ScoreUsageRecorder(
@@ -824,7 +867,47 @@ private fun ScoreReadyContent(
     val displayedSourceBpm = remember(playbackSourceBpm) {
         displayedScoreSourceBpm(playbackSourceBpm)
     }
-    var customPlaybackBpm by rememberSaveable { mutableStateOf<Int?>(null) }
+    var customPlaybackBpm by remember(scoreSettingsId) {
+        mutableStateOf(initialScopedSettings.customPlaybackBpm)
+    }
+
+    fun persistGlobalSettings(
+        indicatorMode: ScorePlaybackIndicatorMode = playbackIndicatorMode,
+        followScroll: Boolean = followScrollEnabled,
+        endBehavior: ScorePlaybackEndBehavior = playbackEndBehavior,
+        layout: ScoreNotationLayout = notationLayout,
+        colorMode: ScorePartColorMode = partColorMode,
+    ) {
+        scoreSettingsStore.saveGlobal(
+            ScoreGlobalSettings(
+                playbackIndicatorMode = indicatorMode.name,
+                followScrollEnabled = followScroll,
+                playbackEndBehavior = endBehavior.name,
+                notationLayout = layout.name,
+                partColorMode = colorMode.name,
+            )
+        )
+    }
+
+    fun persistScopedSettings(
+        playbackBpm: Int? = customPlaybackBpm,
+        displayedStaffMode: ScoreStaffMode = staffMode,
+        trackMask: Int = selectedTrackMask,
+        mutedTracks: Map<BundledScoreVariant, Set<Int>> = mutedTracksByVariant,
+    ) {
+        val id = scoreSettingsId ?: return
+        scoreSettingsStore.saveScore(
+            id,
+            ScoreScopedSettings(
+                customPlaybackBpm = playbackBpm,
+                staffMode = displayedStaffMode.name,
+                selectedTrackMask = trackMask,
+                mutedTrackIndexesByVariant = mutedTracks.mapKeys { it.key.name }
+                    .mapValues { it.value.sorted() },
+            )
+        )
+    }
+
     val targetPlaybackBpm = customPlaybackBpm ?: displayedSourceBpm
     val playbackSpeed = remember(playbackSourceBpm, customPlaybackBpm) {
         customPlaybackBpm?.let { targetBpm ->
@@ -851,7 +934,9 @@ private fun ScoreReadyContent(
         ScoreStaffMode.ALL_STAVES -> trackOptions.mapTo(mutableSetOf()) { it.index }
         ScoreStaffMode.SELECTED_PARTS -> selectedTrackIndexes
     }
-    val mutedTrackIndexes = mutedTracksByVariant[playbackVariant].orEmpty()
+    val mutedTrackIndexes = mutedTracksByVariant[playbackVariant]
+        .orEmpty()
+        .filterTo(mutableSetOf()) { it in trackOptions.indices }
     var mergedDisplayProjection by remember { mutableStateOf<MergedDisplayProjection?>(null) }
 
     LaunchedEffect(notationLayout, visibleTrackIndexes, activeScores) {
@@ -1005,17 +1090,31 @@ private fun ScoreReadyContent(
             targetBpm = targetPlaybackBpm,
             hasCustomBpm = customPlaybackBpm != null,
             onPlaybackVariantChange = { playbackVariant = it },
-            onIndicatorModeChange = { playbackIndicatorMode = it },
-            onFollowScrollChange = { followScrollEnabled = it },
+            onIndicatorModeChange = {
+                playbackIndicatorMode = it
+                persistGlobalSettings(indicatorMode = it)
+            },
+            onFollowScrollChange = {
+                followScrollEnabled = it
+                persistGlobalSettings(followScroll = it)
+            },
             onTargetBpmChange = { bpm ->
-                customPlaybackBpm = bpm.coerceIn(
+                val nextBpm = bpm.coerceIn(
                     MIN_SCORE_PLAYBACK_BPM,
                     MAX_SCORE_PLAYBACK_BPM,
                 )
+                customPlaybackBpm = nextBpm
+                persistScopedSettings(playbackBpm = nextBpm)
             },
-            onResetBpm = { customPlaybackBpm = null },
+            onResetBpm = {
+                customPlaybackBpm = null
+                persistScopedSettings(playbackBpm = null)
+            },
             endBehavior = playbackEndBehavior,
-            onEndBehaviorChange = { playbackEndBehavior = it },
+            onEndBehaviorChange = {
+                playbackEndBehavior = it
+                persistGlobalSettings(endBehavior = it)
+            },
             onPlayPause = { playbackController.playPause() },
             onStop = {
                 playbackController.stop()
@@ -1036,20 +1135,36 @@ private fun ScoreReadyContent(
                         selectedTrackIndexes = selectedTrackIndexes,
                         mutedTrackIndexes = mutedTrackIndexes,
                         onExpandedChange = { trackControlsExpanded = it },
-                        onStaffModeChange = { staffMode = it },
-                        onNotationLayoutChange = { notationLayout = it },
-                        onPartColorModeChange = { partColorMode = it },
+                        onStaffModeChange = {
+                            staffMode = it
+                            persistScopedSettings(displayedStaffMode = it)
+                        },
+                        onNotationLayoutChange = {
+                            notationLayout = it
+                            persistGlobalSettings(layout = it)
+                        },
+                        onPartColorModeChange = {
+                            partColorMode = it
+                            persistGlobalSettings(colorMode = it)
+                        },
                         onTrackVisibilityToggle = { trackIndex ->
-                            selectedTrackMask = toggleScoreTrackSelectionMask(
+                            val nextMask = toggleScoreTrackSelectionMask(
                                 effectiveSelectedTrackMask, trackIndex, trackOptions.size
                             )
+                            selectedTrackMask = nextMask
                             staffMode = ScoreStaffMode.SELECTED_PARTS
+                            persistScopedSettings(
+                                displayedStaffMode = ScoreStaffMode.SELECTED_PARTS,
+                                trackMask = nextMask,
+                            )
                         },
                         onTrackSoundToggle = { trackIndex ->
                             val next = mutedTrackIndexes.toMutableSet().apply {
                                 if (!add(trackIndex)) remove(trackIndex)
                             }
-                            mutedTracksByVariant = mutedTracksByVariant + (playbackVariant to next)
+                            val nextMutedTracks = mutedTracksByVariant + (playbackVariant to next)
+                            mutedTracksByVariant = nextMutedTracks
+                            persistScopedSettings(mutedTracks = nextMutedTracks)
                         },
                         modifier = Modifier.fillMaxWidth(),
                     )

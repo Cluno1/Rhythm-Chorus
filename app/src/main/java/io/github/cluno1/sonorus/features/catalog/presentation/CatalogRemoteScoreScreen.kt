@@ -23,10 +23,13 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import io.github.cluno1.sonorus.features.scores.presentation.RemoteScoreScreen
+import io.github.cluno1.sonorus.features.scores.data.ScoreSettingsStore
+import io.github.cluno1.sonorus.features.scores.data.resolveRememberedScoreId
 import io.github.cluno1.sonorus.features.catalog.domain.ScoreRevision
 import io.github.cluno1.sonorus.features.catalog.domain.MusicXmlRuntimeSanitizer
 import io.github.cluno1.sonorus.features.catalog.domain.CatalogLibraryScoreWork
@@ -74,8 +77,24 @@ fun CatalogRemoteScoreScreen(
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    var selectedScoreId by remember(scoreWork?.workId, initialScoreId) {
-        mutableStateOf(initialScoreId ?: scoreWork?.defaultScoreId)
+    val context = LocalContext.current
+    val scoreSettingsStore = remember(context) { ScoreSettingsStore(context) }
+    var selectedScoreId by remember(scoreWork?.workId, scoreWork?.scoreOptions, initialScoreId) {
+        val availableScoreIds = scoreWork?.scoreOptions
+            ?.mapTo(linkedSetOf()) { it.scoreId }
+            .orEmpty()
+        mutableStateOf(
+            if (scoreWork == null) {
+                initialScoreId
+            } else {
+                resolveRememberedScoreId(
+                    rememberedScoreId = scoreSettingsStore.loadSelectedScoreId(scoreWork.workId),
+                    requestedScoreId = initialScoreId,
+                    defaultScoreId = scoreWork.defaultScoreId,
+                    availableScoreIds = availableScoreIds,
+                )
+            }
+        )
     }
     val selectedOption = scoreWork?.scoreOptions?.firstOrNull { it.scoreId == selectedScoreId }
         ?: scoreWork?.scoreOptions?.firstOrNull { it.scoreId == scoreWork.defaultScoreId }
@@ -162,7 +181,13 @@ fun CatalogRemoteScoreScreen(
                                 work.scoreOptions.forEach { option ->
                                     FilterChip(
                                         selected = option.scoreId == selectedOption?.scoreId,
-                                        onClick = { selectedScoreId = option.scoreId },
+                                        onClick = {
+                                            selectedScoreId = option.scoreId
+                                            scoreSettingsStore.saveSelectedScoreId(
+                                                work.workId,
+                                                option.scoreId,
+                                            )
+                                        },
                                         label = {
                                             Text(
                                                 "${option.scoreLabel} · ${stringResource(R.string.score_revision_label, option.revisionNo)}",
