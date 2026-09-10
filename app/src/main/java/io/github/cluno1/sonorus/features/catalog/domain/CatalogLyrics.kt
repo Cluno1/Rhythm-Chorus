@@ -5,6 +5,7 @@ import java.util.Locale
 data class CatalogLyricsVariant(
     val language: String,
     val lyrics: String,
+    val format: String = "plain",
 )
 
 fun normalizeCatalogLyricsLanguageTag(value: String): String {
@@ -19,12 +20,14 @@ fun CatalogLibrarySong.lyricsVariants(): List<CatalogLyricsVariant> = catalogLyr
     lyrics = lyrics,
     lyricsLanguage = lyricsLanguage,
     translations = lyricsTranslations,
+    formats = lyricsFormats,
 )
 
 fun RhythmNowPlayingItem.lyricsVariants(): List<CatalogLyricsVariant> = catalogLyricsVariants(
     lyrics = lyrics,
     lyricsLanguage = lyricsLanguage,
     translations = lyricsTranslations,
+    formats = lyricsFormats,
 )
 
 fun selectCatalogLyricsVariant(
@@ -54,18 +57,28 @@ private fun catalogLyricsVariants(
     lyrics: String?,
     lyricsLanguage: String?,
     translations: List<CatalogLyricsTranslation>?,
+    formats: List<CatalogLyricLanguageFormat>?,
 ): List<CatalogLyricsVariant> = buildList {
+    val formatByLanguage = formats.orEmpty().associate {
+        normalizeCatalogLyricsLanguageTag(it.language).lowercase(Locale.ROOT) to it.format
+    }
     lyrics?.takeIf(String::isNotBlank)?.let { primary ->
         val language = runCatching {
             normalizeCatalogLyricsLanguageTag(lyricsLanguage ?: "und")
         }.getOrDefault("und")
-        add(CatalogLyricsVariant(language, primary))
+        add(CatalogLyricsVariant(language, primary, formatByLanguage[language.lowercase(Locale.ROOT)] ?: "plain"))
     }
     translations.orEmpty().forEach { translation ->
         val language = runCatching { normalizeCatalogLyricsLanguageTag(translation.language) }.getOrNull()
             ?: return@forEach
         if (translation.lyrics.isNotBlank() && none { it.language.equals(language, true) }) {
-            add(CatalogLyricsVariant(language, translation.lyrics))
+            add(
+                CatalogLyricsVariant(
+                    language,
+                    translation.lyrics,
+                    formatByLanguage[language.lowercase(Locale.ROOT)] ?: "plain",
+                ),
+            )
         }
     }
 }

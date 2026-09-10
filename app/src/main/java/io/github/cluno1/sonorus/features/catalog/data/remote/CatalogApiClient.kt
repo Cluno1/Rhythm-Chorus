@@ -29,7 +29,7 @@ internal class CatalogApiClient(
         credentials,
     )
 
-    val api: CatalogApi = Retrofit.Builder()
+    private val retrofit: Retrofit = Retrofit.Builder()
         .baseUrl(origin)
         .client(
             OkHttpClient.Builder()
@@ -53,7 +53,9 @@ internal class CatalogApiClient(
         )
         .addConverterFactory(GsonConverterFactory.create(GsonBuilder().create()))
         .build()
-        .create(CatalogApi::class.java)
+
+    val api: CatalogApi = retrofit.create(CatalogApi::class.java)
+    val lyricsWriteApi: CatalogLyricsWriteApi = retrofit.create(CatalogLyricsWriteApi::class.java)
 
     fun resolveAssetUrl(relativeOrAbsolute: String): HttpUrl {
         val resolved = origin.resolve(relativeOrAbsolute) ?: throw IllegalArgumentException("asset URL is invalid")

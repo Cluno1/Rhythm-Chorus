@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="lyrics_generate_timing_template">Perkirakan linimasa</string>
+    <string name="lyrics_generate_zero_template">Templat waktu nol</string>
+    <string name="lyrics_previous_timing_line">Baris sebelumnya</string>
+    <string name="lyrics_stamp_current_time">Tandai %1$s</string>
+    <string name="lyrics_sync_clean">Sama dengan server</string>
+    <string name="lyrics_sync_pending">Draf lokal belum disinkronkan</string>
+    <string name="lyrics_sync_in_progress">Menyinkronkan…</string>
+    <string name="lyrics_sync_complete">Disinkronkan ke server</string>
+    <string name="lyrics_sync_conflict">Lirik di server berubah setelah draf ini dibuat.</string>
+    <string name="lyrics_sync_failed">Sinkronisasi gagal; draf lokal tetap aman.</string>
+    <string name="lyrics_sync_unavailable">Sinkronisasi server tidak tersedia</string>
+    <string name="lyrics_sync_to_server">Sinkronkan</string>
+    <string name="lyrics_load_server_version">Gunakan versi server</string>
+    <string name="lyrics_overwrite_server_version">Timpa versi server</string>
+</resources>

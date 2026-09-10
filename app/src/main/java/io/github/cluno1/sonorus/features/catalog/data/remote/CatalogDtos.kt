@@ -57,6 +57,7 @@ internal data class LibrarySongDto(
     @SerializedName("work_id") val workId: String?,
     @SerializedName("arrangement_id") val arrangementId: String?,
     @SerializedName("rendition_id") val renditionId: String?,
+    @SerializedName("rendition_revision") val renditionRevision: Int? = null,
     @SerializedName("album_id") val albumId: String?,
     val title: String?,
     val artist: String?,
@@ -70,6 +71,28 @@ internal data class LibrarySongDto(
     @SerializedName("cover_asset_id") val coverAssetId: String? = null,
     @SerializedName("lyrics_source_images") val lyricsSourceImages: List<LyricSourceImageDto>? = null,
     @SerializedName("lyric_source_count") val lyricSourceCount: Int? = null,
+    @SerializedName("lyrics_formats") val lyricsFormats: List<LyricLanguageFormatDto>? = null,
+)
+
+internal data class LyricLanguageFormatDto(
+    val language: String?,
+    val format: String?,
+)
+
+internal data class RenditionLyricReplaceDto(
+    val lyrics: String,
+    val format: String,
+)
+
+internal data class RenditionLyricWriteDto(
+    @SerializedName("rendition_id") val renditionId: String?,
+    val revision: Int?,
+    val language: String?,
+    val lyrics: String?,
+    val format: String?,
+    @SerializedName("lyrics_language") val lyricsLanguage: String?,
+    @SerializedName("lyrics_translations") val lyricsTranslations: List<LyricsTranslationDto>?,
+    @SerializedName("lyrics_formats") val lyricsFormats: List<LyricLanguageFormatDto>?,
 )
 
 internal data class LyricsTranslationDto(

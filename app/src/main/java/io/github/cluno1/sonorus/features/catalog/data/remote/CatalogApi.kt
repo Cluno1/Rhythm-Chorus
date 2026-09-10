@@ -9,6 +9,8 @@ import retrofit2.http.Path
 import retrofit2.http.Query
 import retrofit2.http.Url
 import retrofit2.http.Streaming
+import retrofit2.http.Body
+import retrofit2.http.PUT
 
 /** Second-phase API surface. Deliberately contains only GET and HEAD operations. */
 internal interface CatalogApi {
@@ -77,6 +79,18 @@ internal interface CatalogApi {
         @Query("after") after: Long,
         @Query("limit") limit: Int = 100,
     ): Response<ChangesDto>
+}
+
+/** The only device-writable Catalog surface. Keep general entity mutation out of the APK. */
+internal interface CatalogLyricsWriteApi {
+    @PUT("v2/renditions/{id}/lyrics/{language}")
+    suspend fun replaceRenditionLyrics(
+        @Path("id") renditionId: String,
+        @Path("language") language: String,
+        @Header("If-Match") ifMatch: String,
+        @Header("Idempotency-Key") idempotencyKey: String,
+        @Body body: RenditionLyricReplaceDto,
+    ): Response<RenditionLyricWriteDto>
 }
 
 internal data class HealthDto(val status: String? = null, val version: String? = null)

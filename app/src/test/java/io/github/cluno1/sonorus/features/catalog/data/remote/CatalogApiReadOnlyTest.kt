@@ -21,4 +21,12 @@ class CatalogApiReadOnlyTest {
             )
         }
     }
+
+    @Test
+    fun lyricsWriteApiDeclaresOnlyTheNarrowPut() {
+        val methods = CatalogLyricsWriteApi::class.java.declaredMethods
+            .filterNot { it.name.endsWith("\$default") }
+        assertTrue(methods.size == 1)
+        assertTrue(methods.single().getAnnotation(PUT::class.java) != null)
+    }
 }

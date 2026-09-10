@@ -13,6 +13,7 @@ import io.github.cluno1.sonorus.features.catalog.domain.CatalogArtwork
 import io.github.cluno1.sonorus.features.catalog.domain.CatalogConnection
 import io.github.cluno1.sonorus.features.catalog.domain.CatalogFailure
 import io.github.cluno1.sonorus.features.catalog.domain.CatalogIssuedInvite
+import io.github.cluno1.sonorus.features.catalog.domain.CatalogLyricsWriteResult
 import io.github.cluno1.sonorus.features.catalog.domain.CatalogPage
 import io.github.cluno1.sonorus.features.catalog.domain.CatalogLibraryAlbum
 import io.github.cluno1.sonorus.features.catalog.domain.CatalogLibrarySnapshot
@@ -44,6 +45,7 @@ class CatalogRepositoryImpl(context: Context) : CatalogRepository {
                 (credentials.loadDevice() != null || !credentials.loadToken().isNullOrEmpty()),
             deviceRegistered,
             reenrollmentRequired,
+            if (server.isEmpty()) "" else "$server|${credentials.loadDeviceId() ?: "legacy"}",
         )
     }
 
@@ -365,6 +367,50 @@ class CatalogRepositoryImpl(context: Context) : CatalogRepository {
         CatalogChanges(all, cursor, false)
     }
 
+    override suspend fun replaceRenditionLyrics(
+        renditionId: String,
+        language: String,
+        lyrics: String,
+        format: String,
+        expectedRevision: Int,
+        idempotencyKey: String,
+    ): Result<CatalogLyricsWriteResult> = guarded {
+        val id = validUuid(renditionId)
+        val normalizedLanguage = io.github.cluno1.sonorus.features.catalog.domain
+            .normalizeCatalogLyricsLanguageTag(language)
+        require(lyrics.isNotBlank()) { "lyrics must not be blank" }
+        require(lyrics.length <= 2 * 1024 * 1024) { "lyrics are too large" }
+        require(format in setOf("plain", "lrc", "enhanced_lrc", "ttml", "word_by_word_json")) {
+            "lyrics format is unsupported"
+        }
+        require(expectedRevision > 0) { "rendition revision must be positive" }
+        require(idempotencyKey.isNotBlank()) { "idempotency key must not be blank" }
+        val response = client().lyricsWriteApi.replaceRenditionLyrics(
+            renditionId = id,
+            language = normalizedLanguage,
+            ifMatch = "\"rev-$expectedRevision\"",
+            idempotencyKey = idempotencyKey,
+            body = io.github.cluno1.sonorus.features.catalog.data.remote.RenditionLyricReplaceDto(
+                lyrics = lyrics,
+                format = format,
+            ),
+        )
+        if (response.code() == 412) {
+            val currentRevision = Regex("\\\"current_etag\\\"\\s*:\\s*\\\"rev-(\\d+)\\\"")
+                .find(response.errorBody()?.string().orEmpty())
+                ?.groupValues
+                ?.getOrNull(1)
+                ?.toIntOrNull()
+            throw CatalogFailure.StaleRevision(currentRevision)
+        }
+        CatalogDtoMapper.renditionLyricsWrite(response.bodyOrThrow()).also {
+            require(it.renditionId == id) { "lyrics write rendition id does not match request" }
+            require(it.language.equals(normalizedLanguage, ignoreCase = true)) {
+                "lyrics write language does not match request"
+            }
+        }
+    }
+
     private fun client(): CatalogApiClient {
         val server = credentials.loadServerUrl() ?: throw CatalogFailure.NotConfigured()
         if (credentials.isReenrollmentRequired()) throw CatalogFailure.InvalidCredentials()
@@ -416,6 +462,7 @@ class CatalogRepositoryImpl(context: Context) : CatalogRepository {
     private fun httpFailure(code: Int): CatalogFailure = when (code) {
         401 -> CatalogFailure.InvalidCredentials()
         403 -> CatalogFailure.Forbidden()
+        412 -> CatalogFailure.StaleRevision(null)
         else -> CatalogFailure.Server(code)
     }
 }
