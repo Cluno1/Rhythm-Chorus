@@ -10,6 +10,7 @@ import android.graphics.Typeface
 import android.os.Build
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.size
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
@@ -183,12 +184,14 @@ fun Icon(
     )
 
     BoxWithConstraints(
-        modifier = modifier.semantics(mergeDescendants = true) {
-            if (contentDescription != null) {
-                this.contentDescription = contentDescription
-            }
-            this.role = Role.Image
-        },
+        modifier = modifier
+            .size(size)
+            .semantics(mergeDescendants = true) {
+                if (contentDescription != null) {
+                    this.contentDescription = contentDescription
+                }
+                this.role = Role.Image
+            },
         contentAlignment = Alignment.Center
     ) {
         val slotSize = if (maxWidth != Dp.Infinity && maxHeight != Dp.Infinity) {
