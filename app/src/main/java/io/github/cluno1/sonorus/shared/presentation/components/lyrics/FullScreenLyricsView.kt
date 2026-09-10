@@ -754,7 +754,8 @@ fun FullScreenLyricsView(
 
                     // Floating Romanization and Translation Stack (on the right)
                     androidx.compose.animation.AnimatedVisibility(
-                        visible = isLoadingLyrics || !autoHideLyricsControls || controlsVisible,
+                        visible = catalogLyricsLanguages.isEmpty() &&
+                            (isLoadingLyrics || !autoHideLyricsControls || controlsVisible),
                         enter = fadeIn() + scaleIn(),
                         exit = fadeOut() + scaleOut(),
                         modifier = Modifier
@@ -1096,7 +1097,8 @@ fun FullScreenLyricsView(
 
                     // Floating Romanization and Translation Stack (on the right)
                     androidx.compose.animation.AnimatedVisibility(
-                        visible = isLoadingLyrics || !autoHideLyricsControls || controlsVisible,
+                        visible = catalogLyricsLanguages.isEmpty() &&
+                            (isLoadingLyrics || !autoHideLyricsControls || controlsVisible),
                         enter = fadeIn() + scaleIn(),
                         exit = fadeOut() + scaleOut(),
                         modifier = Modifier
@@ -1421,14 +1423,27 @@ private fun CatalogLyricsLanguageMenu(
     if (languages.size <= 1) return
     var expanded by remember { mutableStateOf(false) }
     Box(modifier = modifier) {
-        FilledTonalIconButton(
+        FilledTonalButton(
             onClick = { expanded = true },
-            modifier = Modifier.size(40.dp),
+            modifier = Modifier.height(40.dp),
+            contentPadding = PaddingValues(horizontal = 12.dp),
         ) {
             Icon(
                 imageVector = MaterialSymbolIcon("translate"),
                 contentDescription = stringResource(R.string.cd_change_language),
-                modifier = Modifier.size(22.dp),
+                modifier = Modifier.size(18.dp),
+            )
+            Spacer(modifier = Modifier.width(6.dp))
+            Text(
+                text = catalogLyricsLanguageCompactLabel(selectedLanguage ?: languages.first()),
+                maxLines = 1,
+                style = MaterialTheme.typography.labelLarge,
+            )
+            Spacer(modifier = Modifier.width(2.dp))
+            Icon(
+                imageVector = MaterialSymbolIcon("arrow_drop_down"),
+                contentDescription = null,
+                modifier = Modifier.size(18.dp),
             )
         }
         DropdownMenu(
@@ -1473,6 +1488,14 @@ private fun CatalogLyricsLanguageMenu(
 private fun catalogLyricsLanguageLabel(languageTag: String): String {
     val locale = Locale.forLanguageTag(languageTag)
     return locale.getDisplayName(Locale.getDefault()).takeIf(String::isNotBlank) ?: languageTag
+}
+
+private fun catalogLyricsLanguageCompactLabel(languageTag: String): String {
+    val locale = Locale.forLanguageTag(languageTag)
+    val displayLocale = Locale.getDefault()
+    return locale.getDisplayScript(displayLocale).takeIf(String::isNotBlank)
+        ?: locale.getDisplayLanguage(displayLocale).takeIf(String::isNotBlank)
+        ?: languageTag
 }
 
 

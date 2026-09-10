@@ -8087,6 +8087,34 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
         applyCatalogLyrics(nowPlaying, language)
     }
 
+    /**
+     * Refreshes the active Catalog item's descriptive metadata without rebuilding the
+     * MediaItem or interrupting playback. Persisted queues may contain an older library
+     * snapshot, so newly added lyric variants must be merged back into the live queue.
+     */
+    fun refreshCatalogNowPlayingMetadata(refreshed: RhythmNowPlayingItem) {
+        val current = _catalogNowPlaying.value ?: return
+        if (current.renditionId != refreshed.renditionId) return
+
+        val merged = refreshed.copy(assetId = current.assetId ?: refreshed.assetId)
+        if (merged == current) return
+
+        _catalogQueue.value = _catalogQueue.value.map { entry ->
+            if (entry.nowPlaying.renditionId == merged.renditionId) {
+                entry.copy(
+                    nowPlaying = merged.copy(
+                        assetId = entry.nowPlaying.assetId ?: merged.assetId,
+                    ),
+                )
+            } else {
+                entry
+            }
+        }
+        _catalogNowPlaying.value = merged
+        applyCatalogLyrics(merged, _catalogLyricsLanguage.value)
+        saveQueueToPersistence()
+    }
+
     private fun applyCatalogLyrics(
         nowPlaying: RhythmNowPlayingItem?,
         requestedLanguage: String? = null,

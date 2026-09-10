@@ -1015,7 +1015,9 @@ fun PlayerScreen(
                     android.util.Log.e("PlayerScreen", "Failed to navigate to lyrics settings", e)
                 }
             },
-            catalogLyricsLanguages = if (isCatalogItem) catalogLyricsLanguages else emptyList(),
+            // The ViewModel already clears these variants for non-Catalog playback. Avoid
+            // hiding a valid menu because a restored queue briefly has stale Song identity.
+            catalogLyricsLanguages = catalogLyricsLanguages,
             selectedCatalogLyricsLanguage = selectedCatalogLyricsLanguage,
             onCatalogLyricsLanguageSelect = musicViewModel::selectCatalogLyricsLanguage,
             canvasArtwork = canvasArtwork,

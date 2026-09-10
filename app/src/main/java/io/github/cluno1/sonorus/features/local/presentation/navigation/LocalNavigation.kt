@@ -912,6 +912,24 @@ private fun LocalNavigationContent(
     val catalogState by catalogViewModel.state.collectAsState()
     val localLibraryInitialized by viewModel.isInitialized.collectAsState()
     val activeCatalogItem by viewModel.catalogNowPlaying.collectAsState()
+    LaunchedEffect(activeCatalogItem?.renditionId, catalogState.songs) {
+        val active = activeCatalogItem ?: return@LaunchedEffect
+        val refreshed = catalogState.songs.firstOrNull { it.renditionId == active.renditionId }
+            ?: return@LaunchedEffect
+        viewModel.refreshCatalogNowPlayingMetadata(
+            RhythmNowPlayingItem(
+                workId = refreshed.workId,
+                arrangementId = refreshed.arrangementId,
+                renditionId = refreshed.renditionId,
+                assetId = active.assetId,
+                title = refreshed.title,
+                subtitle = refreshed.artist ?: "未知艺术家",
+                lyrics = refreshed.lyrics,
+                lyricsLanguage = refreshed.lyricsLanguage,
+                lyricsTranslations = refreshed.lyricsTranslations,
+            ),
+        )
+    }
     var activeCatalogScoreAvailable by remember(activeCatalogItem?.workId) {
         mutableStateOf(false)
     }
