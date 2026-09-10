@@ -265,7 +265,9 @@ fun MediaScanSettingsScreen(onBackClick: () -> Unit) {
                 try {
                     val folderAccess = DeviceScanFolderAccess(context)
                     if (currentMode == MediaScanMode.BLACKLIST) {
-                        appSettings.addFolderToBlacklist(folderAccess.displayPath(uri))
+                        appSettings.addFolderToBlacklist(
+                            DeviceScanFolderAccess.displayPath(context, uri),
+                        )
                     } else {
                         val root = folderAccess.add(uri)
                         appSettings.addFolderToWhitelist(root.displayPath)

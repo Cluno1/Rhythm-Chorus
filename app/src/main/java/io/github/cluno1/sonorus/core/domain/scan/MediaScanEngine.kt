@@ -473,7 +473,7 @@ class MediaScanEngine(
                     completedAtMs = System.currentTimeMillis(),
                     failed = true,
                 )
-                return@withContext persistedSongs.map(SongEntity::toSongModel)
+                return@withContext persistedSongs.map { it.toSongModel() }
             }
 
             if (mediaStoreFailed) {
@@ -539,7 +539,7 @@ class MediaScanEngine(
                 completedAtMs = System.currentTimeMillis(),
             )
 
-            scannedSongs.map(SongEntity::toSongModel)
+            scannedSongs.map { it.toSongModel() }
         } catch (e: Exception) {
             Log.e(TAG, "Error during media scan", e)
             _scanProgress.value = ScanProgress(0, 0, ScanPhase.Error, 0)
@@ -560,7 +560,7 @@ class MediaScanEngine(
                 completedAtMs = System.currentTimeMillis(),
                 failed = true,
             )
-            persistedSongs.map(SongEntity::toSongModel)
+            persistedSongs.map { it.toSongModel() }
         }
     }
 
