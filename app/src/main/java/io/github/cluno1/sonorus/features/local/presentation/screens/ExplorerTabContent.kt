@@ -53,6 +53,7 @@ import io.github.cluno1.sonorus.R
 import io.github.cluno1.sonorus.features.catalog.domain.CatalogPlaybackPolicy
 import io.github.cluno1.sonorus.features.local.presentation.viewmodel.MusicViewModel
 import io.github.cluno1.sonorus.shared.data.model.AppSettings
+import io.github.cluno1.sonorus.shared.data.model.LocalAudioScanPolicy
 import io.github.cluno1.sonorus.shared.data.model.Song
 import io.github.cluno1.sonorus.shared.presentation.components.common.ContentLoadingIndicator
 import io.github.cluno1.sonorus.shared.presentation.components.common.DataProcessingLoader
@@ -372,7 +373,7 @@ fun SingleCardExplorerContent(
     }
 
     val audioExtensions = remember {
-        setOf("mp3", "flac", "m4a", "mp4", "aac", "ogg", "wav", "wma", "aiff", "aif", "opus", "opa", "mkv", "mka", "ac3", "ac4", "eac", "eac3", "dts", "dtshd", "dtsx", "truehd", "alac", "m4b", "oga", "mid", "midi", "adts", "ape", "wv", "tta", "tak", "dsf", "dff", "dsd", "mhm", "mhm1")
+        LocalAudioScanPolicy.knownFormats.toSet()
     }
 
     var songPathMap by remember { mutableStateOf<Map<String, Song>>(emptyMap()) }
@@ -1377,7 +1378,7 @@ fun getDirectoryContentsOptimized(directoryPath: String, songPathMap: Map<String
     
     val items = mutableListOf<ExplorerItem>()
     val normalizedDirPath = directoryPath.replace("//", "/").trimEnd('/')
-    val audioExtensions = setOf("mp3", "flac", "m4a", "mp4", "aac", "ogg", "wav", "wma", "aiff", "aif", "opus", "opa", "mkv", "mka", "ac3", "ac4", "eac", "eac3", "dts", "dtshd", "dtsx", "truehd", "alac", "m4b", "oga", "mid", "midi", "adts", "ape", "wv", "tta", "tak", "dsf", "dff", "dsd", "mhm", "mhm1")
+    val audioExtensions = LocalAudioScanPolicy.knownFormats.toSet()
     
     val subdirectorySongCounts = mutableMapOf<String, Int>()
     val directoriesWithSongs = mutableSetOf<String>()

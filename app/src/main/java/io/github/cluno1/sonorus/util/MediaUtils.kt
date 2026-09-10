@@ -503,8 +503,8 @@ object MediaUtils {
             "opus", "opa" -> "audio/ogg"
             "ogg", "oga" -> "audio/ogg"
             "mkv", "mka" -> "audio/x-matroska"
-            "mp3" -> "audio/mpeg"
-            "m4a", "m4b", "mp4" -> "audio/mp4"
+            "mp3", "mp2" -> "audio/mpeg"
+            "m4a", "m4b", "m4r", "mp4" -> "audio/mp4"
             "flac" -> "audio/flac"
             "wav" -> "audio/wav"
             "aac", "adts" -> "audio/aac"
@@ -517,7 +517,10 @@ object MediaUtils {
             "wv" -> "audio/x-wavpack"
             "tta" -> "audio/x-tta"
             "tak" -> "audio/x-tak"
-            "aiff", "aif" -> "audio/aiff"
+            "aiff", "aif", "aifc" -> "audio/aiff"
+            "amr" -> "audio/amr"
+            "webm" -> "audio/webm"
+            "3gp", "3gpp" -> "audio/3gpp"
             "dsf", "dff", "dsd" -> "audio/dsd"
             else -> type
         }
@@ -3283,4 +3286,3 @@ object MediaUtils {
         }
     }
 }
-

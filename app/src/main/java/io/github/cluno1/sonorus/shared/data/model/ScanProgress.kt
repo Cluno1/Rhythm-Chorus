@@ -24,6 +24,7 @@ data class MediaScanDiagnostics(
     val duplicates: Int = 0,
     val unreadableFiles: Int = 0,
     val failedAuthorizedFolders: Int = 0,
+    val missingFolderAuthorizations: Int = 0,
     val preservedPreviousSongs: Int = 0,
     val durationMs: Long = 0L,
     val completedAtMs: Long = 0L,

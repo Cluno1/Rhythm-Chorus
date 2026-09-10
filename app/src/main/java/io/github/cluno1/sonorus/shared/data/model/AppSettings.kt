@@ -646,11 +646,7 @@ class AppSettings private constructor(context: Context) {
             }
         }
 
-        fun defaultAllowedFormats(): Set<String> = setOf(
-            "mp3", "flac", "ogg", "m4a", "opus", "opa", "wav", "aac", "alac", "aiff", "aif", "wma",
-            "mka", "ac3", "ac4", "oga", "mid", "midi", "adts", "m4b", "eac", "eac3", "mhm", "mhm1",
-            "dts", "dtshd", "dtsx", "truehd", "ape", "wv", "tta", "tak", "dsf", "dff", "dsd"
-        )
+        fun defaultAllowedFormats(): Set<String> = LocalAudioScanPolicy.defaultAllowedFormats
     }
     
     private val context: Context = context.applicationContext
@@ -2131,6 +2127,7 @@ private val _autoCheckForUpdates = MutableStateFlow(ProductCapabilities.inAppUpd
      */
     init {
         applyProductCapabilityMigration()
+        migrateLegacyAllowedFormatsIfNeeded()
         migrateLegacyArtworkPreferenceIfNeeded()
         normalizeArtworkPreferenceStateIfNeeded()
 
@@ -2153,6 +2150,18 @@ private val _autoCheckForUpdates = MutableStateFlow(ProductCapabilities.inAppUpd
                 scheduleRhythmPulseNotificationWorker()
             }
         }.apply { isDaemon = true }.start()
+    }
+
+    private fun migrateLegacyAllowedFormatsIfNeeded() {
+        val upgraded = LocalAudioScanPolicy.upgradeLegacyDefaultFormats(_allowedFormats.value)
+        if (upgraded == _allowedFormats.value) return
+
+        prefs.edit {
+            putStringSet(KEY_ALLOWED_FORMATS, upgraded)
+            putBoolean(KEY_PENDING_FULL_MEDIA_RESCAN, true)
+        }
+        _allowedFormats.value = upgraded
+        Log.d("AppSettings", "Migrated default audio formats and requested a full media rescan")
     }
 
     /**
@@ -5431,6 +5440,7 @@ private val _autoCheckForUpdates = MutableStateFlow(ProductCapabilities.inAppUpd
         
         // Media Scan Filtering
         _allowedFormats.value = prefs.getStringSet(KEY_ALLOWED_FORMATS, defaultAllowedFormats())?.toSet() ?: defaultAllowedFormats()
+        migrateLegacyAllowedFormatsIfNeeded()
         _minimumBitrate.value = prefs.getInt(KEY_MINIMUM_BITRATE, 0)
         _minimumDuration.value = safeLong(KEY_MINIMUM_DURATION, 0L)
 

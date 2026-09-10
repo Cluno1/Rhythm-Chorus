@@ -101,6 +101,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import io.github.cluno1.sonorus.BuildConfig
 import io.github.cluno1.sonorus.shared.data.model.AppSettings
+import io.github.cluno1.sonorus.shared.data.model.LocalAudioScanPolicy
 import io.github.cluno1.sonorus.shared.data.model.MediaScanMode
 import io.github.cluno1.sonorus.shared.data.model.Playlist
 import io.github.cluno1.sonorus.shared.data.model.Song
@@ -184,23 +185,23 @@ private data class FormatCategory(
 private val FORMAT_CATEGORIES = listOf(
     FormatCategory(
         R.string.settings_formats_group_common,
-        listOf("mp3", "m4a", "aac", "alac", "flac", "ogg", "opus", "oga", "opa", "wav", "aiff", "aif", "wma")
+        LocalAudioScanPolicy.commonFormats,
     ),
     FormatCategory(
         R.string.settings_formats_group_lossless,
-        listOf("ape", "wv", "tta", "tak", "dsf", "dff", "dsd")
+        LocalAudioScanPolicy.losslessFormats,
     ),
     FormatCategory(
         R.string.settings_formats_group_surround,
-        listOf("ac3", "ac4", "eac", "eac3", "dts", "dtshd", "dtsx", "truehd")
+        LocalAudioScanPolicy.surroundFormats,
     ),
     FormatCategory(
         R.string.settings_formats_group_containers,
-        listOf("mka", "m4b", "adts", "mp4", "mkv")
+        LocalAudioScanPolicy.containerFormats,
     ),
     FormatCategory(
         R.string.settings_formats_group_legacy,
-        listOf("mid", "midi", "mhm", "mhm1")
+        LocalAudioScanPolicy.legacyFormats,
     )
 )
 
@@ -255,6 +256,19 @@ fun MediaScanSettingsScreen(onBackClick: () -> Unit) {
     var showFoldersBottomSheet by remember { mutableStateOf(false) }
     var showFormatsBottomSheet by remember { mutableStateOf(false) }
     var showDurationBottomSheet by remember { mutableStateOf(false) }
+    var showScanSourcesBottomSheet by remember { mutableStateOf(false) }
+    val scanFolderAccess = remember(context) { DeviceScanFolderAccess(context) }
+    var authorizedScanRoots by remember { mutableStateOf(scanFolderAccess.roots()) }
+    val missingFolderAuthorizations = remember(whitelistedFolders, authorizedScanRoots, currentMode) {
+        if (currentMode == MediaScanMode.WHITELIST) {
+            LocalAudioScanPolicy.missingAuthorizationCount(
+                whitelistedFolders = whitelistedFolders,
+                authorizedRootDisplayPaths = authorizedScanRoots.map { it.displayPath },
+            )
+        } else {
+            0
+        }
+    }
 
     // File picker launcher for folder selection
     val folderPickerLauncher = rememberLauncherForActivityResult(
@@ -263,17 +277,45 @@ fun MediaScanSettingsScreen(onBackClick: () -> Unit) {
         if (result.resultCode == Activity.RESULT_OK) {
             result.data?.data?.let { uri ->
                 try {
-                    val folderAccess = DeviceScanFolderAccess(context)
                     if (currentMode == MediaScanMode.BLACKLIST) {
                         appSettings.addFolderToBlacklist(
                             DeviceScanFolderAccess.displayPath(context, uri),
                         )
                     } else {
-                        val root = folderAccess.add(uri)
+                        val root = scanFolderAccess.add(uri)
+                        authorizedScanRoots = scanFolderAccess.roots()
                         appSettings.addFolderToWhitelist(root.displayPath)
                     }
                 } catch (e: Exception) {
                     Log.e("MediaScanSettingsScreen", "Unable to retain folder access", e)
+                    Toast.makeText(
+                        context,
+                        context.getString(R.string.settings_scan_folder_permission_failed),
+                        Toast.LENGTH_LONG,
+                    ).show()
+                }
+            }
+        }
+    }
+
+    val scanSourcePickerLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.StartActivityForResult(),
+    ) { result ->
+        if (result.resultCode == Activity.RESULT_OK) {
+            result.data?.data?.let { uri ->
+                try {
+                    val root = scanFolderAccess.add(uri)
+                    authorizedScanRoots = scanFolderAccess.roots()
+                    if (currentMode == MediaScanMode.WHITELIST) {
+                        appSettings.addFolderToWhitelist(root.displayPath)
+                    } else {
+                        appSettings.requestFullMediaRescanOnNextLaunch(
+                            reason = "authorized_scan_folder_added",
+                        )
+                        musicViewModel.refreshLibrary(showMediaScanLoader = false)
+                    }
+                } catch (e: Exception) {
+                    Log.e("MediaScanSettingsScreen", "Unable to retain scan source access", e)
                     Toast.makeText(
                         context,
                         context.getString(R.string.settings_scan_folder_permission_failed),
@@ -422,9 +464,10 @@ fun MediaScanSettingsScreen(onBackClick: () -> Unit) {
                             }
                         } else {
                             whitelistedFolders.forEach { folder ->
-                                DeviceScanFolderAccess(context).removeByDisplayPath(folder)
+                                scanFolderAccess.removeByDisplayPath(folder)
                                 appSettings.removeFolderFromWhitelist(folder)
                             }
+                            authorizedScanRoots = scanFolderAccess.roots()
                         }
                     }
                 )
@@ -507,7 +550,7 @@ fun MediaScanSettingsScreen(onBackClick: () -> Unit) {
             }
 
             item {
-                val fullRescanDescription = when {
+                val baseFullRescanDescription = when {
                     isLibraryRefreshing -> context.getString(R.string.settings_full_rescan_running)
                     scanDiagnostics.completedAtMs > 0L && scanDiagnostics.failed -> context.getString(
                         R.string.settings_full_rescan_failed_result,
@@ -551,6 +594,18 @@ fun MediaScanSettingsScreen(onBackClick: () -> Unit) {
                     }
                     else -> context.getString(R.string.settings_full_rescan_desc)
                 }
+                val fullRescanDescription = buildString {
+                    append(baseFullRescanDescription)
+                    if (missingFolderAuthorizations > 0) {
+                        append('\n')
+                        append(
+                            context.getString(
+                                R.string.settings_scan_sources_reauthorization,
+                                missingFolderAuthorizations,
+                            ),
+                        )
+                    }
+                }
                 val scanBehaviorItems = listOf(
                     toMaterial3SettingsItem(
                         context = context,
@@ -562,6 +617,20 @@ fun MediaScanSettingsScreen(onBackClick: () -> Unit) {
                             toggleState = includeHiddenWhitelistedMedia,
                             onToggleChange = { appSettings.setIncludeHiddenWhitelistedMedia(it) }
                         )
+                    ),
+                    Material3SettingsItem(
+                        icon = MaterialSymbolIcon("folder_open", filled = true),
+                        title = { Text(context.getString(R.string.settings_scan_sources)) },
+                        description = {
+                            Text(
+                                context.getString(
+                                    R.string.settings_scan_sources_desc,
+                                    authorizedScanRoots.size,
+                                    missingFolderAuthorizations,
+                                ),
+                            )
+                        },
+                        onClick = { showScanSourcesBottomSheet = true },
                     ),
                     toMaterial3SettingsItem(
                         context = context,
@@ -1066,7 +1135,8 @@ fun MediaScanSettingsScreen(onBackClick: () -> Unit) {
                                             if (currentMode == MediaScanMode.BLACKLIST) {
                                                 appSettings.removeFolderFromBlacklist(folder)
                                             } else {
-                                                DeviceScanFolderAccess(context).removeByDisplayPath(folder)
+                                                scanFolderAccess.removeByDisplayPath(folder)
+                                                authorizedScanRoots = scanFolderAccess.roots()
                                                 appSettings.removeFolderFromWhitelist(folder)
                                             }
                                         },
@@ -1212,9 +1282,10 @@ fun MediaScanSettingsScreen(onBackClick: () -> Unit) {
                                         }
                                     } else {
                                         whitelistedFolders.forEach { folder ->
-                                            DeviceScanFolderAccess(context).removeByDisplayPath(folder)
+                                            scanFolderAccess.removeByDisplayPath(folder)
                                             appSettings.removeFolderFromWhitelist(folder)
                                         }
+                                        authorizedScanRoots = scanFolderAccess.roots()
                                     }
                                     showFoldersBottomSheet = false
                                 },
@@ -1231,6 +1302,123 @@ fun MediaScanSettingsScreen(onBackClick: () -> Unit) {
                                 Text(context.getString(R.string.settings_clear_all_button_short))
                             }
                         }
+                    }
+                }
+            }
+        }
+    }
+
+    if (showScanSourcesBottomSheet) {
+        val sheetState = rememberBottomSheetState(
+            initialValue = SheetValue.Hidden,
+            enabledValues = setOf(SheetValue.Hidden, SheetValue.Expanded),
+        )
+        LaunchedEffect(Unit) { sheetState.expand() }
+
+        RhythmAdaptiveModalSheet(
+            adaptiveType = SheetAdaptiveType.AUTO_DIALOG,
+            modifier = Modifier.widthIn(max = 640.dp).fillMaxWidth(),
+            onDismissRequest = { showScanSourcesBottomSheet = false },
+            sheetState = sheetState,
+            dragHandle = { BottomSheetDefaults.DragHandle(color = MaterialTheme.colorScheme.primary) },
+            containerColor = MaterialTheme.colorScheme.surfaceContainer,
+        ) {
+            StandardBottomSheetHeader(
+                title = context.getString(R.string.settings_scan_sources),
+                subtitle = context.getString(R.string.settings_scan_sources_sheet_desc),
+                visible = true,
+            )
+            val scrollState = rememberScrollState()
+            AdaptiveSheetScrollContainer(
+                scrollState = scrollState,
+                modifier = Modifier.fillMaxWidth(),
+            ) { endPadding ->
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .verticalScroll(scrollState)
+                        .padding(start = 24.dp, end = 24.dp + endPadding, bottom = 24.dp),
+                    verticalArrangement = Arrangement.spacedBy(10.dp),
+                ) {
+                    if (authorizedScanRoots.isEmpty()) {
+                        Text(
+                            text = context.getString(R.string.settings_scan_sources_empty),
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
+                    authorizedScanRoots.forEach { root ->
+                        Card(
+                            modifier = Modifier.fillMaxWidth(),
+                            colors = CardDefaults.cardColors(
+                                containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+                            ),
+                            shape = RoundedCornerShape(16.dp),
+                        ) {
+                            Row(
+                                modifier = Modifier.fillMaxWidth().padding(16.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                            ) {
+                                Icon(
+                                    imageVector = RhythmIcons.Folder,
+                                    contentDescription = null,
+                                    tint = MaterialTheme.colorScheme.primary,
+                                )
+                                Spacer(modifier = Modifier.width(14.dp))
+                                Column(modifier = Modifier.weight(1f)) {
+                                    Text(
+                                        text = File(root.displayPath).name.ifBlank { root.displayPath },
+                                        style = MaterialTheme.typography.titleMedium,
+                                        maxLines = 1,
+                                        overflow = TextOverflow.Ellipsis,
+                                    )
+                                    Text(
+                                        text = root.displayPath,
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                        maxLines = 2,
+                                        overflow = TextOverflow.Ellipsis,
+                                    )
+                                }
+                                FilledIconButton(
+                                    onClick = {
+                                        scanFolderAccess.removeByDisplayPath(root.displayPath)
+                                        authorizedScanRoots = scanFolderAccess.roots()
+                                        appSettings.requestFullMediaRescanOnNextLaunch(
+                                            reason = "authorized_scan_folder_removed",
+                                        )
+                                        musicViewModel.refreshLibrary(showMediaScanLoader = false)
+                                    },
+                                ) {
+                                    Icon(
+                                        imageVector = RhythmIcons.Close,
+                                        contentDescription = context.getString(R.string.cd_remove),
+                                    )
+                                }
+                            }
+                        }
+                    }
+                    Button(
+                        onClick = {
+                            try {
+                                val intent = Intent(Intent.ACTION_OPEN_DOCUMENT_TREE).addFlags(
+                                    Intent.FLAG_GRANT_READ_URI_PERMISSION or
+                                        Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION,
+                                )
+                                scanSourcePickerLauncher.launch(intent)
+                            } catch (e: ActivityNotFoundException) {
+                                Toast.makeText(
+                                    context,
+                                    context.getString(R.string.error_no_document_app),
+                                    Toast.LENGTH_LONG,
+                                ).show()
+                            }
+                        },
+                        modifier = Modifier.fillMaxWidth(),
+                    ) {
+                        Icon(imageVector = RhythmIcons.Add, contentDescription = null)
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(context.getString(R.string.settings_scan_sources_add))
                     }
                 }
             }

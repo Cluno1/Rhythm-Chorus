@@ -20,6 +20,7 @@ import io.github.cluno1.sonorus.features.local.data.device.DeviceScanRoot
 import io.github.cluno1.sonorus.features.local.data.database.RhythmDatabase
 import io.github.cluno1.sonorus.features.local.data.database.entity.SongEntity
 import io.github.cluno1.sonorus.shared.data.model.AppSettings
+import io.github.cluno1.sonorus.shared.data.model.LocalAudioScanPolicy
 import io.github.cluno1.sonorus.shared.data.model.MediaScanDiagnostics
 import io.github.cluno1.sonorus.shared.data.model.MediaScanMode
 import io.github.cluno1.sonorus.shared.data.model.ScanPhase
@@ -53,8 +54,7 @@ class MediaScanEngine(
         private const val TAG = "MediaScanEngine"
         private const val BATCH_SIZE = 100
         private const val MAX_SAF_SCAN_DEPTH = 64
-        private val SUPPORTED_AUDIO_EXTENSIONS =
-            AppSettings.defaultAllowedFormats() + setOf("mp4", "mkv")
+        private val SUPPORTED_AUDIO_EXTENSIONS = LocalAudioScanPolicy.knownFormats.toSet()
 
         fun mediaScanSelection(minimumDuration: Long = 0L): String {
             val baseSelection = "(${MediaStore.Audio.Media.IS_MUSIC} = 1 OR ${MediaStore.Audio.Media.MIME_TYPE} LIKE 'audio/%' OR ${MediaStore.Audio.Media.MIME_TYPE} = 'video/mp4' OR ${MediaStore.Audio.Media.MIME_TYPE} = 'video/x-matroska' OR ${MediaStore.Audio.Media.MIME_TYPE} = 'application/x-matroska')"
@@ -94,13 +94,21 @@ class MediaScanEngine(
         val blacklistedFolders = appSettings.blacklistedFolders.value
         val blacklistedSongs = appSettings.blacklistedSongs.value
         val includeHiddenWhitelistedMedia = appSettings.includeHiddenWhitelistedMedia.value
-        val authorizedRoots = if (mediaScanMode == MediaScanMode.WHITELIST) {
-            val configuredFolders = whitelistedFolders.map(::normalizePath).toSet()
-            DeviceScanFolderAccess(context).roots().filter { root ->
-                normalizePath(root.displayPath) in configuredFolders
-            }
+        val configuredScanRoots = DeviceScanFolderAccess(context).roots()
+        val authorizedRoots = configuredScanRoots.filter { root ->
+            LocalAudioScanPolicy.authorizedRootApplies(
+                mode = mediaScanMode,
+                rootDisplayPath = root.displayPath,
+                whitelistedFolders = whitelistedFolders,
+            )
+        }
+        val missingFolderAuthorizations = if (mediaScanMode == MediaScanMode.WHITELIST) {
+            LocalAudioScanPolicy.missingAuthorizationCount(
+                whitelistedFolders = whitelistedFolders,
+                authorizedRootDisplayPaths = configuredScanRoots.map(DeviceScanRoot::displayPath),
+            )
         } else {
-            emptyList()
+            0
         }
 
         val collection = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
@@ -122,6 +130,7 @@ class MediaScanEngine(
             MediaStore.Audio.Media.DATE_ADDED,
             MediaStore.Audio.Media.DATE_MODIFIED,
             MediaStore.Audio.Media.SIZE,
+            MediaStore.Audio.Media.MIME_TYPE,
             MediaStore.Audio.Media.DATA
         ).apply {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
@@ -183,6 +192,7 @@ class MediaScanEngine(
                 val colYear = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.YEAR)
                 val colDateAdded = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.DATE_ADDED)
                 val colDateModified = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.DATE_MODIFIED)
+                val colMimeType = cursor.getColumnIndex(MediaStore.Audio.Media.MIME_TYPE)
                 val colData = cursor.getColumnIndex(MediaStore.Audio.Media.DATA)
                 val colGenre = cursor.getColumnIndex("genre") // MediaStore.Audio.AudioColumns.GENRE (API 30+)
                 val colAlbumArtist = cursor.getColumnIndex(MediaStore.Audio.Media.ALBUM_ARTIST)
@@ -205,14 +215,17 @@ class MediaScanEngine(
                     }
 
                     val path = if (colData >= 0) cursor.getString(colData) else null
-                    if (allowedFormats != null) {
-                        val candidateName = path?.takeIf(String::isNotBlank)
-                            ?: if (colDisplayName >= 0) cursor.getString(colDisplayName).orEmpty() else ""
-                        val extension = candidateName.substringAfterLast('.', "").lowercase(Locale.ROOT)
-                        if (extension.isBlank() || extension !in allowedFormats) {
-                            filteredByFormat++
-                            continue
-                        }
+                    val candidateName = path?.takeIf(String::isNotBlank)
+                        ?: if (colDisplayName >= 0) cursor.getString(colDisplayName).orEmpty() else ""
+                    val mimeType = if (colMimeType >= 0) cursor.getString(colMimeType) else null
+                    val resolvedFormat = LocalAudioScanPolicy.resolveEnabledFormat(
+                        displayName = candidateName,
+                        mimeType = mimeType,
+                        allowedFormats = allowedFormats ?: SUPPORTED_AUDIO_EXTENSIONS,
+                    )
+                    if (resolvedFormat == null) {
+                        filteredByFormat++
+                        continue
                     }
                     if (path != null) {
                         val normPath = normalizePath(path)
@@ -440,6 +453,9 @@ class MediaScanEngine(
                     allowedFormats = allowedFormats,
                     minimumBitrate = minimumBitrate,
                     minimumDuration = minimumDuration,
+                    mediaScanMode = mediaScanMode,
+                    whitelistedFolders = whitelistedFolders,
+                    blacklistedFolders = blacklistedFolders,
                     blacklistedSongs = blacklistedSongs,
                     seenIds = seenIds,
                     seenPaths = seenPaths,
@@ -468,6 +484,7 @@ class MediaScanEngine(
                     authorizedFolderCandidates = authorizedFolderCandidates,
                     acceptedSongs = persistedSongs.size,
                     failedAuthorizedFolders = failedAuthorizedFolders,
+                    missingFolderAuthorizations = missingFolderAuthorizations,
                     preservedPreviousSongs = persistedSongs.size,
                     durationMs = System.currentTimeMillis() - startTime,
                     completedAtMs = System.currentTimeMillis(),
@@ -534,6 +551,7 @@ class MediaScanEngine(
                 duplicates = duplicates,
                 unreadableFiles = unreadableFiles,
                 failedAuthorizedFolders = failedAuthorizedFolders,
+                missingFolderAuthorizations = missingFolderAuthorizations,
                 preservedPreviousSongs = preservedPreviousSongs,
                 durationMs = totalDuration,
                 completedAtMs = System.currentTimeMillis(),
@@ -599,6 +617,9 @@ class MediaScanEngine(
         allowedFormats: Set<String>?,
         minimumBitrate: Int,
         minimumDuration: Long,
+        mediaScanMode: MediaScanMode,
+        whitelistedFolders: List<String>,
+        blacklistedFolders: List<String>,
         blacklistedSongs: List<String>,
         seenIds: MutableSet<String>,
         seenPaths: MutableSet<String>,
@@ -657,9 +678,12 @@ class MediaScanEngine(
                             rootCounters.filteredByFolderRule++
                             return@forEach
                         }
-                        val enabledFormats = allowedFormats ?: SUPPORTED_AUDIO_EXTENSIONS
-                        val extension = name.substringAfterLast('.', "").lowercase(Locale.ROOT)
-                        if (extension.isBlank() || extension !in enabledFormats) {
+                        val format = LocalAudioScanPolicy.resolveEnabledFormat(
+                            displayName = name,
+                            mimeType = child.type,
+                            allowedFormats = allowedFormats ?: SUPPORTED_AUDIO_EXTENSIONS,
+                        )
+                        if (format == null) {
                             rootCounters.filteredByFormat++
                             return@forEach
                         }
@@ -675,6 +699,18 @@ class MediaScanEngine(
                         }
 
                         val rawPath = DeviceScanFolderAccess.rawPath(uri)?.let(::normalizePath)
+                        val rulePath = rawPath ?: root.displayPath
+                        if (
+                            !LocalAudioScanPolicy.includesPath(
+                                mode = mediaScanMode,
+                                path = rulePath,
+                                whitelistedFolders = whitelistedFolders,
+                                blacklistedFolders = blacklistedFolders,
+                            )
+                        ) {
+                            rootCounters.filteredByFolderRule++
+                            return@forEach
+                        }
                         if (rawPath != null && rawPath in rootSeenPaths) {
                             rootCounters.duplicates++
                             return@forEach
@@ -691,7 +727,7 @@ class MediaScanEngine(
                             return@forEach
                         }
 
-                        val metadata = readDocumentMetadata(child, extension)
+                        val metadata = readDocumentMetadata(child, format)
                         if (minimumDuration > 0 && metadata.durationMs < minimumDuration) {
                             rootCounters.filteredByDuration++
                             return@forEach
@@ -791,11 +827,19 @@ class MediaScanEngine(
         val discNumber: Int,
     )
 
+    private data class DocumentTagData(
+        val properties: Map<String, Array<String>>,
+        val durationMs: Long?,
+        val bitrate: Int?,
+        val sampleRate: Int?,
+        val channels: Int?,
+    )
+
     private fun readDocumentMetadata(file: DocumentFile, extension: String): DocumentMetadata {
         val retriever = MediaMetadataRetriever()
         val fallbackTitle = file.name.orEmpty().substringBeforeLast('.', file.name.orEmpty())
             .ifBlank { "Unknown" }
-        return try {
+        val retrieverMetadata = try {
             retriever.setDataSource(context, file.uri)
             val rawTrack = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_CD_TRACK_NUMBER)
                 ?.substringBefore('/')?.toIntOrNull() ?: 0
@@ -856,7 +900,54 @@ class MediaScanEngine(
         } finally {
             runCatching { retriever.release() }
         }
+
+        val tags = readDocumentTags(file.uri) ?: return retrieverMetadata
+        fun tagValue(vararg keys: String): String? = keys.firstNotNullOfOrNull { key ->
+            tags.properties.entries.firstOrNull { it.key.equals(key, ignoreCase = true) }
+                ?.value?.firstOrNull()?.let(::normalizeMetadata)
+        }
+        fun tagNumber(vararg keys: String): Int? = tagValue(*keys)
+            ?.substringBefore('/')
+            ?.trim()
+            ?.toIntOrNull()
+            ?.takeIf { it >= 0 }
+
+        val taggedTrack = tagNumber("TRACKNUMBER", "TRACK")
+        val taggedDisc = tagNumber("DISCNUMBER", "DISC")
+        return retrieverMetadata.copy(
+            title = tagValue("TITLE") ?: retrieverMetadata.title,
+            artist = tagValue("ARTIST", "ALBUMARTIST", "ALBUM ARTIST") ?: retrieverMetadata.artist,
+            album = tagValue("ALBUM") ?: retrieverMetadata.album,
+            albumArtist = tagValue("ALBUMARTIST", "ALBUM ARTIST") ?: retrieverMetadata.albumArtist,
+            durationMs = retrieverMetadata.durationMs.takeIf { it > 0L } ?: tags.durationMs ?: 0L,
+            bitrate = retrieverMetadata.bitrate ?: tags.bitrate,
+            sampleRate = retrieverMetadata.sampleRate ?: tags.sampleRate,
+            channels = retrieverMetadata.channels ?: tags.channels,
+            year = tagValue("DATE", "YEAR")
+                ?.let(io.github.cluno1.sonorus.util.MetadataHeuristics::parseYear)
+                ?.takeIf { it > 0 }
+                ?: retrieverMetadata.year,
+            genre = tagValue("GENRE") ?: retrieverMetadata.genre,
+            trackNumber = taggedTrack ?: retrieverMetadata.trackNumber,
+            discNumber = taggedDisc?.coerceAtLeast(1) ?: retrieverMetadata.discNumber,
+        )
     }
+
+    private fun readDocumentTags(uri: Uri): DocumentTagData? = runCatching {
+        context.contentResolver.openFileDescriptor(uri, "r")?.use { descriptor ->
+            val metadata = com.kyant.taglib.TagLib.getMetadata(descriptor.dup().detachFd())
+            val audio = com.kyant.taglib.TagLib.getAudioProperties(descriptor.dup().detachFd())
+            DocumentTagData(
+                properties = metadata?.propertyMap.orEmpty(),
+                durationMs = audio?.length?.toLong()?.takeIf { it > 0L },
+                bitrate = audio?.bitrate?.takeIf { it > 0 }?.times(1000),
+                sampleRate = audio?.sampleRate?.takeIf { it > 0 },
+                channels = audio?.channels?.takeIf { it > 0 },
+            )
+        }
+    }.onFailure { error ->
+        Log.d(TAG, "TagLib could not read an authorized audio document", error)
+    }.getOrNull()
 
     private fun canOpenDocument(uri: Uri): Boolean = runCatching {
         context.contentResolver.openFileDescriptor(uri, "r")?.use { true } ?: false

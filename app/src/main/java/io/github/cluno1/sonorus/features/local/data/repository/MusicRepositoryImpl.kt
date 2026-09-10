@@ -4,11 +4,6 @@
  */
 
 package io.github.cluno1.sonorus.features.local.data.repository
-import io.github.cluno1.sonorus.shared.data.model.ScanProgress
-import io.github.cluno1.sonorus.shared.data.model.MediaScanDiagnostics
-import io.github.cluno1.sonorus.core.domain.scan.MediaScanEngine
-import io.github.cluno1.sonorus.core.domain.backup.BackupRestoreManager
-
 
 import android.content.ContentUris
 import android.content.Context
@@ -20,6 +15,11 @@ import android.os.Looper
 import android.provider.MediaStore
 import android.util.Log
 import android.util.LruCache
+import io.github.cluno1.sonorus.core.domain.backup.BackupRestoreManager
+import io.github.cluno1.sonorus.core.domain.scan.MediaScanEngine
+import io.github.cluno1.sonorus.shared.data.model.LocalAudioScanPolicy
+import io.github.cluno1.sonorus.shared.data.model.MediaScanDiagnostics
+import io.github.cluno1.sonorus.shared.data.model.ScanProgress
 import io.github.cluno1.sonorus.network.NetworkClient
 import io.github.cluno1.sonorus.network.ITunesSearchApiService
 import io.github.cluno1.sonorus.network.RhythmLyricsApiService
@@ -870,11 +870,17 @@ class MusicRepository(context: Context) {
             context.checkSelfPermission(android.Manifest.permission.READ_EXTERNAL_STORAGE)
         }
         
-        val hasAuthorizedWhitelistRoots =
-            appSettings.mediaScanMode.value == MediaScanMode.WHITELIST &&
-                DeviceScanFolderAccess(context).roots().isNotEmpty()
-        if (!hasPermission && !hasAuthorizedWhitelistRoots) {
-            Log.w(TAG, "No MediaStore permission or authorized whitelist folder is available")
+        val scanMode = appSettings.mediaScanMode.value
+        val whitelistedFolders = appSettings.whitelistedFolders.value
+        val hasAuthorizedScanRoots = DeviceScanFolderAccess(context).roots().any { root ->
+            LocalAudioScanPolicy.authorizedRootApplies(
+                mode = scanMode,
+                rootDisplayPath = root.displayPath,
+                whitelistedFolders = whitelistedFolders,
+            )
+        }
+        if (!hasPermission && !hasAuthorizedScanRoots) {
+            Log.w(TAG, "No MediaStore permission or applicable authorized scan folder is available")
             _scanProgress.value = ScanProgress(0, 0, ScanPhase.PermissionDenied, 0)
             return@withContext cachedSongs ?: loadSongsFromRoom().orEmpty()
         }
@@ -1018,11 +1024,7 @@ class MusicRepository(context: Context) {
             return allowedFormats.contains(extension)
         }
 
-        return extension in setOf(
-            "mp3", "m4a", "flac", "ogg", "opus", "opa", "wav", "aac", "alac", "aiff", "aif", "wma", "mka",
-            "ac3", "ac4", "oga", "mid", "midi", "adts", "m4b", "eac", "eac3", "mhm", "mhm1", "dts", "dtshd", "dtsx", "truehd",
-            "ape", "wv", "tta", "tak", "dsf", "dff", "dsd"
-        )
+        return extension in LocalAudioScanPolicy.knownFormats
     }
 
     private fun dateAddedCacheKeyForPath(filePath: String): String {

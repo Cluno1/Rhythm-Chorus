@@ -265,9 +265,15 @@
     <string name="settings_root">根目录</string>
     <string name="settings_scan_behavior">扫描行为</string>
     <string name="settings_include_hidden_whitelisted_media">包括隐藏和 .nomedia 文件</string>
-    <string name="settings_include_hidden_whitelisted_media_desc">同时扫描已授权白名单文件夹中的隐藏路径和 .nomedia 文件夹。</string>
+    <string name="settings_include_hidden_whitelisted_media_desc">同时扫描授权扫描文件夹中的隐藏路径和 .nomedia 文件夹。</string>
     <string name="settings_full_rescan_now">立即完整重扫</string>
-    <string name="settings_full_rescan_desc">重新查询 MediaStore 并扫描已授权的白名单文件夹；扫描失败时保留原有曲库。</string>
+    <string name="settings_scan_sources">授权扫描文件夹</string>
+    <string name="settings_scan_sources_desc">%1$d 个文件夹可补充 MediaStore · %2$d 个白名单文件夹需要授权</string>
+    <string name="settings_scan_sources_sheet_desc">授权 Sonorus 直接扫描文件夹，用于补齐 Android 媒体索引遗漏的音频。</string>
+    <string name="settings_scan_sources_empty">尚未直接授权文件夹，当前曲库仅依赖 MediaStore。</string>
+    <string name="settings_scan_sources_add">授权扫描文件夹</string>
+    <string name="settings_scan_sources_reauthorization">%1$d 个白名单文件夹需要重新选择，才能直接扫描。</string>
+    <string name="settings_full_rescan_desc">重新查询 MediaStore 并扫描已授权文件夹；扫描失败时保留原有曲库。</string>
     <string name="settings_full_rescan_running">正在重建本地音乐索引…</string>
     <string name="settings_full_rescan_result">%1$d 首歌曲 · MediaStore 候选 %2$d · 授权文件夹 %3$d/%4$d</string>
     <string name="settings_full_rescan_filter_result">已过滤：格式 %1$d · 时长 %2$d · 码率 %3$d · 文件夹规则 %4$d · 重复 %5$d · 无法读取 %6$d</string>

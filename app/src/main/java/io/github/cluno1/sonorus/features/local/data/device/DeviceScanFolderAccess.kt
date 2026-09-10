@@ -18,7 +18,7 @@ data class DeviceScanRoot(
     val displayPath: String,
 )
 
-/** Persisted read-only SAF roots used to supplement MediaStore in whitelist mode. */
+/** Persisted read-only SAF roots used to supplement MediaStore in either filtering mode. */
 class DeviceScanFolderAccess(private val context: Context) {
     private val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
     private val gson = Gson()
