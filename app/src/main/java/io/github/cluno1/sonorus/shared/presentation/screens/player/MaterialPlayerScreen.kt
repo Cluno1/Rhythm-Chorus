@@ -2317,6 +2317,9 @@ fun MaterialPlayerScreen(
                                                             Column(
                                                                 modifier = Modifier
                                                                     .fillMaxSize()
+                                                                    .clickable(enabled = onTapLyricsView != null) {
+                                                                        onTapLyricsView?.invoke()
+                                                                    }
                                                                     .verticalScroll(rememberScrollState()),
                                                                 horizontalAlignment = when (playerLyricsAlignment) {
                                                                     "START" -> Alignment.Start

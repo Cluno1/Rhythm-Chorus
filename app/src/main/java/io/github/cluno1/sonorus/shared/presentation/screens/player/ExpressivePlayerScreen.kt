@@ -457,9 +457,15 @@ fun ExpressivePlayerScreen(
         }
     }
 
-    // Do not launch full screen lyrics view when on expressive player; tapping toggles/shows controls
+    // Respect the immersive-lyrics preference on every player theme. Previously the
+    // expressive player always consumed lyric taps just to toggle its controls, which
+    // left Catalog plain-text lyrics with no discoverable route to the language menu.
     val onTapLyricsView: () -> Unit = {
-        toggleLyricsControls()
+        if (tapLyricsToFullScreen) {
+            onOpenFullScreenLyrics()
+        } else {
+            toggleLyricsControls()
+        }
     }
     var isScrubbing by remember { mutableStateOf(false) }
     var scrubProgress by remember { mutableFloatStateOf(0f) }
@@ -2576,7 +2582,10 @@ private fun RhythmPlayerLyricsPanel(
                             showRomanization = showRomanization, lyricsSource = lyrics.source, textSizeMultiplier = textSizeMultiplier, textAlignment = textAlignment,
                             textColor = textColor, activeColor = activeColor, subtitleColor = subtitleColor)
                     } else {
-                        Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(24.dp),
+                        Column(Modifier.fillMaxSize()
+                            .clickable(enabled = onTapLyricsView != null) { onTapLyricsView?.invoke() }
+                            .verticalScroll(rememberScrollState())
+                            .padding(24.dp),
                             horizontalAlignment = when (textAlignment) { TextAlign.Start -> Alignment.Start; TextAlign.End -> Alignment.End; else -> Alignment.CenterHorizontally }) {
                             Text(filteredText, style = MaterialTheme.typography.bodyLarge.copy(fontSize = MaterialTheme.typography.bodyLarge.fontSize * textSizeMultiplier,
                                 lineHeight = MaterialTheme.typography.bodyLarge.lineHeight * 1.6f * textSizeMultiplier, fontWeight = FontWeight.Medium, letterSpacing = 0.5.sp),

@@ -14,6 +14,8 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.*
@@ -717,21 +719,35 @@ fun FullScreenLyricsView(
                                     showRomanization = showRomanization
                                 )
                             } else {
-                                val lyricsText = remember(lyrics) {
-                                    lyrics.getBestLyrics() ?: ""
+                                val lyricsText = remember(lyrics) { lyrics.getBestLyrics() ?: "" }
+                                val likelySynced = remember(lyricsText) {
+                                    Regex("\\[\\d{1,3}:\\d{2}(?:[.:]\\d{0,3})?]")
+                                        .containsMatchIn(lyricsText)
                                 }
-                                SyncedLyricsView(
-                                    lyrics = lyricsText,
-                                    currentPlaybackTime = currentTimeMs,
-                                    syncOffset = manualSyncOffsetMs,
-                                    modifier = Modifier.fillMaxSize(),
-                                    onSeek = onLyricsSeek,
-                                    showTranslation = showTranslation,
-                                    showRomanization = showRomanization,
-                                    lyricsSource = lyrics.source,
-                                    textSizeMultiplier = playerLyricsTextSize,
-                                    textAlignment = lyricsTextAlign
-                                )
+                                if (likelySynced) {
+                                    SyncedLyricsView(
+                                        lyrics = lyricsText,
+                                        currentPlaybackTime = currentTimeMs,
+                                        syncOffset = manualSyncOffsetMs,
+                                        modifier = Modifier.fillMaxSize(),
+                                        onSeek = onLyricsSeek,
+                                        showTranslation = showTranslation,
+                                        showRomanization = showRomanization,
+                                        lyricsSource = lyrics.source,
+                                        textSizeMultiplier = playerLyricsTextSize,
+                                        textAlignment = lyricsTextAlign
+                                    )
+                                } else {
+                                    FullScreenPlainLyricsView(
+                                        lyrics = lyricsText,
+                                        lyricsSource = lyrics.source,
+                                        textSizeMultiplier = playerLyricsTextSize,
+                                        textAlignment = lyricsTextAlign,
+                                        textColor = textPrimaryColor,
+                                        sourceColor = textSecondaryColor,
+                                        modifier = Modifier.fillMaxSize(),
+                                    )
+                                }
                             }
                         }
                     }
@@ -1045,21 +1061,35 @@ fun FullScreenLyricsView(
                                     showRomanization = showRomanization
                                 )
                             } else {
-                                val lyricsText = remember(lyrics) {
-                                    lyrics.getBestLyrics() ?: ""
+                                val lyricsText = remember(lyrics) { lyrics.getBestLyrics() ?: "" }
+                                val likelySynced = remember(lyricsText) {
+                                    Regex("\\[\\d{1,3}:\\d{2}(?:[.:]\\d{0,3})?]")
+                                        .containsMatchIn(lyricsText)
                                 }
-                                SyncedLyricsView(
-                                    lyrics = lyricsText,
-                                    currentPlaybackTime = currentTimeMs,
-                                    syncOffset = manualSyncOffsetMs,
-                                    modifier = Modifier.fillMaxSize(),
-                                    onSeek = onLyricsSeek,
-                                    showTranslation = showTranslation,
-                                    showRomanization = showRomanization,
-                                    lyricsSource = lyrics.source,
-                                    textSizeMultiplier = playerLyricsTextSize,
-                                    textAlignment = lyricsTextAlign
-                                )
+                                if (likelySynced) {
+                                    SyncedLyricsView(
+                                        lyrics = lyricsText,
+                                        currentPlaybackTime = currentTimeMs,
+                                        syncOffset = manualSyncOffsetMs,
+                                        modifier = Modifier.fillMaxSize(),
+                                        onSeek = onLyricsSeek,
+                                        showTranslation = showTranslation,
+                                        showRomanization = showRomanization,
+                                        lyricsSource = lyrics.source,
+                                        textSizeMultiplier = playerLyricsTextSize,
+                                        textAlignment = lyricsTextAlign
+                                    )
+                                } else {
+                                    FullScreenPlainLyricsView(
+                                        lyrics = lyricsText,
+                                        lyricsSource = lyrics.source,
+                                        textSizeMultiplier = playerLyricsTextSize,
+                                        textAlignment = lyricsTextAlign,
+                                        textColor = textPrimaryColor,
+                                        sourceColor = textSecondaryColor,
+                                        modifier = Modifier.fillMaxSize(),
+                                    )
+                                }
                             }
                         }
                     }
@@ -1325,6 +1355,57 @@ fun FullScreenLyricsView(
                     }
                 }
             }
+        }
+    }
+}
+
+
+@Composable
+private fun FullScreenPlainLyricsView(
+    lyrics: String,
+    lyricsSource: String?,
+    textSizeMultiplier: Float,
+    textAlignment: TextAlign,
+    textColor: Color,
+    sourceColor: Color,
+    modifier: Modifier = Modifier,
+) {
+    Column(
+        modifier = modifier
+            .verticalScroll(rememberScrollState())
+            .padding(horizontal = 24.dp, vertical = 30.dp),
+        horizontalAlignment = when (textAlignment) {
+            TextAlign.Start -> Alignment.Start
+            TextAlign.End -> Alignment.End
+            else -> Alignment.CenterHorizontally
+        },
+    ) {
+        Text(
+            text = lyrics,
+            style = MaterialTheme.typography.titleLarge.copy(
+                fontSize = MaterialTheme.typography.titleLarge.fontSize * textSizeMultiplier,
+                lineHeight = MaterialTheme.typography.titleLarge.lineHeight * 1.5f * textSizeMultiplier,
+                fontWeight = FontWeight.SemiBold,
+                letterSpacing = 0.2.sp,
+            ),
+            color = textColor,
+            textAlign = textAlignment,
+            modifier = Modifier.fillMaxWidth(),
+        )
+        if (!lyricsSource.isNullOrBlank()) {
+            Spacer(modifier = Modifier.height(24.dp))
+            Text(
+                text = stringResource(
+                    R.string.lyrics_source_attribution,
+                    localizedLyricsSourceLabel(lyricsSource),
+                ),
+                style = MaterialTheme.typography.labelMedium,
+                color = sourceColor.copy(alpha = 0.7f),
+                textAlign = textAlignment,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 32.dp),
+            )
         }
     }
 }
