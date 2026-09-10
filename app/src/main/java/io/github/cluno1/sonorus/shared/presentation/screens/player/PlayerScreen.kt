@@ -90,6 +90,7 @@ import io.github.cluno1.sonorus.shared.presentation.components.player.formatDura
 import io.github.cluno1.sonorus.features.local.presentation.navigation.Screen
 import io.github.cluno1.sonorus.features.local.presentation.screens.LibraryTab
 import io.github.cluno1.sonorus.features.local.presentation.viewmodel.MusicViewModel
+import io.github.cluno1.sonorus.features.catalog.domain.isCatalogLibrarySong
 import io.github.cluno1.sonorus.shared.data.model.Album
 import io.github.cluno1.sonorus.shared.data.model.AppSettings
 import io.github.cluno1.sonorus.shared.data.model.Artist
@@ -1029,12 +1030,21 @@ fun PlayerScreen(
     }
 
     if (showLyricsEditorDialog) {
+        val editorDurationMs by musicViewModel.duration.collectAsState()
+        val editorTotalMs = song?.duration?.takeIf { it > 0L }
+            ?: editorDurationMs.takeIf { it > 0L }
+            ?: 0L
+        val catalogSyncState by musicViewModel.catalogLyricsSyncState.collectAsState()
         LyricsEditorBottomSheet(
             lyricsData = lyrics,
             songTitle = song?.title ?: stringResource(R.string.common_unknown),
             initialTimeOffset = lyricsTimeOffset,
             song = song,
             isStreamingMode = isStreamingMode,
+            currentPlaybackPositionMs = (progress().coerceIn(0f, 1f) * editorTotalMs).toLong(),
+            playbackDurationMs = editorTotalMs,
+            canSyncCatalog = song?.isCatalogLibrarySong() == true,
+            catalogSyncState = catalogSyncState,
             onDismiss = { showLyricsEditorDialog = false },
             onSave = { editedLyrics, timeOffset, format ->
                 musicViewModel.saveEditedLyrics(editedLyrics, timeOffset, format)
@@ -1047,6 +1057,8 @@ fun PlayerScreen(
             deviceLyricsCandidates = musicViewModel.deviceLyricsCandidates.collectAsState().value,
             onSelectDeviceLyricsCandidate = { musicViewModel.selectDeviceLyricsCandidate(it) },
             onRestoreLocal = { musicViewModel.restoreCurrentDeviceLyrics() },
+            onSyncCatalog = musicViewModel::syncCatalogEditedLyrics,
+            onLoadServerLyrics = musicViewModel::loadServerCatalogLyrics,
             onEmbedInFile = { editedLyrics ->
                 musicViewModel.embedLyricsInFile(
                     lyrics = editedLyrics,

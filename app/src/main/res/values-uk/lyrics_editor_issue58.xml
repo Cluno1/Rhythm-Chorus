@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="lyrics_generate_timing_template">Оцінити часову шкалу</string>
+    <string name="lyrics_generate_zero_template">Шаблон із нульовим часом</string>
+    <string name="lyrics_previous_timing_line">Попередній рядок</string>
+    <string name="lyrics_stamp_current_time">Позначити %1$s</string>
+    <string name="lyrics_sync_clean">Збігається із сервером</string>
+    <string name="lyrics_sync_pending">Локальну чернетку не синхронізовано</string>
+    <string name="lyrics_sync_in_progress">Синхронізація…</string>
+    <string name="lyrics_sync_complete">Синхронізовано із сервером</string>
+    <string name="lyrics_sync_conflict">Текст на сервері змінився після створення цієї чернетки.</string>
+    <string name="lyrics_sync_failed">Синхронізація не вдалася; локальну чернетку збережено.</string>
+    <string name="lyrics_sync_unavailable">Синхронізація із сервером недоступна</string>
+    <string name="lyrics_sync_to_server">Синхронізувати</string>
+    <string name="lyrics_load_server_version">Використати версію сервера</string>
+    <string name="lyrics_overwrite_server_version">Перезаписати версію сервера</string>
+</resources>

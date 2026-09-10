@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="lyrics_candidate_format">%1$s · %2$s · %3$s · %4$d%%</string>
+    <string name="lyrics_change">Ändra</string>
+    <string name="lyrics_choose_version">Välj en annan version</string>
+    <string name="lyrics_clear">Rensa</string>
+    <string name="lyrics_default_file_name">sångtext</string>
+    <string name="lyrics_duration_seconds">%1$d s</string>
+    <string name="lyrics_format_enhanced_lrc">Förbättrad LRC (.elrc)</string>
+    <string name="lyrics_format_raw_source">Obearbetad källa</string>
+    <string name="lyrics_format_standard_lrc">Standard-LRC (.lrc)</string>
+    <string name="lyrics_format_ttml">TTML XML (.ttml)</string>
+    <string name="lyrics_format_word_by_word_json">JSON ord för ord (.json)</string>
+    <string name="lyrics_line_by_line">Rad för rad</string>
+    <string name="lyrics_load_file_error">Det gick inte att läsa in sångtextfilen</string>
+    <string name="lyrics_no_candidates">Ingen matchande offentlig sångtext hittades</string>
+    <string name="lyrics_online_rematch">Matcha online igen</string>
+    <string name="lyrics_placeholder_line_by_line">Ange tidsstämplad LRC eller förbättrad LRC ([00:12.34]&lt;00:12.34&gt;ord)…</string>
+    <string name="lyrics_placeholder_source">Ange obearbetad TTML XML, LRC eller vanlig text…</string>
+    <string name="lyrics_placeholder_word_by_word">Ange sångtext ord för ord som JSON…</string>
+    <string name="lyrics_remember_choice">Kom ihåg mitt val (fråga inte igen)</string>
+    <string name="lyrics_rename">Byt namn</string>
+    <string name="lyrics_rename_lrc_body">Namnet på den inlästa LRC-filen ”%1$s” skiljer sig från låtens filnamn. Vill du byta namn så att de matchar eller koppla den som en anpassad fil?</string>
+    <string name="lyrics_rename_lrc_title">Byt namn på LRC-filen?</string>
+    <string name="lyrics_rename_permission_denied">Det gick inte att byta namn (behörighet saknas). Filen markerades som anpassad.</string>
+    <string name="lyrics_renamed_success">Filen har bytt namn.</string>
+    <string name="lyrics_renamed_to_format">Filen har bytt namn till %1$s.</string>
+    <string name="lyrics_restore_local">Återställ lokal sångtext</string>
+    <string name="lyrics_source">Källa</string>
+    <string name="lyrics_source_pref_default">Standard (appinställningar)</string>
+    <string name="lyrics_source_pref_embedded">Inbäddad först</string>
+    <string name="lyrics_source_pref_local_lrc">Lokal LRC-fil först</string>
+    <string name="lyrics_source_pref_online">Online först</string>
+    <string name="lyrics_source_preference">Källinställning</string>
+    <string name="lyrics_tag_keep_custom">Märk / Behåll anpassad</string>
+    <string name="lyrics_time_offset_ms">%1$s ms</string>
+    <string name="lyrics_word_by_word">Ord för ord</string>
+</resources>

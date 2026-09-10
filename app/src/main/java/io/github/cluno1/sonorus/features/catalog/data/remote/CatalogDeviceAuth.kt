@@ -12,6 +12,7 @@ import com.google.gson.GsonBuilder
 import okhttp3.HttpUrl.Companion.toHttpUrl
 import okhttp3.OkHttpClient
 import okhttp3.Request
+import okio.Buffer
 import retrofit2.Call
 import retrofit2.Response
 import retrofit2.Retrofit
@@ -145,6 +146,8 @@ internal object CatalogDeviceCanonical {
         java.util.Base64.getUrlDecoder().decode(publicKeySpki),
     )
 
+    fun contentSha256(bytes: ByteArray): String = sha256Hex(bytes)
+
     private fun sha256Hex(bytes: ByteArray): String = MessageDigest.getInstance("SHA-256")
         .digest(bytes)
         .joinToString("") { "%02x".format(it) }
@@ -220,8 +223,11 @@ internal class CatalogDeviceAuthClient(
 
     @Synchronized
     fun proof(request: Request): Map<String, String> {
-        require(request.method == "GET" || request.method == "HEAD") {
-            "public Catalog only signs GET and HEAD requests"
+        val isRead = request.method == "GET" || request.method == "HEAD"
+        val isLyricWrite = request.method == "PUT" &&
+            request.url.encodedPath.matches(Regex("^/v2/renditions/[^/]+/lyrics/[^/]+$"))
+        require(isRead || isLyricWrite) {
+            "public Catalog only signs reads and rendition lyric writes"
         }
         if (credentials.isReenrollmentRequired()) throw CatalogFailure.InvalidCredentials()
         try {
@@ -231,11 +237,16 @@ internal class CatalogDeviceAuthClient(
                 DeviceNonceRequest(current.deviceId),
             ).execute().bodyOrThrow().nonce
             val timestamp = Instant.now().epochSecond
+            val contentSha256 = request.body?.let { body ->
+                val buffer = Buffer()
+                body.writeTo(buffer)
+                CatalogDeviceCanonical.contentSha256(buffer.readByteArray())
+            } ?: CatalogDeviceCanonical.emptySha256
             val canonical = CatalogDeviceCanonical.request(
                 request.method,
                 request.url.encodedPath,
                 request.url.encodedQuery.orEmpty(),
-                CatalogDeviceCanonical.emptySha256,
+                contentSha256,
                 current.deviceId,
                 timestamp,
                 nonce,
@@ -245,7 +256,7 @@ internal class CatalogDeviceAuthClient(
                 "X-Rhythm-Device-ID" to current.deviceId,
                 "X-Rhythm-Timestamp" to timestamp.toString(),
                 "X-Rhythm-Nonce" to nonce,
-                "X-Rhythm-Content-SHA256" to CatalogDeviceCanonical.emptySha256,
+                "X-Rhythm-Content-SHA256" to contentSha256,
                 "X-Rhythm-Signature" to signer.sign(canonical),
             )
         } catch (error: CatalogFailure.InvalidCredentials) {

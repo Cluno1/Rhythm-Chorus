@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="lyrics_generate_timing_template">估算時間軸</string>
+    <string name="lyrics_generate_zero_template">零時間範本</string>
+    <string name="lyrics_previous_timing_line">上一行</string>
+    <string name="lyrics_stamp_current_time">標記 %1$s</string>
+    <string name="lyrics_sync_clean">與伺服器一致</string>
+    <string name="lyrics_sync_pending">本機草稿尚未同步</string>
+    <string name="lyrics_sync_in_progress">正在同步…</string>
+    <string name="lyrics_sync_complete">已同步到伺服器</string>
+    <string name="lyrics_sync_conflict">伺服器歌詞在此草稿建立後已被修改。</string>
+    <string name="lyrics_sync_failed">同步失敗，本機草稿已安全保留。</string>
+    <string name="lyrics_sync_unavailable">伺服器同步無法使用</string>
+    <string name="lyrics_sync_to_server">同步</string>
+    <string name="lyrics_load_server_version">使用伺服器版本</string>
+    <string name="lyrics_overwrite_server_version">覆寫伺服器版本</string>
+</resources>

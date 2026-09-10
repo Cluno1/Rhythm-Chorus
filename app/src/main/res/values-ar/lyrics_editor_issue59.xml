@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="lyrics_candidate_format">%1$s · %2$s · %3$s · %4$d%%</string>
+    <string name="lyrics_change">تغيير</string>
+    <string name="lyrics_choose_version">اختيار إصدار آخر</string>
+    <string name="lyrics_clear">مسح</string>
+    <string name="lyrics_default_file_name">كلمات_الأغنية</string>
+    <string name="lyrics_duration_seconds">%1$d ث</string>
+    <string name="lyrics_format_enhanced_lrc">LRC محسّن (.elrc)</string>
+    <string name="lyrics_format_raw_source">المصدر الخام</string>
+    <string name="lyrics_format_standard_lrc">LRC قياسي (.lrc)</string>
+    <string name="lyrics_format_ttml">TTML XML (.ttml)</string>
+    <string name="lyrics_format_word_by_word_json">JSON كلمة بكلمة (.json)</string>
+    <string name="lyrics_line_by_line">سطرًا بسطر</string>
+    <string name="lyrics_load_file_error">تعذّر تحميل ملف كلمات الأغنية</string>
+    <string name="lyrics_no_candidates">لم يتم العثور على كلمات عامة مطابقة</string>
+    <string name="lyrics_online_rematch">إعادة المطابقة عبر الإنترنت</string>
+    <string name="lyrics_placeholder_line_by_line">أدخل LRC مؤقتًا أو LRC محسّنًا ([00:12.34]&lt;00:12.34&gt;كلمة)…</string>
+    <string name="lyrics_placeholder_source">أدخل TTML XML أو LRC أو نصًا عاديًا…</string>
+    <string name="lyrics_placeholder_word_by_word">أدخل كلمات الأغنية كلمة بكلمة بتنسيق JSON…</string>
+    <string name="lyrics_remember_choice">تذكّر اختياري (لا تسأل مرة أخرى)</string>
+    <string name="lyrics_rename">إعادة تسمية</string>
+    <string name="lyrics_rename_lrc_body">يختلف اسم ملف LRC المحمّل «%1$s» عن اسم ملف الأغنية. هل تريد إعادة تسميته ليطابقه أم ربطه كملف مخصص؟</string>
+    <string name="lyrics_rename_lrc_title">إعادة تسمية ملف LRC؟</string>
+    <string name="lyrics_rename_permission_denied">تعذّرت إعادة التسمية (الإذن مرفوض). تم تعيينه كملف مخصص.</string>
+    <string name="lyrics_renamed_success">تمت إعادة تسمية الملف بنجاح.</string>
+    <string name="lyrics_renamed_to_format">تمت إعادة تسيمة الملف إلى %1$s بنجاح.</string>
+    <string name="lyrics_restore_local">استعادة كلمات الأغنية المحلية</string>
+    <string name="lyrics_source">المصدر</string>
+    <string name="lyrics_source_pref_default">افتراضي (إعدادات التطبيق)</string>
+    <string name="lyrics_source_pref_embedded">المضمّن أولًا</string>
+    <string name="lyrics_source_pref_local_lrc">ملف LRC المحلي أولًا</string>
+    <string name="lyrics_source_pref_online">الإنترنت أولًا</string>
+    <string name="lyrics_source_preference">أفضلية مصدر الكلمات</string>
+    <string name="lyrics_tag_keep_custom">وسم / الاحتفاظ بالمخصص</string>
+    <string name="lyrics_time_offset_ms">%1$s ملي ثانية</string>
+    <string name="lyrics_word_by_word">كلمة بكلمة</string>
+</resources>

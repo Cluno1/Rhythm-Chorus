@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="lyrics_generate_timing_template">Oszacuj oś czasu</string>
+    <string name="lyrics_generate_zero_template">Szablon od zera</string>
+    <string name="lyrics_previous_timing_line">Poprzedni wiersz</string>
+    <string name="lyrics_stamp_current_time">Ustaw %1$s</string>
+    <string name="lyrics_sync_clean">Zgodne z serwerem</string>
+    <string name="lyrics_sync_pending">Lokalna wersja nie jest zsynchronizowana</string>
+    <string name="lyrics_sync_in_progress">Synchronizowanie…</string>
+    <string name="lyrics_sync_complete">Zsynchronizowano z serwerem</string>
+    <string name="lyrics_sync_conflict">Tekst na serwerze zmienił się po utworzeniu tej wersji.</string>
+    <string name="lyrics_sync_failed">Synchronizacja nie powiodła się; lokalna wersja jest bezpieczna.</string>
+    <string name="lyrics_sync_unavailable">Synchronizacja z serwerem jest niedostępna</string>
+    <string name="lyrics_sync_to_server">Synchronizuj</string>
+    <string name="lyrics_load_server_version">Użyj wersji z serwera</string>
+    <string name="lyrics_overwrite_server_version">Nadpisz wersję na serwerze</string>
+</resources>

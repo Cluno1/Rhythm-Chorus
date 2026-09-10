@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="lyrics_generate_timing_template">Zeitleiste schätzen</string>
+    <string name="lyrics_generate_zero_template">Nullzeit-Vorlage</string>
+    <string name="lyrics_previous_timing_line">Vorherige Zeile</string>
+    <string name="lyrics_stamp_current_time">%1$s markieren</string>
+    <string name="lyrics_sync_clean">Mit dem Server identisch</string>
+    <string name="lyrics_sync_pending">Lokaler Entwurf nicht synchronisiert</string>
+    <string name="lyrics_sync_in_progress">Wird synchronisiert…</string>
+    <string name="lyrics_sync_complete">Mit dem Server synchronisiert</string>
+    <string name="lyrics_sync_conflict">Der Servertext wurde nach Erstellung dieses Entwurfs geändert.</string>
+    <string name="lyrics_sync_failed">Synchronisierung fehlgeschlagen; der lokale Entwurf bleibt erhalten.</string>
+    <string name="lyrics_sync_unavailable">Serversynchronisierung nicht verfügbar</string>
+    <string name="lyrics_sync_to_server">Synchronisieren</string>
+    <string name="lyrics_load_server_version">Serverversion verwenden</string>
+    <string name="lyrics_overwrite_server_version">Serverversion überschreiben</string>
+</resources>

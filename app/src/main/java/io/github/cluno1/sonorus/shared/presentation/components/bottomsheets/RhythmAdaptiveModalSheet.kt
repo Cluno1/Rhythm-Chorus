@@ -537,6 +537,8 @@ fun RhythmAdaptiveModalSheet(
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
+                    .fillMaxHeight()
+                    .imePadding()
                     .wrapContentHeight()
             ) {
                 scope.content()

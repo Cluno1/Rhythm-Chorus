@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="lyrics_generate_timing_template">Uppskatta tidslinje</string>
+    <string name="lyrics_generate_zero_template">Nolltidsmall</string>
+    <string name="lyrics_previous_timing_line">Föregående rad</string>
+    <string name="lyrics_stamp_current_time">Markera %1$s</string>
+    <string name="lyrics_sync_clean">Matchar servern</string>
+    <string name="lyrics_sync_pending">Lokalt utkast är inte synkat</string>
+    <string name="lyrics_sync_in_progress">Synkroniserar…</string>
+    <string name="lyrics_sync_complete">Synkroniserat med servern</string>
+    <string name="lyrics_sync_conflict">Servertexten ändrades efter att utkastet skapades.</string>
+    <string name="lyrics_sync_failed">Synkroniseringen misslyckades; det lokala utkastet är säkert.</string>
+    <string name="lyrics_sync_unavailable">Serversynkronisering är inte tillgänglig</string>
+    <string name="lyrics_sync_to_server">Synkronisera</string>
+    <string name="lyrics_load_server_version">Använd serverversion</string>
+    <string name="lyrics_overwrite_server_version">Skriv över serverversion</string>
+</resources>

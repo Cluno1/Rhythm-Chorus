@@ -8,6 +8,7 @@ sealed class CatalogFailure(message: String, cause: Throwable? = null) : IOExcep
     class InvalidCredentials : CatalogFailure("私有作品库凭据已失效")
     class AdminInvalidCredentials : CatalogFailure("Administrator username or password is incorrect")
     class Forbidden : CatalogFailure("当前凭据无权访问此内容")
+    class StaleRevision(val currentRevision: Int?) : CatalogFailure("服务器歌词已被其他设备修改")
     class Unreachable(cause: Throwable? = null) : CatalogFailure("无法连接私有作品库", cause)
     class Server(val statusCode: Int) : CatalogFailure("服务器暂时不可用（$statusCode）")
     class InvalidData(detail: String, cause: Throwable? = null) : CatalogFailure("服务器数据无效：$detail", cause)
@@ -18,6 +19,7 @@ data class CatalogConnection(
     val configured: Boolean,
     val deviceRegistered: Boolean,
     val reenrollmentRequired: Boolean = false,
+    val draftNamespace: String = "",
 )
 
 interface CatalogRepository {
@@ -49,4 +51,12 @@ interface CatalogRepository {
         renditionId: String,
     ): Result<Unit>
     suspend fun syncChanges(): Result<CatalogChanges>
+    suspend fun replaceRenditionLyrics(
+        renditionId: String,
+        language: String,
+        lyrics: String,
+        format: String,
+        expectedRevision: Int,
+        idempotencyKey: String,
+    ): Result<CatalogLyricsWriteResult>
 }

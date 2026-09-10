@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="lyrics_generate_timing_template">समयरेखा का अनुमान लगाएँ</string>
+    <string name="lyrics_generate_zero_template">शून्य समय टेम्पलेट</string>
+    <string name="lyrics_previous_timing_line">पिछली पंक्ति</string>
+    <string name="lyrics_stamp_current_time">%1$s दर्ज करें</string>
+    <string name="lyrics_sync_clean">सर्वर से मेल खाता है</string>
+    <string name="lyrics_sync_pending">स्थानीय ड्राफ्ट सिंक नहीं हुआ</string>
+    <string name="lyrics_sync_in_progress">सिंक हो रहा है…</string>
+    <string name="lyrics_sync_complete">सर्वर से सिंक हो गया</string>
+    <string name="lyrics_sync_conflict">इस ड्राफ्ट के बनने के बाद सर्वर के बोल बदल गए।</string>
+    <string name="lyrics_sync_failed">सिंक विफल हुआ; स्थानीय ड्राफ्ट सुरक्षित है।</string>
+    <string name="lyrics_sync_unavailable">सर्वर सिंक उपलब्ध नहीं है</string>
+    <string name="lyrics_sync_to_server">सिंक करें</string>
+    <string name="lyrics_load_server_version">सर्वर संस्करण उपयोग करें</string>
+    <string name="lyrics_overwrite_server_version">सर्वर संस्करण बदलें</string>
+</resources>

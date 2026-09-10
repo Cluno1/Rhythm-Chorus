@@ -11,6 +11,8 @@ import io.github.cluno1.sonorus.features.catalog.domain.CatalogLyricSourceImage
 import io.github.cluno1.sonorus.features.catalog.domain.CatalogLyricSourceLanguageRelation
 import io.github.cluno1.sonorus.features.catalog.domain.CatalogScoreOption
 import io.github.cluno1.sonorus.features.catalog.domain.CatalogLyricsTranslation
+import io.github.cluno1.sonorus.features.catalog.domain.CatalogLyricLanguageFormat
+import io.github.cluno1.sonorus.features.catalog.domain.CatalogLyricsWriteResult
 import io.github.cluno1.sonorus.features.catalog.domain.CatalogPage
 import io.github.cluno1.sonorus.features.catalog.domain.CatalogPlaybackPolicy
 import io.github.cluno1.sonorus.features.catalog.domain.Part
@@ -29,6 +31,7 @@ import java.util.UUID
 
 internal object CatalogDtoMapper {
     private val sha256 = Regex("^[0-9a-fA-F]{64}$")
+    private val lyricFormats = setOf("plain", "lrc", "enhanced_lrc", "ttml", "word_by_word_json")
 
     fun page(dto: WorkPageDto): CatalogPage = CatalogPage(
         items = dto.items.required("items").map(::work),
@@ -240,6 +243,17 @@ internal object CatalogDtoMapper {
         hasMore = dto.hasMore.required("has_more"),
     )
 
+    fun renditionLyricsWrite(dto: RenditionLyricWriteDto): CatalogLyricsWriteResult =
+        CatalogLyricsWriteResult(
+            renditionId = uuid(dto.renditionId, "rendition_lyrics.rendition_id"),
+            renditionRevision = positive(dto.revision, "rendition_lyrics.revision"),
+            language = normalizeCatalogLyricsLanguageTag(
+                text(dto.language, "rendition_lyrics.language"),
+            ),
+            lyrics = text(dto.lyrics, "rendition_lyrics.lyrics"),
+            format = lyricFormat(dto.format, "rendition_lyrics.format"),
+        )
+
     private fun part(dto: PartDto) = Part(
         uuid(dto.id, "part.id"), text(dto.code, "part.code"), text(dto.name, "part.name"),
         positive(dto.displayOrder, "part.display_order"), dto.midiChannel?.also { require(it in 1..16) },
@@ -298,6 +312,17 @@ internal object CatalogDtoMapper {
         require(lyrics != null || lyricsTranslations.isEmpty()) {
             "library_song translations require default lyrics"
         }
+        val formats = dto.lyricsFormats.orEmpty().map { item ->
+            CatalogLyricLanguageFormat(
+                language = normalizeCatalogLyricsLanguageTag(
+                    text(item.language, "library_song.lyrics_format.language"),
+                ),
+                format = lyricFormat(item.format, "library_song.lyrics_format.format"),
+            )
+        }
+        require(formats.distinctBy { it.language.lowercase() }.size == formats.size) {
+            "library_song lyric formats must have unique languages"
+        }
         val sourceImages = dto.lyricsSourceImages.orEmpty().map(::lyricSourceImage)
         require(sourceImages.distinctBy { it.sourcePageId }.size == sourceImages.size) {
             "library_song lyric source pages must be unique"
@@ -312,6 +337,7 @@ internal object CatalogDtoMapper {
             workId = uuid(dto.workId, "library_song.work_id"),
             arrangementId = uuid(dto.arrangementId, "library_song.arrangement_id"),
             renditionId = uuid(dto.renditionId, "library_song.rendition_id"),
+            renditionRevision = positive(dto.renditionRevision ?: 1, "library_song.rendition_revision"),
             albumId = uuid(dto.albumId, "library_song.album_id"),
             title = text(dto.title, "library_song.title"),
             artist = dto.artist?.trim()?.takeIf { it.isNotEmpty() },
@@ -325,6 +351,7 @@ internal object CatalogDtoMapper {
             coverAssetId = optionalUuid(dto.coverAssetId, "library_song.cover_asset_id"),
             lyricsLanguage = lyricsLanguage,
             lyricsTranslations = lyricsTranslations,
+            lyricsFormats = formats,
             lyricsSourceImages = sourceImages,
         )
     }
@@ -393,6 +420,9 @@ internal object CatalogDtoMapper {
     private fun hash(value: String?, field: String) = text(value, field).also {
         require(sha256.matches(it)) { "$field is not SHA-256" }
     }.lowercase()
+    private fun lyricFormat(value: String?, field: String) = text(value, field).also {
+        require(it in lyricFormats) { "$field is unsupported" }
+    }
     private fun text(value: String?, field: String) = value?.takeIf { it.isNotBlank() }
         ?: throw IllegalArgumentException("$field is missing")
     private fun positive(value: Int?, field: String) = value.required(field).also { require(it > 0) { "$field must be positive" } }

@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="lyrics_change">更改</string>
+    <string name="lyrics_clear">清除</string>
+    <string name="lyrics_default_file_name">歌詞</string>
+    <string name="lyrics_format_enhanced_lrc">增強 LRC（.elrc）</string>
+    <string name="lyrics_format_raw_source">原始來源文字</string>
+    <string name="lyrics_format_standard_lrc">標準 LRC（.lrc）</string>
+    <string name="lyrics_format_ttml">TTML XML（.ttml）</string>
+    <string name="lyrics_format_word_by_word_json">逐字 JSON（.json）</string>
+    <string name="lyrics_line_by_line">逐行</string>
+    <string name="lyrics_load_file_error">無法載入歌詞檔案</string>
+    <string name="lyrics_placeholder_line_by_line">輸入帶時間戳的 LRC 或增強 LRC（[00:12.34]&lt;00:12.34&gt;歌詞）…</string>
+    <string name="lyrics_placeholder_source">輸入原始 TTML XML、LRC 或純文字…</string>
+    <string name="lyrics_placeholder_word_by_word">輸入逐字歌詞 JSON…</string>
+    <string name="lyrics_remember_choice">記住我的選擇（不再詢問）</string>
+    <string name="lyrics_rename">重新命名</string>
+    <string name="lyrics_rename_lrc_body">已載入的 LRC 檔名「%1$s」與歌曲檔名不同。是否將其改為與歌曲一致，或將其關聯為自訂標記檔案？</string>
+    <string name="lyrics_rename_lrc_title">重新命名 LRC 檔案？</string>
+    <string name="lyrics_rename_permission_denied">無法重新命名（權限被拒），已改為標記自訂檔案。</string>
+    <string name="lyrics_renamed_success">檔案重新命名成功。</string>
+    <string name="lyrics_renamed_to_format">檔案已成功重新命名為 %1$s。</string>
+    <string name="lyrics_source">來源文字</string>
+    <string name="lyrics_source_pref_default">預設（應用程式設定）</string>
+    <string name="lyrics_source_pref_embedded">優先內嵌</string>
+    <string name="lyrics_source_pref_local_lrc">優先本機 LRC 檔案</string>
+    <string name="lyrics_source_pref_online">優先線上</string>
+    <string name="lyrics_source_preference">歌詞來源偏好</string>
+    <string name="lyrics_tag_keep_custom">標記 / 保留自訂</string>
+    <string name="lyrics_time_offset_ms">%1$s 毫秒</string>
+    <string name="lyrics_word_by_word">逐字</string>
+</resources>

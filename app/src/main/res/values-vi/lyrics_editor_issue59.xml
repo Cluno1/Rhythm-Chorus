@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="lyrics_candidate_format">%1$s · %2$s · %3$s · %4$d%%</string>
+    <string name="lyrics_change">Thay đổi</string>
+    <string name="lyrics_choose_version">Chọn phiên bản khác</string>
+    <string name="lyrics_clear">Xóa</string>
+    <string name="lyrics_default_file_name">lời_bài_hát</string>
+    <string name="lyrics_duration_seconds">%1$d giây</string>
+    <string name="lyrics_format_enhanced_lrc">LRC nâng cao (.elrc)</string>
+    <string name="lyrics_format_raw_source">Nguồn thô</string>
+    <string name="lyrics_format_standard_lrc">LRC tiêu chuẩn (.lrc)</string>
+    <string name="lyrics_format_ttml">TTML XML (.ttml)</string>
+    <string name="lyrics_format_word_by_word_json">JSON theo từng từ (.json)</string>
+    <string name="lyrics_line_by_line">Từng dòng</string>
+    <string name="lyrics_load_file_error">Không thể tải tệp lời bài hát</string>
+    <string name="lyrics_no_candidates">Không tìm thấy lời bài hát công khai phù hợp</string>
+    <string name="lyrics_online_rematch">Khớp lại trực tuyến</string>
+    <string name="lyrics_placeholder_line_by_line">Nhập LRC có mốc thời gian hoặc LRC nâng cao ([00:12.34]&lt;00:12.34&gt;từ)…</string>
+    <string name="lyrics_placeholder_source">Nhập TTML XML, LRC hoặc văn bản thuần dạng thô…</string>
+    <string name="lyrics_placeholder_word_by_word">Nhập lời bài hát theo từng từ dạng JSON…</string>
+    <string name="lyrics_remember_choice">Ghi nhớ lựa chọn của tôi (không hỏi lại)</string>
+    <string name="lyrics_rename">Đổi tên</string>
+    <string name="lyrics_rename_lrc_body">Tên tệp LRC đã tải “%1$s” khác với tên tệp bài hát. Bạn muốn đổi tên cho khớp hay liên kết dưới dạng tệp tùy chỉnh?</string>
+    <string name="lyrics_rename_lrc_title">Đổi tên tệp LRC?</string>
+    <string name="lyrics_rename_permission_denied">Không thể đổi tên (bị từ chối quyền). Tệp đã được đánh dấu là tùy chỉnh.</string>
+    <string name="lyrics_renamed_success">Đã đổi tên tệp thành công.</string>
+    <string name="lyrics_renamed_to_format">Đã đổi tên tệp thành %1$s.</string>
+    <string name="lyrics_restore_local">Khôi phục lời bài hát cục bộ</string>
+    <string name="lyrics_source">Nguồn</string>
+    <string name="lyrics_source_pref_default">Mặc định (cài đặt ứng dụng)</string>
+    <string name="lyrics_source_pref_embedded">Ưu tiên nội dung nhúng</string>
+    <string name="lyrics_source_pref_local_lrc">Ưu tiên tệp LRC cục bộ</string>
+    <string name="lyrics_source_pref_online">Ưu tiên trực tuyến</string>
+    <string name="lyrics_source_preference">Ưu tiên nguồn</string>
+    <string name="lyrics_tag_keep_custom">Gắn thẻ / Giữ tùy chỉnh</string>
+    <string name="lyrics_time_offset_ms">%1$s mili giây</string>
+    <string name="lyrics_word_by_word">Từng từ</string>
+</resources>

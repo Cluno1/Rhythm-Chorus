@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="lyrics_candidate_format">%1$s · %2$s · %3$s · %4$d%%</string>
+    <string name="lyrics_change">Zmień</string>
+    <string name="lyrics_choose_version">Wybierz inną wersję</string>
+    <string name="lyrics_clear">Wyczyść</string>
+    <string name="lyrics_default_file_name">tekst_piosenki</string>
+    <string name="lyrics_duration_seconds">%1$d s</string>
+    <string name="lyrics_format_enhanced_lrc">Rozszerzone LRC (.elrc)</string>
+    <string name="lyrics_format_raw_source">Surowe źródło</string>
+    <string name="lyrics_format_standard_lrc">Standardowe LRC (.lrc)</string>
+    <string name="lyrics_format_ttml">TTML XML (.ttml)</string>
+    <string name="lyrics_format_word_by_word_json">JSON słowo po słowie (.json)</string>
+    <string name="lyrics_line_by_line">Wiersz po wierszu</string>
+    <string name="lyrics_load_file_error">Nie udało się wczytać pliku tekstu</string>
+    <string name="lyrics_no_candidates">Nie znaleziono pasującego publicznego tekstu</string>
+    <string name="lyrics_online_rematch">Dopasuj ponownie online</string>
+    <string name="lyrics_placeholder_line_by_line">Wprowadź LRC ze znacznikami czasu lub rozszerzone LRC ([00:12.34]&lt;00:12.34&gt;słowo)…</string>
+    <string name="lyrics_placeholder_source">Wprowadź surowy TTML XML, LRC lub zwykły tekst…</string>
+    <string name="lyrics_placeholder_word_by_word">Wprowadź tekst słowo po słowie w JSON…</string>
+    <string name="lyrics_remember_choice">Zapamiętaj wybór (nie pytaj ponownie)</string>
+    <string name="lyrics_rename">Zmień nazwę</string>
+    <string name="lyrics_rename_lrc_body">Nazwa wczytanego pliku LRC „%1$s” różni się od nazwy pliku utworu. Zmienić ją, aby pasowała, czy powiązać plik jako niestandardowy?</string>
+    <string name="lyrics_rename_lrc_title">Zmienić nazwę pliku LRC?</string>
+    <string name="lyrics_rename_permission_denied">Nie udało się zmienić nazwy (brak uprawnień). Plik oznaczono jako niestandardowy.</string>
+    <string name="lyrics_renamed_success">Nazwa pliku została zmieniona.</string>
+    <string name="lyrics_renamed_to_format">Nazwa pliku została zmieniona na %1$s.</string>
+    <string name="lyrics_restore_local">Przywróć lokalny tekst</string>
+    <string name="lyrics_source">Źródło</string>
+    <string name="lyrics_source_pref_default">Domyślne (ustawienia aplikacji)</string>
+    <string name="lyrics_source_pref_embedded">Najpierw osadzony</string>
+    <string name="lyrics_source_pref_local_lrc">Najpierw lokalny plik LRC</string>
+    <string name="lyrics_source_pref_online">Najpierw online</string>
+    <string name="lyrics_source_preference">Preferowane źródło</string>
+    <string name="lyrics_tag_keep_custom">Oznacz / Zachowaj niestandardowy</string>
+    <string name="lyrics_time_offset_ms">%1$s ms</string>
+    <string name="lyrics_word_by_word">Słowo po słowie</string>
+</resources>

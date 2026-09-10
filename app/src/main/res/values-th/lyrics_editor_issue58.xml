@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="lyrics_generate_timing_template">ประมาณไทม์ไลน์</string>
+    <string name="lyrics_generate_zero_template">แม่แบบเวลาเริ่มต้นศูนย์</string>
+    <string name="lyrics_previous_timing_line">บรรทัดก่อนหน้า</string>
+    <string name="lyrics_stamp_current_time">กำหนด %1$s</string>
+    <string name="lyrics_sync_clean">ตรงกับเซิร์ฟเวอร์</string>
+    <string name="lyrics_sync_pending">ฉบับร่างในเครื่องยังไม่ซิงค์</string>
+    <string name="lyrics_sync_in_progress">กำลังซิงค์…</string>
+    <string name="lyrics_sync_complete">ซิงค์กับเซิร์ฟเวอร์แล้ว</string>
+    <string name="lyrics_sync_conflict">เนื้อเพลงบนเซิร์ฟเวอร์เปลี่ยนหลังจากสร้างฉบับร่างนี้</string>
+    <string name="lyrics_sync_failed">ซิงค์ไม่สำเร็จ ฉบับร่างในเครื่องยังปลอดภัย</string>
+    <string name="lyrics_sync_unavailable">ไม่สามารถซิงค์กับเซิร์ฟเวอร์ได้</string>
+    <string name="lyrics_sync_to_server">ซิงค์</string>
+    <string name="lyrics_load_server_version">ใช้เวอร์ชันเซิร์ฟเวอร์</string>
+    <string name="lyrics_overwrite_server_version">เขียนทับเวอร์ชันเซิร์ฟเวอร์</string>
+</resources>

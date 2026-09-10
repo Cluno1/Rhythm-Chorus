@@ -164,6 +164,7 @@ class CatalogDtoMapperTest {
             workId = workId,
             arrangementId = arrangementId,
             renditionId = renditionId,
+            renditionRevision = 9,
             albumId = albumId,
             title = "Unknown duration",
             artist = null,
@@ -186,6 +187,7 @@ class CatalogDtoMapperTest {
             workId = workId,
             arrangementId = arrangementId,
             renditionId = renditionId,
+            renditionRevision = 9,
             albumId = "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
             title = "Localized song",
             artist = "Artist",
@@ -199,6 +201,11 @@ class CatalogDtoMapperTest {
                 LyricsTranslationDto("zh-hans", "奇异恩典"),
                 LyricsTranslationDto("zh-Hant", "奇異恩典"),
             ),
+            lyricsFormats = listOf(
+                LyricLanguageFormatDto("en", "plain"),
+                LyricLanguageFormatDto("zh-Hans", "lrc"),
+                LyricLanguageFormatDto("zh-Hant", "plain"),
+            ),
         )
 
         val mapped = CatalogDtoMapper.librarySongs(
@@ -206,8 +213,31 @@ class CatalogDtoMapperTest {
         ).first.single()
 
         assertEquals("en", mapped.lyricsLanguage)
+        assertEquals(9, mapped.renditionRevision)
         assertEquals(listOf("zh-Hans", "zh-Hant"), mapped.lyricsTranslations?.map { it.language })
         assertEquals(listOf("奇异恩典", "奇異恩典"), mapped.lyricsTranslations?.map { it.lyrics })
+        assertEquals(listOf("plain", "lrc", "plain"), mapped.lyricsFormats?.map { it.format })
+    }
+
+    @Test
+    fun mapsRenditionLyricsWriteIdentityAndRevision() {
+        val mapped = CatalogDtoMapper.renditionLyricsWrite(
+            RenditionLyricWriteDto(
+                renditionId = renditionId,
+                revision = 10,
+                language = "zh-hans",
+                lyrics = "[00:01.000]歌词",
+                format = "lrc",
+                lyricsLanguage = "en",
+                lyricsTranslations = emptyList(),
+                lyricsFormats = emptyList(),
+            ),
+        )
+
+        assertEquals(renditionId, mapped.renditionId)
+        assertEquals(10, mapped.renditionRevision)
+        assertEquals("zh-Hans", mapped.language)
+        assertEquals("lrc", mapped.format)
     }
 
     @Test

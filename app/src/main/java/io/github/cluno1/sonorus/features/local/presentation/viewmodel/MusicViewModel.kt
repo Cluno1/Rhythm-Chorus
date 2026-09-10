@@ -60,6 +60,15 @@ import io.github.cluno1.sonorus.features.catalog.domain.lyricsVariants
 import io.github.cluno1.sonorus.features.catalog.domain.selectCatalogLyricsVariant
 import io.github.cluno1.sonorus.features.catalog.domain.toStableCatalogSongId
 import io.github.cluno1.sonorus.features.catalog.data.local.CatalogQueueStore
+import io.github.cluno1.sonorus.features.catalog.data.local.CatalogLyricsDraftStore
+import io.github.cluno1.sonorus.features.catalog.di.CatalogModule
+import io.github.cluno1.sonorus.features.catalog.domain.CatalogLyricLanguageFormat
+import io.github.cluno1.sonorus.features.catalog.domain.CatalogLyricsDraft
+import io.github.cluno1.sonorus.features.catalog.domain.CatalogLyricsSyncState
+import io.github.cluno1.sonorus.features.catalog.domain.CatalogLyricsSyncStatus
+import io.github.cluno1.sonorus.features.catalog.domain.CatalogLyricsTranslation
+import io.github.cluno1.sonorus.features.catalog.domain.CatalogFailure
+import io.github.cluno1.sonorus.features.catalog.domain.normalizeCatalogLyricsLanguageTag
 import io.github.cluno1.sonorus.features.local.presentation.player.PlaybackControlStateMachine
 import io.github.cluno1.sonorus.features.local.presentation.player.PlaybackControlUiState
 import io.github.cluno1.sonorus.features.local.presentation.player.PlaybackReadiness
@@ -206,6 +215,8 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     private val repository = MusicRepository(application)
+    private val catalogRepository = CatalogModule.repository(application)
+    private val catalogLyricsDraftStore = CatalogLyricsDraftStore(application)
     private val notificationManagerHelper = LibraryNotificationManager(application)
     private val metadataManagerHelper = LibraryMetadataManager(
         context = application,
@@ -954,6 +965,9 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
     val currentSong: StateFlow<Song?> = _currentSong.asStateFlow()
     private val _catalogNowPlaying = MutableStateFlow<RhythmNowPlayingItem?>(null)
     val catalogNowPlaying: StateFlow<RhythmNowPlayingItem?> = _catalogNowPlaying.asStateFlow()
+    private val _catalogLyricsSyncState = MutableStateFlow(CatalogLyricsSyncState())
+    val catalogLyricsSyncState: StateFlow<CatalogLyricsSyncState> =
+        _catalogLyricsSyncState.asStateFlow()
     private val _catalogQueue = MutableStateFlow<List<RhythmQueueEntry>>(emptyList())
     val catalogQueue: StateFlow<List<RhythmQueueEntry>> = _catalogQueue.asStateFlow()
 
@@ -8096,7 +8110,11 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
         val current = _catalogNowPlaying.value ?: return
         if (current.renditionId != refreshed.renditionId) return
 
-        val merged = refreshed.copy(assetId = current.assetId ?: refreshed.assetId)
+        val merged = if (current.renditionRevision > refreshed.renditionRevision) {
+            current.copy(assetId = current.assetId ?: refreshed.assetId)
+        } else {
+            refreshed.copy(assetId = current.assetId ?: refreshed.assetId)
+        }
         if (merged == current) return
 
         _catalogQueue.value = _catalogQueue.value.map { entry ->
@@ -8125,11 +8143,107 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
             variants.firstOrNull { it.language.equals(requested, ignoreCase = true) }
         } ?: selectCatalogLyricsVariant(variants, preferredCatalogLyricsLanguageTags())
         _catalogLyricsLanguage.value = selected?.language
+        val connection = catalogRepository.connection()
+        val draft = if (
+            nowPlaying != null && selected != null && connection.draftNamespace.isNotBlank()
+        ) {
+            catalogLyricsDraftStore.load(
+                connection.draftNamespace,
+                nowPlaying.renditionId,
+                selected.language,
+            )
+        } else {
+            null
+        }
+        _catalogLyricsSyncState.value = when (draft?.status) {
+            "pending" -> CatalogLyricsSyncState(CatalogLyricsSyncStatus.PENDING)
+            "synced" -> CatalogLyricsSyncState(CatalogLyricsSyncStatus.SYNCED)
+            "conflict" -> CatalogLyricsSyncState(CatalogLyricsSyncStatus.CONFLICT)
+            "error" -> CatalogLyricsSyncState(CatalogLyricsSyncStatus.ERROR)
+            else -> CatalogLyricsSyncState(
+                if (nowPlaying == null) CatalogLyricsSyncStatus.UNAVAILABLE
+                else CatalogLyricsSyncStatus.CLEAN,
+            )
+        }
+        val unsyncedDraft = draft?.takeIf { it.status != "synced" }
         _currentLyrics.value = selected?.let { variant ->
-            LyricsData(
-                plainLyrics = variant.lyrics,
+            catalogLyricsData(
+                lyrics = unsyncedDraft?.lyrics ?: variant.lyrics,
+                format = unsyncedDraft?.format ?: variant.format,
+                language = variant.language,
+            )
+        }
+    }
+
+    private fun catalogLyricsData(lyrics: String, format: String, language: String): LyricsData {
+        val source = if (language == "und") "Catalog" else "Catalog · $language"
+        return when (format) {
+            "lrc", "enhanced_lrc" -> LyricsData(
+                plainLyrics = lyrics.lines().joinToString("\n") { line ->
+                    line.replace(Regex("^\\[\\d{1,2}:\\d{2}(?:\\.\\d{1,3})?]"), "")
+                        .replace(Regex("<\\d{1,2}:\\d{2}(?:\\.\\d{1,3})?>"), "")
+                        .trim()
+                },
+                syncedLyrics = lyrics,
+                source = source,
+                isCorrected = true,
+            )
+            "word_by_word_json" -> LyricsData(
+                plainLyrics = null,
                 syncedLyrics = null,
-                source = if (variant.language == "und") "Catalog" else "Catalog · ${variant.language}",
+                wordByWordLyrics = lyrics,
+                source = source,
+                isCorrected = true,
+            )
+            else -> LyricsData(
+                plainLyrics = lyrics,
+                syncedLyrics = null,
+                source = source,
+                isCorrected = true,
+            )
+        }
+    }
+
+    private fun backendLyricFormat(lyrics: String, format: String?): String = when {
+        format == "WORD_BY_WORD" -> "word_by_word_json"
+        RhythmLyricsParser.isTtmlContent(lyrics) -> "ttml"
+        format == "LINE_BY_LINE" && LyricsParser.hasWordTimestamps(lyrics) -> "enhanced_lrc"
+        format == "LINE_BY_LINE" -> "lrc"
+        else -> "plain"
+    }
+
+    private fun RhythmNowPlayingItem.withLyricsVariant(
+        language: String,
+        lyrics: String,
+        format: String,
+        revision: Int = renditionRevision,
+    ): RhythmNowPlayingItem {
+        val normalizedLanguage = normalizeCatalogLyricsLanguageTag(language)
+        val primaryLanguage = lyricsLanguage?.let(::normalizeCatalogLyricsLanguageTag)
+        val updatedFormats = lyricsFormats.orEmpty()
+            .filterNot { it.language.equals(normalizedLanguage, ignoreCase = true) }
+            .plus(CatalogLyricLanguageFormat(normalizedLanguage, format))
+        return if (this.lyrics.isNullOrBlank()) {
+            copy(
+                renditionRevision = revision,
+                lyrics = lyrics,
+                lyricsLanguage = normalizedLanguage,
+                lyricsTranslations = emptyList(),
+                lyricsFormats = updatedFormats,
+            )
+        } else if (primaryLanguage.equals(normalizedLanguage, ignoreCase = true)) {
+            copy(
+                renditionRevision = revision,
+                lyrics = lyrics,
+                lyricsFormats = updatedFormats,
+            )
+        } else {
+            copy(
+                renditionRevision = revision,
+                lyricsTranslations = lyricsTranslations.orEmpty()
+                    .filterNot { it.language.equals(normalizedLanguage, ignoreCase = true) }
+                    .plus(CatalogLyricsTranslation(normalizedLanguage, lyrics)),
+                lyricsFormats = updatedFormats,
             )
         }
     }
@@ -8438,6 +8552,53 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
                         Log.w(TAG, "Edited lyrics were truncated to $MAX_EDITABLE_LYRICS_CHARS characters")
                     }
 
+                    val catalogNowPlaying = _catalogNowPlaying.value
+                    if (song.isCatalogLibrarySong() && catalogNowPlaying != null) {
+                        val connection = catalogRepository.connection()
+                        val language = normalizeCatalogLyricsLanguageTag(
+                            _catalogLyricsLanguage.value ?: catalogNowPlaying.lyricsLanguage ?: "und",
+                        )
+                        val backendFormat = backendLyricFormat(sanitizedLyrics, format)
+                        val existingDraft = catalogLyricsDraftStore.load(
+                            connection.draftNamespace,
+                            catalogNowPlaying.renditionId,
+                            language,
+                        )
+                        val draft = CatalogLyricsDraft(
+                            namespace = connection.draftNamespace,
+                            renditionId = catalogNowPlaying.renditionId,
+                            language = language,
+                            lyrics = sanitizedLyrics,
+                            format = backendFormat,
+                            baseRevision = existingDraft
+                                ?.takeIf { it.status != "synced" }
+                                ?.baseRevision
+                                ?: catalogNowPlaying.renditionRevision,
+                            status = "pending",
+                            updatedAtEpochMs = System.currentTimeMillis(),
+                        )
+                        catalogLyricsDraftStore.save(draft)
+                        val updated = catalogNowPlaying.withLyricsVariant(
+                            language,
+                            sanitizedLyrics,
+                            backendFormat,
+                        )
+                        _catalogNowPlaying.value = updated
+                        _catalogQueue.value = _catalogQueue.value.map { entry ->
+                            if (entry.nowPlaying.renditionId == updated.renditionId) {
+                                entry.copy(nowPlaying = updated.copy(assetId = entry.nowPlaying.assetId))
+                            } else {
+                                entry
+                            }
+                        }
+                        _lyricsTimeOffset.value = timeOffset
+                        _catalogLyricsSyncState.value =
+                            CatalogLyricsSyncState(CatalogLyricsSyncStatus.PENDING)
+                        applyCatalogLyrics(updated, language)
+                        saveQueueToPersistence()
+                        return@launch
+                    }
+
                     val artist = song.artist
                     val title = song.title
                     
@@ -8598,6 +8759,166 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
             } catch (e: Exception) {
                 Log.e(TAG, "Error saving edited lyrics", e)
             }
+        }
+    }
+
+    fun syncCatalogEditedLyrics(
+        editedLyrics: String,
+        format: String,
+        forceOverwrite: Boolean = false,
+    ) {
+        val nowPlaying = _catalogNowPlaying.value ?: return
+        val language = normalizeCatalogLyricsLanguageTag(
+            _catalogLyricsLanguage.value ?: nowPlaying.lyricsLanguage ?: "und",
+        )
+        val sanitizedLyrics = editedLyrics
+            .replace("\uFEFF", "")
+            .replace("\r\n", "\n")
+            .replace("\r", "\n")
+            .take(MAX_EDITABLE_LYRICS_CHARS)
+        val backendFormat = backendLyricFormat(sanitizedLyrics, format)
+        val connection = catalogRepository.connection()
+        if (connection.draftNamespace.isBlank()) return
+
+        viewModelScope.launch {
+            val existing = withContext(Dispatchers.IO) {
+                catalogLyricsDraftStore.load(
+                    connection.draftNamespace,
+                    nowPlaying.renditionId,
+                    language,
+                )
+            }
+            val expectedRevision = if (forceOverwrite) {
+                _catalogLyricsSyncState.value.currentRevision
+                    ?: existing?.baseRevision
+                    ?: nowPlaying.renditionRevision
+            } else {
+                existing?.baseRevision ?: nowPlaying.renditionRevision
+            }
+            val syncingDraft = CatalogLyricsDraft(
+                namespace = connection.draftNamespace,
+                renditionId = nowPlaying.renditionId,
+                language = language,
+                lyrics = sanitizedLyrics,
+                format = backendFormat,
+                baseRevision = expectedRevision,
+                status = "pending",
+                updatedAtEpochMs = System.currentTimeMillis(),
+            )
+            withContext(Dispatchers.IO) { catalogLyricsDraftStore.save(syncingDraft) }
+            _catalogLyricsSyncState.value = CatalogLyricsSyncState(CatalogLyricsSyncStatus.SYNCING)
+            catalogRepository.replaceRenditionLyrics(
+                renditionId = nowPlaying.renditionId,
+                language = language,
+                lyrics = sanitizedLyrics,
+                format = backendFormat,
+                expectedRevision = expectedRevision,
+                idempotencyKey = java.util.UUID.randomUUID().toString(),
+            ).fold(
+                onSuccess = { result ->
+                    val current = _catalogNowPlaying.value
+                        ?.takeIf { it.renditionId == result.renditionId }
+                        ?: nowPlaying
+                    val updated = current.withLyricsVariant(
+                        result.language,
+                        result.lyrics,
+                        result.format,
+                        result.renditionRevision,
+                    )
+                    _catalogNowPlaying.value = updated
+                    _catalogQueue.value = _catalogQueue.value.map { entry ->
+                        if (entry.nowPlaying.renditionId == updated.renditionId) {
+                            entry.copy(nowPlaying = updated.copy(assetId = entry.nowPlaying.assetId))
+                        } else {
+                            entry
+                        }
+                    }
+                    withContext(Dispatchers.IO) {
+                        catalogLyricsDraftStore.remove(
+                            connection.draftNamespace,
+                            result.renditionId,
+                            result.language,
+                        )
+                    }
+                    applyCatalogLyrics(updated, result.language)
+                    _catalogLyricsSyncState.value =
+                        CatalogLyricsSyncState(CatalogLyricsSyncStatus.SYNCED)
+                    saveQueueToPersistence()
+                },
+                onFailure = { error ->
+                    val status = if (error is CatalogFailure.StaleRevision) {
+                        CatalogLyricsSyncStatus.CONFLICT
+                    } else {
+                        CatalogLyricsSyncStatus.ERROR
+                    }
+                    withContext(Dispatchers.IO) {
+                        catalogLyricsDraftStore.save(
+                            syncingDraft.copy(
+                                status = if (status == CatalogLyricsSyncStatus.CONFLICT) {
+                                    "conflict"
+                                } else {
+                                    "error"
+                                },
+                                updatedAtEpochMs = System.currentTimeMillis(),
+                            ),
+                        )
+                    }
+                    _catalogLyricsSyncState.value = CatalogLyricsSyncState(
+                        status = status,
+                        currentRevision = (error as? CatalogFailure.StaleRevision)?.currentRevision,
+                    )
+                },
+            )
+        }
+    }
+
+    fun loadServerCatalogLyrics() {
+        val current = _catalogNowPlaying.value ?: return
+        val language = _catalogLyricsLanguage.value ?: current.lyricsLanguage ?: "und"
+        val connection = catalogRepository.connection()
+        if (connection.draftNamespace.isBlank()) return
+        viewModelScope.launch {
+            _catalogLyricsSyncState.value = CatalogLyricsSyncState(CatalogLyricsSyncStatus.SYNCING)
+            catalogRepository.getLibrary(forceRefresh = true).fold(
+                onSuccess = { snapshot ->
+                    val server = snapshot.songs.firstOrNull { it.renditionId == current.renditionId }
+                    if (server == null) {
+                        _catalogLyricsSyncState.value = CatalogLyricsSyncState(
+                            CatalogLyricsSyncStatus.ERROR,
+                        )
+                        return@fold
+                    }
+                    withContext(Dispatchers.IO) {
+                        catalogLyricsDraftStore.remove(
+                            connection.draftNamespace,
+                            current.renditionId,
+                            language,
+                        )
+                    }
+                    val updated = current.copy(
+                        renditionRevision = server.renditionRevision,
+                        lyrics = server.lyrics,
+                        lyricsLanguage = server.lyricsLanguage,
+                        lyricsTranslations = server.lyricsTranslations,
+                        lyricsFormats = server.lyricsFormats,
+                    )
+                    _catalogNowPlaying.value = updated
+                    _catalogQueue.value = _catalogQueue.value.map { entry ->
+                        if (entry.nowPlaying.renditionId == updated.renditionId) {
+                            entry.copy(nowPlaying = updated.copy(assetId = entry.nowPlaying.assetId))
+                        } else {
+                            entry
+                        }
+                    }
+                    applyCatalogLyrics(updated, language)
+                    saveQueueToPersistence()
+                },
+                onFailure = { _ ->
+                    _catalogLyricsSyncState.value = CatalogLyricsSyncState(
+                        CatalogLyricsSyncStatus.ERROR,
+                    )
+                },
+            )
         }
     }
 

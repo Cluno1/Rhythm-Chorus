@@ -38,11 +38,13 @@ import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.ime
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -76,7 +78,10 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.text.TextRange
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -84,6 +89,8 @@ import androidx.compose.ui.unit.dp
 import io.github.cluno1.sonorus.R
 import io.github.cluno1.sonorus.core.ProductCapabilities
 import io.github.cluno1.sonorus.features.local.data.device.DeviceLyricsCandidate
+import io.github.cluno1.sonorus.features.catalog.domain.CatalogLyricsSyncState
+import io.github.cluno1.sonorus.features.catalog.domain.CatalogLyricsSyncStatus
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import io.github.cluno1.sonorus.shared.presentation.components.common.RhythmGroupedButton
 import io.github.cluno1.sonorus.shared.presentation.components.common.RhythmButtonWeighted
@@ -93,6 +100,7 @@ import io.github.cluno1.sonorus.shared.presentation.components.common.RhythmTogg
 import io.github.cluno1.sonorus.util.HapticUtils
 import io.github.cluno1.sonorus.util.HapticType
 import io.github.cluno1.sonorus.util.LyricsFileUtils
+import io.github.cluno1.sonorus.util.LrcTimingEditor
 import io.github.cluno1.sonorus.util.RhythmLyricsParser
 import io.github.cluno1.sonorus.shared.data.model.LyricsData
 import io.github.cluno1.sonorus.shared.data.model.Song
@@ -183,6 +191,10 @@ fun LyricsEditorBottomSheet(
     initialTimeOffset: Int = 0,
     song: Song? = null,
     isStreamingMode: Boolean = false,
+    currentPlaybackPositionMs: Long = 0L,
+    playbackDurationMs: Long = 0L,
+    canSyncCatalog: Boolean = false,
+    catalogSyncState: CatalogLyricsSyncState = CatalogLyricsSyncState(),
     onDismiss: () -> Unit,
     onSave: (String, Int, String) -> Unit,
     onRefresh: () -> Unit = {},
@@ -191,10 +203,14 @@ fun LyricsEditorBottomSheet(
     deviceLyricsCandidates: List<DeviceLyricsCandidate> = emptyList(),
     onSelectDeviceLyricsCandidate: (DeviceLyricsCandidate) -> Unit = {},
     onRestoreLocal: () -> Unit = {},
+    onSyncCatalog: (String, String, Boolean) -> Unit = { _, _, _ -> },
+    onLoadServerLyrics: () -> Unit = {},
     onEmbedInFile: (String) -> Unit = {}
 ) {
     val context = LocalContext.current
     val haptic = LocalHapticFeedback.current
+    val density = LocalDensity.current
+    val isImeVisible = WindowInsets.ime.getBottom(density) > 0
     val scope = rememberCoroutineScope()
     var showCandidateDialog by remember { mutableStateOf(false) }
     
@@ -577,7 +593,7 @@ fun LyricsEditorBottomSheet(
                     } else {
                         Toast.makeText(
                             context,
-                            result.errorMessage ?: "Error loading lyrics file",
+                            result.errorMessage ?: context.getString(R.string.lyrics_load_file_error),
                             Toast.LENGTH_LONG
                         ).show()
                     }
@@ -589,12 +605,13 @@ fun LyricsEditorBottomSheet(
         }
     }
 
-    val sanitizedTitle = remember(songTitle) {
+    val defaultFileName = stringResource(R.string.lyrics_default_file_name)
+    val sanitizedTitle = remember(songTitle, defaultFileName) {
         songTitle.trim()
             .replace(Regex("""[\\/:*?"<>|]"""), "_")
             .replace(Regex("_+"), "_")  // Collapse multiple underscores
             .trim('_')  // Remove leading/trailing underscores
-            .takeIf { it.isNotEmpty() } ?: "lyrics"  // Fallback to "lyrics" if empty
+            .takeIf { it.isNotEmpty() } ?: defaultFileName
     }
 
     val defaultLyricsFileName = remember(song, sanitizedTitle, selectedFormat, editedSource, editedLineByLine) {
@@ -611,23 +628,41 @@ fun LyricsEditorBottomSheet(
         }
     }
 
-    val detectedFormatLabel = remember(selectedFormat, editedLineByLine, editedSource, editedWordByWord) {
-        when (selectedFormat) {
-            LyricFormat.WORD_BY_WORD -> "Word-by-Word JSON (.json)"
+    val detectedFormatLabel = when (selectedFormat) {
+            LyricFormat.WORD_BY_WORD -> stringResource(R.string.lyrics_format_word_by_word_json)
             LyricFormat.LINE_BY_LINE -> {
                 if (io.github.cluno1.sonorus.util.LyricsParser.hasWordTimestamps(editedLineByLine)) {
-                    "Enhanced LRC (.elrc)"
+                    stringResource(R.string.lyrics_format_enhanced_lrc)
                 } else {
-                    "Standard LRC (.lrc)"
+                    stringResource(R.string.lyrics_format_standard_lrc)
                 }
             }
             LyricFormat.SOURCE -> {
                 if (editedSource.trim().startsWith("<")) {
-                    "TTML XML (.ttml)"
+                    stringResource(R.string.lyrics_format_ttml)
                 } else {
-                    "Raw Source"
+                    stringResource(R.string.lyrics_format_raw_source)
                 }
             }
+    }
+
+    var editorValue by remember(selectedFormat) {
+        mutableStateOf(TextFieldValue(editedLyrics, TextRange(editedLyrics.length)))
+    }
+    var timingLineIndex by remember(lyricsData) { mutableIntStateOf(0) }
+    var previousTimingText by remember(lyricsData) { mutableStateOf<String?>(null) }
+    var catalogEditDirty by remember(lyricsData) { mutableStateOf(false) }
+    LaunchedEffect(editedLyrics, selectedFormat) {
+        if (editorValue.text != editedLyrics) {
+            val cursor = editorValue.selection.end.coerceIn(0, editedLyrics.length)
+            editorValue = TextFieldValue(editedLyrics, TextRange(cursor))
+        }
+    }
+    LaunchedEffect(editedLyrics, selectedFormat, canSyncCatalog, catalogEditDirty) {
+        if (canSyncCatalog && catalogEditDirty && editedLyrics.isNotBlank()) {
+            delay(600)
+            onSave(editedLyrics, timeOffset, selectedFormat.name)
+            catalogEditDirty = false
         }
     }
 
@@ -672,11 +707,12 @@ fun LyricsEditorBottomSheet(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
+                .fillMaxHeight()
                 .padding(bottom = 24.dp)
         ) {
             // Header with animation
             AnimatedVisibility(
-                visible = showContent,
+                visible = showContent && !isImeVisible,
                 enter = fadeIn() + slideInVertically { it },
                 exit = fadeOut() + slideOutVertically { it }
             ) {
@@ -687,9 +723,9 @@ fun LyricsEditorBottomSheet(
                 )
             }
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(if (isImeVisible) 8.dp else 16.dp))
 
-            if (song != null) {
+            if (song != null && !isImeVisible) {
                 val songId = song.id
                 val currentPref = songLyricsPreferences[songId]
                 val customLrc = songCustomLrcFiles[songId]
@@ -717,10 +753,10 @@ fun LyricsEditorBottomSheet(
                             )
                             Text(
                                 text = when (currentPref) {
-                                    "online" -> "Online first"
-                                    "embedded" -> "Embedded first"
-                                    "lrc" -> "Local LRC file first"
-                                    else -> "Default (App settings)"
+                                    "online" -> stringResource(R.string.lyrics_source_pref_online)
+                                    "embedded" -> stringResource(R.string.lyrics_source_pref_embedded)
+                                    "lrc" -> stringResource(R.string.lyrics_source_pref_local_lrc)
+                                    else -> stringResource(R.string.lyrics_source_pref_default)
                                 },
                                 style = MaterialTheme.typography.bodyMedium,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -748,10 +784,10 @@ fun LyricsEditorBottomSheet(
                                 shape = RoundedCornerShape(20.dp)
                             ) {
                                 val options = listOf(
-                                    Triple(null, "Default (App settings)", "settings"),
-                                    Triple("online", "Online first", "cloud"),
-                                    Triple("embedded", "Embedded first", "music_note"),
-                                    Triple("lrc", "Local LRC file first", "storage")
+                                    Triple(null, stringResource(R.string.lyrics_source_pref_default), "settings"),
+                                    Triple("online", stringResource(R.string.lyrics_source_pref_online), "cloud"),
+                                    Triple("embedded", stringResource(R.string.lyrics_source_pref_embedded), "music_note"),
+                                    Triple("lrc", stringResource(R.string.lyrics_source_pref_local_lrc), "storage")
                                 )
                                 
                                 val outerRadius = 16.dp
@@ -898,7 +934,7 @@ fun LyricsEditorBottomSheet(
 
             // Format Selector Button Group like Theme Switcher
             AnimatedVisibility(
-                visible = showContent,
+                visible = showContent && !isImeVisible,
                 enter = fadeIn() + slideInVertically { it },
                 exit = fadeOut() + slideOutVertically { it }
             ) {
@@ -963,11 +999,11 @@ fun LyricsEditorBottomSheet(
                 }
             }
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(if (isImeVisible) 0.dp else 16.dp))
 
             // Timestamp Adjustment Controls
             AnimatedVisibility(
-                visible = showContent,
+                visible = showContent && !isImeVisible,
                 enter = fadeIn() + slideInVertically { it },
                 exit = fadeOut() + slideOutVertically { it }
             ) {
@@ -976,6 +1012,124 @@ fun LyricsEditorBottomSheet(
                         .fillMaxWidth()
                         .padding(horizontal = 24.dp)
                 ) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    ) {
+                        FilledTonalButton(
+                            onClick = {
+                                previousTimingText = editedLyrics
+                                val generated = LrcTimingEditor.generateTemplate(
+                                    editedLyrics,
+                                    playbackDurationMs.takeIf { it > 0L },
+                                    estimateFromDuration = playbackDurationMs > 0L,
+                                )
+                                editedLineByLine = generated
+                                selectedFormat = LyricFormat.LINE_BY_LINE
+                                timingLineIndex = 0
+                                editorValue = TextFieldValue(generated, TextRange(0))
+                                catalogEditDirty = true
+                            },
+                            modifier = Modifier.weight(1f),
+                            enabled = selectedFormat != LyricFormat.WORD_BY_WORD && editedLyrics.isNotBlank(),
+                        ) {
+                            Text(stringResource(R.string.lyrics_generate_timing_template))
+                        }
+                        OutlinedButton(
+                            onClick = {
+                                previousTimingText = editedLyrics
+                                val generated = LrcTimingEditor.generateTemplate(
+                                    editedLyrics,
+                                    durationMs = null,
+                                    estimateFromDuration = false,
+                                )
+                                editedLineByLine = generated
+                                selectedFormat = LyricFormat.LINE_BY_LINE
+                                timingLineIndex = 0
+                                editorValue = TextFieldValue(generated, TextRange(0))
+                                catalogEditDirty = true
+                            },
+                            modifier = Modifier.weight(1f),
+                            enabled = selectedFormat != LyricFormat.WORD_BY_WORD && editedLyrics.isNotBlank(),
+                        ) {
+                            Text(stringResource(R.string.lyrics_generate_zero_template))
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    ) {
+                        OutlinedButton(
+                            onClick = {
+                                LrcTimingEditor.previousEditableLine(editedLyrics, timingLineIndex)
+                                    ?.let { previous ->
+                                        timingLineIndex = previous
+                                        val cursor = LrcTimingEditor.lineStartOffset(editedLyrics, previous)
+                                        editorValue = editorValue.copy(selection = TextRange(cursor))
+                                    }
+                            },
+                            modifier = Modifier.weight(1f),
+                            enabled = selectedFormat != LyricFormat.WORD_BY_WORD,
+                        ) {
+                            Text(stringResource(R.string.lyrics_previous_timing_line))
+                        }
+                        FilledTonalButton(
+                            onClick = {
+                                LrcTimingEditor.stampLine(
+                                    editedLyrics,
+                                    timingLineIndex,
+                                    currentPlaybackPositionMs,
+                                    playbackDurationMs.takeIf { it > 0L },
+                                )?.let { result ->
+                                    previousTimingText = editedLyrics
+                                    editedLineByLine = result.text
+                                    selectedFormat = LyricFormat.LINE_BY_LINE
+                                    timingLineIndex = result.nextLineIndex ?: result.stampedLineIndex
+                                    val cursor = LrcTimingEditor.lineStartOffset(
+                                        result.text,
+                                        timingLineIndex,
+                                    )
+                                    editorValue = TextFieldValue(result.text, TextRange(cursor))
+                                    catalogEditDirty = true
+                                }
+                            },
+                            modifier = Modifier.weight(1.4f),
+                            enabled = selectedFormat != LyricFormat.WORD_BY_WORD && editedLyrics.isNotBlank(),
+                        ) {
+                            Text(
+                                stringResource(
+                                    R.string.lyrics_stamp_current_time,
+                                    LrcTimingEditor.formatTimestamp(currentPlaybackPositionMs),
+                                ),
+                            )
+                        }
+                        OutlinedButton(
+                            onClick = {
+                                previousTimingText?.let { previous ->
+                                    val current = editedLyrics
+                                    editedLineByLine = previous
+                                    selectedFormat = LyricFormat.LINE_BY_LINE
+                                    previousTimingText = current
+                                    val cursor = LrcTimingEditor.lineStartOffset(previous, timingLineIndex)
+                                    editorValue = TextFieldValue(previous, TextRange(cursor))
+                                    catalogEditDirty = true
+                                }
+                            },
+                            modifier = Modifier.weight(1f),
+                            enabled = previousTimingText != null,
+                        ) {
+                            Icon(
+                                imageVector = MaterialSymbolIcon("undo", filled = true),
+                                contentDescription = stringResource(R.string.bottomsheet_reset),
+                            )
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         verticalAlignment = Alignment.CenterVertically,
@@ -1003,7 +1157,10 @@ fun LyricsEditorBottomSheet(
                         ) {
                             if (hasSyncedLyrics) {
                                 Text(
-                                    text = "${if (timeOffset >= 0) "+" else ""}${timeOffset}ms",
+                                    text = stringResource(
+                                        R.string.lyrics_time_offset_ms,
+                                        "${if (timeOffset >= 0) "+" else ""}$timeOffset"
+                                    ),
                                     style = MaterialTheme.typography.bodyLarge,
                                     fontWeight = FontWeight.Medium,
                                     color = MaterialTheme.colorScheme.primary
@@ -1212,7 +1369,7 @@ fun LyricsEditorBottomSheet(
                 }
             }
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(if (isImeVisible) 8.dp else 16.dp))
 
             // Lyrics Text Field with animation
             AnimatedVisibility(
@@ -1228,17 +1385,26 @@ fun LyricsEditorBottomSheet(
                         .padding(horizontal = 24.dp)
                 ) {
                     OutlinedTextField(
-                        value = editedLyrics,
-                        onValueChange = { updateEditedLyrics(it) },
+                        value = editorValue,
+                        onValueChange = {
+                            val textChanged = it.text != editorValue.text
+                            editorValue = it
+                            timingLineIndex = LrcTimingEditor.lineIndexAtOffset(
+                                it.text,
+                                it.selection.end,
+                            )
+                            updateEditedLyrics(it.text)
+                            if (textChanged) catalogEditDirty = true
+                        },
                         modifier = Modifier
                             .fillMaxWidth()
                             .fillMaxHeight(),
                         placeholder = {
                             Text(
                                 text = when (selectedFormat) {
-                                    LyricFormat.WORD_BY_WORD -> "Enter word-by-word lyrics JSON…"
-                                    LyricFormat.LINE_BY_LINE -> "Enter timestamped LRC or Enhanced LRC ([00:12.34]<00:12.34>word)…"
-                                    LyricFormat.SOURCE -> "Enter raw TTML XML, LRC, or plain text…"
+                                    LyricFormat.WORD_BY_WORD -> stringResource(R.string.lyrics_placeholder_word_by_word)
+                                    LyricFormat.LINE_BY_LINE -> stringResource(R.string.lyrics_placeholder_line_by_line)
+                                    LyricFormat.SOURCE -> stringResource(R.string.lyrics_placeholder_source)
                                 },
                                 style = MaterialTheme.typography.bodyMedium,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
@@ -1267,12 +1433,86 @@ fun LyricsEditorBottomSheet(
                         .fillMaxWidth()
                         .padding(top = 16.dp)
                 ) {
-                    RhythmGroupedButton(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 24.dp),
-                        size = RhythmButtonSize.Large
-                    ) {
+                    if (canSyncCatalog) {
+                        val syncStatusText = when (catalogSyncState.status) {
+                            CatalogLyricsSyncStatus.CLEAN -> stringResource(R.string.lyrics_sync_clean)
+                            CatalogLyricsSyncStatus.PENDING -> stringResource(R.string.lyrics_sync_pending)
+                            CatalogLyricsSyncStatus.SYNCING -> stringResource(R.string.lyrics_sync_in_progress)
+                            CatalogLyricsSyncStatus.SYNCED -> stringResource(R.string.lyrics_sync_complete)
+                            CatalogLyricsSyncStatus.CONFLICT -> stringResource(R.string.lyrics_sync_conflict)
+                            CatalogLyricsSyncStatus.ERROR -> stringResource(R.string.lyrics_sync_failed)
+                            CatalogLyricsSyncStatus.UNAVAILABLE -> stringResource(R.string.lyrics_sync_unavailable)
+                        }
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 24.dp),
+                            horizontalArrangement = Arrangement.spacedBy(12.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                        ) {
+                            Text(
+                                text = catalogSyncState.message ?: syncStatusText,
+                                modifier = Modifier.weight(1f),
+                                style = MaterialTheme.typography.bodySmall,
+                                color = if (
+                                    catalogSyncState.status == CatalogLyricsSyncStatus.ERROR ||
+                                    catalogSyncState.status == CatalogLyricsSyncStatus.CONFLICT
+                                ) {
+                                    MaterialTheme.colorScheme.error
+                                } else {
+                                    MaterialTheme.colorScheme.onSurfaceVariant
+                                },
+                                maxLines = 2,
+                                overflow = TextOverflow.Ellipsis,
+                            )
+                            if (catalogSyncState.status != CatalogLyricsSyncStatus.CONFLICT) {
+                                FilledTonalButton(
+                                    onClick = {
+                                        catalogEditDirty = false
+                                        onSyncCatalog(editedLyrics, selectedFormat.name, false)
+                                    },
+                                    enabled = editedLyrics.isNotBlank() &&
+                                        catalogSyncState.status != CatalogLyricsSyncStatus.SYNCING,
+                                ) {
+                                    Text(stringResource(R.string.lyrics_sync_to_server))
+                                }
+                            }
+                        }
+                        if (catalogSyncState.status == CatalogLyricsSyncStatus.CONFLICT) {
+                            Spacer(modifier = Modifier.height(8.dp))
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(horizontal = 24.dp),
+                                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            ) {
+                                OutlinedButton(
+                                    onClick = onLoadServerLyrics,
+                                    modifier = Modifier.weight(1f),
+                                ) {
+                                    Text(stringResource(R.string.lyrics_load_server_version))
+                                }
+                                FilledTonalButton(
+                                    onClick = {
+                                        catalogEditDirty = false
+                                        onSyncCatalog(editedLyrics, selectedFormat.name, true)
+                                    },
+                                    modifier = Modifier.weight(1f),
+                                ) {
+                                    Text(stringResource(R.string.lyrics_overwrite_server_version))
+                                }
+                            }
+                        }
+                        Spacer(modifier = Modifier.height(12.dp))
+                    }
+
+                    if (!isImeVisible || !canSyncCatalog) {
+                        RhythmGroupedButton(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 24.dp),
+                            size = RhythmButtonSize.Large
+                        ) {
                         // Load File Button
                         RhythmButtonWeighted(
                             onClick = {
@@ -1325,10 +1565,11 @@ fun LyricsEditorBottomSheet(
                             icon = MaterialSymbolIcon("save", filled = true),
                             text = context.getString(R.string.bottomsheet_lyrics_save)
                         )
+                        }
                     }
 
                     // Embed in File is local-only — streaming songs have no writable file.
-                    if (!isStreamingMode) {
+                    if (!isStreamingMode && !canSyncCatalog && !isImeVisible) {
                         Spacer(modifier = Modifier.height(12.dp))
 
                         RhythmGroupedButton(

@@ -42,4 +42,25 @@ class CatalogDeviceCanonicalTest {
             ).decodeToString(),
         )
     }
+
+    @Test
+    fun lyricWriteCanonicalIncludesExactUtf8BodyHash() {
+        val body = "{\"lyrics\":\"[00:01.000]歌词\",\"format\":\"lrc\"}".toByteArray()
+        val hash = CatalogDeviceCanonical.contentSha256(body)
+
+        assertEquals(64, hash.length)
+        assertEquals(
+            "RHYTHM-DEVICE-V1\nPUT\n/v2/renditions/r/lyrics/zh-Hans\n\n$hash\n" +
+                "device\n1788595200\nnonce",
+            CatalogDeviceCanonical.request(
+                "PUT",
+                "/v2/renditions/r/lyrics/zh-Hans",
+                "",
+                hash,
+                "device",
+                1788595200,
+                "nonce",
+            ).decodeToString(),
+        )
+    }
 }

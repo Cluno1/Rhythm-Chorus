@@ -166,6 +166,7 @@ data class CatalogLibrarySong(
     val workId: String,
     val arrangementId: String,
     val renditionId: String,
+    val renditionRevision: Int = 1,
     val albumId: String,
     val title: String,
     val artist: String?,
@@ -177,12 +178,53 @@ data class CatalogLibrarySong(
     val coverAssetId: String? = null,
     val lyricsLanguage: String? = null,
     val lyricsTranslations: List<CatalogLyricsTranslation>? = emptyList(),
+    val lyricsFormats: List<CatalogLyricLanguageFormat>? = emptyList(),
     val lyricsSourceImages: List<CatalogLyricSourceImage>? = emptyList(),
 )
 
 data class CatalogLyricsTranslation(
     val language: String,
     val lyrics: String,
+)
+
+data class CatalogLyricLanguageFormat(
+    val language: String,
+    val format: String,
+)
+
+data class CatalogLyricsWriteResult(
+    val renditionId: String,
+    val renditionRevision: Int,
+    val language: String,
+    val lyrics: String,
+    val format: String,
+)
+
+data class CatalogLyricsDraft(
+    val namespace: String,
+    val renditionId: String,
+    val language: String,
+    val lyrics: String,
+    val format: String,
+    val baseRevision: Int,
+    val status: String,
+    val updatedAtEpochMs: Long,
+)
+
+enum class CatalogLyricsSyncStatus {
+    UNAVAILABLE,
+    CLEAN,
+    PENDING,
+    SYNCING,
+    SYNCED,
+    CONFLICT,
+    ERROR,
+}
+
+data class CatalogLyricsSyncState(
+    val status: CatalogLyricsSyncStatus = CatalogLyricsSyncStatus.UNAVAILABLE,
+    val message: String? = null,
+    val currentRevision: Int? = null,
 )
 
 data class CatalogLyricSourceLanguageRelation(
@@ -274,12 +316,14 @@ data class RhythmNowPlayingItem(
     val workId: String,
     val arrangementId: String,
     val renditionId: String,
+    val renditionRevision: Int = 1,
     val assetId: String?,
     val title: String,
     val subtitle: String,
     val lyrics: String? = null,
     val lyricsLanguage: String? = null,
     val lyricsTranslations: List<CatalogLyricsTranslation>? = emptyList(),
+    val lyricsFormats: List<CatalogLyricLanguageFormat>? = emptyList(),
     val lyricsSourceImages: List<CatalogLyricSourceImage>? = emptyList(),
 )
 

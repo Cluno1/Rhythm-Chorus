@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="lyrics_generate_timing_template">காலவரிசையை மதிப்பிடு</string>
+    <string name="lyrics_generate_zero_template">பூஜ்ய நேர வார்ப்புரு</string>
+    <string name="lyrics_previous_timing_line">முந்தைய வரி</string>
+    <string name="lyrics_stamp_current_time">%1$s குறிக்கவும்</string>
+    <string name="lyrics_sync_clean">சேவையகத்துடன் பொருந்துகிறது</string>
+    <string name="lyrics_sync_pending">உள்ளூர் வரைவு ஒத்திசைக்கப்படவில்லை</string>
+    <string name="lyrics_sync_in_progress">ஒத்திசைக்கிறது…</string>
+    <string name="lyrics_sync_complete">சேவையகத்துடன் ஒத்திசைக்கப்பட்டது</string>
+    <string name="lyrics_sync_conflict">இந்த வரைவு உருவான பிறகு சேவையகப் பாடல்வரிகள் மாறின.</string>
+    <string name="lyrics_sync_failed">ஒத்திசைவு தோல்வியடைந்தது; உள்ளூர் வரைவு பாதுகாப்பாக உள்ளது.</string>
+    <string name="lyrics_sync_unavailable">சேவையக ஒத்திசைவு கிடைக்கவில்லை</string>
+    <string name="lyrics_sync_to_server">ஒத்திசை</string>
+    <string name="lyrics_load_server_version">சேவையகப் பதிப்பைப் பயன்படுத்து</string>
+    <string name="lyrics_overwrite_server_version">சேவையகப் பதிப்பை மாற்று</string>
+</resources>

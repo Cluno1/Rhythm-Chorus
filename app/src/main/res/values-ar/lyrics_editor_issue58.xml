@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="lyrics_generate_timing_template">تقدير الخط الزمني</string>
+    <string name="lyrics_generate_zero_template">قالب بتوقيت صفري</string>
+    <string name="lyrics_previous_timing_line">السطر السابق</string>
+    <string name="lyrics_stamp_current_time">تسجيل %1$s</string>
+    <string name="lyrics_sync_clean">مطابق للخادم</string>
+    <string name="lyrics_sync_pending">المسودة المحلية غير متزامنة</string>
+    <string name="lyrics_sync_in_progress">جارٍ المزامنة…</string>
+    <string name="lyrics_sync_complete">تمت المزامنة مع الخادم</string>
+    <string name="lyrics_sync_conflict">تغيّرت كلمات الأغنية على الخادم بعد إنشاء هذه المسودة.</string>
+    <string name="lyrics_sync_failed">فشلت المزامنة؛ تم الاحتفاظ بالمسودة المحلية.</string>
+    <string name="lyrics_sync_unavailable">مزامنة الخادم غير متاحة</string>
+    <string name="lyrics_sync_to_server">مزامنة</string>
+    <string name="lyrics_load_server_version">استخدام نسخة الخادم</string>
+    <string name="lyrics_overwrite_server_version">استبدال نسخة الخادم</string>
+</resources>

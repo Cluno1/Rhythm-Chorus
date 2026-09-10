@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="lyrics_candidate_format">%1$s · %2$s · %3$s · %4$d%%</string>
+    <string name="lyrics_change">পরিবর্তন</string>
+    <string name="lyrics_choose_version">অন্য সংস্করণ বাছুন</string>
+    <string name="lyrics_clear">মুছুন</string>
+    <string name="lyrics_default_file_name">গানের_কথা</string>
+    <string name="lyrics_duration_seconds">%1$d সে</string>
+    <string name="lyrics_format_enhanced_lrc">উন্নত LRC (.elrc)</string>
+    <string name="lyrics_format_raw_source">কাঁচা উৎস</string>
+    <string name="lyrics_format_standard_lrc">মানক LRC (.lrc)</string>
+    <string name="lyrics_format_ttml">TTML XML (.ttml)</string>
+    <string name="lyrics_format_word_by_word_json">শব্দ-ধরে JSON (.json)</string>
+    <string name="lyrics_line_by_line">লাইন-ধরে</string>
+    <string name="lyrics_load_file_error">গানের কথার ফাইল লোড করা যায়নি</string>
+    <string name="lyrics_no_candidates">মেলা কোনো পাবলিক গানের কথা পাওয়া যায়নি</string>
+    <string name="lyrics_online_rematch">অনলাইনে আবার মেলান</string>
+    <string name="lyrics_placeholder_line_by_line">সময়চিহ্নযুক্ত LRC বা উন্নত LRC ([00:12.34]&lt;00:12.34&gt;শব্দ) লিখুন…</string>
+    <string name="lyrics_placeholder_source">কাঁচা TTML XML, LRC বা সাধারণ লেখা লিখুন…</string>
+    <string name="lyrics_placeholder_word_by_word">শব্দ-ধরে গানের কথা JSON লিখুন…</string>
+    <string name="lyrics_remember_choice">আমার পছন্দ মনে রাখুন (আবার জিজ্ঞাসা করবেন না)</string>
+    <string name="lyrics_rename">নাম বদলান</string>
+    <string name="lyrics_rename_lrc_body">লোড করা LRC ফাইলের নাম ‘%1$s’ গানের ফাইলের নামের সঙ্গে মেলে না। নামটি মিলিয়ে বদলাবেন, নাকি কাস্টম ফাইল হিসেবে যুক্ত করবেন?</string>
+    <string name="lyrics_rename_lrc_title">LRC ফাইলের নাম বদলাবেন?</string>
+    <string name="lyrics_rename_permission_denied">অনুমতি না থাকায় নাম বদলানো যায়নি। পরিবর্তে কাস্টম ফাইল হিসেবে চিহ্নিত করা হয়েছে।</string>
+    <string name="lyrics_renamed_success">ফাইলের নাম সফলভাবে বদলানো হয়েছে।</string>
+    <string name="lyrics_renamed_to_format">ফাইলের নাম সফলভাবে %1$s করা হয়েছে।</string>
+    <string name="lyrics_restore_local">লোকাল গানের কথা ফিরিয়ে আনুন</string>
+    <string name="lyrics_source">উৎস</string>
+    <string name="lyrics_source_pref_default">ডিফল্ট (অ্যাপ সেটিংস)</string>
+    <string name="lyrics_source_pref_embedded">এম্বেডেড আগে</string>
+    <string name="lyrics_source_pref_local_lrc">লোকাল LRC ফাইল আগে</string>
+    <string name="lyrics_source_pref_online">অনলাইন আগে</string>
+    <string name="lyrics_source_preference">গানের কথার উৎসের পছন্দ</string>
+    <string name="lyrics_tag_keep_custom">ট্যাগ / কাস্টম রাখুন</string>
+    <string name="lyrics_time_offset_ms">%1$s মিলিসেকেন্ড</string>
+    <string name="lyrics_word_by_word">শব্দ-ধরে</string>
+</resources>
