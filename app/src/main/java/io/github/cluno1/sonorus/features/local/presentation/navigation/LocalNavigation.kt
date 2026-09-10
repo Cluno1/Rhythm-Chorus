@@ -2090,6 +2090,13 @@ private fun LocalNavigationContent(
                             onAlbumClick = { album ->
                                 navController.navigate(Screen.AlbumDetail.createRoute(album.id, album.title))
                             },
+                            onPlayAlbum = { album ->
+                                if (catalogAlbums.any { it.id == album.id }) {
+                                    playCatalogQueue(album.songs, 0, false)
+                                } else {
+                                    onPlayAlbum(album)
+                                }
+                            },
                             onArtistClick = onPlayArtist,
                             onPlayPause = onPlayPause,
                             onPlayerClick = {

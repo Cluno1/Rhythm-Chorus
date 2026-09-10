@@ -259,6 +259,7 @@ fun HomeScreen(
     onRefreshLibrary: () -> Unit = {},
     additionalRefreshInProgress: Boolean = false,
     onAlbumClick: (Album) -> Unit,
+    onPlayAlbum: (Album) -> Unit,
     onArtistClick: (Artist) -> Unit,
     onPlayPause: () -> Unit,
     onPlayerClick: () -> Unit,
@@ -641,6 +642,7 @@ fun HomeScreen(
                 onPlaySongs = onPlaySongs,
                 onShuffleSongs = onShuffleSongs,
                 onAlbumClick = onAlbumClick,
+                onPlayAlbum = onPlayAlbum,
                 onArtistClick = { artist: Artist ->
                     onNavigateToArtist(artist)
                 },
@@ -1367,6 +1369,7 @@ private fun ModernScrollableContent(
     onPlaySongs: (List<Song>) -> Unit,
     onShuffleSongs: (List<Song>) -> Unit,
     onAlbumClick: (Album) -> Unit,
+    onPlayAlbum: (Album) -> Unit,
     onArtistClick: (Artist) -> Unit,
     onViewAllSongs: () -> Unit,
     onViewAllAlbums: () -> Unit,
@@ -1856,7 +1859,8 @@ private fun ModernScrollableContent(
                             showPlayButton = discoverShowPlayButton,
                             showGradient = discoverShowGradient,
                             widthSizeClass = widthSizeClass,
-                            heightSizeClass = heightSizeClass
+                            heightSizeClass = heightSizeClass,
+                            onPlayAlbum = onPlayAlbum,
                         )
                     } else {
                         Box(modifier = Modifier.padding(horizontal = horizontalPadding)) {
@@ -1919,7 +1923,8 @@ private fun ModernScrollableContent(
                                             showPlayButton = discoverShowPlayButton,
                                             showGradient = discoverShowGradient,
                                             widthSizeClass = widthSizeClass,
-                                            heightSizeClass = heightSizeClass
+                                            heightSizeClass = heightSizeClass,
+                                            onPlayAlbum = onPlayAlbum,
                                         )
                                     } else {
                                         Box(modifier = Modifier.padding(horizontal = horizontalPadding)) {
@@ -2248,6 +2253,7 @@ private fun ModernSectionTitle(
 private fun ModernFeaturedSection(
     albums: List<Album>,
     onAlbumClick: (Album) -> Unit,
+    onPlayAlbum: (Album) -> Unit,
     showAlbumName: Boolean = true,
     showArtistName: Boolean = true,
     showYear: Boolean = true,
@@ -2255,11 +2261,9 @@ private fun ModernFeaturedSection(
     showGradient: Boolean = true,
     widthSizeClass: WindowWidthSizeClass = WindowWidthSizeClass.Compact,
     heightSizeClass: WindowHeightSizeClass = WindowHeightSizeClass.Medium,
-    onPlayAlbum: ((Album) -> Unit)? = null
 ) {
     val context = LocalContext.current
     val haptic = LocalHapticFeedback.current
-    val viewModel = viewModel<io.github.cluno1.sonorus.viewmodel.MusicViewModel>()
 
     val screenWidth = windowScreenWidthDp().dp
     val isTablet = widthSizeClass != WindowWidthSizeClass.Compact
@@ -2410,7 +2414,7 @@ private fun ModernFeaturedSection(
                                     Button(
                                         onClick = {
                                             HapticUtils.performHapticFeedback(context, haptic, HapticType.HEAVY)
-                                            if (onPlayAlbum != null) onPlayAlbum(album) else viewModel.playAlbum(album)
+                                            onPlayAlbum(album)
                                         },
                                         shape = RoundedCornerShape(percent = 50),
                                         colors = ButtonDefaults.buttonColors(
@@ -2587,7 +2591,7 @@ private fun ModernFeaturedSection(
                                 Button(
                                     onClick = {
                                         HapticUtils.performHapticFeedback(context, haptic, HapticType.HEAVY)
-                                        if (onPlayAlbum != null) onPlayAlbum(album) else viewModel.playAlbum(album)
+                                        onPlayAlbum(album)
                                     },
                                     shape = RoundedCornerShape(percent = 50),
                                     colors = ButtonDefaults.buttonColors(
