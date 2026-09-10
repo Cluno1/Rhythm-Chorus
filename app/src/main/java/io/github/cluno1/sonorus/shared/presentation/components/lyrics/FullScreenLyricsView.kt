@@ -8,6 +8,7 @@
 package io.github.cluno1.sonorus.shared.presentation.components.lyrics
 
 import android.net.Uri
+import androidx.activity.compose.BackHandler
 import androidx.compose.animation.*
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.BorderStroke
@@ -18,7 +19,11 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
+import androidx.compose.foundation.gestures.rememberTransformableState
+import androidx.compose.foundation.gestures.transformable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
@@ -32,6 +37,7 @@ import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
@@ -43,6 +49,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import io.github.cluno1.sonorus.shared.data.model.LyricsData
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.ui.input.pointer.PointerEventPass
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 
@@ -75,6 +82,9 @@ import androidx.compose.ui.res.stringResource
 import java.util.Locale
 import io.github.cluno1.sonorus.util.windowScreenWidthDp
 import io.github.cluno1.sonorus.util.windowScreenHeightDp
+import coil.compose.AsyncImage
+import io.github.cluno1.sonorus.features.catalog.domain.CatalogArtworkPolicy
+import io.github.cluno1.sonorus.features.catalog.domain.CatalogLyricSourceImage
 
 @Composable
 fun FullScreenLyricsView(
@@ -95,6 +105,7 @@ fun FullScreenLyricsView(
     catalogLyricsLanguages: List<String> = emptyList(),
     selectedCatalogLyricsLanguage: String? = null,
     onCatalogLyricsLanguageSelect: (String) -> Unit = {},
+    catalogLyricSourceImages: List<CatalogLyricSourceImage> = emptyList(),
     modifier: Modifier = Modifier,
     canvasArtwork: CanvasArtwork? = null,
     canvasLoading: Boolean = false
@@ -110,6 +121,15 @@ fun FullScreenLyricsView(
 
     var controlsVisible by remember { mutableStateOf(true) }
     var lastInteractionTime by remember { mutableLongStateOf(System.currentTimeMillis()) }
+    var showCatalogSourceImages by remember(song?.id) { mutableStateOf(false) }
+
+    BackHandler(enabled = showCatalogSourceImages) {
+        showCatalogSourceImages = false
+    }
+
+    LaunchedEffect(catalogLyricSourceImages) {
+        if (catalogLyricSourceImages.isEmpty()) showCatalogSourceImages = false
+    }
 
     fun showControls() {
         controlsVisible = true
@@ -405,12 +425,22 @@ fun FullScreenLyricsView(
                                 modifier = Modifier.size(24.dp)
                             )
                         }
-                        CatalogLyricsLanguageMenu(
-                            languages = catalogLyricsLanguages,
-                            selectedLanguage = selectedCatalogLyricsLanguage,
-                            onLanguageSelect = onCatalogLyricsLanguageSelect,
+                        Row(
                             modifier = Modifier.align(Alignment.CenterEnd),
-                        )
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                        ) {
+                            CatalogLyricsLanguageMenu(
+                                languages = catalogLyricsLanguages,
+                                selectedLanguage = selectedCatalogLyricsLanguage,
+                                onLanguageSelect = onCatalogLyricsLanguageSelect,
+                            )
+                            CatalogLyricSourceToggleButton(
+                                visible = catalogLyricSourceImages.isNotEmpty(),
+                                checked = showCatalogSourceImages,
+                                onCheckedChange = { showCatalogSourceImages = it },
+                            )
+                        }
                     }
 
                     // Centered content Column
@@ -637,6 +667,13 @@ fun FullScreenLyricsView(
                     val hasLyrics = lyrics?.hasLyrics() == true && lyrics.isErrorMessage().not()
 
                     when {
+                        showCatalogSourceImages -> {
+                            CatalogLyricSourceImagesView(
+                                images = catalogLyricSourceImages,
+                                modifier = Modifier.fillMaxSize(),
+                            )
+                        }
+
                         isLoadingLyrics -> {
                             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
@@ -924,6 +961,16 @@ fun FullScreenLyricsView(
                         Spacer(modifier = Modifier.width(8.dp))
                     }
 
+                    CatalogLyricSourceToggleButton(
+                        visible = catalogLyricSourceImages.isNotEmpty(),
+                        checked = showCatalogSourceImages,
+                        onCheckedChange = { showCatalogSourceImages = it },
+                    )
+
+                    if (catalogLyricSourceImages.isNotEmpty()) {
+                        Spacer(modifier = Modifier.width(8.dp))
+                    }
+
                     // Close button: Material 3 FilledTonalIconButton
                     FilledTonalIconButton(
                         onClick = {
@@ -949,6 +996,13 @@ fun FullScreenLyricsView(
                     val hasLyrics = lyrics?.hasLyrics() == true && lyrics.isErrorMessage().not()
 
                     when {
+                        showCatalogSourceImages -> {
+                            CatalogLyricSourceImagesView(
+                                images = catalogLyricSourceImages,
+                                modifier = Modifier.fillMaxSize(),
+                            )
+                        }
+
                         isLoadingLyrics -> {
                             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
@@ -1412,6 +1466,205 @@ private fun FullScreenPlainLyricsView(
     }
 }
 
+
+@Composable
+private fun CatalogLyricSourceToggleButton(
+    visible: Boolean,
+    checked: Boolean,
+    onCheckedChange: (Boolean) -> Unit,
+) {
+    if (!visible) return
+    FilledTonalIconToggleButton(
+        checked = checked,
+        onCheckedChange = onCheckedChange,
+        modifier = Modifier.size(40.dp),
+    ) {
+        Icon(
+            imageVector = MaterialSymbolIcon(if (checked) "lyrics" else "image"),
+            contentDescription = stringResource(
+                if (checked) R.string.lyrics_show_text
+                else R.string.lyrics_show_source_images,
+            ),
+            modifier = Modifier.size(22.dp),
+        )
+    }
+}
+
+@Composable
+private fun CatalogLyricSourceImagesView(
+    images: List<CatalogLyricSourceImage>,
+    modifier: Modifier = Modifier,
+) {
+    val documents = remember(images) {
+        images.distinctBy(CatalogLyricSourceImage::documentId)
+    }
+    var selectedDocumentId by remember(documents) {
+        mutableStateOf(documents.firstOrNull()?.documentId)
+    }
+    val selectedPages = remember(images, selectedDocumentId) {
+        images.filter { it.documentId == selectedDocumentId }
+            .sortedWith(compareBy(CatalogLyricSourceImage::displayOrder).thenBy {
+                it.physicalPageNumber
+            })
+    }
+
+    Column(modifier = modifier) {
+        if (documents.size > 1) {
+            var expanded by remember { mutableStateOf(false) }
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 12.dp, vertical = 8.dp),
+            ) {
+                FilledTonalButton(
+                    onClick = { expanded = true },
+                    modifier = Modifier.align(Alignment.Center),
+                ) {
+                    Icon(
+                        imageVector = MaterialSymbolIcon("menu_book"),
+                        contentDescription = null,
+                        modifier = Modifier.size(18.dp),
+                    )
+                    Spacer(Modifier.width(8.dp))
+                    Text(
+                        text = selectedPages.firstOrNull()?.documentTitle.orEmpty(),
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+                    Icon(
+                        imageVector = MaterialSymbolIcon("arrow_drop_down"),
+                        contentDescription = null,
+                        modifier = Modifier.size(18.dp),
+                    )
+                }
+                DropdownMenu(
+                    expanded = expanded,
+                    onDismissRequest = { expanded = false },
+                    modifier = Modifier.align(Alignment.Center),
+                ) {
+                    documents.forEach { document ->
+                        DropdownMenuItem(
+                            text = { Text(document.documentTitle) },
+                            onClick = {
+                                expanded = false
+                                selectedDocumentId = document.documentId
+                            },
+                            trailingIcon = if (document.documentId == selectedDocumentId) {
+                                {
+                                    Icon(
+                                        imageVector = MaterialSymbolIcon("check"),
+                                        contentDescription = null,
+                                        modifier = Modifier.size(18.dp),
+                                    )
+                                }
+                            } else null,
+                        )
+                    }
+                }
+            }
+        }
+        LazyColumn(
+            modifier = Modifier.fillMaxSize(),
+            contentPadding = PaddingValues(start = 12.dp, end = 12.dp, bottom = 96.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp),
+        ) {
+            items(selectedPages, key = CatalogLyricSourceImage::sourcePageId) { page ->
+                val pageLabel = page.displayLabel
+                    ?: stringResource(R.string.lyrics_source_pdf_page, page.physicalPageNumber)
+                Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                    Text(
+                        text = buildString {
+                            append(page.documentTitle)
+                            append(" · ")
+                            append(pageLabel)
+                        },
+                        style = MaterialTheme.typography.labelMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.padding(horizontal = 4.dp),
+                    )
+                    ZoomableLyricSourcePage(page)
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun ZoomableLyricSourcePage(page: CatalogLyricSourceImage) {
+    var scale by remember(page.sourcePageId) { mutableFloatStateOf(1f) }
+    var offset by remember(page.sourcePageId) { mutableStateOf(Offset.Zero) }
+    var loadFailed by remember(page.sourcePageId) { mutableStateOf(false) }
+    var retryKey by remember(page.sourcePageId) { mutableIntStateOf(0) }
+    val transformState = rememberTransformableState { _, zoomChange, panChange, _ ->
+        val newScale = (scale * zoomChange).coerceIn(1f, 4f)
+        scale = newScale
+        offset = if (newScale == 1f) Offset.Zero else offset + panChange
+    }
+    Surface(
+        modifier = Modifier
+            .fillMaxWidth()
+            .aspectRatio(page.widthPx.toFloat() / page.heightPx.toFloat()),
+        shape = RoundedCornerShape(8.dp),
+        color = Color.White,
+        tonalElevation = 2.dp,
+    ) {
+        Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+            key(retryKey) {
+                AsyncImage(
+                    model = Uri.parse(CatalogArtworkPolicy.uri(page.imageAssetId)),
+                    contentDescription = stringResource(
+                        R.string.lyrics_source_page_description,
+                        page.documentTitle,
+                        page.physicalPageNumber,
+                    ),
+                    contentScale = ContentScale.Fit,
+                    onSuccess = { loadFailed = false },
+                    onError = { loadFailed = true },
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .graphicsLayer {
+                            scaleX = scale
+                            scaleY = scale
+                            translationX = offset.x
+                            translationY = offset.y
+                        }
+                        .transformable(
+                            state = transformState,
+                            canPan = { scale > 1f },
+                        )
+                        .pointerInput(page.sourcePageId) {
+                            detectTapGestures(
+                                onDoubleTap = {
+                                    if (scale > 1f) {
+                                        scale = 1f
+                                        offset = Offset.Zero
+                                    } else {
+                                        scale = 2f
+                                    }
+                                },
+                            )
+                        },
+                )
+            }
+            if (loadFailed) {
+                FilledTonalButton(
+                    onClick = {
+                        loadFailed = false
+                        retryKey += 1
+                    },
+                ) {
+                    Icon(
+                        imageVector = RhythmIcons.Refresh,
+                        contentDescription = null,
+                        modifier = Modifier.size(18.dp),
+                    )
+                    Spacer(Modifier.width(8.dp))
+                    Text(stringResource(R.string.updates_retry))
+                }
+            }
+        }
+    }
+}
 
 @Composable
 private fun CatalogLyricsLanguageMenu(

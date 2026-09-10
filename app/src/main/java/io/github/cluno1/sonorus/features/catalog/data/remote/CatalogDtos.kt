@@ -68,11 +68,39 @@ internal data class LibrarySongDto(
     @SerializedName("lyrics_language") val lyricsLanguage: String? = null,
     @SerializedName("lyrics_translations") val lyricsTranslations: List<LyricsTranslationDto>? = null,
     @SerializedName("cover_asset_id") val coverAssetId: String? = null,
+    @SerializedName("lyrics_source_images") val lyricsSourceImages: List<LyricSourceImageDto>? = null,
+    @SerializedName("lyric_source_count") val lyricSourceCount: Int? = null,
 )
 
 internal data class LyricsTranslationDto(
     val language: String?,
     val lyrics: String?,
+)
+
+internal data class LyricSourceLanguageRelationDto(
+    val language: String?,
+    val relation: String?,
+    @SerializedName("derived_from_language") val derivedFromLanguage: String?,
+)
+
+internal data class LyricSourceImageDto(
+    @SerializedName("link_id") val linkId: String?,
+    @SerializedName("source_page_id") val sourcePageId: String?,
+    @SerializedName("image_asset_id") val imageAssetId: String?,
+    @SerializedName("document_id") val documentId: String?,
+    @SerializedName("document_title") val documentTitle: String?,
+    @SerializedName("source_kind") val sourceKind: String?,
+    @SerializedName("source_ref") val sourceRef: String?,
+    @SerializedName("physical_page_number") val physicalPageNumber: Int?,
+    @SerializedName("display_label") val displayLabel: String?,
+    @SerializedName("display_order") val displayOrder: Int?,
+    @SerializedName("width_px") val widthPx: Int?,
+    @SerializedName("height_px") val heightPx: Int?,
+    @SerializedName("render_dpi") val renderDpi: Int?,
+    @SerializedName("owner_type") val ownerType: String?,
+    @SerializedName("owner_id") val ownerId: String?,
+    @SerializedName("language_relations") val languageRelations: List<LyricSourceLanguageRelationDto>?,
+    val note: String?,
 )
 
 internal data class LibraryAlbumDto(
@@ -104,6 +132,7 @@ internal data class WorkDto(
     val credits: List<WorkCreditDto>?,
     @SerializedName("created_at") val createdAt: String?,
     @SerializedName("updated_at") val updatedAt: String?,
+    @SerializedName("lyrics_source_images") val lyricsSourceImages: List<LyricSourceImageDto>? = null,
 )
 
 internal data class WorkBundleDto(
@@ -140,6 +169,7 @@ internal data class ScoreDto(
     @SerializedName("head_revision_id") val headRevisionId: String?,
     @SerializedName("published_revision_id") val publishedRevisionId: String?,
     val revision: Int?,
+    @SerializedName("lyrics_source_images") val lyricsSourceImages: List<LyricSourceImageDto>? = null,
 )
 
 internal data class ScoreRevisionDto(
@@ -166,6 +196,7 @@ internal data class RenditionDto(
     val location: String?,
     @SerializedName("duration_ms") val durationMs: Long?,
     val revision: Int?, val assets: List<RenditionAssetDto>?,
+    @SerializedName("lyrics_source_images") val lyricsSourceImages: List<LyricSourceImageDto>? = null,
 )
 
 internal data class RenditionAssetDto(

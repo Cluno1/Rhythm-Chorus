@@ -264,6 +264,7 @@ fun PlayerScreen(
     var showFullScreenLyrics by remember { mutableStateOf(false) }
     val catalogLyricsLanguages by musicViewModel.catalogLyricsLanguages.collectAsState()
     val selectedCatalogLyricsLanguage by musicViewModel.catalogLyricsLanguage.collectAsState()
+    val catalogNowPlaying by musicViewModel.catalogNowPlaying.collectAsState()
 
     BackHandler(enabled = showFullScreenLyrics || expansionFraction > 0.5f) {
         if (showFullScreenLyrics) {
@@ -1020,6 +1021,7 @@ fun PlayerScreen(
             catalogLyricsLanguages = catalogLyricsLanguages,
             selectedCatalogLyricsLanguage = selectedCatalogLyricsLanguage,
             onCatalogLyricsLanguageSelect = musicViewModel::selectCatalogLyricsLanguage,
+            catalogLyricSourceImages = catalogNowPlaying?.lyricsSourceImages.orEmpty(),
             canvasArtwork = canvasArtwork,
             canvasLoading = canvasLoading,
             modifier = Modifier.fillMaxSize()

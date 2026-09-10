@@ -999,6 +999,10 @@
     <string name="cd_rhythm_splash">Sonorus</string>
     <string name="cd_remove_from_playlist">從播放清單中刪除</string>
     <string name="cd_change_language">更改語言</string>
+    <string name="lyrics_show_source_images">查看歌詞來源原圖</string>
+    <string name="lyrics_show_text">查看文字歌詞</string>
+    <string name="lyrics_source_pdf_page">PDF 第 %1$d 頁</string>
+    <string name="lyrics_source_page_description">%1$s，第 %2$d 頁</string>
     <string name="cd_open_settings">打開</string>
     <string name="cd_show_options">顯示選項</string>
     <string name="cd_app_updates">應用程式更新</string>

@@ -211,6 +211,59 @@ class CatalogDtoMapperTest {
     }
 
     @Test
+    fun mapsStableSharedLyricSourceImageIdentity() {
+        val pageId = "66666666-6666-4666-8666-666666666666"
+        val documentId = "77777777-7777-4777-8777-777777777777"
+        val linkId = "88888888-8888-4888-8888-888888888888"
+        val song = LibrarySongDto(
+            workId = workId,
+            arrangementId = arrangementId,
+            renditionId = renditionId,
+            albumId = "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+            title = "Source image song",
+            artist = null,
+            albumTitle = "Album",
+            durationMs = null,
+            trackNo = null,
+            coverUrl = null,
+            lyrics = null,
+            lyricsSourceImages = listOf(
+                LyricSourceImageDto(
+                    linkId = linkId,
+                    sourcePageId = pageId,
+                    imageAssetId = assetId,
+                    documentId = documentId,
+                    documentTitle = "IHOP Songbook 2024",
+                    sourceKind = "pdf",
+                    sourceRef = "2024-IHOP-Songbook.pdf",
+                    physicalPageNumber = 20,
+                    displayLabel = "PDF page 20",
+                    displayOrder = 1,
+                    widthPx = 1200,
+                    heightPx = 1800,
+                    renderDpi = 144,
+                    ownerType = "work",
+                    ownerId = workId,
+                    languageRelations = listOf(
+                        LyricSourceLanguageRelationDto("zh-Hans", "printed", null),
+                    ),
+                    note = null,
+                ),
+            ),
+            lyricSourceCount = 1,
+        )
+
+        val source = CatalogDtoMapper.librarySongs(
+            LibrarySongPageDto(listOf(song), null),
+        ).first.single().lyricsSourceImages.orEmpty().single()
+
+        assertEquals(pageId, source.sourcePageId)
+        assertEquals(assetId, source.imageAssetId)
+        assertEquals("zh-Hans", source.languageRelations.single().language)
+        assertEquals(20, source.physicalPageNumber)
+    }
+
+    @Test
     fun rejectsDuplicateLocalizedLibraryLyrics() {
         val song = LibrarySongDto(
             workId = workId,

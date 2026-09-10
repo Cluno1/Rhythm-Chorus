@@ -177,11 +177,38 @@ data class CatalogLibrarySong(
     val coverAssetId: String? = null,
     val lyricsLanguage: String? = null,
     val lyricsTranslations: List<CatalogLyricsTranslation>? = emptyList(),
+    val lyricsSourceImages: List<CatalogLyricSourceImage>? = emptyList(),
 )
 
 data class CatalogLyricsTranslation(
     val language: String,
     val lyrics: String,
+)
+
+data class CatalogLyricSourceLanguageRelation(
+    val language: String,
+    val relation: String,
+    val derivedFromLanguage: String? = null,
+)
+
+data class CatalogLyricSourceImage(
+    val linkId: String,
+    val sourcePageId: String,
+    val imageAssetId: String,
+    val documentId: String,
+    val documentTitle: String,
+    val sourceKind: String,
+    val sourceRef: String?,
+    val physicalPageNumber: Int,
+    val displayLabel: String?,
+    val displayOrder: Int,
+    val widthPx: Int,
+    val heightPx: Int,
+    val renderDpi: Int,
+    val ownerType: String,
+    val ownerId: String,
+    val languageRelations: List<CatalogLyricSourceLanguageRelation>,
+    val note: String?,
 )
 
 /** A server-owned album/release. Work remains hidden from the native browsing surface. */
@@ -253,6 +280,7 @@ data class RhythmNowPlayingItem(
     val lyrics: String? = null,
     val lyricsLanguage: String? = null,
     val lyricsTranslations: List<CatalogLyricsTranslation>? = emptyList(),
+    val lyricsSourceImages: List<CatalogLyricSourceImage>? = emptyList(),
 )
 
 data class RhythmQueueEntry(

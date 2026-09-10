@@ -927,6 +927,7 @@ private fun LocalNavigationContent(
                 lyrics = refreshed.lyrics,
                 lyricsLanguage = refreshed.lyricsLanguage,
                 lyricsTranslations = refreshed.lyricsTranslations,
+                lyricsSourceImages = refreshed.lyricsSourceImages.orEmpty(),
             ),
         )
     }
@@ -984,6 +985,7 @@ private fun LocalNavigationContent(
                     lyrics = song.lyrics,
                     lyricsLanguage = song.lyricsLanguage,
                     lyricsTranslations = song.lyricsTranslations,
+                    lyricsSourceImages = song.lyricsSourceImages.orEmpty(),
                 ),
                 playback = CatalogPlaybackItem(
                     renditionId = song.renditionId,

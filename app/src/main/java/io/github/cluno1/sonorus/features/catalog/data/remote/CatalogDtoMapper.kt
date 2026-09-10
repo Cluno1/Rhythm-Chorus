@@ -7,6 +7,8 @@ import io.github.cluno1.sonorus.features.catalog.domain.CatalogChanges
 import io.github.cluno1.sonorus.features.catalog.domain.CatalogLibraryAlbum
 import io.github.cluno1.sonorus.features.catalog.domain.CatalogLibrarySong
 import io.github.cluno1.sonorus.features.catalog.domain.CatalogLibraryScoreWork
+import io.github.cluno1.sonorus.features.catalog.domain.CatalogLyricSourceImage
+import io.github.cluno1.sonorus.features.catalog.domain.CatalogLyricSourceLanguageRelation
 import io.github.cluno1.sonorus.features.catalog.domain.CatalogScoreOption
 import io.github.cluno1.sonorus.features.catalog.domain.CatalogLyricsTranslation
 import io.github.cluno1.sonorus.features.catalog.domain.CatalogPage
@@ -296,6 +298,15 @@ internal object CatalogDtoMapper {
         require(lyrics != null || lyricsTranslations.isEmpty()) {
             "library_song translations require default lyrics"
         }
+        val sourceImages = dto.lyricsSourceImages.orEmpty().map(::lyricSourceImage)
+        require(sourceImages.distinctBy { it.sourcePageId }.size == sourceImages.size) {
+            "library_song lyric source pages must be unique"
+        }
+        dto.lyricSourceCount?.let { count ->
+            require(count == sourceImages.size) {
+                "library_song lyric_source_count does not match lyrics_source_images"
+            }
+        }
 
         return CatalogLibrarySong(
             workId = uuid(dto.workId, "library_song.work_id"),
@@ -314,6 +325,54 @@ internal object CatalogDtoMapper {
             coverAssetId = optionalUuid(dto.coverAssetId, "library_song.cover_asset_id"),
             lyricsLanguage = lyricsLanguage,
             lyricsTranslations = lyricsTranslations,
+            lyricsSourceImages = sourceImages,
+        )
+    }
+
+    private fun lyricSourceImage(dto: LyricSourceImageDto): CatalogLyricSourceImage {
+        val ownerType = text(dto.ownerType, "lyric_source.owner_type")
+        require(ownerType in setOf("work", "score", "rendition")) {
+            "lyric_source.owner_type is unsupported"
+        }
+        val sourceKind = text(dto.sourceKind, "lyric_source.source_kind")
+        require(sourceKind in setOf("pdf", "scan", "photo", "booklet", "web")) {
+            "lyric_source.source_kind is unsupported"
+        }
+        return CatalogLyricSourceImage(
+            linkId = uuid(dto.linkId, "lyric_source.link_id"),
+            sourcePageId = uuid(dto.sourcePageId, "lyric_source.source_page_id"),
+            imageAssetId = uuid(dto.imageAssetId, "lyric_source.image_asset_id"),
+            documentId = uuid(dto.documentId, "lyric_source.document_id"),
+            documentTitle = text(dto.documentTitle, "lyric_source.document_title"),
+            sourceKind = sourceKind,
+            sourceRef = dto.sourceRef?.trim()?.takeIf(String::isNotEmpty),
+            physicalPageNumber = positive(
+                dto.physicalPageNumber,
+                "lyric_source.physical_page_number",
+            ),
+            displayLabel = dto.displayLabel?.trim()?.takeIf(String::isNotEmpty),
+            displayOrder = positive(dto.displayOrder, "lyric_source.display_order"),
+            widthPx = positive(dto.widthPx, "lyric_source.width_px"),
+            heightPx = positive(dto.heightPx, "lyric_source.height_px"),
+            renderDpi = positive(dto.renderDpi, "lyric_source.render_dpi"),
+            ownerType = ownerType,
+            ownerId = uuid(dto.ownerId, "lyric_source.owner_id"),
+            languageRelations = dto.languageRelations.orEmpty().map { relation ->
+                CatalogLyricSourceLanguageRelation(
+                    language = normalizeCatalogLyricsLanguageTag(
+                        text(relation.language, "lyric_source.language"),
+                    ),
+                    relation = text(relation.relation, "lyric_source.relation").also {
+                        require(it in setOf("printed", "transcribed", "translated", "transliterated", "converted")) {
+                            "lyric_source.relation is unsupported"
+                        }
+                    },
+                    derivedFromLanguage = relation.derivedFromLanguage?.let(
+                        ::normalizeCatalogLyricsLanguageTag,
+                    ),
+                )
+            },
+            note = dto.note?.trim()?.takeIf(String::isNotEmpty),
         )
     }
 

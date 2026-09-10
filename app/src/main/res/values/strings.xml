@@ -972,6 +972,10 @@
     <string name="cd_rhythm_splash">Sonorus</string>
     <string name="cd_remove_from_playlist">Remove from playlist</string>
     <string name="cd_change_language">Change Language</string>
+    <string name="lyrics_show_source_images">Show original lyric pages</string>
+    <string name="lyrics_show_text">Show text lyrics</string>
+    <string name="lyrics_source_pdf_page">PDF page %1$d</string>
+    <string name="lyrics_source_page_description">%1$s, page %2$d</string>
     <string name="cd_open_settings">Open</string>
     <string name="cd_show_options">Show options</string>
     <string name="cd_app_updates">App Updates</string>
