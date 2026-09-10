@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="lyrics_candidate_format">%1$s · %2$s · %3$s · %4$d%%</string>
+    <string name="lyrics_change">बदलें</string>
+    <string name="lyrics_choose_version">दूसरा संस्करण चुनें</string>
+    <string name="lyrics_clear">साफ़ करें</string>
+    <string name="lyrics_default_file_name">गीत</string>
+    <string name="lyrics_duration_seconds">%1$d से</string>
+    <string name="lyrics_format_enhanced_lrc">उन्नत LRC (.elrc)</string>
+    <string name="lyrics_format_raw_source">कच्चा स्रोत</string>
+    <string name="lyrics_format_standard_lrc">मानक LRC (.lrc)</string>
+    <string name="lyrics_format_ttml">TTML XML (.ttml)</string>
+    <string name="lyrics_format_word_by_word_json">शब्द-दर-शब्द JSON (.json)</string>
+    <string name="lyrics_line_by_line">पंक्ति-दर-पंक्ति</string>
+    <string name="lyrics_load_file_error">गीत फ़ाइल लोड नहीं हो सकी</string>
+    <string name="lyrics_no_candidates">कोई मेल खाने वाला सार्वजनिक गीत नहीं मिला</string>
+    <string name="lyrics_online_rematch">ऑनलाइन फिर मेल करें</string>
+    <string name="lyrics_placeholder_line_by_line">समय-चिह्नित LRC या उन्नत LRC ([00:12.34]&lt;00:12.34&gt;शब्द) दर्ज करें…</string>
+    <string name="lyrics_placeholder_source">कच्चा TTML XML, LRC या सादा पाठ दर्ज करें…</string>
+    <string name="lyrics_placeholder_word_by_word">शब्द-दर-शब्द गीत JSON दर्ज करें…</string>
+    <string name="lyrics_remember_choice">मेरी पसंद याद रखें (फिर न पूछें)</string>
+    <string name="lyrics_rename">नाम बदलें</string>
+    <string name="lyrics_rename_lrc_body">लोड की गई LRC फ़ाइल का नाम “%1$s” गाने की फ़ाइल से अलग है। क्या आप इसका नाम मिलाने के लिए बदलना चाहते हैं, या इसे कस्टम फ़ाइल के रूप में जोड़ना चाहते हैं?</string>
+    <string name="lyrics_rename_lrc_title">LRC फ़ाइल का नाम बदलें?</string>
+    <string name="lyrics_rename_permission_denied">अनुमति न मिलने के कारण नाम नहीं बदला जा सका। इसके बजाय कस्टम फ़ाइल के रूप में चिह्नित किया गया।</string>
+    <string name="lyrics_renamed_success">फ़ाइल का नाम सफ़लतापूर्वक बदला गया।</string>
+    <string name="lyrics_renamed_to_format">फ़ाइल का नाम सफ़लतापूर्वक %1$s किया गया।</string>
+    <string name="lyrics_restore_local">स्थानीय गीत पुनर्स्थापित करें</string>
+    <string name="lyrics_source">स्रोत</string>
+    <string name="lyrics_source_pref_default">डिफ़ॉल्ट (ऐप सेटिंग)</string>
+    <string name="lyrics_source_pref_embedded">एम्बेडेड पहले</string>
+    <string name="lyrics_source_pref_local_lrc">स्थानीय LRC फ़ाइल पहले</string>
+    <string name="lyrics_source_pref_online">ऑनलाइन पहले</string>
+    <string name="lyrics_source_preference">गीत स्रोत प्राथमिकता</string>
+    <string name="lyrics_tag_keep_custom">टैग / कस्टम रखें</string>
+    <string name="lyrics_time_offset_ms">%1$s मिलीसेकंड</string>
+    <string name="lyrics_word_by_word">शब्द-दर-शब्द</string>
+</resources>

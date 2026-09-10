@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="lyrics_candidate_format">%1$s · %2$s · %3$s · %4$d%%</string>
+    <string name="lyrics_change">Cambia</string>
+    <string name="lyrics_choose_version">Scegli un’altra versione</string>
+    <string name="lyrics_clear">Cancella</string>
+    <string name="lyrics_default_file_name">testo</string>
+    <string name="lyrics_duration_seconds">%1$d s</string>
+    <string name="lyrics_format_enhanced_lrc">LRC avanzato (.elrc)</string>
+    <string name="lyrics_format_raw_source">Sorgente non elaborata</string>
+    <string name="lyrics_format_standard_lrc">LRC standard (.lrc)</string>
+    <string name="lyrics_format_ttml">TTML XML (.ttml)</string>
+    <string name="lyrics_format_word_by_word_json">JSON parola per parola (.json)</string>
+    <string name="lyrics_line_by_line">Riga per riga</string>
+    <string name="lyrics_load_file_error">Impossibile caricare il file del testo</string>
+    <string name="lyrics_no_candidates">Nessun testo pubblico corrispondente trovato</string>
+    <string name="lyrics_online_rematch">Cerca di nuovo online</string>
+    <string name="lyrics_placeholder_line_by_line">Inserisci un LRC con indicatori temporali o un LRC avanzato ([00:12.34]&lt;00:12.34&gt;parola)…</string>
+    <string name="lyrics_placeholder_source">Inserisci TTML XML, LRC o testo semplice non elaborato…</string>
+    <string name="lyrics_placeholder_word_by_word">Inserisci il testo parola per parola in JSON…</string>
+    <string name="lyrics_remember_choice">Ricorda la scelta (non chiedere più)</string>
+    <string name="lyrics_rename">Rinomina</string>
+    <string name="lyrics_rename_lrc_body">Il nome del file LRC caricato “%1$s” è diverso dal nome del file del brano. Vuoi rinominarlo per farli corrispondere o associarlo come file personalizzato?</string>
+    <string name="lyrics_rename_lrc_title">Rinominare il file LRC?</string>
+    <string name="lyrics_rename_permission_denied">Impossibile rinominare (autorizzazione negata). È stato contrassegnato come file personalizzato.</string>
+    <string name="lyrics_renamed_success">File rinominato.</string>
+    <string name="lyrics_renamed_to_format">File rinominato in %1$s.</string>
+    <string name="lyrics_restore_local">Ripristina il testo locale</string>
+    <string name="lyrics_source">Sorgente</string>
+    <string name="lyrics_source_pref_default">Predefinito (impostazioni app)</string>
+    <string name="lyrics_source_pref_embedded">Incorporato per primo</string>
+    <string name="lyrics_source_pref_local_lrc">File LRC locale per primo</string>
+    <string name="lyrics_source_pref_online">Online per primo</string>
+    <string name="lyrics_source_preference">Preferenza sorgente</string>
+    <string name="lyrics_tag_keep_custom">Associa / Mantieni personalizzato</string>
+    <string name="lyrics_time_offset_ms">%1$s ms</string>
+    <string name="lyrics_word_by_word">Parola per parola</string>
+</resources>

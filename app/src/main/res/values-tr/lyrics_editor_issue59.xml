@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="lyrics_candidate_format">%1$s · %2$s · %3$s · %4$d%%</string>
+    <string name="lyrics_change">Değiştir</string>
+    <string name="lyrics_choose_version">Başka bir sürüm seç</string>
+    <string name="lyrics_clear">Temizle</string>
+    <string name="lyrics_default_file_name">şarkı_sözleri</string>
+    <string name="lyrics_duration_seconds">%1$d sn</string>
+    <string name="lyrics_format_enhanced_lrc">Gelişmiş LRC (.elrc)</string>
+    <string name="lyrics_format_raw_source">İşlenmemiş kaynak</string>
+    <string name="lyrics_format_standard_lrc">Standart LRC (.lrc)</string>
+    <string name="lyrics_format_ttml">TTML XML (.ttml)</string>
+    <string name="lyrics_format_word_by_word_json">Kelime kelime JSON (.json)</string>
+    <string name="lyrics_line_by_line">Satır satır</string>
+    <string name="lyrics_load_file_error">Şarkı sözü dosyası yüklenemedi</string>
+    <string name="lyrics_no_candidates">Eşleşen herkese açık şarkı sözü bulunamadı</string>
+    <string name="lyrics_online_rematch">Çevrimiçi yeniden eşleştir</string>
+    <string name="lyrics_placeholder_line_by_line">Zaman damgalı LRC veya gelişmiş LRC ([00:12.34]&lt;00:12.34&gt;kelime) girin…</string>
+    <string name="lyrics_placeholder_source">İşlenmemiş TTML XML, LRC veya düz metin girin…</string>
+    <string name="lyrics_placeholder_word_by_word">Kelime kelime şarkı sözünü JSON olarak girin…</string>
+    <string name="lyrics_remember_choice">Seçimimi hatırla (bir daha sorma)</string>
+    <string name="lyrics_rename">Yeniden adlandır</string>
+    <string name="lyrics_rename_lrc_body">Yüklenen LRC dosyasının “%1$s” adı şarkı dosyasının adından farklı. Eşleşmesi için yeniden adlandırmak mı, yoksa özel dosya olarak ilişkilendirmek mi istersiniz?</string>
+    <string name="lyrics_rename_lrc_title">LRC dosyası yeniden adlandırılsın mı?</string>
+    <string name="lyrics_rename_permission_denied">Yeniden adlandırılamadı (izin reddedildi). Bunun yerine özel dosya olarak işaretlendi.</string>
+    <string name="lyrics_renamed_success">Dosya başarıyla yeniden adlandırıldı.</string>
+    <string name="lyrics_renamed_to_format">Dosya başarıyla %1$s olarak yeniden adlandırıldı.</string>
+    <string name="lyrics_restore_local">Yerel şarkı sözlerini geri yükle</string>
+    <string name="lyrics_source">Kaynak</string>
+    <string name="lyrics_source_pref_default">Varsayılan (uygulama ayarları)</string>
+    <string name="lyrics_source_pref_embedded">Önce gömülü</string>
+    <string name="lyrics_source_pref_local_lrc">Önce yerel LRC dosyası</string>
+    <string name="lyrics_source_pref_online">Önce çevrimiçi</string>
+    <string name="lyrics_source_preference">Kaynak tercihi</string>
+    <string name="lyrics_tag_keep_custom">İşaretle / Özeli koru</string>
+    <string name="lyrics_time_offset_ms">%1$s ms</string>
+    <string name="lyrics_word_by_word">Kelime kelime</string>
+</resources>

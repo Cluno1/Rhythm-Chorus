@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="lyrics_candidate_format">%1$s · %2$s · %3$s · %4$d%%</string>
+    <string name="lyrics_change">変更</string>
+    <string name="lyrics_choose_version">別のバージョンを選択</string>
+    <string name="lyrics_clear">クリア</string>
+    <string name="lyrics_default_file_name">歌詞</string>
+    <string name="lyrics_duration_seconds">%1$d 秒</string>
+    <string name="lyrics_format_enhanced_lrc">拡張 LRC（.elrc）</string>
+    <string name="lyrics_format_raw_source">生のソース</string>
+    <string name="lyrics_format_standard_lrc">標準 LRC（.lrc）</string>
+    <string name="lyrics_format_ttml">TTML XML（.ttml）</string>
+    <string name="lyrics_format_word_by_word_json">単語ごとの JSON（.json）</string>
+    <string name="lyrics_line_by_line">行ごと</string>
+    <string name="lyrics_load_file_error">歌詞ファイルを読み込めませんでした</string>
+    <string name="lyrics_no_candidates">一致する公開歌詞が見つかりません</string>
+    <string name="lyrics_online_rematch">オンラインで再検索</string>
+    <string name="lyrics_placeholder_line_by_line">タイムスタンプ付き LRC または拡張 LRC（[00:12.34]&lt;00:12.34&gt;単語）を入力…</string>
+    <string name="lyrics_placeholder_source">生の TTML XML、LRC、またはプレーンテキストを入力…</string>
+    <string name="lyrics_placeholder_word_by_word">単語ごとの歌詞 JSON を入力…</string>
+    <string name="lyrics_remember_choice">選択を記憶する（今後確認しない）</string>
+    <string name="lyrics_rename">名前を変更</string>
+    <string name="lyrics_rename_lrc_body">読み込んだ LRC ファイル名「%1$s」は曲のファイル名と異なります。曲に合わせて名前を変更するか、カスタムファイルとして関連付けますか？</string>
+    <string name="lyrics_rename_lrc_title">LRC ファイルの名前を変更しますか？</string>
+    <string name="lyrics_rename_permission_denied">権限がないため名前を変更できませんでした。代わりにカスタムファイルとして設定しました。</string>
+    <string name="lyrics_renamed_success">ファイル名を変更しました。</string>
+    <string name="lyrics_renamed_to_format">ファイル名を %1$s に変更しました。</string>
+    <string name="lyrics_restore_local">ローカル歌詞を復元</string>
+    <string name="lyrics_source">ソース</string>
+    <string name="lyrics_source_pref_default">デフォルト（アプリ設定）</string>
+    <string name="lyrics_source_pref_embedded">埋め込みを優先</string>
+    <string name="lyrics_source_pref_local_lrc">ローカル LRC ファイルを優先</string>
+    <string name="lyrics_source_pref_online">オンラインを優先</string>
+    <string name="lyrics_source_preference">歌詞ソースの優先順位</string>
+    <string name="lyrics_tag_keep_custom">タグ付け / カスタムを維持</string>
+    <string name="lyrics_time_offset_ms">%1$s ミリ秒</string>
+    <string name="lyrics_word_by_word">単語ごと</string>
+</resources>

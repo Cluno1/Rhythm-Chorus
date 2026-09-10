@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="lyrics_candidate_format">%1$s · %2$s · %3$s · %4$d%%</string>
+    <string name="lyrics_change">변경</string>
+    <string name="lyrics_choose_version">다른 버전 선택</string>
+    <string name="lyrics_clear">지우기</string>
+    <string name="lyrics_default_file_name">가사</string>
+    <string name="lyrics_duration_seconds">%1$d초</string>
+    <string name="lyrics_format_enhanced_lrc">확장 LRC(.elrc)</string>
+    <string name="lyrics_format_raw_source">원본 소스</string>
+    <string name="lyrics_format_standard_lrc">표준 LRC(.lrc)</string>
+    <string name="lyrics_format_ttml">TTML XML(.ttml)</string>
+    <string name="lyrics_format_word_by_word_json">단어별 JSON(.json)</string>
+    <string name="lyrics_line_by_line">줄별</string>
+    <string name="lyrics_load_file_error">가사 파일을 불러올 수 없습니다</string>
+    <string name="lyrics_no_candidates">일치하는 공개 가사를 찾지 못했습니다</string>
+    <string name="lyrics_online_rematch">온라인에서 다시 매칭</string>
+    <string name="lyrics_placeholder_line_by_line">타임스탬프 LRC 또는 확장 LRC([00:12.34]&lt;00:12.34&gt;단어)를 입력하세요…</string>
+    <string name="lyrics_placeholder_source">원본 TTML XML, LRC 또는 일반 텍스트를 입력하세요…</string>
+    <string name="lyrics_placeholder_word_by_word">단어별 가사 JSON을 입력하세요…</string>
+    <string name="lyrics_remember_choice">선택 기억(다시 묻지 않음)</string>
+    <string name="lyrics_rename">이름 바꾸기</string>
+    <string name="lyrics_rename_lrc_body">불러온 LRC 파일 이름 ‘%1$s’이 곡 파일 이름과 다릅니다. 곡과 같게 이름을 바꾸거나 사용자 지정 파일로 연결할까요?</string>
+    <string name="lyrics_rename_lrc_title">LRC 파일 이름을 바꿀까요?</string>
+    <string name="lyrics_rename_permission_denied">권한이 없어 이름을 바꾸지 못했습니다. 대신 사용자 지정 파일로 지정했습니다.</string>
+    <string name="lyrics_renamed_success">파일 이름을 바꿔습니다.</string>
+    <string name="lyrics_renamed_to_format">파일 이름을 %1$s(으)로 바꿔습니다.</string>
+    <string name="lyrics_restore_local">로컬 가사 복원</string>
+    <string name="lyrics_source">소스</string>
+    <string name="lyrics_source_pref_default">기본값(앱 설정)</string>
+    <string name="lyrics_source_pref_embedded">내장 가사 우선</string>
+    <string name="lyrics_source_pref_local_lrc">로컬 LRC 파일 우선</string>
+    <string name="lyrics_source_pref_online">온라인 우선</string>
+    <string name="lyrics_source_preference">가사 소스 우선순위</string>
+    <string name="lyrics_tag_keep_custom">태그 / 사용자 지정 유지</string>
+    <string name="lyrics_time_offset_ms">%1$s밀리초</string>
+    <string name="lyrics_word_by_word">단어별</string>
+</resources>

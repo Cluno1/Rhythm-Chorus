@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="lyrics_candidate_format">%1$s · %2$s · %3$s · %4$d%%</string>
+    <string name="lyrics_change">மாற்று</string>
+    <string name="lyrics_choose_version">வேறு பதிப்பைத் தேர்ந்தெடு</string>
+    <string name="lyrics_clear">அழி</string>
+    <string name="lyrics_default_file_name">பாடல்_வரிகள்</string>
+    <string name="lyrics_duration_seconds">%1$d வி</string>
+    <string name="lyrics_format_enhanced_lrc">மேம்படுத்தப்பட்ட LRC (.elrc)</string>
+    <string name="lyrics_format_raw_source">மூல உள்ளடக்கம்</string>
+    <string name="lyrics_format_standard_lrc">நிலையான LRC (.lrc)</string>
+    <string name="lyrics_format_ttml">TTML XML (.ttml)</string>
+    <string name="lyrics_format_word_by_word_json">சொல்லுக்குச் சொல் JSON (.json)</string>
+    <string name="lyrics_line_by_line">வரிக்கு வரி</string>
+    <string name="lyrics_load_file_error">பாடல் வரிகள் கோப்பை ஏற்ற முடியவில்லை</string>
+    <string name="lyrics_no_candidates">பொருந்தும் பொதுப் பாடல் வரிகள் கிடைக்கவில்லை</string>
+    <string name="lyrics_online_rematch">இணையத்தில் மீண்டும் பொருத்து</string>
+    <string name="lyrics_placeholder_line_by_line">நேரக்குறிப்பிட்ட LRC அல்லது மேம்படுத்தப்பட்ட LRC ([00:12.34]&lt;00:12.34&gt;சொல்) உள்ளிடுக…</string>
+    <string name="lyrics_placeholder_source">மூல TTML XML, LRC அல்லது எளிய உரையை உள்ளிடுக…</string>
+    <string name="lyrics_placeholder_word_by_word">சொல்லுக்குச் சொல் பாடல் வரி JSON-ஐ உள்ளிடுக…</string>
+    <string name="lyrics_remember_choice">எனது தேர்வை நினைவில் கொள் (மீண்டும் கேட்காதே)</string>
+    <string name="lyrics_rename">பெயர் மாற்று</string>
+    <string name="lyrics_rename_lrc_body">ஏற்றப்பட்ட LRC கோப்பின் பெயர் “%1$s” பாடலின் கோப்புப் பெயரை விட வேறுபடுகிறது. பொருந்துமாறு பெயர் மாற்றவா அல்லது தனிப்பயன் கோப்பாக இணைக்கவா?</string>
+    <string name="lyrics_rename_lrc_title">LRC கோப்பின் பெயரை மாற்றவா?</string>
+    <string name="lyrics_rename_permission_denied">அனுமதி மறுக்கப்பட்டதால் பெயர் மாற்ற முடியவில்லை. பதிலாக தனிப்பயன் கோப்பாக குறிக்கப்பட்டது.</string>
+    <string name="lyrics_renamed_success">கோப்பின் பெயர் வெற்றிகரமாக மாற்றப்பட்டது.</string>
+    <string name="lyrics_renamed_to_format">கோப்பின் பெயர் %1$s என வெற்றிகரமாக மாற்றப்பட்டது.</string>
+    <string name="lyrics_restore_local">உள்ளூர் பாடல் வரிகளை மீட்டெடு</string>
+    <string name="lyrics_source">மூலம்</string>
+    <string name="lyrics_source_pref_default">இயல்புநிலை (செயலி அமைப்புகள்)</string>
+    <string name="lyrics_source_pref_embedded">பதிக்கப்பட்டது முதலில்</string>
+    <string name="lyrics_source_pref_local_lrc">உள்ளூர் LRC கோப்பு முதலில்</string>
+    <string name="lyrics_source_pref_online">இணையம் முதலில்</string>
+    <string name="lyrics_source_preference">பாடல் வரி மூல விருப்பம்</string>
+    <string name="lyrics_tag_keep_custom">குறியிடு / தனிப்பயனை வை</string>
+    <string name="lyrics_time_offset_ms">%1$s மில்லி வினாடி</string>
+    <string name="lyrics_word_by_word">சொல்லுக்குச் சொல்</string>
+</resources>

@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="lyrics_candidate_format">%1$s · %2$s · %3$s · %4$d%%</string>
+    <string name="lyrics_change">Modifier</string>
+    <string name="lyrics_choose_version">Choisir une autre version</string>
+    <string name="lyrics_clear">Effacer</string>
+    <string name="lyrics_default_file_name">paroles</string>
+    <string name="lyrics_duration_seconds">%1$d s</string>
+    <string name="lyrics_format_enhanced_lrc">LRC enrichi (.elrc)</string>
+    <string name="lyrics_format_raw_source">Source brute</string>
+    <string name="lyrics_format_standard_lrc">LRC standard (.lrc)</string>
+    <string name="lyrics_format_ttml">TTML XML (.ttml)</string>
+    <string name="lyrics_format_word_by_word_json">JSON mot par mot (.json)</string>
+    <string name="lyrics_line_by_line">Ligne par ligne</string>
+    <string name="lyrics_load_file_error">Impossible de charger le fichier de paroles</string>
+    <string name="lyrics_no_candidates">Aucune parole publique correspondante trouvée</string>
+    <string name="lyrics_online_rematch">Relancer la recherche en ligne</string>
+    <string name="lyrics_placeholder_line_by_line">Entrez un LRC horodaté ou enrichi ([00:12.34]&lt;00:12.34&gt;mot)…</string>
+    <string name="lyrics_placeholder_source">Entrez du TTML XML brut, du LRC ou du texte simple…</string>
+    <string name="lyrics_placeholder_word_by_word">Entrez les paroles mot par mot en JSON…</string>
+    <string name="lyrics_remember_choice">Mémoriser mon choix (ne plus demander)</string>
+    <string name="lyrics_rename">Renommer</string>
+    <string name="lyrics_rename_lrc_body">Le nom du fichier LRC chargé « %1$s » diffère de celui du fichier de la chanson. Voulez-vous le renommer pour les faire correspondre ou l’associer comme fichier personnalisé ?</string>
+    <string name="lyrics_rename_lrc_title">Renommer le fichier LRC ?</string>
+    <string name="lyrics_rename_permission_denied">Impossible de renommer le fichier (autorisation refusée). Il a été marqué comme personnalisé.</string>
+    <string name="lyrics_renamed_success">Fichier renommé.</string>
+    <string name="lyrics_renamed_to_format">Fichier renommé en %1$s.</string>
+    <string name="lyrics_restore_local">Restaurer les paroles locales</string>
+    <string name="lyrics_source">Source</string>
+    <string name="lyrics_source_pref_default">Par défaut (paramètres de l’application)</string>
+    <string name="lyrics_source_pref_embedded">Paroles intégrées en premier</string>
+    <string name="lyrics_source_pref_local_lrc">Fichier LRC local en premier</string>
+    <string name="lyrics_source_pref_online">En ligne en premier</string>
+    <string name="lyrics_source_preference">Préférence de source</string>
+    <string name="lyrics_tag_keep_custom">Associer / Garder le fichier personnalisé</string>
+    <string name="lyrics_time_offset_ms">%1$s ms</string>
+    <string name="lyrics_word_by_word">Mot par mot</string>
+</resources>

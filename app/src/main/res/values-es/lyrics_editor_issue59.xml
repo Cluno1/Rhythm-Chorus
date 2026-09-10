@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="lyrics_candidate_format">%1$s · %2$s · %3$s · %4$d%%</string>
+    <string name="lyrics_change">Cambiar</string>
+    <string name="lyrics_choose_version">Elegir otra versión</string>
+    <string name="lyrics_clear">Borrar</string>
+    <string name="lyrics_default_file_name">letra</string>
+    <string name="lyrics_duration_seconds">%1$d s</string>
+    <string name="lyrics_format_enhanced_lrc">LRC mejorado (.elrc)</string>
+    <string name="lyrics_format_raw_source">Fuente sin procesar</string>
+    <string name="lyrics_format_standard_lrc">LRC estándar (.lrc)</string>
+    <string name="lyrics_format_ttml">TTML XML (.ttml)</string>
+    <string name="lyrics_format_word_by_word_json">JSON palabra por palabra (.json)</string>
+    <string name="lyrics_line_by_line">Línea por línea</string>
+    <string name="lyrics_load_file_error">No se pudo cargar el archivo de letra</string>
+    <string name="lyrics_no_candidates">No se encontraron letras públicas coincidentes</string>
+    <string name="lyrics_online_rematch">Volver a buscar en línea</string>
+    <string name="lyrics_placeholder_line_by_line">Introduce LRC con marcas de tiempo o LRC mejorado ([00:12.34]&lt;00:12.34&gt;palabra)…</string>
+    <string name="lyrics_placeholder_source">Introduce TTML XML, LRC o texto sin formato…</string>
+    <string name="lyrics_placeholder_word_by_word">Introduce la letra palabra por palabra en JSON…</string>
+    <string name="lyrics_remember_choice">Recordar mi elección (no volver a preguntar)</string>
+    <string name="lyrics_rename">Cambiar nombre</string>
+    <string name="lyrics_rename_lrc_body">El nombre del archivo LRC cargado «%1$s» es distinto del nombre del archivo de la canción. ¿Quieres cambiarlo para que coincida o asociarlo como archivo personalizado?</string>
+    <string name="lyrics_rename_lrc_title">¿Cambiar el nombre del archivo LRC?</string>
+    <string name="lyrics_rename_permission_denied">No se pudo cambiar el nombre (permiso denegado). Se marcó como archivo personalizado.</string>
+    <string name="lyrics_renamed_success">Archivo renombrado correctamente.</string>
+    <string name="lyrics_renamed_to_format">Archivo renombrado a %1$s correctamente.</string>
+    <string name="lyrics_restore_local">Restaurar letra local</string>
+    <string name="lyrics_source">Fuente</string>
+    <string name="lyrics_source_pref_default">Predeterminado (ajustes de la aplicación)</string>
+    <string name="lyrics_source_pref_embedded">Primero la letra incrustada</string>
+    <string name="lyrics_source_pref_local_lrc">Primero el archivo LRC local</string>
+    <string name="lyrics_source_pref_online">Primero en línea</string>
+    <string name="lyrics_source_preference">Preferencia de fuente</string>
+    <string name="lyrics_tag_keep_custom">Etiquetar / Mantener personalizado</string>
+    <string name="lyrics_time_offset_ms">%1$s ms</string>
+    <string name="lyrics_word_by_word">Palabra por palabra</string>
+</resources>

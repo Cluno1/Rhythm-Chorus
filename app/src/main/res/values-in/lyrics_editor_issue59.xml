@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="lyrics_candidate_format">%1$s · %2$s · %3$s · %4$d%%</string>
+    <string name="lyrics_change">Ubah</string>
+    <string name="lyrics_choose_version">Pilih versi lain</string>
+    <string name="lyrics_clear">Hapus</string>
+    <string name="lyrics_default_file_name">lirik</string>
+    <string name="lyrics_duration_seconds">%1$d dtk</string>
+    <string name="lyrics_format_enhanced_lrc">LRC yang disempurnakan (.elrc)</string>
+    <string name="lyrics_format_raw_source">Sumber mentah</string>
+    <string name="lyrics_format_standard_lrc">LRC standar (.lrc)</string>
+    <string name="lyrics_format_ttml">TTML XML (.ttml)</string>
+    <string name="lyrics_format_word_by_word_json">JSON kata per kata (.json)</string>
+    <string name="lyrics_line_by_line">Baris per baris</string>
+    <string name="lyrics_load_file_error">File lirik tidak dapat dimuat</string>
+    <string name="lyrics_no_candidates">Tidak ditemukan lirik publik yang cocok</string>
+    <string name="lyrics_online_rematch">Cocokkan lagi secara daring</string>
+    <string name="lyrics_placeholder_line_by_line">Masukkan LRC bertanda waktu atau LRC yang disempurnakan ([00:12.34]&lt;00:12.34&gt;kata)…</string>
+    <string name="lyrics_placeholder_source">Masukkan TTML XML mentah, LRC, atau teks biasa…</string>
+    <string name="lyrics_placeholder_word_by_word">Masukkan lirik kata per kata dalam JSON…</string>
+    <string name="lyrics_remember_choice">Ingat pilihan saya (jangan tanyakan lagi)</string>
+    <string name="lyrics_rename">Ganti nama</string>
+    <string name="lyrics_rename_lrc_body">Nama file LRC yang dimuat “%1$s” berbeda dengan nama file lagu. Ganti namanya agar sama atau kaitkan sebagai file khusus?</string>
+    <string name="lyrics_rename_lrc_title">Ganti nama file LRC?</string>
+    <string name="lyrics_rename_permission_denied">Tidak dapat mengganti nama (izin ditolak). Ditandai sebagai file khusus.</string>
+    <string name="lyrics_renamed_success">Nama file berhasil diubah.</string>
+    <string name="lyrics_renamed_to_format">Nama file berhasil diubah menjadi %1$s.</string>
+    <string name="lyrics_restore_local">Pulihkan lirik lokal</string>
+    <string name="lyrics_source">Sumber</string>
+    <string name="lyrics_source_pref_default">Bawaan (pengaturan aplikasi)</string>
+    <string name="lyrics_source_pref_embedded">Tertanam lebih dahulu</string>
+    <string name="lyrics_source_pref_local_lrc">File LRC lokal lebih dahulu</string>
+    <string name="lyrics_source_pref_online">Daring lebih dahulu</string>
+    <string name="lyrics_source_preference">Preferensi sumber</string>
+    <string name="lyrics_tag_keep_custom">Tandai / Pertahankan khusus</string>
+    <string name="lyrics_time_offset_ms">%1$s md</string>
+    <string name="lyrics_word_by_word">Kata per kata</string>
+</resources>

@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="lyrics_candidate_format">%1$s · %2$s · %3$s · %4$d%%</string>
+    <string name="lyrics_change">Alterar</string>
+    <string name="lyrics_choose_version">Escolher outra versão</string>
+    <string name="lyrics_clear">Limpar</string>
+    <string name="lyrics_default_file_name">letra</string>
+    <string name="lyrics_duration_seconds">%1$d s</string>
+    <string name="lyrics_format_enhanced_lrc">LRC aprimorado (.elrc)</string>
+    <string name="lyrics_format_raw_source">Fonte bruta</string>
+    <string name="lyrics_format_standard_lrc">LRC padrão (.lrc)</string>
+    <string name="lyrics_format_ttml">TTML XML (.ttml)</string>
+    <string name="lyrics_format_word_by_word_json">JSON palavra por palavra (.json)</string>
+    <string name="lyrics_line_by_line">Linha por linha</string>
+    <string name="lyrics_load_file_error">Não foi possível carregar o arquivo de letras</string>
+    <string name="lyrics_no_candidates">Nenhuma letra pública correspondente foi encontrada</string>
+    <string name="lyrics_online_rematch">Procurar novamente on-line</string>
+    <string name="lyrics_placeholder_line_by_line">Digite LRC com marcações de tempo ou LRC aprimorado ([00:12.34]&lt;00:12.34&gt;palavra)…</string>
+    <string name="lyrics_placeholder_source">Digite TTML XML, LRC ou texto simples bruto…</string>
+    <string name="lyrics_placeholder_word_by_word">Digite a letra palavra por palavra em JSON…</string>
+    <string name="lyrics_remember_choice">Lembrar minha escolha (não perguntar novamente)</string>
+    <string name="lyrics_rename">Renomear</string>
+    <string name="lyrics_rename_lrc_body">O nome do arquivo LRC carregado “%1$s” é diferente do nome do arquivo da música. Deseja renomeá-lo para corresponder ou associá-lo como arquivo personalizado?</string>
+    <string name="lyrics_rename_lrc_title">Renomear arquivo LRC?</string>
+    <string name="lyrics_rename_permission_denied">Não foi possível renomear (permissão negada). O arquivo foi marcado como personalizado.</string>
+    <string name="lyrics_renamed_success">Arquivo renomeado.</string>
+    <string name="lyrics_renamed_to_format">Arquivo renomeado para %1$s.</string>
+    <string name="lyrics_restore_local">Restaurar letra local</string>
+    <string name="lyrics_source">Fonte</string>
+    <string name="lyrics_source_pref_default">Padrão (configurações do app)</string>
+    <string name="lyrics_source_pref_embedded">Incorporado primeiro</string>
+    <string name="lyrics_source_pref_local_lrc">Arquivo LRC local primeiro</string>
+    <string name="lyrics_source_pref_online">On-line primeiro</string>
+    <string name="lyrics_source_preference">Preferência de fonte</string>
+    <string name="lyrics_tag_keep_custom">Associar / Manter personalizado</string>
+    <string name="lyrics_time_offset_ms">%1$s ms</string>
+    <string name="lyrics_word_by_word">Palavra por palavra</string>
+</resources>

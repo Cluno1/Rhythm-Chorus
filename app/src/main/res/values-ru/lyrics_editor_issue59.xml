@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="lyrics_candidate_format">%1$s · %2$s · %3$s · %4$d%%</string>
+    <string name="lyrics_change">Изменить</string>
+    <string name="lyrics_choose_version">Выбрать другую версию</string>
+    <string name="lyrics_clear">Очистить</string>
+    <string name="lyrics_default_file_name">текст_песни</string>
+    <string name="lyrics_duration_seconds">%1$d с</string>
+    <string name="lyrics_format_enhanced_lrc">Расширенный LRC (.elrc)</string>
+    <string name="lyrics_format_raw_source">Исходный текст</string>
+    <string name="lyrics_format_standard_lrc">Стандартный LRC (.lrc)</string>
+    <string name="lyrics_format_ttml">TTML XML (.ttml)</string>
+    <string name="lyrics_format_word_by_word_json">JSON по словам (.json)</string>
+    <string name="lyrics_line_by_line">По строкам</string>
+    <string name="lyrics_load_file_error">Не удалось загрузить файл текста</string>
+    <string name="lyrics_no_candidates">Подходящий общедоступный текст не найден</string>
+    <string name="lyrics_online_rematch">Повторить поиск в сети</string>
+    <string name="lyrics_placeholder_line_by_line">Введите LRC с метками времени или расширенный LRC ([00:12.34]&lt;00:12.34&gt;слово)…</string>
+    <string name="lyrics_placeholder_source">Введите исходный TTML XML, LRC или обычный текст…</string>
+    <string name="lyrics_placeholder_word_by_word">Введите текст по словам в JSON…</string>
+    <string name="lyrics_remember_choice">Запомнить мой выбор (больше не спрашивать)</string>
+    <string name="lyrics_rename">Переименовать</string>
+    <string name="lyrics_rename_lrc_body">Имя загруженного LRC-файла «%1$s» отличается от имени файла песни. Переименовать его или связать как пользовательский файл?</string>
+    <string name="lyrics_rename_lrc_title">Переименовать LRC-файл?</string>
+    <string name="lyrics_rename_permission_denied">Не удалось переименовать (нет разрешения). Файл помечен как пользовательский.</string>
+    <string name="lyrics_renamed_success">Файл успешно переименован.</string>
+    <string name="lyrics_renamed_to_format">Файл успешно переименован в %1$s.</string>
+    <string name="lyrics_restore_local">Восстановить локальный текст</string>
+    <string name="lyrics_source">Источник</string>
+    <string name="lyrics_source_pref_default">По умолчанию (настройки приложения)</string>
+    <string name="lyrics_source_pref_embedded">Сначала встроенный</string>
+    <string name="lyrics_source_pref_local_lrc">Сначала локальный LRC-файл</string>
+    <string name="lyrics_source_pref_online">Сначала из сети</string>
+    <string name="lyrics_source_preference">Приоритет источника</string>
+    <string name="lyrics_tag_keep_custom">Пометить / Оставить пользовательский</string>
+    <string name="lyrics_time_offset_ms">%1$s мс</string>
+    <string name="lyrics_word_by_word">По словам</string>
+</resources>

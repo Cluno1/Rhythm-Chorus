@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="lyrics_candidate_format">%1$s · %2$s · %3$s · %4$d%%</string>
+    <string name="lyrics_change">Ändern</string>
+    <string name="lyrics_choose_version">Andere Version auswählen</string>
+    <string name="lyrics_clear">Leeren</string>
+    <string name="lyrics_default_file_name">Liedtext</string>
+    <string name="lyrics_duration_seconds">%1$d s</string>
+    <string name="lyrics_format_enhanced_lrc">Erweitertes LRC (.elrc)</string>
+    <string name="lyrics_format_raw_source">Unbearbeitete Quelle</string>
+    <string name="lyrics_format_standard_lrc">Standard-LRC (.lrc)</string>
+    <string name="lyrics_format_ttml">TTML XML (.ttml)</string>
+    <string name="lyrics_format_word_by_word_json">Wortweises JSON (.json)</string>
+    <string name="lyrics_line_by_line">Zeilenweise</string>
+    <string name="lyrics_load_file_error">Die Liedtextdatei konnte nicht geladen werden</string>
+    <string name="lyrics_no_candidates">Keine passenden öffentlichen Liedtexte gefunden</string>
+    <string name="lyrics_online_rematch">Online erneut abgleichen</string>
+    <string name="lyrics_placeholder_line_by_line">LRC mit Zeitstempeln oder erweitertes LRC ([00:12.34]&lt;00:12.34&gt;Wort) eingeben…</string>
+    <string name="lyrics_placeholder_source">Unbearbeitetes TTML XML, LRC oder Klartext eingeben…</string>
+    <string name="lyrics_placeholder_word_by_word">Wortweisen Liedtext als JSON eingeben…</string>
+    <string name="lyrics_remember_choice">Auswahl merken (nicht erneut fragen)</string>
+    <string name="lyrics_rename">Umbenennen</string>
+    <string name="lyrics_rename_lrc_body">Der Name der geladenen LRC-Datei „%1$s“ unterscheidet sich vom Dateinamen des Titels. Soll sie passend umbenannt oder als benutzerdefinierte Datei zugeordnet werden?</string>
+    <string name="lyrics_rename_lrc_title">LRC-Datei umbenennen?</string>
+    <string name="lyrics_rename_permission_denied">Umbenennen nicht möglich (Berechtigung verweigert). Stattdessen als benutzerdefinierte Datei markiert.</string>
+    <string name="lyrics_renamed_success">Datei erfolgreich umbenannt.</string>
+    <string name="lyrics_renamed_to_format">Datei erfolgreich in %1$s umbenannt.</string>
+    <string name="lyrics_restore_local">Lokalen Liedtext wiederherstellen</string>
+    <string name="lyrics_source">Quelle</string>
+    <string name="lyrics_source_pref_default">Standard (App-Einstellungen)</string>
+    <string name="lyrics_source_pref_embedded">Eingebettet zuerst</string>
+    <string name="lyrics_source_pref_local_lrc">Lokale LRC-Datei zuerst</string>
+    <string name="lyrics_source_pref_online">Online zuerst</string>
+    <string name="lyrics_source_preference">Bevorzugte Liedtextquelle</string>
+    <string name="lyrics_tag_keep_custom">Markieren / Benutzerdefiniert behalten</string>
+    <string name="lyrics_time_offset_ms">%1$s ms</string>
+    <string name="lyrics_word_by_word">Wortweise</string>
+</resources>

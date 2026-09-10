@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="lyrics_candidate_format">%1$s · %2$s · %3$s · %4$d%%</string>
+    <string name="lyrics_change">เปลี่ยน</string>
+    <string name="lyrics_choose_version">เลือกเวอร์ชันอื่น</string>
+    <string name="lyrics_clear">ล้าง</string>
+    <string name="lyrics_default_file_name">เนื้อเพลง</string>
+    <string name="lyrics_duration_seconds">%1$d วินาที</string>
+    <string name="lyrics_format_enhanced_lrc">LRC แบบปรับปรุง (.elrc)</string>
+    <string name="lyrics_format_raw_source">ต้นฉบับดิบ</string>
+    <string name="lyrics_format_standard_lrc">LRC มาตรฐาน (.lrc)</string>
+    <string name="lyrics_format_ttml">TTML XML (.ttml)</string>
+    <string name="lyrics_format_word_by_word_json">JSON แบบคำต่อคำ (.json)</string>
+    <string name="lyrics_line_by_line">ทีละบรรทัด</string>
+    <string name="lyrics_load_file_error">โหลดไฟล์เนื้อเพลงไม่ได้</string>
+    <string name="lyrics_no_candidates">ไม่พบเนื้อเพลงสาธารณะที่ตรงกัน</string>
+    <string name="lyrics_online_rematch">จับคู่ออนไลน์ใหม่</string>
+    <string name="lyrics_placeholder_line_by_line">ป้อน LRC ที่มีเวลากำกับ หรือ LRC แบบปรับปรุง ([00:12.34]&lt;00:12.34&gt;คำ)…</string>
+    <string name="lyrics_placeholder_source">ป้อน TTML XML, LRC หรือข้อความธรรมดา…</string>
+    <string name="lyrics_placeholder_word_by_word">ป้อนเนื้อเพลงแบบคำต่อคำใน JSON…</string>
+    <string name="lyrics_remember_choice">จำตัวเลือกของฉัน (ไม่ต้องถามอีก)</string>
+    <string name="lyrics_rename">เปลี่ยนชื่อ</string>
+    <string name="lyrics_rename_lrc_body">ชื่อไฟล์ LRC ที่โหลด “%1$s” แตกต่างจากชื่อไฟล์เพลง ต้องการเปลี่ยนชื่อให้ตรงกัน หรือเชื่อมโยงเป็นไฟล์กำหนดเอง?</string>
+    <string name="lyrics_rename_lrc_title">เปลี่ยนชื่อไฟล์ LRC?</string>
+    <string name="lyrics_rename_permission_denied">เปลี่ยนชื่อไม่ได้ (ไม่มีสิทธิ์) จึงกำหนดเป็นไฟล์กำหนดเองแทน</string>
+    <string name="lyrics_renamed_success">เปลี่ยนชื่อไฟล์สำเร็จ</string>
+    <string name="lyrics_renamed_to_format">เปลี่ยนชื่อไฟล์เป็น %1$s สำเร็จ</string>
+    <string name="lyrics_restore_local">กู้คืนเนื้อเพลงในเครื่อง</string>
+    <string name="lyrics_source">แหล่งที่มา</string>
+    <string name="lyrics_source_pref_default">ค่าเริ่มต้น (การตั้งค่าแอป)</string>
+    <string name="lyrics_source_pref_embedded">ฝังในไฟล์ก่อน</string>
+    <string name="lyrics_source_pref_local_lrc">ไฟล์ LRC ในเครื่องก่อน</string>
+    <string name="lyrics_source_pref_online">ออนไลน์ก่อน</string>
+    <string name="lyrics_source_preference">ลำดับแหล่งเนื้อเพลง</string>
+    <string name="lyrics_tag_keep_custom">แท็ก / เก็บแบบกำหนดเอง</string>
+    <string name="lyrics_time_offset_ms">%1$s มิลลิวินาที</string>
+    <string name="lyrics_word_by_word">คำต่อคำ</string>
+</resources>

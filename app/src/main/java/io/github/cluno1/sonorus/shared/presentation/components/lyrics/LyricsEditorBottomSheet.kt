@@ -38,11 +38,13 @@ import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.ime
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -76,7 +78,10 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.text.TextRange
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -195,6 +200,8 @@ fun LyricsEditorBottomSheet(
 ) {
     val context = LocalContext.current
     val haptic = LocalHapticFeedback.current
+    val density = LocalDensity.current
+    val isImeVisible = WindowInsets.ime.getBottom(density) > 0
     val scope = rememberCoroutineScope()
     var showCandidateDialog by remember { mutableStateOf(false) }
     
@@ -577,7 +584,7 @@ fun LyricsEditorBottomSheet(
                     } else {
                         Toast.makeText(
                             context,
-                            result.errorMessage ?: "Error loading lyrics file",
+                            result.errorMessage ?: context.getString(R.string.lyrics_load_file_error),
                             Toast.LENGTH_LONG
                         ).show()
                     }
@@ -589,12 +596,13 @@ fun LyricsEditorBottomSheet(
         }
     }
 
-    val sanitizedTitle = remember(songTitle) {
+    val defaultFileName = stringResource(R.string.lyrics_default_file_name)
+    val sanitizedTitle = remember(songTitle, defaultFileName) {
         songTitle.trim()
             .replace(Regex("""[\\/:*?"<>|]"""), "_")
             .replace(Regex("_+"), "_")  // Collapse multiple underscores
             .trim('_')  // Remove leading/trailing underscores
-            .takeIf { it.isNotEmpty() } ?: "lyrics"  // Fallback to "lyrics" if empty
+            .takeIf { it.isNotEmpty() } ?: defaultFileName
     }
 
     val defaultLyricsFileName = remember(song, sanitizedTitle, selectedFormat, editedSource, editedLineByLine) {
@@ -611,23 +619,31 @@ fun LyricsEditorBottomSheet(
         }
     }
 
-    val detectedFormatLabel = remember(selectedFormat, editedLineByLine, editedSource, editedWordByWord) {
-        when (selectedFormat) {
-            LyricFormat.WORD_BY_WORD -> "Word-by-Word JSON (.json)"
+    val detectedFormatLabel = when (selectedFormat) {
+            LyricFormat.WORD_BY_WORD -> stringResource(R.string.lyrics_format_word_by_word_json)
             LyricFormat.LINE_BY_LINE -> {
                 if (io.github.cluno1.sonorus.util.LyricsParser.hasWordTimestamps(editedLineByLine)) {
-                    "Enhanced LRC (.elrc)"
+                    stringResource(R.string.lyrics_format_enhanced_lrc)
                 } else {
-                    "Standard LRC (.lrc)"
+                    stringResource(R.string.lyrics_format_standard_lrc)
                 }
             }
             LyricFormat.SOURCE -> {
                 if (editedSource.trim().startsWith("<")) {
-                    "TTML XML (.ttml)"
+                    stringResource(R.string.lyrics_format_ttml)
                 } else {
-                    "Raw Source"
+                    stringResource(R.string.lyrics_format_raw_source)
                 }
             }
+    }
+
+    var editorValue by remember(selectedFormat) {
+        mutableStateOf(TextFieldValue(editedLyrics, TextRange(editedLyrics.length)))
+    }
+    LaunchedEffect(editedLyrics, selectedFormat) {
+        if (editorValue.text != editedLyrics) {
+            val cursor = editorValue.selection.end.coerceIn(0, editedLyrics.length)
+            editorValue = TextFieldValue(editedLyrics, TextRange(cursor))
         }
     }
 
@@ -672,11 +688,12 @@ fun LyricsEditorBottomSheet(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
+                .fillMaxHeight()
                 .padding(bottom = 24.dp)
         ) {
             // Header with animation
             AnimatedVisibility(
-                visible = showContent,
+                visible = showContent && !isImeVisible,
                 enter = fadeIn() + slideInVertically { it },
                 exit = fadeOut() + slideOutVertically { it }
             ) {
@@ -687,9 +704,9 @@ fun LyricsEditorBottomSheet(
                 )
             }
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(if (isImeVisible) 8.dp else 16.dp))
 
-            if (song != null) {
+            if (song != null && !isImeVisible) {
                 val songId = song.id
                 val currentPref = songLyricsPreferences[songId]
                 val customLrc = songCustomLrcFiles[songId]
@@ -717,10 +734,10 @@ fun LyricsEditorBottomSheet(
                             )
                             Text(
                                 text = when (currentPref) {
-                                    "online" -> "Online first"
-                                    "embedded" -> "Embedded first"
-                                    "lrc" -> "Local LRC file first"
-                                    else -> "Default (App settings)"
+                                    "online" -> stringResource(R.string.lyrics_source_pref_online)
+                                    "embedded" -> stringResource(R.string.lyrics_source_pref_embedded)
+                                    "lrc" -> stringResource(R.string.lyrics_source_pref_local_lrc)
+                                    else -> stringResource(R.string.lyrics_source_pref_default)
                                 },
                                 style = MaterialTheme.typography.bodyMedium,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -748,10 +765,10 @@ fun LyricsEditorBottomSheet(
                                 shape = RoundedCornerShape(20.dp)
                             ) {
                                 val options = listOf(
-                                    Triple(null, "Default (App settings)", "settings"),
-                                    Triple("online", "Online first", "cloud"),
-                                    Triple("embedded", "Embedded first", "music_note"),
-                                    Triple("lrc", "Local LRC file first", "storage")
+                                    Triple(null, stringResource(R.string.lyrics_source_pref_default), "settings"),
+                                    Triple("online", stringResource(R.string.lyrics_source_pref_online), "cloud"),
+                                    Triple("embedded", stringResource(R.string.lyrics_source_pref_embedded), "music_note"),
+                                    Triple("lrc", stringResource(R.string.lyrics_source_pref_local_lrc), "storage")
                                 )
                                 
                                 val outerRadius = 16.dp
@@ -898,7 +915,7 @@ fun LyricsEditorBottomSheet(
 
             // Format Selector Button Group like Theme Switcher
             AnimatedVisibility(
-                visible = showContent,
+                visible = showContent && !isImeVisible,
                 enter = fadeIn() + slideInVertically { it },
                 exit = fadeOut() + slideOutVertically { it }
             ) {
@@ -963,11 +980,11 @@ fun LyricsEditorBottomSheet(
                 }
             }
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(if (isImeVisible) 0.dp else 16.dp))
 
             // Timestamp Adjustment Controls
             AnimatedVisibility(
-                visible = showContent,
+                visible = showContent && !isImeVisible,
                 enter = fadeIn() + slideInVertically { it },
                 exit = fadeOut() + slideOutVertically { it }
             ) {
@@ -1003,7 +1020,10 @@ fun LyricsEditorBottomSheet(
                         ) {
                             if (hasSyncedLyrics) {
                                 Text(
-                                    text = "${if (timeOffset >= 0) "+" else ""}${timeOffset}ms",
+                                    text = stringResource(
+                                        R.string.lyrics_time_offset_ms,
+                                        "${if (timeOffset >= 0) "+" else ""}$timeOffset"
+                                    ),
                                     style = MaterialTheme.typography.bodyLarge,
                                     fontWeight = FontWeight.Medium,
                                     color = MaterialTheme.colorScheme.primary
@@ -1212,7 +1232,7 @@ fun LyricsEditorBottomSheet(
                 }
             }
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(if (isImeVisible) 8.dp else 16.dp))
 
             // Lyrics Text Field with animation
             AnimatedVisibility(
@@ -1228,17 +1248,20 @@ fun LyricsEditorBottomSheet(
                         .padding(horizontal = 24.dp)
                 ) {
                     OutlinedTextField(
-                        value = editedLyrics,
-                        onValueChange = { updateEditedLyrics(it) },
+                        value = editorValue,
+                        onValueChange = {
+                            editorValue = it
+                            updateEditedLyrics(it.text)
+                        },
                         modifier = Modifier
                             .fillMaxWidth()
                             .fillMaxHeight(),
                         placeholder = {
                             Text(
                                 text = when (selectedFormat) {
-                                    LyricFormat.WORD_BY_WORD -> "Enter word-by-word lyrics JSON…"
-                                    LyricFormat.LINE_BY_LINE -> "Enter timestamped LRC or Enhanced LRC ([00:12.34]<00:12.34>word)…"
-                                    LyricFormat.SOURCE -> "Enter raw TTML XML, LRC, or plain text…"
+                                    LyricFormat.WORD_BY_WORD -> stringResource(R.string.lyrics_placeholder_word_by_word)
+                                    LyricFormat.LINE_BY_LINE -> stringResource(R.string.lyrics_placeholder_line_by_line)
+                                    LyricFormat.SOURCE -> stringResource(R.string.lyrics_placeholder_source)
                                 },
                                 style = MaterialTheme.typography.bodyMedium,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)

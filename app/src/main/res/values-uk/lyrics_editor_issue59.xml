@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="lyrics_candidate_format">%1$s · %2$s · %3$s · %4$d%%</string>
+    <string name="lyrics_change">Змінити</string>
+    <string name="lyrics_choose_version">Вибрати іншу версію</string>
+    <string name="lyrics_clear">Очистити</string>
+    <string name="lyrics_default_file_name">текст_пісні</string>
+    <string name="lyrics_duration_seconds">%1$d с</string>
+    <string name="lyrics_format_enhanced_lrc">Розширений LRC (.elrc)</string>
+    <string name="lyrics_format_raw_source">Вихідний текст</string>
+    <string name="lyrics_format_standard_lrc">Стандартний LRC (.lrc)</string>
+    <string name="lyrics_format_ttml">TTML XML (.ttml)</string>
+    <string name="lyrics_format_word_by_word_json">JSON за словами (.json)</string>
+    <string name="lyrics_line_by_line">Рядок за рядком</string>
+    <string name="lyrics_load_file_error">Не вдалося завантажити файл тексту</string>
+    <string name="lyrics_no_candidates">Відповідного публічного тексту не знайдено</string>
+    <string name="lyrics_online_rematch">Повторити пошук онлайн</string>
+    <string name="lyrics_placeholder_line_by_line">Введіть LRC з часовими мітками або розширений LRC ([00:12.34]&lt;00:12.34&gt;слово)…</string>
+    <string name="lyrics_placeholder_source">Введіть вихідний TTML XML, LRC або звичайний текст…</string>
+    <string name="lyrics_placeholder_word_by_word">Введіть текст за словами у JSON…</string>
+    <string name="lyrics_remember_choice">Запам’ятати мій вибір (більше не питати)</string>
+    <string name="lyrics_rename">Перейменувати</string>
+    <string name="lyrics_rename_lrc_body">Ім’я завантаженого LRC-файлу «%1$s» відрізняється від імені файлу пісні. Перейменувати його чи пов’язати як користувацький файл?</string>
+    <string name="lyrics_rename_lrc_title">Перейменувати LRC-файл?</string>
+    <string name="lyrics_rename_permission_denied">Не вдалося перейменувати (немає дозволу). Файл позначено як користувацький.</string>
+    <string name="lyrics_renamed_success">Файл успішно перейменовано.</string>
+    <string name="lyrics_renamed_to_format">Файл успішно перейменовано на %1$s.</string>
+    <string name="lyrics_restore_local">Відновити локальний текст</string>
+    <string name="lyrics_source">Джерело</string>
+    <string name="lyrics_source_pref_default">Типово (налаштування застосунку)</string>
+    <string name="lyrics_source_pref_embedded">Спочатку вбудований</string>
+    <string name="lyrics_source_pref_local_lrc">Спочатку локальний LRC-файл</string>
+    <string name="lyrics_source_pref_online">Спочатку онлайн</string>
+    <string name="lyrics_source_preference">Пріоритет джерела</string>
+    <string name="lyrics_tag_keep_custom">Позначити / Зберегти користувацький</string>
+    <string name="lyrics_time_offset_ms">%1$s мс</string>
+    <string name="lyrics_word_by_word">За словами</string>
+</resources>

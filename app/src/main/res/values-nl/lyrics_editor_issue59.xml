@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="lyrics_candidate_format">%1$s · %2$s · %3$s · %4$d%%</string>
+    <string name="lyrics_change">Wijzigen</string>
+    <string name="lyrics_choose_version">Andere versie kiezen</string>
+    <string name="lyrics_clear">Wissen</string>
+    <string name="lyrics_default_file_name">songtekst</string>
+    <string name="lyrics_duration_seconds">%1$d s</string>
+    <string name="lyrics_format_enhanced_lrc">Uitgebreide LRC (.elrc)</string>
+    <string name="lyrics_format_raw_source">Ruwe bron</string>
+    <string name="lyrics_format_standard_lrc">Standaard-LRC (.lrc)</string>
+    <string name="lyrics_format_ttml">TTML XML (.ttml)</string>
+    <string name="lyrics_format_word_by_word_json">Woord-voor-woord-JSON (.json)</string>
+    <string name="lyrics_line_by_line">Regel voor regel</string>
+    <string name="lyrics_load_file_error">Het songtekstbestand kon niet worden geladen</string>
+    <string name="lyrics_no_candidates">Geen overeenkomende openbare songtekst gevonden</string>
+    <string name="lyrics_online_rematch">Opnieuw online zoeken</string>
+    <string name="lyrics_placeholder_line_by_line">Voer LRC met tijdcodes of uitgebreide LRC ([00:12.34]&lt;00:12.34&gt;woord) in…</string>
+    <string name="lyrics_placeholder_source">Voer ruwe TTML XML, LRC of platte tekst in…</string>
+    <string name="lyrics_placeholder_word_by_word">Voer woord-voor-woord-songtekst als JSON in…</string>
+    <string name="lyrics_remember_choice">Mijn keuze onthouden (niet opnieuw vragen)</string>
+    <string name="lyrics_rename">Naam wijzigen</string>
+    <string name="lyrics_rename_lrc_body">De naam van het geladen LRC-bestand ‘%1$s’ verschilt van de bestandsnaam van het nummer.. Wil je de naam aanpassen of het als aangepast bestand koppelen?</string>
+    <string name="lyrics_rename_lrc_title">LRC-bestand hernoemen?</string>
+    <string name="lyrics_rename_permission_denied">Hernoemen niet mogelijk (toestemming geweigerd). In plaats daarvan als aangepast bestand gemarkeerd.</string>
+    <string name="lyrics_renamed_success">Bestand hernoemd.</string>
+    <string name="lyrics_renamed_to_format">Bestand hernoemd naar %1$s.</string>
+    <string name="lyrics_restore_local">Lokale songtekst herstellen</string>
+    <string name="lyrics_source">Bron</string>
+    <string name="lyrics_source_pref_default">Standaard (app-instellingen)</string>
+    <string name="lyrics_source_pref_embedded">Ingesloten eerst</string>
+    <string name="lyrics_source_pref_local_lrc">Lokaal LRC-bestand eerst</string>
+    <string name="lyrics_source_pref_online">Online eerst</string>
+    <string name="lyrics_source_preference">Bronvoorkeur</string>
+    <string name="lyrics_tag_keep_custom">Koppelen / Aangepast behouden</string>
+    <string name="lyrics_time_offset_ms">%1$s ms</string>
+    <string name="lyrics_word_by_word">Woord voor woord</string>
+</resources>
