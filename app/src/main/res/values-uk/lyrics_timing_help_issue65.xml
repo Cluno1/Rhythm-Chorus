@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="lyrics_timing_help_open">Відкрити довідку з розмітки</string>
+    <string name="lyrics_timing_help_title">Посібник із розмітки тексту</string>
+    <string name="lyrics_timing_help_subtitle">Розмітьте всю пісню за чотири кроки</string>
+    <string name="lyrics_timing_help_close">Закрити довідку з розмітки</string>
+    <string name="lyrics_timing_help_overview">Розмістіть кожен рядок тексту окремо. Запустіть пісню й натисніть Позначити на початку першого складу виділеного рядка. Редактор автоматично перейде далі.</string>
+    <string name="lyrics_timing_help_quick_start">Розмітка пісні за чотири кроки</string>
+    <string name="lyrics_timing_help_step_prepare_title">Підготуйте текст</string>
+    <string name="lyrics_timing_help_step_prepare_body">Кожна фраза має бути в окремому рядку. У додаткових інструментах виберіть Оцінити часову шкалу як початковий варіант або Ручна розмітка, щоб стерти старий час і почати заново.</string>
+    <string name="lyrics_timing_help_step_practice_title">Потренуйте складний фрагмент</string>
+    <string name="lyrics_timing_help_step_practice_body">Перейдіть до фрагмента, поставте A на початку й B у кінці, за потреби ввімкніть 0,75×. A-B і повтор усієї пісні не працюють одночасно.</string>
+    <string name="lyrics_timing_help_step_stamp_title">Відтворюйте й позначайте рядки</string>
+    <string name="lyrics_timing_help_step_stamp_body">Виберіть Безперервно, запустіть пісню й натискайте Позначити на першому складі кожного виділеного рядка. Пауза після позначки дає змогу готувати рядки по одному.</string>
+    <string name="lyrics_timing_help_step_finish_title">Перевірте й збережіть</string>
+    <string name="lyrics_timing_help_step_finish_body">Виправляйте через Попередній рядок, Скасувати, шкалу або Назад на 3 секунди. Прослухайте всю пісню, потім збережіть або синхронізуйте із сервером.</string>
+    <string name="lyrics_timing_help_playback_controls">Керування відтворенням</string>
+    <string name="lyrics_timing_help_rewind_body">Повертає відтворення рівно на три секунди, щоб знову почути вступ.</string>
+    <string name="lyrics_timing_help_play_pause_body">Запускає або призупиняє ту саму пісню, не закриваючи редактор.</string>
+    <string name="lyrics_timing_help_repeat_body">Повторює всю поточну пісню під час роботи. Увімкнення A-B вимикає цей режим.</string>
+    <string name="lyrics_timing_help_ab_title">Цикл фрагмента A-B</string>
+    <string name="lyrics_timing_help_ab_body">Перше натискання задає A, друге B, третє очищає обидві точки. У B відтворення повертається до A; B має бути щонайменше на 0,5 секунди пізніше A.</string>
+    <string name="lyrics_timing_help_speed_title">Швидкість тренування</string>
+    <string name="lyrics_timing_help_speed_body">Перемикає 0,75× і 1,00×. Після виходу початкові швидкість і режим повтору відновлюються.</string>
+    <string name="lyrics_timing_help_timing_controls">Керування розміткою</string>
+    <string name="lyrics_timing_help_continuous_body">Записує поточний час і переходить до наступного рядка без зупинки відтворення.</string>
+    <string name="lyrics_timing_help_step_mode_body">Записує поточний час, переходить до наступного рядка й ставить відтворення на паузу.</string>
+    <string name="lyrics_timing_help_previous_body">Переміщує ціль і курсор до попереднього непорожнього рядка, не змінюючи його час.</string>
+    <string name="lyrics_timing_help_stamp_title">Позначити поточний час</string>
+    <string name="lyrics_timing_help_stamp_body">Записує показаний час у виділений рядок і вибирає наступний непорожній рядок.</string>
+    <string name="lyrics_timing_help_undo_body">Міняє останню правку часу з попередньою версією. Повторне натискання повертає обмін.</string>
+    <string name="lyrics_timing_help_formats_title">Який формат вибрати?</string>
+    <string name="lyrics_timing_help_formats_body">Джерело зберігає оригінальний текст; Порядково — робоча область LRC. Послівно містить структуровані дані караоке, тому ці інструменти приховано.</string>
+    <string name="lyrics_timing_help_tips_title">Для точнішої розмітки</string>
+    <string name="lyrics_timing_help_tips_body">Ставте позначку на першому складі, а не в кінці попереднього рядка. Якщо все запізнюється, використовуйте 0,75× або невеликий загальний зсув після завершення. Перевірте незавершену ручну розмітку перед синхронізацією.</string>
+</resources>

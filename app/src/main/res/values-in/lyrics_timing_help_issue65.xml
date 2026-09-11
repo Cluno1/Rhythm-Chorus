@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="lyrics_timing_help_open">Buka bantuan pengaturan waktu</string>
+    <string name="lyrics_timing_help_title">Panduan waktu lirik</string>
+    <string name="lyrics_timing_help_subtitle">Selesaikan satu lagu dalam empat langkah</string>
+    <string name="lyrics_timing_help_close">Tutup bantuan pengaturan waktu</string>
+    <string name="lyrics_timing_help_overview">Letakkan setiap frasa lirik pada baris sendiri. Putar lagu dan tekan Tandai saat suku kata pertama pada baris yang disorot dimulai. Editor otomatis berpindah ke baris berikutnya.</string>
+    <string name="lyrics_timing_help_quick_start">Atur waktu lagu dalam empat langkah</string>
+    <string name="lyrics_timing_help_step_prepare_title">Siapkan teks</string>
+    <string name="lyrics_timing_help_step_prepare_body">Letakkan setiap frasa pada baris sendiri. Pilih Perkirakan linimasa sebagai titik awal, atau Pengaturan waktu manual untuk menghapus waktu lama dan menandai semuanya sendiri.</string>
+    <string name="lyrics_timing_help_step_practice_title">Latih bagian yang sulit</string>
+    <string name="lyrics_timing_help_step_practice_body">Pindah ke bagian tersebut, tetapkan A di awal dan B di akhir, lalu gunakan 0,75× bila perlu. A-B dan pengulangan seluruh lagu tidak dapat aktif bersamaan.</string>
+    <string name="lyrics_timing_help_step_stamp_title">Putar dan tandai setiap baris</string>
+    <string name="lyrics_timing_help_step_stamp_body">Pilih Berkelanjutan, mulai pemutaran, lalu tekan Tandai pada suku kata pertama setiap baris yang disorot. Gunakan Jeda setelah menandai untuk menyiapkan baris satu per satu.</string>
+    <string name="lyrics_timing_help_step_finish_title">Periksa dan simpan</string>
+    <string name="lyrics_timing_help_step_finish_body">Perbaiki dengan Baris sebelumnya, Urungkan, bilah kemajuan, atau Mundur 3 detik. Periksa seluruh lagu, lalu simpan atau sinkronkan ke server.</string>
+    <string name="lyrics_timing_help_playback_controls">Kontrol pemutaran</string>
+    <string name="lyrics_timing_help_rewind_body">Mundur tepat tiga detik agar Anda dapat mendengar bagian masuk lagi.</string>
+    <string name="lyrics_timing_help_play_pause_body">Memutar atau menjeda lagu yang sama tanpa keluar dari editor.</string>
+    <string name="lyrics_timing_help_repeat_body">Mengulang seluruh lagu saat Anda bekerja. Mengaktifkan A-B mematikan mode ini.</string>
+    <string name="lyrics_timing_help_ab_title">Pengulangan bagian A-B</string>
+    <string name="lyrics_timing_help_ab_body">Ketukan pertama menetapkan A, kedua B, dan ketiga menghapus keduanya. Saat mencapai B, pemutaran kembali ke A; B harus minimal 0,5 detik setelah A.</string>
+    <string name="lyrics_timing_help_speed_title">Kecepatan latihan</string>
+    <string name="lyrics_timing_help_speed_body">Beralih antara 0,75× dan 1,00×. Kecepatan dan pengulangan awal dipulihkan saat keluar.</string>
+    <string name="lyrics_timing_help_timing_controls">Kontrol pengaturan waktu</string>
+    <string name="lyrics_timing_help_continuous_body">Menulis waktu saat ini dan maju ke baris berikutnya sementara pemutaran berlanjut.</string>
+    <string name="lyrics_timing_help_step_mode_body">Menulis waktu saat ini, maju ke baris berikutnya, lalu menjeda pemutaran.</string>
+    <string name="lyrics_timing_help_previous_body">Memindahkan target dan kursor ke baris tidak kosong sebelumnya tanpa mengubah waktunya.</string>
+    <string name="lyrics_timing_help_stamp_title">Tandai waktu saat ini</string>
+    <string name="lyrics_timing_help_stamp_body">Menulis waktu yang ditampilkan ke baris yang disorot dan memilih baris tidak kosong berikutnya.</string>
+    <string name="lyrics_timing_help_undo_body">Menukar edit waktu terakhir dengan versi sebelumnya. Ketuk lagi untuk membalik pertukaran.</string>
+    <string name="lyrics_timing_help_formats_title">Format mana yang digunakan?</string>
+    <string name="lyrics_timing_help_formats_body">Sumber mempertahankan teks asli; Baris demi baris adalah ruang kerja LRC. Kata demi kata berisi data karaoke terstruktur sehingga alat ini disembunyikan.</string>
+    <string name="lyrics_timing_help_tips_title">Agar waktu lebih akurat</string>
+    <string name="lyrics_timing_help_tips_body">Tandai saat suku kata pertama terdengar, bukan saat baris sebelumnya berakhir. Jika semua terlambat, gunakan 0,75× atau terapkan sedikit offset global setelah selesai. Periksa pengaturan manual yang belum selesai sebelum sinkronisasi.</string>
+</resources>

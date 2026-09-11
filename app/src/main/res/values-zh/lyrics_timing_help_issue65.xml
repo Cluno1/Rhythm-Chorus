@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="lyrics_timing_help_open">打开打点帮助</string>
+    <string name="lyrics_timing_help_title">歌词打点指南</string>
+    <string name="lyrics_timing_help_subtitle">照着四步完成整首歌</string>
+    <string name="lyrics_timing_help_close">关闭打点帮助</string>
+    <string name="lyrics_timing_help_overview">先让每句歌词单独占一行。播放歌曲，在高亮歌词第一个字唱响时按“打点”，编辑器会自动移到下一句。</string>
+    <string name="lyrics_timing_help_quick_start">四步打好一首歌</string>
+    <string name="lyrics_timing_help_step_prepare_title">整理歌词文本</string>
+    <string name="lyrics_timing_help_step_prepare_body">每句歌词单独一行。在高级工具里选择“估算时间轴”取得可播放的起点；也可选“手动打点”清除旧时间，从头逐句记录。</string>
+    <string name="lyrics_timing_help_step_practice_title">先练习难点段落</string>
+    <string name="lyrics_timing_help_step_practice_body">拖到目标段落，在开头按 A、结尾按 B；需要时切到 0.75×。A–B 和整首单曲循环不能同时启用。</string>
+    <string name="lyrics_timing_help_step_stamp_title">播放并逐句打点</string>
+    <string name="lyrics_timing_help_step_stamp_body">选择“连续打点”后开始播放，每句高亮歌词第一个字唱响时按“打点”。想逐句准备时改用“打点后暂停”。</string>
+    <string name="lyrics_timing_help_step_finish_title">检查并保存</string>
+    <string name="lyrics_timing_help_step_finish_body">用“上一行”“撤销”、进度条或“后退 3 秒”修正错误。通听整首歌后，再保存到本地或同步到服务器。</string>
+    <string name="lyrics_timing_help_playback_controls">播放控制</string>
+    <string name="lyrics_timing_help_rewind_body">把歌曲精确后退三秒，方便重新听清进句前的铺垫。</string>
+    <string name="lyrics_timing_help_play_pause_body">播放或暂停播放器里的同一首歌，不会退出歌词编辑器。</string>
+    <string name="lyrics_timing_help_repeat_body">编辑时循环播放整首歌曲。打开 A–B 后，整首循环会自动关闭。</string>
+    <string name="lyrics_timing_help_ab_title">A–B 片段循环</string>
+    <string name="lyrics_timing_help_ab_body">第一次点击设置 A，第二次设置 B，第三次清除。播放到 B 会跳回 A；B 至少要比 A 晚 0.5 秒。</string>
+    <string name="lyrics_timing_help_speed_title">练习速度</string>
+    <string name="lyrics_timing_help_speed_body">在 0.75× 和 1.00× 间切换。离开编辑器后会恢复原来的速度和循环状态，不会改掉日常设置。</string>
+    <string name="lyrics_timing_help_timing_controls">打点控制</string>
+    <string name="lyrics_timing_help_continuous_body">写入当前时间并移到下一句，歌曲继续播放，适合熟悉旋律后连续完成。</string>
+    <string name="lyrics_timing_help_step_mode_body">写入当前时间并移到下一句，然后暂停歌曲，适合新手逐句准备。</string>
+    <string name="lyrics_timing_help_previous_body">只把目标和光标移回上一条非空歌词，不会自动修改它的时间。</string>
+    <string name="lyrics_timing_help_stamp_title">标记当前时间</string>
+    <string name="lyrics_timing_help_stamp_body">把此刻显示的播放时间写入高亮歌词，并自动选择下一条非空歌词。</string>
+    <string name="lyrics_timing_help_undo_body">在最近一次打点结果和修改前的版本之间切换；再次点击可把这次切换换回来。</string>
+    <string name="lyrics_timing_help_formats_title">应该使用哪种格式？</string>
+    <string name="lyrics_timing_help_formats_body">“来源”保留原始文本，“逐行”是 LRC 打点工作区。“逐字”是结构化卡拉 OK 数据，因此该模式会隐藏逐行打点工作台。</string>
+    <string name="lyrics_timing_help_tips_title">让时间点更准确</string>
+    <string name="lyrics_timing_help_tips_body">在本句第一个字唱响时打点，不要等上一句结束。如果整首都偏晚，可用 0.75× 重打，或完成后应用少量整体偏移。未完成的手动打点要先检查再同步。</string>
+</resources>

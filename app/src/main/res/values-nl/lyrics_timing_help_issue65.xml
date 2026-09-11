@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="lyrics_timing_help_open">Timinghulp openen</string>
+    <string name="lyrics_timing_help_title">Handleiding voor songteksttiming</string>
+    <string name="lyrics_timing_help_subtitle">Time een heel nummer in vier stappen</string>
+    <string name="lyrics_timing_help_close">Timinghulp sluiten</string>
+    <string name="lyrics_timing_help_overview">Zet elke songtekstzin op een eigen regel. Speel het nummer af en tik op Markeren wanneer de eerste lettergreep van de gemarkeerde regel begint. De editor gaat automatisch verder.</string>
+    <string name="lyrics_timing_help_quick_start">Time een nummer in vier stappen</string>
+    <string name="lyrics_timing_help_step_prepare_title">Bereid de tekst voor</string>
+    <string name="lyrics_timing_help_step_prepare_body">Zet elke zin op een eigen regel. Kies Tijdlijn schatten als startpunt of Handmatig timen om oude tijdstempels te wissen en alles zelf te timen.</string>
+    <string name="lyrics_timing_help_step_practice_title">Oefen een lastig gedeelte</string>
+    <string name="lyrics_timing_help_step_practice_body">Ga naar het gedeelte, stel A in aan het begin en B aan het einde en gebruik zo nodig 0,75×. A-B en het hele nummer herhalen kunnen niet tegelijk actief zijn.</string>
+    <string name="lyrics_timing_help_step_stamp_title">Speel af en markeer elke regel</string>
+    <string name="lyrics_timing_help_step_stamp_body">Kies Doorlopend, start het afspelen en tik op Markeren bij de eerste lettergreep van elke gemarkeerde regel. Gebruik Pauzeren na markering om elke regel apart voor te bereiden.</string>
+    <string name="lyrics_timing_help_step_finish_title">Controleer en sla op</string>
+    <string name="lyrics_timing_help_step_finish_body">Corrigeer met Vorige regel, Ongedaan maken, de voortgangsbalk of 3 seconden terug. Controleer het hele nummer en sla op of synchroniseer met de server.</string>
+    <string name="lyrics_timing_help_playback_controls">Afspeelbediening</string>
+    <string name="lyrics_timing_help_rewind_body">Gaat precies drie seconden terug zodat je de inzet opnieuw kunt horen.</string>
+    <string name="lyrics_timing_help_play_pause_body">Start of pauzeert hetzelfde nummer zonder de editor te verlaten.</string>
+    <string name="lyrics_timing_help_repeat_body">Herhaalt tijdens het werk het hele huidige nummer. A-B inschakelen zet deze modus uit.</string>
+    <string name="lyrics_timing_help_ab_title">A-B-gedeeltelus</string>
+    <string name="lyrics_timing_help_ab_body">De eerste tik stelt A in, de tweede B en de derde wist beide. Bij B springt het afspelen terug naar A; B moet minstens 0,5 seconde na A liggen.</string>
+    <string name="lyrics_timing_help_speed_title">Oefensnelheid</string>
+    <string name="lyrics_timing_help_speed_body">Wisselt tussen 0,75× en 1,00×. Bij het verlaten worden de oorspronkelijke snelheid en lus hersteld.</string>
+    <string name="lyrics_timing_help_timing_controls">Timingbediening</string>
+    <string name="lyrics_timing_help_continuous_body">Schrijft de huidige tijd en gaat naar de volgende regel terwijl het afspelen doorgaat.</string>
+    <string name="lyrics_timing_help_step_mode_body">Schrijft de huidige tijd, gaat naar de volgende regel en pauzeert het afspelen.</string>
+    <string name="lyrics_timing_help_previous_body">Verplaatst doel en cursor naar de vorige niet-lege regel zonder de tijd te wijzigen.</string>
+    <string name="lyrics_timing_help_stamp_title">Huidige tijd markeren</string>
+    <string name="lyrics_timing_help_stamp_body">Schrijft de getoonde tijd in de gemarkeerde regel en kiest de volgende niet-lege regel.</string>
+    <string name="lyrics_timing_help_undo_body">Wisselt de laatste timingwijziging met de vorige versie. Tik opnieuw om de wissel terug te draaien.</string>
+    <string name="lyrics_timing_help_formats_title">Welk formaat moet ik gebruiken?</string>
+    <string name="lyrics_timing_help_formats_body">Bron bewaart de oorspronkelijke tekst; Regel voor regel is de LRC-werkruimte. Woord voor woord bevat gestructureerde karaokegegevens en verbergt deze hulpmiddelen.</string>
+    <string name="lyrics_timing_help_tips_title">Voor nauwkeuriger timing</string>
+    <string name="lyrics_timing_help_tips_body">Markeer bij de eerste lettergreep, niet aan het einde van de vorige regel. Als alles te laat is, gebruik 0,75× of pas achteraf een kleine globale verschuiving toe. Controleer onvoltooide handmatige timing vóór synchronisatie.</string>
+</resources>

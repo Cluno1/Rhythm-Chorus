@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="lyrics_timing_help_open">Timing-Hilfe öffnen</string>
+    <string name="lyrics_timing_help_title">Anleitung zur Liedtext-Taktung</string>
+    <string name="lyrics_timing_help_subtitle">In vier Schritten einen ganzen Titel takten</string>
+    <string name="lyrics_timing_help_close">Timing-Hilfe schließen</string>
+    <string name="lyrics_timing_help_overview">Setze jede Liedtextzeile in eine eigene Zeile. Spiele den Titel ab und tippe auf Markieren, sobald die erste Silbe der hervorgehobenen Zeile beginnt. Der Editor wechselt automatisch zur nächsten Zeile.</string>
+    <string name="lyrics_timing_help_quick_start">Einen Titel in vier Schritten takten</string>
+    <string name="lyrics_timing_help_step_prepare_title">Text vorbereiten</string>
+    <string name="lyrics_timing_help_step_prepare_body">Setze jede Liedtextzeile in eine eigene Zeile. Wähle in den erweiterten Werkzeugen Zeitleiste schätzen als Ausgangspunkt oder Manuell timen, um alte Zeitmarken zu löschen und alles selbst zu takten.</string>
+    <string name="lyrics_timing_help_step_practice_title">Eine schwierige Stelle üben</string>
+    <string name="lyrics_timing_help_step_practice_body">Springe zur Stelle, setze A am Anfang und B am Ende und wechsle bei Bedarf zu 0,75×. A-B und Titelwiederholung können nicht gleichzeitig aktiv sein.</string>
+    <string name="lyrics_timing_help_step_stamp_title">Abspielen und Zeilen markieren</string>
+    <string name="lyrics_timing_help_step_stamp_body">Wähle Fortlaufend, starte die Wiedergabe und tippe bei der ersten Silbe jeder hervorgehobenen Zeile auf Markieren. Mit Pause nach Markierung kannst du jede Zeile einzeln vorbereiten.</string>
+    <string name="lyrics_timing_help_step_finish_title">Prüfen und speichern</string>
+    <string name="lyrics_timing_help_step_finish_body">Korrigiere Fehler mit Vorherige Zeile, Rückgängig, der Suchleiste oder 3 Sekunden zurück. Prüfe den ganzen Titel und speichere lokal oder synchronisiere mit dem Server.</string>
+    <string name="lyrics_timing_help_playback_controls">Wiedergabesteuerung</string>
+    <string name="lyrics_timing_help_rewind_body">Springt genau drei Sekunden zurück, damit du den Einsatz erneut hören kannst.</string>
+    <string name="lyrics_timing_help_play_pause_body">Startet oder pausiert denselben Titel im Player, ohne den Editor zu verlassen.</string>
+    <string name="lyrics_timing_help_repeat_body">Wiederholt während der Arbeit den ganzen aktuellen Titel. A-B deaktiviert diesen Modus.</string>
+    <string name="lyrics_timing_help_ab_title">A-B-Abschnittsschleife</string>
+    <string name="lyrics_timing_help_ab_body">Erstes Tippen setzt A, zweites B, drittes löscht beide. Bei B springt die Wiedergabe zu A; B muss mindestens 0,5 Sekunden nach A liegen.</string>
+    <string name="lyrics_timing_help_speed_title">Übungstempo</string>
+    <string name="lyrics_timing_help_speed_body">Wechselt zwischen 0,75× und 1,00×. Beim Verlassen werden ursprüngliches Tempo und Schleifenmodus wiederhergestellt.</string>
+    <string name="lyrics_timing_help_timing_controls">Timing-Steuerung</string>
+    <string name="lyrics_timing_help_continuous_body">Schreibt die aktuelle Zeit und wechselt zur nächsten Zeile, während die Wiedergabe weiterläuft.</string>
+    <string name="lyrics_timing_help_step_mode_body">Schreibt die aktuelle Zeit, wechselt zur nächsten Zeile und pausiert die Wiedergabe.</string>
+    <string name="lyrics_timing_help_previous_body">Bewegt Ziel und Cursor zur vorherigen nicht leeren Zeile, ohne deren Zeit zu ändern.</string>
+    <string name="lyrics_timing_help_stamp_title">Aktuelle Zeit markieren</string>
+    <string name="lyrics_timing_help_stamp_body">Schreibt die angezeigte Wiedergabezeit in die hervorgehobene Zeile und wählt die nächste nicht leere Zeile.</string>
+    <string name="lyrics_timing_help_undo_body">Wechselt zwischen der letzten Timing-Änderung und der vorherigen Version. Erneutes Tippen stellt den Tausch zurück.</string>
+    <string name="lyrics_timing_help_formats_title">Welches Format soll ich verwenden?</string>
+    <string name="lyrics_timing_help_formats_body">Quelle bewahrt den Originaltext; Zeilenweise ist der LRC-Timingbereich. Wortweise enthält strukturierte Karaoke-Daten, daher ist dort die Zeilentaktung ausgeblendet.</string>
+    <string name="lyrics_timing_help_tips_title">Für genaueres Timing</string>
+    <string name="lyrics_timing_help_tips_body">Markiere beim Erklingen der ersten Silbe, nicht erst am Ende der vorherigen Zeile. Wenn alles zu spät ist, nutze 0,75× oder danach einen kleinen Gesamtversatz. Prüfe unvollständige manuelle Taktung vor dem Synchronisieren.</string>
+</resources>

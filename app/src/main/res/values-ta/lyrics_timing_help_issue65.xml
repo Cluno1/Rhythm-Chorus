@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="lyrics_timing_help_open">நேரக்குறிப்பு உதவியைத் திற</string>
+    <string name="lyrics_timing_help_title">பாடல்வரி நேரக்குறிப்பு வழிகாட்டி</string>
+    <string name="lyrics_timing_help_subtitle">நான்கு படிகளில் முழுப் பாடலைக் குறியிடு</string>
+    <string name="lyrics_timing_help_close">நேரக்குறிப்பு உதவியை மூடு</string>
+    <string name="lyrics_timing_help_overview">ஒவ்வொரு பாடல்வரி சொற்றொடரையும் தனி வரியில் வைக்கவும். பாடலை இயக்கி, முன்னிலைப்படுத்திய வரியின் முதல் அசை தொடங்கும்போது குறியிடவும். அடுத்த வரிக்கு தானாக நகரும்.</string>
+    <string name="lyrics_timing_help_quick_start">நான்கு படிகளில் பாடலைக் குறியிடு</string>
+    <string name="lyrics_timing_help_step_prepare_title">உரையைத் தயார் செய்</string>
+    <string name="lyrics_timing_help_step_prepare_body">ஒவ்வொரு சொற்றொடரையும் தனி வரியில் வைக்கவும். தொடக்கமாக காலவரிசையை மதிப்பிடு என்பதைத் தேர்ந்தெடுக்கவும், அல்லது பழைய நேரங்களை நீக்க கைமுறை நேரக்குறிப்பைப் பயன்படுத்தவும்.</string>
+    <string name="lyrics_timing_help_step_practice_title">கடினப் பகுதியைப் பயிற்சி செய்</string>
+    <string name="lyrics_timing_help_step_practice_body">பகுதிக்குச் சென்று தொடக்கத்தில் A, முடிவில் B அமைத்து தேவையெனில் 0.75× பயன்படுத்தவும். A-B மற்றும் முழுப் பாடல் மீளிப்பு ஒன்றாக இயங்காது.</string>
+    <string name="lyrics_timing_help_step_stamp_title">இயக்கி ஒவ்வொரு வரியையும் குறியிடு</string>
+    <string name="lyrics_timing_help_step_stamp_body">தொடர்ச்சி என்பதைத் தேர்ந்து பாடலை இயக்கி, ஒவ்வொரு முன்னிலைப்படுத்திய வரியின் முதல் அசையில் குறியிடவும். வரிவரியாகத் தயார் செய்ய குறித்த பின் இடைநிறுத்து பயன்படுத்தவும்.</string>
+    <string name="lyrics_timing_help_step_finish_title">சரிபார்த்து சேமி</string>
+    <string name="lyrics_timing_help_step_finish_body">முந்தைய வரி, செயல்தவிர், முன்னேற்றப் பட்டை அல்லது 3 வினாடிகள் பின்செல் மூலம் திருத்தவும். முழுப் பாடலைச் சரிபார்த்து சேமிக்கவும் அல்லது சேவையகத்துடன் ஒத்திசைக்கவும்.</string>
+    <string name="lyrics_timing_help_playback_controls">இயக்கக் கட்டுப்பாடுகள்</string>
+    <string name="lyrics_timing_help_rewind_body">தொடக்கத்தை மீண்டும் கேட்க சரியாக மூன்று வினாடிகள் பின்செல்கிறது.</string>
+    <string name="lyrics_timing_help_play_pause_body">திருத்தியிலிருந்து வெளியேறாமல் அதே பாடலை இயக்குகிறது அல்லது இடைநிறுத்துகிறது.</string>
+    <string name="lyrics_timing_help_repeat_body">பணியின்போது தற்போதைய முழுப் பாடலை மீள இயக்குகிறது. A-B இயக்கினால் இது நிறுத்தப்படும்.</string>
+    <string name="lyrics_timing_help_ab_title">A-B பகுதி சுழற்சி</string>
+    <string name="lyrics_timing_help_ab_body">முதல் தொடுதல் A, இரண்டாவது B, மூன்றாவது இரண்டையும் அழிக்கும். B வந்ததும் A-க்கு திரும்பும்; B, A-க்கு குறைந்தது 0.5 வினாடிகள் பின் இருக்க வேண்டும்.</string>
+    <string name="lyrics_timing_help_speed_title">பயிற்சி வேகம்</string>
+    <string name="lyrics_timing_help_speed_body">0.75× மற்றும் 1.00× இடையே மாற்றுகிறது. வெளியேறும்போது அசல் வேகமும் சுழற்சியும் மீட்கப்படும்.</string>
+    <string name="lyrics_timing_help_timing_controls">நேரக்குறிப்பு கட்டுப்பாடுகள்</string>
+    <string name="lyrics_timing_help_continuous_body">தற்போதைய நேரத்தை எழுதி அடுத்த வரிக்கு நகரும்; பாடல் தொடரும்.</string>
+    <string name="lyrics_timing_help_step_mode_body">தற்போதைய நேரத்தை எழுதி அடுத்த வரிக்கு நகர்ந்து பாடலை இடைநிறுத்தும்.</string>
+    <string name="lyrics_timing_help_previous_body">நேரத்தை மாற்றாமல் இலக்கும் சுட்டியும் முந்தைய காலியல்லாத வரிக்கு நகரும்.</string>
+    <string name="lyrics_timing_help_stamp_title">தற்போதைய நேரத்தைக் குறியிடு</string>
+    <string name="lyrics_timing_help_stamp_body">காட்டப்படும் நேரத்தை முன்னிலைப்படுத்திய வரியில் எழுதி அடுத்த காலியல்லாத வரியைத் தேர்ந்தெடுக்கும்.</string>
+    <string name="lyrics_timing_help_undo_body">சமீபத்திய நேர மாற்றத்தையும் முந்தைய பதிப்பையும் மாற்றுகிறது. மீண்டும் தொட்டால் மாற்றம் திரும்பும்.</string>
+    <string name="lyrics_timing_help_formats_title">எந்த வடிவத்தைப் பயன்படுத்துவது?</string>
+    <string name="lyrics_timing_help_formats_body">மூலம் அசல் உரையை வைத்திருக்கும்; வரிவாரி LRC பணியிடம். சொல்வாரி கட்டமைக்கப்பட்ட கரோக்கி தரவு என்பதால் இக்கருவிகள் மறைக்கப்படும்.</string>
+    <string name="lyrics_timing_help_tips_title">மேலும் துல்லியமான நேரத்திற்கு</string>
+    <string name="lyrics_timing_help_tips_body">முந்தைய வரி முடிவில் அல்ல, முதல் அசை ஒலிக்கும்போது குறியிடவும். எல்லாம் தாமதமெனில் 0.75× அல்லது முடிவில் சிறிய பொது நேரமாற்றம் பயன்படுத்தவும். முடியாத கைமுறை நேரத்தை ஒத்திசைக்கும் முன் சரிபார்க்கவும்.</string>
+</resources>

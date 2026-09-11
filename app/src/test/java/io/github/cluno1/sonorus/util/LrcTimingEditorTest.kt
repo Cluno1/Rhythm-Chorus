@@ -18,10 +18,14 @@ class LrcTimingEditorTest {
     }
 
     @Test
-    fun zeroTemplateMakesEveryNonBlankLineEditable() {
+    fun manualTemplateClearsLineTimestampsAndPreservesText() {
         assertEquals(
-            "[00:00.000]One\n[00:00.000]Two",
-            LrcTimingEditor.generateTemplate("One\nTwo", null, estimateFromDuration = false),
+            "[ar:Artist]\nOne two\nTwo\n",
+            LrcTimingEditor.generateTemplate(
+                "[ar:Artist]\n[00:04.000]<00:04.000>One <00:04.500>two\n[00:08.000]Two\n[00:09.000]",
+                null,
+                estimateFromDuration = false,
+            ),
         )
     }
 
@@ -64,5 +68,19 @@ class LrcTimingEditorTest {
         assertEquals(1_500L, LrcTimingEditor.loopEnd(1_000L, 1_100L, 10_000L))
         assertEquals(10_000L, LrcTimingEditor.loopEnd(9_000L, 12_000L, 10_000L))
         assertNull(LrcTimingEditor.loopEnd(9_750L, 9_900L, 10_000L))
+    }
+
+    @Test
+    fun manualTemplateBecomesSyncedOnlyAfterARealStamp() {
+        val generated = LrcTimingEditor.generateTemplate(
+            "One\nTwo\nThree",
+            durationMs = null,
+            estimateFromDuration = false,
+        )
+
+        assertEquals(false, LrcTimingEditor.hasLineTimestamp(generated))
+        val stamped = requireNotNull(LrcTimingEditor.stampLine(generated, 0, 1_500L))
+        assertEquals("[00:01.500]One\nTwo\nThree", stamped.text)
+        assertEquals(true, LrcTimingEditor.hasLineTimestamp(stamped.text))
     }
 }

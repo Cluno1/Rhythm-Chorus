@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="lyrics_timing_help_open">Ava ajastamise abi</string>
+    <string name="lyrics_timing_help_title">Laulusõnade ajastamise juhend</string>
+    <string name="lyrics_timing_help_subtitle">Ajasta kogu lugu nelja sammuga</string>
+    <string name="lyrics_timing_help_close">Sulge ajastamise abi</string>
+    <string name="lyrics_timing_help_overview">Pane iga laulurida eraldi reale. Esita lugu ja vajuta Märgi, kui esiletõstetud rea esimene silp algab. Redaktor liigub automaatselt edasi.</string>
+    <string name="lyrics_timing_help_quick_start">Ajasta lugu nelja sammuga</string>
+    <string name="lyrics_timing_help_step_prepare_title">Valmista tekst ette</string>
+    <string name="lyrics_timing_help_step_prepare_body">Pane iga fraas eraldi reale. Vali alustuseks Hinda ajajoon või Käsitsi ajastus, et vanad ajatemplid eemaldada ja kõik ise märkida.</string>
+    <string name="lyrics_timing_help_step_practice_title">Harjuta rasket lõiku</string>
+    <string name="lyrics_timing_help_step_practice_body">Liigu lõigu juurde, määra A alguses ja B lõpus ning kasuta vajadusel 0,75×. A-B ja kogu loo kordus ei saa korraga aktiivsed olla.</string>
+    <string name="lyrics_timing_help_step_stamp_title">Esita ja märgi iga rida</string>
+    <string name="lyrics_timing_help_step_stamp_body">Vali Pidev, käivita esitus ja vajuta Märgi iga esiletõstetud rea esimese silbi ajal. Peata pärast märkimist võimaldab iga rea eraldi ette valmistada.</string>
+    <string name="lyrics_timing_help_step_finish_title">Kontrolli ja salvesta</string>
+    <string name="lyrics_timing_help_step_finish_body">Paranda vigasid valikutega Eelmine rida, Võta tagasi, edenemisriba või 3 sekundit tagasi. Kontrolli kogu lugu ja salvesta või sünkrooni serveriga.</string>
+    <string name="lyrics_timing_help_playback_controls">Esituse juhtnupud</string>
+    <string name="lyrics_timing_help_rewind_body">Liigub täpselt kolm sekundit tagasi, et saaksid algust uuesti kuulda.</string>
+    <string name="lyrics_timing_help_play_pause_body">Käivitab või peatab sama loo redaktorist lahkumata.</string>
+    <string name="lyrics_timing_help_repeat_body">Kordab töötamise ajal kogu praegust lugu. A-B sisselülitamine lõpetab selle režiimi.</string>
+    <string name="lyrics_timing_help_ab_title">A-B lõigu kordus</string>
+    <string name="lyrics_timing_help_ab_body">Esimene vajutus määrab A, teine B ja kolmas kustutab mõlemad. B juures hüppab esitus tagasi A juurde; B peab olema vähemalt 0,5 sekundit pärast A-d.</string>
+    <string name="lyrics_timing_help_speed_title">Harjutuskiirus</string>
+    <string name="lyrics_timing_help_speed_body">Vahetab 0,75× ja 1,00× vahel. Lahkudes taastatakse algne kiirus ja kordus.</string>
+    <string name="lyrics_timing_help_timing_controls">Ajastamise juhtnupud</string>
+    <string name="lyrics_timing_help_continuous_body">Kirjutab praeguse aja ja liigub järgmisele reale, samal ajal esitus jätkub.</string>
+    <string name="lyrics_timing_help_step_mode_body">Kirjutab praeguse aja, liigub järgmisele reale ja peatab esituse.</string>
+    <string name="lyrics_timing_help_previous_body">Liigutab sihi ja kursori eelmisele mittetühjale reale selle aega muutmata.</string>
+    <string name="lyrics_timing_help_stamp_title">Märgi praegune aeg</string>
+    <string name="lyrics_timing_help_stamp_body">Kirjutab kuvatud aja esiletõstetud reale ja valib järgmise mittetühja rea.</string>
+    <string name="lyrics_timing_help_undo_body">Vahetab viimase ajastuse muudatuse eelmise versiooniga. Uuesti vajutades pööratakse vahetus tagasi.</string>
+    <string name="lyrics_timing_help_formats_title">Millist vormingut kasutada?</string>
+    <string name="lyrics_timing_help_formats_body">Allikas säilitab algteksti; Reahaaval on LRC tööala. Sõnahaaval sisaldab struktureeritud karaokeandmeid ja peidab need tööriistad.</string>
+    <string name="lyrics_timing_help_tips_title">Täpsemaks ajastamiseks</string>
+    <string name="lyrics_timing_help_tips_body">Märgi esimese silbi kõlamisel, mitte eelmise rea lõpus. Kui kõik jääb hiljaks, kasuta 0,75× või lisa pärast väike üldnihe. Kontrolli lõpetamata käsitsi ajastust enne sünkroonimist.</string>
+</resources>

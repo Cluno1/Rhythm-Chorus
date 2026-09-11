@@ -17,27 +17,38 @@ data class LrcTimingTarget(
 )
 
 object LrcTimingEditor {
-    private val timestamp = Regex("^\\[(\\d{1,2}):(\\d{2})(?:[.:](\\d{1,3}))?](.*)$")
+    private val timestamp = Regex("^\\[(\\d{1,3}):(\\d{2})(?:[.:](\\d{1,3}))?](.*)$")
+    private val wordTimestamp = Regex("<\\d{1,3}:\\d{2}(?:[.:]\\d{1,3})?>")
+    private val metadata = Regex("^\\[[a-zA-Z#]+:[^]]*]$")
 
     fun generateTemplate(text: String, durationMs: Long?, estimateFromDuration: Boolean): String {
         val lines = text.replace("\r\n", "\n").replace('\r', '\n').split('\n')
-        val editable = lines.indices.filter { stripTimestamp(lines[it]).isNotBlank() }
+        val editable = lines.indices.filter { isEditableLine(lines[it]) }
         if (editable.isEmpty()) return text
         val duration = durationMs?.coerceAtLeast(0L) ?: 0L
         val denominator = (editable.size - 1).coerceAtLeast(1)
         val positionByLine = editable.withIndex().associate { (order, lineIndex) ->
-            val position = if (estimateFromDuration && duration > 0L) {
-                (duration.toDouble() * order / denominator).roundToLong().coerceAtMost(duration)
-            } else {
-                0L
-            }
-            lineIndex to position
+            lineIndex to (duration.toDouble() * order / denominator)
+                .roundToLong()
+                .coerceAtMost(duration)
         }
         return lines.mapIndexed { index, line ->
-            val content = stripTimestamp(line)
-            positionByLine[index]?.let { "${formatTimestamp(it)}$content" } ?: line
+            val content = stripWordTimestamps(stripTimestamp(line))
+            when {
+                index !in editable && !estimateFromDuration && timestamp.matches(line) -> content
+                index !in editable -> line
+                estimateFromDuration && duration > 0L ->
+                    "${formatTimestamp(positionByLine.getValue(index))}$content"
+                else -> content
+            }
         }.joinToString("\n")
     }
+
+    fun hasLineTimestamp(text: String): Boolean = text
+        .replace("\r\n", "\n")
+        .replace('\r', '\n')
+        .lineSequence()
+        .any { timestamp.matches(it) }
 
     fun stampLine(
         text: String,
@@ -46,7 +57,7 @@ object LrcTimingEditor {
         durationMs: Long? = null,
     ): LrcStampResult? {
         val lines = text.replace("\r\n", "\n").replace('\r', '\n').split('\n').toMutableList()
-        val editable = lines.indices.filter { stripTimestamp(lines[it]).isNotBlank() }
+        val editable = lines.indices.filter { isEditableLine(lines[it]) }
         if (editable.isEmpty()) return null
         val target = editable.firstOrNull { it >= requestedLineIndex } ?: editable.last()
         val previousTime = editable.asSequence()
@@ -65,11 +76,11 @@ object LrcTimingEditor {
     }
 
     fun previousEditableLine(text: String, lineIndex: Int): Int? =
-        text.lines().indices.lastOrNull { it < lineIndex && stripTimestamp(text.lines()[it]).isNotBlank() }
+        text.lines().indices.lastOrNull { it < lineIndex && isEditableLine(text.lines()[it]) }
 
     fun timingTarget(text: String, requestedLineIndex: Int): LrcTimingTarget? {
         val lines = text.replace("\r\n", "\n").replace('\r', '\n').split('\n')
-        val editable = lines.indices.filter { stripTimestamp(lines[it]).isNotBlank() }
+        val editable = lines.indices.filter { isEditableLine(lines[it]) }
         if (editable.isEmpty()) return null
         val lineIndex = editable.firstOrNull { it >= requestedLineIndex } ?: editable.last()
         return LrcTimingTarget(
@@ -109,6 +120,11 @@ object LrcTimingEditor {
     }
 
     private fun stripTimestamp(line: String): String = timestamp.matchEntire(line)?.groupValues?.get(4) ?: line
+
+    private fun stripWordTimestamps(line: String): String = line.replace(wordTimestamp, "")
+
+    private fun isEditableLine(line: String): Boolean =
+        stripTimestamp(line).isNotBlank() && !metadata.matches(line.trim())
 
     private fun parseTimestampMs(line: String): Long? = timestamp.matchEntire(line)?.let { match ->
         val fraction = match.groupValues[3].padEnd(3, '0').take(3).toLongOrNull() ?: 0L

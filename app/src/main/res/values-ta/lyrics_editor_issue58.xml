@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="lyrics_generate_timing_template">காலவரிசையை மதிப்பிடு</string>
-    <string name="lyrics_generate_zero_template">பூஜ்ய நேர வார்ப்புரு</string>
+    <string name="lyrics_generate_zero_template">கைமுறை நேரக்குறிப்பு</string>
     <string name="lyrics_previous_timing_line">முந்தைய வரி</string>
     <string name="lyrics_stamp_current_time">%1$s குறிக்கவும்</string>
     <string name="lyrics_sync_clean">சேவையகத்துடன் பொருந்துகிறது</string>

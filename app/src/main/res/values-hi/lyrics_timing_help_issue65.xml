@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="lyrics_timing_help_open">टाइमिंग सहायता खोलें</string>
+    <string name="lyrics_timing_help_title">गीत टाइमिंग मार्गदर्शिका</string>
+    <string name="lyrics_timing_help_subtitle">चार चरणों में पूरा गीत टाइम करें</string>
+    <string name="lyrics_timing_help_close">टाइमिंग सहायता बंद करें</string>
+    <string name="lyrics_timing_help_overview">हर गीत-पंक्ति को अलग पंक्ति में रखें। गीत चलाएँ और हाइलाइट पंक्ति का पहला अक्षर शुरू होते ही चिह्न लगाएँ। संपादक अगली पंक्ति पर स्वयं चला जाएगा।</string>
+    <string name="lyrics_timing_help_quick_start">चार चरणों में गीत टाइम करें</string>
+    <string name="lyrics_timing_help_step_prepare_title">पाठ तैयार करें</string>
+    <string name="lyrics_timing_help_step_prepare_body">हर वाक्य को अलग पंक्ति में रखें। उन्नत टूल में समयरेखा का अनुमान लगाएँ से शुरुआत करें, या मैन्युअल टाइमिंग से पुराने समय हटाकर स्वयं नए चिह्न लगाएँ।</string>
+    <string name="lyrics_timing_help_step_practice_title">कठिन भाग का अभ्यास करें</string>
+    <string name="lyrics_timing_help_step_practice_body">भाग पर जाएँ, शुरुआत में A और अंत में B रखें, और जरूरत पर 0.75× चुनें। A-B और पूरे गीत की पुनरावृत्ति एक साथ सक्रिय नहीं हो सकतीं।</string>
+    <string name="lyrics_timing_help_step_stamp_title">चलाएँ और हर पंक्ति चिह्नित करें</string>
+    <string name="lyrics_timing_help_step_stamp_body">निरंतर चुनें, गीत चलाएँ और हर हाइलाइट पंक्ति के पहले अक्षर पर चिह्न लगाएँ। हर पंक्ति अलग तैयार करने के लिए चिह्न लगाने के बाद रोकें चुनें।</string>
+    <string name="lyrics_timing_help_step_finish_title">जाँचें और सहेजें</string>
+    <string name="lyrics_timing_help_step_finish_body">पिछली पंक्ति, पूर्ववत करें, प्रगति पट्टी या 3 सेकंड पीछे से गलती सुधारें। पूरा गीत जाँचकर स्थानीय रूप से सहेजें या सर्वर से सिंक करें।</string>
+    <string name="lyrics_timing_help_playback_controls">प्लेबैक नियंत्रण</string>
+    <string name="lyrics_timing_help_rewind_body">प्रवेश फिर सुनने के लिए ठीक तीन सेकंड पीछे जाता है।</string>
+    <string name="lyrics_timing_help_play_pause_body">संपादक छोड़े बिना उसी गीत को चलाता या रोकता है।</string>
+    <string name="lyrics_timing_help_repeat_body">काम के दौरान पूरा वर्तमान गीत दोहराता है। A-B चालू करने पर यह बंद हो जाता है।</string>
+    <string name="lyrics_timing_help_ab_title">A-B भाग लूप</string>
+    <string name="lyrics_timing_help_ab_body">पहला टैप A, दूसरा B और तीसरा दोनों को साफ करता है। B पर प्लेबैक A पर लौटता है; B, A से कम से कम 0.5 सेकंड बाद होना चाहिए।</string>
+    <string name="lyrics_timing_help_speed_title">अभ्यास गति</string>
+    <string name="lyrics_timing_help_speed_body">0.75× और 1.00× के बीच बदलता है। बाहर निकलने पर मूल गति और लूप वापस आ जाते हैं।</string>
+    <string name="lyrics_timing_help_timing_controls">टाइमिंग नियंत्रण</string>
+    <string name="lyrics_timing_help_continuous_body">वर्तमान समय लिखकर अगली पंक्ति पर जाता है और गीत चलता रहता है।</string>
+    <string name="lyrics_timing_help_step_mode_body">वर्तमान समय लिखकर अगली पंक्ति पर जाता है और प्लेबैक रोकता है।</string>
+    <string name="lyrics_timing_help_previous_body">समय बदले बिना लक्ष्य और कर्सर को पिछली गैर-खाली पंक्ति पर ले जाता है।</string>
+    <string name="lyrics_timing_help_stamp_title">वर्तमान समय चिह्नित करें</string>
+    <string name="lyrics_timing_help_stamp_body">दिखाया गया समय हाइलाइट पंक्ति में लिखता है और अगली गैर-खाली पंक्ति चुनता है।</string>
+    <string name="lyrics_timing_help_undo_body">नवीनतम टाइमिंग बदलाव को पिछले संस्करण से बदलता है। फिर टैप करने पर बदलाव वापस उलटता है।</string>
+    <string name="lyrics_timing_help_formats_title">कौन सा प्रारूप उपयोग करें?</string>
+    <string name="lyrics_timing_help_formats_body">स्रोत मूल पाठ रखता है; पंक्ति-दर-पंक्ति LRC कार्यक्षेत्र है। शब्द-दर-शब्द संरचित कराओके डेटा है, इसलिए ये टूल छिपे रहते हैं।</string>
+    <string name="lyrics_timing_help_tips_title">अधिक सटीक टाइमिंग के लिए</string>
+    <string name="lyrics_timing_help_tips_body">पिछली पंक्ति के अंत पर नहीं, पहले अक्षर की आवाज पर चिह्न लगाएँ। सब देर हो तो 0.75× या अंत में छोटा वैश्विक ऑफसेट लगाएँ। अधूरी मैन्युअल टाइमिंग को सिंक से पहले जाँचें।</string>
+</resources>

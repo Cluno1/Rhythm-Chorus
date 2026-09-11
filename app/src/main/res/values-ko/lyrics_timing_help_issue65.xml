@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="lyrics_timing_help_open">타이밍 도움말 열기</string>
+    <string name="lyrics_timing_help_title">가사 타이밍 안내</string>
+    <string name="lyrics_timing_help_subtitle">네 단계로 한 곡 완성하기</string>
+    <string name="lyrics_timing_help_close">타이밍 도움말 닫기</string>
+    <string name="lyrics_timing_help_overview">가사 한 구절을 한 줄에 놓으세요. 곡을 재생하고 강조된 줄의 첫 음절이 시작될 때 기록을 누르면 다음 줄로 자동 이동합니다.</string>
+    <string name="lyrics_timing_help_quick_start">네 단계로 곡 타이밍 맞추기</string>
+    <string name="lyrics_timing_help_step_prepare_title">가사 정리</string>
+    <string name="lyrics_timing_help_step_prepare_body">각 구절을 별도 줄에 놓으세요. 고급 도구에서 타임라인 추정을 시작점으로 사용하거나 수동 타이밍으로 기존 시간을 지우고 처음부터 기록하세요.</string>
+    <string name="lyrics_timing_help_step_practice_title">어려운 구간 연습</string>
+    <string name="lyrics_timing_help_step_practice_body">구간으로 이동해 시작에 A, 끝에 B를 설정하고 필요하면 0.75×를 사용하세요. A-B와 곡 전체 반복은 동시에 켤 수 없습니다.</string>
+    <string name="lyrics_timing_help_step_stamp_title">재생하며 줄마다 기록</string>
+    <string name="lyrics_timing_help_step_stamp_body">연속을 선택하고 재생한 뒤 각 강조 줄의 첫 음절에서 기록을 누르세요. 한 줄씩 준비하려면 기록 후 일시정지를 사용하세요.</string>
+    <string name="lyrics_timing_help_step_finish_title">검토하고 저장</string>
+    <string name="lyrics_timing_help_step_finish_body">이전 줄, 실행 취소, 진행 막대 또는 3초 뒤로로 수정하세요. 곡 전체를 확인한 뒤 로컬에 저장하거나 서버와 동기화하세요.</string>
+    <string name="lyrics_timing_help_playback_controls">재생 제어</string>
+    <string name="lyrics_timing_help_rewind_body">정확히 3초 뒤로 이동해 진입 부분을 다시 들을 수 있습니다.</string>
+    <string name="lyrics_timing_help_play_pause_body">편집기를 나가지 않고 같은 곡을 재생하거나 일시정지합니다.</string>
+    <string name="lyrics_timing_help_repeat_body">작업 중 현재 곡 전체를 반복합니다. A-B를 켜면 이 모드는 꺼집니다.</string>
+    <string name="lyrics_timing_help_ab_title">A-B 구간 반복</string>
+    <string name="lyrics_timing_help_ab_body">첫 탭은 A, 두 번째는 B, 세 번째는 둘 다 지웁니다. B에 도달하면 A로 돌아가며 B는 A보다 최소 0.5초 뒤여야 합니다.</string>
+    <string name="lyrics_timing_help_speed_title">연습 속도</string>
+    <string name="lyrics_timing_help_speed_body">0.75×와 1.00×를 전환합니다. 편집기를 나가면 원래 속도와 반복 상태가 복원됩니다.</string>
+    <string name="lyrics_timing_help_timing_controls">타이밍 제어</string>
+    <string name="lyrics_timing_help_continuous_body">현재 시간을 쓰고 다음 줄로 이동하며 재생은 계속됩니다.</string>
+    <string name="lyrics_timing_help_step_mode_body">현재 시간을 쓰고 다음 줄로 이동한 뒤 재생을 일시정지합니다.</string>
+    <string name="lyrics_timing_help_previous_body">시간을 바꾸지 않고 대상과 커서를 이전의 비어 있지 않은 줄로 옮깁니다.</string>
+    <string name="lyrics_timing_help_stamp_title">현재 시간 기록</string>
+    <string name="lyrics_timing_help_stamp_body">표시된 재생 시간을 강조 줄에 쓰고 다음 비어 있지 않은 줄을 선택합니다.</string>
+    <string name="lyrics_timing_help_undo_body">최근 타이밍 편집과 이전 버전을 서로 바꿉니다. 다시 누르면 교환을 되돌립니다.</string>
+    <string name="lyrics_timing_help_formats_title">어떤 형식을 사용하나요?</string>
+    <string name="lyrics_timing_help_formats_body">소스는 원문을 보존하고 줄 단위는 LRC 작업 공간입니다. 단어 단위는 구조화된 노래방 데이터이므로 이 도구가 숨겨집니다.</string>
+    <string name="lyrics_timing_help_tips_title">더 정확하게 맞추기</string>
+    <string name="lyrics_timing_help_tips_body">이전 줄이 끝날 때가 아니라 현재 줄의 첫 음절이 들릴 때 기록하세요. 전체가 늦으면 0.75×를 사용하거나 완료 후 작은 전체 오프셋을 적용하세요. 미완성 수동 타이밍은 동기화 전에 확인하세요.</string>
+</resources>

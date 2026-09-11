@@ -54,6 +54,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.BottomSheetDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.FilledTonalIconButton
@@ -230,6 +231,7 @@ fun LyricsEditorBottomSheet(
     val toolsScrollState = rememberScrollState()
     var toolsExpanded by remember { mutableStateOf(false) }
     var showCandidateDialog by remember { mutableStateOf(false) }
+    var showTimingHelp by remember { mutableStateOf(false) }
     val initialRepeatMode = remember { repeatMode }
     val initialPlaybackSpeed = remember { playbackSpeed }
     var repeatChangedByEditor by remember { mutableStateOf(false) }
@@ -845,6 +847,7 @@ fun LyricsEditorBottomSheet(
                     songTitle = songTitle,
                     formatLabel = detectedFormatLabel,
                     onBack = onDismiss,
+                    onHelp = { showTimingHelp = true },
                 )
             }
 
@@ -1147,7 +1150,7 @@ fun LyricsEditorBottomSheet(
                                 val generated = LrcTimingEditor.generateTemplate(
                                     editedLyrics,
                                     playbackDurationMs.takeIf { it > 0L },
-                                    estimateFromDuration = playbackDurationMs > 0L,
+                                    estimateFromDuration = true,
                                 )
                                 editedLineByLine = generated
                                 selectedFormat = LyricFormat.LINE_BY_LINE
@@ -1156,7 +1159,9 @@ fun LyricsEditorBottomSheet(
                                 catalogEditDirty = true
                             },
                             modifier = Modifier.weight(1f),
-                            enabled = selectedFormat != LyricFormat.WORD_BY_WORD && editedLyrics.isNotBlank(),
+                            enabled = selectedFormat != LyricFormat.WORD_BY_WORD &&
+                                editedLyrics.isNotBlank() &&
+                                playbackDurationMs > 0L,
                         ) {
                             Text(stringResource(R.string.lyrics_generate_timing_template))
                         }
@@ -1806,6 +1811,10 @@ fun LyricsEditorBottomSheet(
             }
         )
     }
+
+    if (showTimingHelp) {
+        LyricsTimingHelpSheet(onDismiss = { showTimingHelp = false })
+    }
 }
 }
 
@@ -2102,11 +2111,398 @@ private fun formatEditorClock(positionMs: Long): String {
     return String.format(java.util.Locale.ROOT, "%d:%02d.%d", minutes, seconds, tenths)
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun LyricsTimingHelpSheet(onDismiss: () -> Unit) {
+    val helpSheetState = rememberBottomSheetState(
+        initialValue = SheetValue.Hidden,
+        enabledValues = setOf(SheetValue.Hidden, SheetValue.Expanded),
+    )
+
+    RhythmAdaptiveModalSheet(
+        onDismissRequest = onDismiss,
+        adaptiveType = SheetAdaptiveType.AUTO_DIALOG,
+        tabletMaxWidth = 680.dp,
+        showCloseButton = false,
+        sheetState = helpSheetState,
+        sheetGesturesEnabled = true,
+        dragHandle = {
+            BottomSheetDefaults.DragHandle(color = MaterialTheme.colorScheme.primary)
+        },
+        shape = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp),
+        containerColor = MaterialTheme.colorScheme.surfaceContainer,
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .heightIn(max = 760.dp),
+        ) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(start = 20.dp, end = 12.dp, bottom = 12.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(12.dp),
+            ) {
+                Surface(
+                    modifier = Modifier.size(44.dp),
+                    shape = CircleShape,
+                    color = MaterialTheme.colorScheme.primaryContainer,
+                    contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                ) {
+                    Box(contentAlignment = Alignment.Center) {
+                        Icon(
+                            imageVector = MaterialSymbolIcon("help", filled = true),
+                            contentDescription = null,
+                            modifier = Modifier.size(24.dp),
+                        )
+                    }
+                }
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = stringResource(R.string.lyrics_timing_help_title),
+                        style = MaterialTheme.typography.titleLarge,
+                        fontWeight = FontWeight.SemiBold,
+                    )
+                    Text(
+                        text = stringResource(R.string.lyrics_timing_help_subtitle),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+                FilledTonalIconButton(
+                    onClick = onDismiss,
+                    modifier = Modifier.size(40.dp),
+                ) {
+                    Icon(
+                        imageVector = MaterialSymbolIcon("close", filled = true),
+                        contentDescription = stringResource(R.string.lyrics_timing_help_close),
+                        modifier = Modifier.size(20.dp),
+                    )
+                }
+            }
+
+            LazyColumn(
+                modifier = Modifier.fillMaxWidth(),
+                contentPadding = PaddingValues(start = 20.dp, end = 20.dp, bottom = 32.dp),
+                verticalArrangement = Arrangement.spacedBy(10.dp),
+            ) {
+                item {
+                    Surface(
+                        shape = RoundedCornerShape(20.dp),
+                        color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.55f),
+                        contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                    ) {
+                        Text(
+                            text = stringResource(R.string.lyrics_timing_help_overview),
+                            modifier = Modifier.padding(16.dp),
+                            style = MaterialTheme.typography.bodyMedium,
+                        )
+                    }
+                }
+
+                item {
+                    LyricsTimingHelpSectionTitle(
+                        iconName = "route",
+                        text = stringResource(R.string.lyrics_timing_help_quick_start),
+                    )
+                }
+                item {
+                    LyricsTimingHelpStep(
+                        number = 1,
+                        title = stringResource(R.string.lyrics_timing_help_step_prepare_title),
+                        body = stringResource(R.string.lyrics_timing_help_step_prepare_body),
+                    )
+                }
+                item {
+                    LyricsTimingHelpStep(
+                        number = 2,
+                        title = stringResource(R.string.lyrics_timing_help_step_practice_title),
+                        body = stringResource(R.string.lyrics_timing_help_step_practice_body),
+                    )
+                }
+                item {
+                    LyricsTimingHelpStep(
+                        number = 3,
+                        title = stringResource(R.string.lyrics_timing_help_step_stamp_title),
+                        body = stringResource(R.string.lyrics_timing_help_step_stamp_body),
+                    )
+                }
+                item {
+                    LyricsTimingHelpStep(
+                        number = 4,
+                        title = stringResource(R.string.lyrics_timing_help_step_finish_title),
+                        body = stringResource(R.string.lyrics_timing_help_step_finish_body),
+                    )
+                }
+
+                item {
+                    LyricsTimingHelpSectionTitle(
+                        iconName = "play_circle",
+                        text = stringResource(R.string.lyrics_timing_help_playback_controls),
+                    )
+                }
+                item {
+                    LyricsTimingHelpControl(
+                        iconName = "replay",
+                        title = stringResource(R.string.lyrics_timing_rewind_three_seconds),
+                        body = stringResource(R.string.lyrics_timing_help_rewind_body),
+                    )
+                }
+                item {
+                    LyricsTimingHelpControl(
+                        iconName = "play_arrow",
+                        title = stringResource(R.string.play_pause),
+                        body = stringResource(R.string.lyrics_timing_help_play_pause_body),
+                    )
+                }
+                item {
+                    LyricsTimingHelpControl(
+                        iconName = "repeat_one",
+                        title = stringResource(R.string.lyrics_timing_repeat_track),
+                        body = stringResource(R.string.lyrics_timing_help_repeat_body),
+                    )
+                }
+                item {
+                    LyricsTimingHelpControl(
+                        iconName = "repeat",
+                        title = stringResource(R.string.lyrics_timing_help_ab_title),
+                        body = stringResource(R.string.lyrics_timing_help_ab_body),
+                        badge = "A → B → ×",
+                    )
+                }
+                item {
+                    LyricsTimingHelpControl(
+                        iconName = "speed",
+                        title = stringResource(R.string.lyrics_timing_help_speed_title),
+                        body = stringResource(R.string.lyrics_timing_help_speed_body),
+                        badge = "0.75× / 1.00×",
+                    )
+                }
+
+                item {
+                    LyricsTimingHelpSectionTitle(
+                        iconName = "timer",
+                        text = stringResource(R.string.lyrics_timing_help_timing_controls),
+                    )
+                }
+                item {
+                    LyricsTimingHelpControl(
+                        iconName = "fast_forward",
+                        title = stringResource(R.string.lyrics_timing_continuous_mode),
+                        body = stringResource(R.string.lyrics_timing_help_continuous_body),
+                    )
+                }
+                item {
+                    LyricsTimingHelpControl(
+                        iconName = "pause_circle",
+                        title = stringResource(R.string.lyrics_timing_step_mode),
+                        body = stringResource(R.string.lyrics_timing_help_step_mode_body),
+                    )
+                }
+                item {
+                    LyricsTimingHelpControl(
+                        iconName = "arrow_upward",
+                        title = stringResource(R.string.lyrics_previous_timing_line),
+                        body = stringResource(R.string.lyrics_timing_help_previous_body),
+                    )
+                }
+                item {
+                    LyricsTimingHelpControl(
+                        iconName = "timer",
+                        title = stringResource(R.string.lyrics_timing_help_stamp_title),
+                        body = stringResource(R.string.lyrics_timing_help_stamp_body),
+                    )
+                }
+                item {
+                    LyricsTimingHelpControl(
+                        iconName = "undo",
+                        title = stringResource(R.string.action_undo),
+                        body = stringResource(R.string.lyrics_timing_help_undo_body),
+                    )
+                }
+
+                item {
+                    LyricsTimingHelpNote(
+                        iconName = "description",
+                        title = stringResource(R.string.lyrics_timing_help_formats_title),
+                        body = stringResource(R.string.lyrics_timing_help_formats_body),
+                    )
+                }
+                item {
+                    LyricsTimingHelpNote(
+                        iconName = "lightbulb",
+                        title = stringResource(R.string.lyrics_timing_help_tips_title),
+                        body = stringResource(R.string.lyrics_timing_help_tips_body),
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun LyricsTimingHelpSectionTitle(iconName: String, text: String) {
+    Row(
+        modifier = Modifier.padding(top = 10.dp, bottom = 2.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+    ) {
+        Icon(
+            imageVector = MaterialSymbolIcon(iconName, filled = true),
+            contentDescription = null,
+            tint = MaterialTheme.colorScheme.primary,
+            modifier = Modifier.size(20.dp),
+        )
+        Text(
+            text = text,
+            style = MaterialTheme.typography.titleMedium,
+            fontWeight = FontWeight.SemiBold,
+        )
+    }
+}
+
+@Composable
+private fun LyricsTimingHelpStep(number: Int, title: String, body: String) {
+    Surface(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(18.dp),
+        color = MaterialTheme.colorScheme.surfaceContainerHigh,
+    ) {
+        Row(
+            modifier = Modifier.padding(14.dp),
+            verticalAlignment = Alignment.Top,
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+        ) {
+            Surface(
+                modifier = Modifier.size(30.dp),
+                shape = CircleShape,
+                color = MaterialTheme.colorScheme.primary,
+                contentColor = MaterialTheme.colorScheme.onPrimary,
+            ) {
+                Box(contentAlignment = Alignment.Center) {
+                    Text(
+                        text = number.toString(),
+                        style = MaterialTheme.typography.labelLarge,
+                        fontWeight = FontWeight.Bold,
+                    )
+                }
+            }
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = title,
+                    style = MaterialTheme.typography.titleSmall,
+                    fontWeight = FontWeight.SemiBold,
+                )
+                Spacer(modifier = Modifier.height(3.dp))
+                Text(
+                    text = body,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun LyricsTimingHelpControl(
+    iconName: String,
+    title: String,
+    body: String,
+    badge: String? = null,
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 4.dp),
+        verticalAlignment = Alignment.Top,
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
+    ) {
+        Surface(
+            modifier = Modifier.size(40.dp),
+            shape = RoundedCornerShape(14.dp),
+            color = MaterialTheme.colorScheme.secondaryContainer,
+            contentColor = MaterialTheme.colorScheme.onSecondaryContainer,
+        ) {
+            Box(contentAlignment = Alignment.Center) {
+                Icon(
+                    imageVector = MaterialSymbolIcon(iconName, filled = true),
+                    contentDescription = null,
+                    modifier = Modifier.size(20.dp),
+                )
+            }
+        }
+        Column(modifier = Modifier.weight(1f)) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
+                Text(
+                    text = title,
+                    style = MaterialTheme.typography.titleSmall,
+                    fontWeight = FontWeight.Medium,
+                )
+                if (badge != null) {
+                    Surface(
+                        shape = RoundedCornerShape(8.dp),
+                        color = MaterialTheme.colorScheme.surfaceContainerHighest,
+                    ) {
+                        Text(
+                            text = badge,
+                            modifier = Modifier.padding(horizontal = 7.dp, vertical = 2.dp),
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.primary,
+                        )
+                    }
+                }
+            }
+            Text(
+                text = body,
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
+    }
+}
+
+@Composable
+private fun LyricsTimingHelpNote(iconName: String, title: String, body: String) {
+    Surface(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(18.dp),
+        color = MaterialTheme.colorScheme.tertiaryContainer.copy(alpha = 0.55f),
+        contentColor = MaterialTheme.colorScheme.onTertiaryContainer,
+    ) {
+        Row(
+            modifier = Modifier.padding(15.dp),
+            verticalAlignment = Alignment.Top,
+            horizontalArrangement = Arrangement.spacedBy(10.dp),
+        ) {
+            Icon(
+                imageVector = MaterialSymbolIcon(iconName, filled = true),
+                contentDescription = null,
+                modifier = Modifier.size(21.dp),
+            )
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = title,
+                    style = MaterialTheme.typography.titleSmall,
+                    fontWeight = FontWeight.SemiBold,
+                )
+                Spacer(modifier = Modifier.height(3.dp))
+                Text(text = body, style = MaterialTheme.typography.bodySmall)
+            }
+        }
+    }
+}
+
 @Composable
 private fun LyricsEditorHeader(
     songTitle: String,
     formatLabel: String? = null,
     onBack: () -> Unit,
+    onHelp: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
@@ -2162,6 +2558,17 @@ private fun LyricsEditorHeader(
                     )
                 }
             }
+        }
+
+        FilledTonalIconButton(
+            onClick = onHelp,
+            modifier = Modifier.size(40.dp),
+        ) {
+            Icon(
+                imageVector = MaterialSymbolIcon("help", filled = true),
+                contentDescription = stringResource(R.string.lyrics_timing_help_open),
+                modifier = Modifier.size(22.dp),
+            )
         }
     }
 }

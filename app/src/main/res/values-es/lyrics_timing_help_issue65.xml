@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="lyrics_timing_help_open">Abrir ayuda de sincronización</string>
+    <string name="lyrics_timing_help_title">Guía para sincronizar letras</string>
+    <string name="lyrics_timing_help_subtitle">Sigue cuatro pasos para completar una canción</string>
+    <string name="lyrics_timing_help_close">Cerrar ayuda de sincronización</string>
+    <string name="lyrics_timing_help_overview">Pon cada frase de la letra en una línea. Reproduce la canción y pulsa Marcar cuando empiece la primera sílaba de la línea resaltada. El editor avanzará automáticamente.</string>
+    <string name="lyrics_timing_help_quick_start">Sincroniza una canción en cuatro pasos</string>
+    <string name="lyrics_timing_help_step_prepare_title">Prepara el texto</string>
+    <string name="lyrics_timing_help_step_prepare_body">Pon cada frase en su propia línea. En herramientas avanzadas elige Estimar línea de tiempo como punto de partida, o Sincronización manual para borrar tiempos antiguos y marcar todo tú mismo.</string>
+    <string name="lyrics_timing_help_step_practice_title">Practica una sección difícil</string>
+    <string name="lyrics_timing_help_step_practice_body">Ve a la sección, pulsa A al inicio y B al final, y usa 0,75× si lo necesitas. A-B y la repetición de la canción no pueden estar activos a la vez.</string>
+    <string name="lyrics_timing_help_step_stamp_title">Reproduce y marca cada línea</string>
+    <string name="lyrics_timing_help_step_stamp_body">Elige Continuo, inicia la reproducción y pulsa Marcar en la primera sílaba de cada línea resaltada. Usa Pausar tras marcar si prefieres preparar cada línea.</string>
+    <string name="lyrics_timing_help_step_finish_title">Revisa y guarda</string>
+    <string name="lyrics_timing_help_step_finish_body">Corrige errores con Línea anterior, Deshacer, la barra de progreso o Retroceder 3 segundos. Revisa toda la canción y guárdala o sincronízala con el servidor.</string>
+    <string name="lyrics_timing_help_playback_controls">Controles de reproducción</string>
+    <string name="lyrics_timing_help_rewind_body">Retrocede exactamente tres segundos para volver a oír la entrada.</string>
+    <string name="lyrics_timing_help_play_pause_body">Reproduce o pausa la misma canción del reproductor sin salir del editor.</string>
+    <string name="lyrics_timing_help_repeat_body">Repite toda la canción actual mientras trabajas. Activar A-B desactiva este modo.</string>
+    <string name="lyrics_timing_help_ab_title">Bucle de sección A-B</string>
+    <string name="lyrics_timing_help_ab_body">El primer toque fija A, el segundo B y el tercero borra ambos. Al llegar a B vuelve a A; B debe estar al menos 0,5 segundos después de A.</string>
+    <string name="lyrics_timing_help_speed_title">Velocidad de práctica</string>
+    <string name="lyrics_timing_help_speed_body">Cambia entre 0,75× y 1,00×. Al salir se restauran la velocidad y el bucle originales.</string>
+    <string name="lyrics_timing_help_timing_controls">Controles de sincronización</string>
+    <string name="lyrics_timing_help_continuous_body">Escribe el tiempo actual y avanza a la siguiente línea mientras la reproducción continúa.</string>
+    <string name="lyrics_timing_help_step_mode_body">Escribe el tiempo actual, avanza a la siguiente línea y pausa la reproducción.</string>
+    <string name="lyrics_timing_help_previous_body">Mueve el objetivo y el cursor a la línea anterior no vacía sin cambiar su tiempo.</string>
+    <string name="lyrics_timing_help_stamp_title">Marcar tiempo actual</string>
+    <string name="lyrics_timing_help_stamp_body">Escribe el tiempo mostrado en la línea resaltada y selecciona la siguiente línea no vacía.</string>
+    <string name="lyrics_timing_help_undo_body">Alterna la última edición de tiempo con su versión anterior. Toca de nuevo para rehacer el intercambio.</string>
+    <string name="lyrics_timing_help_formats_title">¿Qué formato debo usar?</string>
+    <string name="lyrics_timing_help_formats_body">Fuente conserva el texto original; Línea por línea es el espacio de trabajo LRC. Palabra por palabra contiene datos de karaoke estructurados y oculta estas herramientas.</string>
+    <string name="lyrics_timing_help_tips_title">Para una sincronización más limpia</string>
+    <string name="lyrics_timing_help_tips_body">Marca cuando suene la primera sílaba, no cuando termine la línea anterior. Si todo queda tarde, usa 0,75× o aplica un pequeño desplazamiento global al final. Revisa el trabajo manual incompleto antes de sincronizar.</string>
+</resources>
