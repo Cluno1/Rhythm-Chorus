@@ -898,6 +898,7 @@ class DeviceMetadataRepository(private val context: Context) {
 
     companion object {
         const val MIN_AUTO_CONFIDENCE = 0.72
+        const val EXACT_AUTO_CONFIDENCE = 0.98
         const val MAX_ARTWORK_BYTES = 8L * 1024L * 1024L
         private const val MUSICBRAINZ_AUTO_CONFIDENCE = 0.85
         private const val MUSICBRAINZ_AUTO_MARGIN = 0.10

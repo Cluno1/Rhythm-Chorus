@@ -4687,7 +4687,8 @@ class MusicRepository(context: Context) {
                 DeviceMetadataMatcher.isAutomaticMatch(
                     it.confidence,
                     candidates.getOrNull(1)?.confidence,
-                    DeviceMetadataRepository.MIN_AUTO_CONFIDENCE
+                    DeviceMetadataRepository.MIN_AUTO_CONFIDENCE,
+                    unconditionalThreshold = DeviceMetadataRepository.EXACT_AUTO_CONFIDENCE,
                 )
             }
             if (candidate != null) {

@@ -13,8 +13,15 @@ object DeviceMetadataMatcher {
 
     fun artistNameScore(query: String?, candidate: String?): Double = similarity(query, candidate)
 
-    fun isAutomaticMatch(best: Double, runnerUp: Double?, minimum: Double = 0.72, margin: Double = 0.03): Boolean =
-        best >= minimum && (runnerUp == null || best - runnerUp >= margin)
+    fun isAutomaticMatch(
+        best: Double,
+        runnerUp: Double?,
+        minimum: Double = 0.72,
+        margin: Double = 0.03,
+        unconditionalThreshold: Double? = null,
+    ): Boolean =
+        unconditionalThreshold?.let { best >= it } == true ||
+            best >= minimum && (runnerUp == null || best - runnerUp >= margin)
 
     fun score(input: DeviceMatchInput, title: String?, artist: String?, album: String?, durationSeconds: Double?): Double {
         val titleScore = similarity(input.title, title)

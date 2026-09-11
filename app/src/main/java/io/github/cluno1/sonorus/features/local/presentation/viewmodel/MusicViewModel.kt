@@ -8811,7 +8811,8 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
                 io.github.cluno1.sonorus.features.local.data.device.DeviceMetadataMatcher.isAutomaticMatch(
                     it.confidence,
                     candidates.getOrNull(1)?.confidence,
-                    io.github.cluno1.sonorus.features.local.data.device.DeviceMetadataRepository.MIN_AUTO_CONFIDENCE
+                    io.github.cluno1.sonorus.features.local.data.device.DeviceMetadataRepository.MIN_AUTO_CONFIDENCE,
+                    unconditionalThreshold = io.github.cluno1.sonorus.features.local.data.device.DeviceMetadataRepository.EXACT_AUTO_CONFIDENCE,
                 )
             }
             deviceLyricsCandidateIndex = automatic?.let(candidates::indexOf) ?: -1
