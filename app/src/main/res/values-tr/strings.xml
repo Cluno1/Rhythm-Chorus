@@ -2735,4 +2735,12 @@
     <string name="duration_minutes_format">%1$dm</string>
     <string name="labs_lyrics_editor">Şarkı Sözü Düzenleyici</string>
     <string name="labs_lyrics_editor_desc">Tam ekran şarkı sözlerinde düzenleme düğmesini göster</string>
+    <string name="lyrics_timing_rewind_three_seconds">3 saniye geri</string>
+    <string name="lyrics_timing_repeat_track">Geçerli şarkıyı tekrarla</string>
+    <string name="lyrics_timing_set_loop_start">Döngü başlangıcını ayarla</string>
+    <string name="lyrics_timing_set_loop_end">Döngü bitişini ayarla</string>
+    <string name="lyrics_timing_clear_loop">A-B döngüsünü temizle</string>
+    <string name="lyrics_timing_target_line">%1$d/%2$d · %3$s</string>
+    <string name="lyrics_timing_continuous_mode">Kesintisiz</string>
+    <string name="lyrics_timing_step_mode">İşaretlemeden sonra duraklat</string>
 </resources>

@@ -266,6 +266,7 @@ fun PlayerScreen(
     val catalogLyricsLanguages by musicViewModel.catalogLyricsLanguages.collectAsState()
     val selectedCatalogLyricsLanguage by musicViewModel.catalogLyricsLanguage.collectAsState()
     val catalogNowPlaying by musicViewModel.catalogNowPlaying.collectAsState()
+    val editorPlaybackSpeed by musicViewModel.playbackSpeed.collectAsState()
 
     BackHandler(enabled = showFullScreenLyrics || expansionFraction > 0.5f) {
         if (showFullScreenLyrics) {
@@ -1044,9 +1045,22 @@ fun PlayerScreen(
             isStreamingMode = isStreamingMode,
             currentPlaybackPositionMs = (progress().coerceIn(0f, 1f) * editorTotalMs).toLong(),
             playbackDurationMs = editorTotalMs,
+            isPlaying = isPlaying,
+            playbackSpeed = editorPlaybackSpeed,
+            repeatMode = repeatMode,
             canSyncCatalog = song?.isCatalogLibrarySong() == true,
             catalogSyncState = catalogSyncState,
             onDismiss = { showLyricsEditorDialog = false },
+            onPlayPause = onPlayPause,
+            onSeekTo = { positionMs ->
+                musicViewModel.seekTo(positionMs, autoPlayIfPaused = false)
+            },
+            onSetRepeatMode = { mode ->
+                musicViewModel.setRepeatMode(mode, persist = false)
+            },
+            onSetPlaybackSpeed = { speed ->
+                musicViewModel.setPlaybackSpeed(speed, persist = false)
+            },
             onSave = { editedLyrics, timeOffset, format ->
                 musicViewModel.saveEditedLyrics(editedLyrics, timeOffset, format)
             },

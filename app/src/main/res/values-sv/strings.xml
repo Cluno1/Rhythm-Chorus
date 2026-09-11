@@ -2741,4 +2741,12 @@
     <string name="error_no_document_app">Ingen systemdokumentväljare hittades för att välja en mapp.</string>
     <string name="labs_lyrics_editor">Låttextredigerare</string>
     <string name="labs_lyrics_editor_desc">Visa redigeringsknappen i helskärmsvyn för låttext</string>
+    <string name="lyrics_timing_rewind_three_seconds">Bakåt 3 sekunder</string>
+    <string name="lyrics_timing_repeat_track">Upprepa aktuell låt</string>
+    <string name="lyrics_timing_set_loop_start">Ange loopens början</string>
+    <string name="lyrics_timing_set_loop_end">Ange loopens slut</string>
+    <string name="lyrics_timing_clear_loop">Rensa A-B-loop</string>
+    <string name="lyrics_timing_target_line">%1$d/%2$d · %3$s</string>
+    <string name="lyrics_timing_continuous_mode">Kontinuerligt</string>
+    <string name="lyrics_timing_step_mode">Pausa efter markering</string>
 </resources>

@@ -4085,9 +4085,22 @@ fun MaterialPlayerScreen(
             isStreamingMode = isStreamingMode,
             currentPlaybackPositionMs = (progress().coerceIn(0f, 1f) * editorTotalMs).toLong(),
             playbackDurationMs = editorTotalMs,
+            isPlaying = isPlaying,
+            playbackSpeed = playbackSpeed,
+            repeatMode = repeatMode,
             canSyncCatalog = song?.isCatalogLibrarySong() == true,
             catalogSyncState = catalogSyncState,
             onDismiss = { showLyricsEditorDialog = false },
+            onPlayPause = onPlayPause,
+            onSeekTo = { positionMs ->
+                musicViewModel.seekTo(positionMs, autoPlayIfPaused = false)
+            },
+            onSetRepeatMode = { mode ->
+                musicViewModel.setRepeatMode(mode, persist = false)
+            },
+            onSetPlaybackSpeed = { speed ->
+                musicViewModel.setPlaybackSpeed(speed, persist = false)
+            },
             onSave = { editedLyrics, timeOffset, format ->
                 // Save lyrics to cache and update current lyrics immediately with offset
                 musicViewModel.saveEditedLyrics(editedLyrics, timeOffset, format)

@@ -2903,4 +2903,12 @@
     <string name="score_loop_current">当前循环</string>
     <string name="labs_lyrics_editor">歌词编辑器</string>
     <string name="labs_lyrics_editor_desc">在全屏歌词页显示歌词编辑入口</string>
+    <string name="lyrics_timing_rewind_three_seconds">后退 3 秒</string>
+    <string name="lyrics_timing_repeat_track">循环当前歌曲</string>
+    <string name="lyrics_timing_set_loop_start">设置循环起点</string>
+    <string name="lyrics_timing_set_loop_end">设置循环终点</string>
+    <string name="lyrics_timing_clear_loop">清除 A-B 循环</string>
+    <string name="lyrics_timing_target_line">%1$d/%2$d · %3$s</string>
+    <string name="lyrics_timing_continuous_mode">连续打点</string>
+    <string name="lyrics_timing_step_mode">打点后暂停</string>
 </resources>

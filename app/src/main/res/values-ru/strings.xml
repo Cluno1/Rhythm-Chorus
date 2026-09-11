@@ -2806,4 +2806,12 @@
     <string name="error_no_document_app">Отсутствует системное приложение для выбора папки.</string>
     <string name="labs_lyrics_editor">Редактор текста</string>
     <string name="labs_lyrics_editor_desc">Показывать кнопку редактора в полноэкранном режиме текста</string>
+    <string name="lyrics_timing_rewind_three_seconds">Назад на 3 секунды</string>
+    <string name="lyrics_timing_repeat_track">Повторять текущую песню</string>
+    <string name="lyrics_timing_set_loop_start">Задать начало цикла</string>
+    <string name="lyrics_timing_set_loop_end">Задать конец цикла</string>
+    <string name="lyrics_timing_clear_loop">Очистить цикл A-B</string>
+    <string name="lyrics_timing_target_line">%1$d/%2$d · %3$s</string>
+    <string name="lyrics_timing_continuous_mode">Непрерывно</string>
+    <string name="lyrics_timing_step_mode">Пауза после отметки</string>
 </resources>
