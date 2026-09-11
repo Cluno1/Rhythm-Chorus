@@ -105,6 +105,7 @@ import io.github.cluno1.sonorus.features.local.data.database.entity.toEntity
 import io.github.cluno1.sonorus.features.local.data.database.entity.SongArtistEntity
 import io.github.cluno1.sonorus.features.local.data.device.DeviceLyricsCandidate
 import io.github.cluno1.sonorus.features.local.data.device.DeviceArtworkCandidate
+import io.github.cluno1.sonorus.features.local.data.device.DeviceArtistArtworkCandidate
 import io.github.cluno1.sonorus.features.local.data.device.DeviceArtworkSaveTarget
 import io.github.cluno1.sonorus.features.local.data.device.DeviceMetadataRequest
 import io.github.cluno1.sonorus.features.local.data.device.DevicePublicMetadataProvider
@@ -778,6 +779,7 @@ class MusicRepository(context: Context) {
         private const val MAX_ARTIST_CACHE_SIZE = 100
         private const val MAX_ALBUM_CACHE_SIZE = 200
         private const val MAX_LYRICS_CACHE_SIZE = 150
+        private const val MAX_ARTIST_IMAGE_BYTES = 12L * 1024L * 1024L
         
         // Precompiled regex for primary artist extraction
         private val PRIMARY_ARTIST_REGEX = Regex("""(?i)\s+(feat\.|ft\.|featuring|with|and|&)\s+.*""")
@@ -2691,7 +2693,7 @@ class MusicRepository(context: Context) {
                     }
 
                     // Only try online fetch if network is available and Deezer API is enabled
-                    if (isNetworkAvailable() && NetworkClient.isDeezerApiEnabled() && deezerApiService != null) {
+                    if (isNetworkAvailable() && NetworkClient.isDeezerArtistArtworkEnabled() && deezerApiService != null) {
                         Log.d(TAG, "Searching for artist on Deezer: ${artist.name}")
                         
                         // Intelligent delay based on API and previous request timing
@@ -2748,12 +2750,12 @@ class MusicRepository(context: Context) {
                                 }
                                 
                                 if (!imageUrl.isNullOrEmpty()) {
-                                    val imageUri = imageUrl.toUri()
-                                    Log.d(TAG, "Found image URL for ${artist.name}: $imageUrl")
-                                    artistImageCache[artist.name] = imageUri
-                                    saveLocalArtistImage(artist.name, imageUrl)
-                                    updatedArtists.add(artist.copy(artworkUri = imageUri))
-                                    continue
+                                    val imageUri = saveDeezerArtistImage(artist.name, imageUrl)
+                                    if (imageUri != null) {
+                                        Log.d(TAG, "Stored Deezer image for ${artist.name}: $imageUrl")
+                                        updatedArtists.add(artist.copy(artworkUri = imageUri))
+                                        continue
+                                    }
                                 }
                             } else {
                                 Log.d(TAG, "No Deezer artist found for: ${artist.name}")
@@ -4732,6 +4734,10 @@ class MusicRepository(context: Context) {
         provider: DevicePublicMetadataProvider,
     ) = deviceMetadataRepository.searchArtworkResult(song, query, provider)
 
+    suspend fun searchDeviceArtistArtworkCandidatesWithStatus(
+        artistName: String,
+    ) = deviceMetadataRepository.searchArtistArtworkResult(artistName)
+
     suspend fun applyDeviceLyricsCandidate(song: Song, candidate: DeviceLyricsCandidate): LyricsData {
         val result = deviceMetadataRepository.applyLyrics(song, candidate, userSelected = true)
         clearLyricsMemoryCacheForSong(song)
@@ -4745,6 +4751,15 @@ class MusicRepository(context: Context) {
         saveTarget: DeviceArtworkSaveTarget,
         destinationTreeUri: Uri? = null,
     ): Uri? = deviceMetadataRepository.applyArtwork(song, candidate, saveTarget, destinationTreeUri)
+
+    suspend fun applyDeviceArtistArtworkCandidate(
+        targetArtistName: String,
+        candidate: DeviceArtistArtworkCandidate,
+    ): Uri? {
+        if (candidate.provider != DevicePublicMetadataProvider.DEEZER) return null
+        if (!NetworkClient.isDevicePublicMetadataEnabled()) return null
+        return saveDeezerArtistImage(targetArtistName, candidate.imageUrl)
+    }
 
     suspend fun clearLyricsCacheForSong(song: Song) {
         clearLyricsMemoryCacheForSong(song)
@@ -6206,6 +6221,77 @@ class MusicRepository(context: Context) {
 
         return null
     }
+
+    /**
+     * Downloads a Deezer artist image into app-private storage without replacing a working image
+     * until the response has passed host, MIME, size, and decode validation.
+     */
+    private suspend fun saveDeezerArtistImage(artistName: String, imageUrl: String): Uri? =
+        withContext(Dispatchers.IO) {
+            val safeUrl = DeviceMetadataPolicy.safeDeezerArtworkUrl(imageUrl) ?: return@withContext null
+            val fileName = "${artistName}.jpg".replace(Regex("[^a-zA-Z0-9._-]"), "_")
+            val imageDir = File(context.filesDir, "artist_images").apply { mkdirs() }
+            val target = File(imageDir, fileName)
+            val temporary = File(imageDir, ".$fileName.${System.nanoTime()}.tmp")
+
+            val saved = runCatching {
+                NetworkClient.genericHttpClient.newCall(
+                    Request.Builder().url(safeUrl).get().build(),
+                ).execute().use responseUse@ { response ->
+                    if (!response.isSuccessful) return@responseUse false
+                    if (DeviceMetadataPolicy.safeDeezerArtworkUrl(response.request.url.toString()) == null) {
+                        return@responseUse false
+                    }
+                    if (!DeviceMetadataPolicy.isImageContentType(response.header("Content-Type"))) {
+                        return@responseUse false
+                    }
+                    val declaredLength = response.body.contentLength()
+                    if (declaredLength > MAX_ARTIST_IMAGE_BYTES) return@responseUse false
+
+                    var total = 0L
+                    response.body.byteStream().use { input ->
+                        temporary.outputStream().use { output ->
+                            val buffer = ByteArray(DEFAULT_BUFFER_SIZE)
+                            while (true) {
+                                val read = input.read(buffer)
+                                if (read < 0) break
+                                total += read
+                                if (total > MAX_ARTIST_IMAGE_BYTES) return@responseUse false
+                                output.write(buffer, 0, read)
+                            }
+                        }
+                    }
+                    total > 0L && artworkUriValidator.isReadable(Uri.fromFile(temporary))
+                }
+            }.getOrDefault(false)
+
+            if (!saved) {
+                temporary.delete()
+                return@withContext null
+            }
+            val moved = runCatching {
+                java.nio.file.Files.move(
+                    temporary.toPath(),
+                    target.toPath(),
+                    java.nio.file.StandardCopyOption.REPLACE_EXISTING,
+                    java.nio.file.StandardCopyOption.ATOMIC_MOVE,
+                )
+            }.recoverCatching {
+                temporary.copyTo(target, overwrite = true)
+                temporary.delete()
+            }.isSuccess
+            if (!moved || !artworkUriValidator.isReadable(Uri.fromFile(target))) {
+                temporary.delete()
+                return@withContext null
+            }
+
+            val storedUri = Uri.fromFile(target).buildUpon()
+                .appendQueryParameter("t", target.lastModified().toString())
+                .build()
+            artistImageCache[artistName] = storedUri
+            roomDb.artistDao().updateArtworkForArtist(artistName, storedUri.toString())
+            storedUri
+        }
 
     /**
      * Saves artist image to local storage

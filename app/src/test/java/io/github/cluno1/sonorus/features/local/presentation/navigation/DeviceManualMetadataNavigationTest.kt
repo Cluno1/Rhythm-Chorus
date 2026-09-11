@@ -12,22 +12,54 @@ class DeviceManualMetadataNavigationTest {
     fun `same song and kind is recognized as a duplicate destination`() {
         assertTrue(
             isSameDeviceManualMetadataDestination(
-                currentRoute = "device_manual_metadata/{songId}?kind={kind}",
-                routePattern = "device_manual_metadata/{songId}?kind={kind}",
+                currentRoute = "device_manual_metadata/{songId}?kind={kind}&artistName={artistName}",
+                routePattern = "device_manual_metadata/{songId}?kind={kind}&artistName={artistName}",
                 currentSongId = "42",
                 currentKind = "LYRICS",
+                currentArtistName = null,
                 targetSongId = "42",
                 targetKind = DeviceManualMetadataKind.LYRICS,
+                targetArtistName = null,
             ),
         )
         assertFalse(
             isSameDeviceManualMetadataDestination(
                 currentRoute = "player",
-                routePattern = "device_manual_metadata/{songId}?kind={kind}",
+                routePattern = "device_manual_metadata/{songId}?kind={kind}&artistName={artistName}",
                 currentSongId = null,
                 currentKind = null,
+                currentArtistName = null,
                 targetSongId = "42",
                 targetKind = DeviceManualMetadataKind.LYRICS,
+                targetArtistName = null,
+            ),
+        )
+    }
+
+    @Test
+    fun `artist destination also compares the target artist`() {
+        assertTrue(
+            isSameDeviceManualMetadataDestination(
+                currentRoute = "device_manual_metadata/{songId}?kind={kind}&artistName={artistName}",
+                routePattern = "device_manual_metadata/{songId}?kind={kind}&artistName={artistName}",
+                currentSongId = "42",
+                currentKind = "ARTIST_ARTWORK",
+                currentArtistName = "Artist A",
+                targetSongId = "42",
+                targetKind = DeviceManualMetadataKind.ARTIST_ARTWORK,
+                targetArtistName = "Artist A",
+            ),
+        )
+        assertFalse(
+            isSameDeviceManualMetadataDestination(
+                currentRoute = "device_manual_metadata/{songId}?kind={kind}&artistName={artistName}",
+                routePattern = "device_manual_metadata/{songId}?kind={kind}&artistName={artistName}",
+                currentSongId = "42",
+                currentKind = "ARTIST_ARTWORK",
+                currentArtistName = "Artist A",
+                targetSongId = "42",
+                targetKind = DeviceManualMetadataKind.ARTIST_ARTWORK,
+                targetArtistName = "Artist B",
             ),
         )
     }

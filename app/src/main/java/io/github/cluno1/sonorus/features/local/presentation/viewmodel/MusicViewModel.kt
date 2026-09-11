@@ -50,12 +50,14 @@ import io.github.cluno1.sonorus.shared.data.model.ScanPhase
 import io.github.cluno1.sonorus.features.local.data.repository.MusicRepository
 import io.github.cluno1.sonorus.features.local.data.device.DeviceLyricsCandidate
 import io.github.cluno1.sonorus.features.local.data.device.DeviceArtworkCandidate
+import io.github.cluno1.sonorus.features.local.data.device.DeviceArtistArtworkCandidate
 import io.github.cluno1.sonorus.features.local.data.device.DeviceArtworkSaveTarget
 import io.github.cluno1.sonorus.features.local.data.device.DeviceDocumentPolicy
 import io.github.cluno1.sonorus.features.local.data.device.DeviceManualMetadataKind
 import io.github.cluno1.sonorus.features.local.data.device.DeviceMetadataRequest
 import io.github.cluno1.sonorus.features.local.data.device.DeviceMetadataPolicy
 import io.github.cluno1.sonorus.features.local.data.device.DevicePublicMetadataProvider
+import io.github.cluno1.sonorus.network.NetworkClient
 import io.github.cluno1.sonorus.features.catalog.domain.CATALOG_SONG_ID_PREFIX
 import io.github.cluno1.sonorus.features.catalog.domain.CatalogPlaybackPolicy
 import io.github.cluno1.sonorus.features.catalog.domain.RhythmNowPlayingItem
@@ -154,6 +156,7 @@ import io.github.cluno1.sonorus.shared.data.repository.PlaybackSubject
 enum class DeviceManualMetadataError {
     SONG_UNAVAILABLE,
     TITLE_REQUIRED,
+    ARTIST_REQUIRED,
     PROVIDER_REQUIRED,
     REQUEST_FAILED,
     APPLY_FAILED,
@@ -163,12 +166,14 @@ enum class DeviceManualProviderStatus { LOADING, SUCCESS, EMPTY, FAILED }
 
 data class DeviceManualMetadataUiState(
     val songId: String? = null,
+    val targetArtistName: String? = null,
     val kind: DeviceManualMetadataKind = DeviceManualMetadataKind.LYRICS,
     val isSearching: Boolean = false,
     val isApplying: Boolean = false,
     val hasSearched: Boolean = false,
     val lyricsCandidates: List<DeviceLyricsCandidate> = emptyList(),
     val artworkCandidates: List<DeviceArtworkCandidate> = emptyList(),
+    val artistArtworkCandidates: List<DeviceArtistArtworkCandidate> = emptyList(),
     val providerStatuses: Map<DevicePublicMetadataProvider, DeviceManualProviderStatus> = emptyMap(),
     val error: DeviceManualMetadataError? = null,
     val applied: Boolean = false,
@@ -1985,7 +1990,8 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
                 val artistSource1 = appSettings.artistArtworkSource.value
                 val shouldFetchArtists = hasMissingArtists &&
                     artistSource1 != io.github.cluno1.sonorus.shared.data.model.ArtistArtworkSource.DISABLED &&
-                    (artistSource1 != io.github.cluno1.sonorus.shared.data.model.ArtistArtworkSource.API_ONLY || appSettings.deezerApiEnabled.value)
+                    (artistSource1 != io.github.cluno1.sonorus.shared.data.model.ArtistArtworkSource.API_ONLY ||
+                        NetworkClient.isDeezerArtistArtworkEnabled())
                 val shouldFetchAlbumsAndSongs = (hasMissingAlbums || hasMissingSongs) && appSettings.isAutoFetchArtworkActive.value &&
                     (io.github.cluno1.sonorus.core.ProductCapabilities.devicePublicMetadata || appSettings.ytMusicApiEnabled.value || appSettings.deezerApiEnabled.value)
 
@@ -2158,7 +2164,8 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
                 val artistSource2 = appSettings.artistArtworkSource.value
                 val shouldFetchArtists = hasMissingArtists &&
                     artistSource2 != io.github.cluno1.sonorus.shared.data.model.ArtistArtworkSource.DISABLED &&
-                    (artistSource2 != io.github.cluno1.sonorus.shared.data.model.ArtistArtworkSource.API_ONLY || appSettings.deezerApiEnabled.value)
+                    (artistSource2 != io.github.cluno1.sonorus.shared.data.model.ArtistArtworkSource.API_ONLY ||
+                        NetworkClient.isDeezerArtistArtworkEnabled())
                 val shouldFetchAlbumsAndSongs = (hasMissingAlbums || hasMissingSongs) && appSettings.isAutoFetchArtworkActive.value &&
                     (io.github.cluno1.sonorus.core.ProductCapabilities.devicePublicMetadata || appSettings.ytMusicApiEnabled.value || appSettings.deezerApiEnabled.value)
 
@@ -2511,7 +2518,8 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
                         val artistSource3 = appSettings.artistArtworkSource.value
                         val shouldFetchArtists = hasMissingArtists &&
                             artistSource3 != io.github.cluno1.sonorus.shared.data.model.ArtistArtworkSource.DISABLED &&
-                            (artistSource3 != io.github.cluno1.sonorus.shared.data.model.ArtistArtworkSource.API_ONLY || appSettings.deezerApiEnabled.value)
+                            (artistSource3 != io.github.cluno1.sonorus.shared.data.model.ArtistArtworkSource.API_ONLY ||
+                                NetworkClient.isDeezerArtistArtworkEnabled())
                         val shouldFetchAlbumsAndSongs = (hasMissingAlbums || hasMissingSongs) && appSettings.isAutoFetchArtworkActive.value && (appSettings.ytMusicApiEnabled.value || appSettings.deezerApiEnabled.value)
 
                         if (shouldFetchArtists || shouldFetchAlbumsAndSongs) {
@@ -8455,12 +8463,17 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
-    fun startDeviceManualMetadata(songId: String, kind: DeviceManualMetadataKind) {
+    fun startDeviceManualMetadata(
+        songId: String,
+        kind: DeviceManualMetadataKind,
+        targetArtistName: String? = null,
+    ) {
         deviceManualMetadataJob?.cancel()
         deviceManualMetadataRequestId++
         val song = findDeviceSong(songId)
         _deviceManualMetadataState.value = DeviceManualMetadataUiState(
             songId = songId,
+            targetArtistName = targetArtistName?.trim()?.takeIf(String::isNotEmpty) ?: song?.artist,
             kind = kind,
             error = if (song == null) DeviceManualMetadataError.SONG_UNAVAILABLE else null,
         )
@@ -8473,9 +8486,16 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
         providers: Set<DevicePublicMetadataProvider>,
     ) {
         val normalizedTitle = query.title.trim()
-        if (normalizedTitle.isBlank()) {
+        val normalizedArtist = query.artist?.trim().orEmpty()
+        if (kind != DeviceManualMetadataKind.ARTIST_ARTWORK && normalizedTitle.isBlank()) {
             _deviceManualMetadataState.value = _deviceManualMetadataState.value.copy(
                 error = DeviceManualMetadataError.TITLE_REQUIRED,
+            )
+            return
+        }
+        if (kind == DeviceManualMetadataKind.ARTIST_ARTWORK && normalizedArtist.isBlank()) {
+            _deviceManualMetadataState.value = _deviceManualMetadataState.value.copy(
+                error = DeviceManualMetadataError.ARTIST_REQUIRED,
             )
             return
         }
@@ -8488,6 +8508,9 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
                     DevicePublicMetadataProvider.MUSICBRAINZ_CAA,
                     DevicePublicMetadataProvider.DEEZER,
                 ),
+            )
+            DeviceManualMetadataKind.ARTIST_ARTWORK -> providers.intersect(
+                setOf(DevicePublicMetadataProvider.DEEZER),
             )
         }
         if (supportedProviders.isEmpty()) {
@@ -8508,9 +8531,11 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
 
         deviceManualMetadataJob?.cancel()
         val requestId = ++deviceManualMetadataRequestId
+        val targetArtistName = _deviceManualMetadataState.value.targetArtistName ?: song.artist
         deviceManualMetadataJob = viewModelScope.launch {
             _deviceManualMetadataState.value = DeviceManualMetadataUiState(
                 songId = songId,
+                targetArtistName = targetArtistName,
                 kind = kind,
                 isSearching = true,
                 providerStatuses = supportedProviders.associateWith {
@@ -8520,6 +8545,7 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
             try {
                 var lyricsCandidates = emptyList<DeviceLyricsCandidate>()
                 var artworkCandidates = emptyList<DeviceArtworkCandidate>()
+                var artistArtworkCandidates = emptyList<DeviceArtistArtworkCandidate>()
                 val providerStatuses = when (kind) {
                     DeviceManualMetadataKind.LYRICS -> {
                         val result = repository.searchDeviceLyricsCandidatesWithStatus(song, query)
@@ -8560,14 +8586,30 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
                             .sortedByDescending(DeviceArtworkCandidate::confidence)
                         results.associate { it.provider to it.toManualStatus() }
                     }
+                    DeviceManualMetadataKind.ARTIST_ARTWORK -> {
+                        val result = repository.searchDeviceArtistArtworkCandidatesWithStatus(
+                            normalizedArtist,
+                        )
+                        artistArtworkCandidates = result.candidates
+                        val status = result.toManualStatus()
+                        if (requestId == deviceManualMetadataRequestId) {
+                            _deviceManualMetadataState.value = _deviceManualMetadataState.value.copy(
+                                artistArtworkCandidates = result.candidates,
+                                providerStatuses = mapOf(result.provider to status),
+                            )
+                        }
+                        mapOf(result.provider to status)
+                    }
                 }
                 if (requestId != deviceManualMetadataRequestId) return@launch
                 _deviceManualMetadataState.value = DeviceManualMetadataUiState(
                     songId = songId,
+                    targetArtistName = targetArtistName,
                     kind = kind,
                     hasSearched = true,
                     lyricsCandidates = lyricsCandidates,
                     artworkCandidates = artworkCandidates,
+                    artistArtworkCandidates = artistArtworkCandidates,
                     providerStatuses = providerStatuses,
                     error = DeviceManualMetadataError.REQUEST_FAILED.takeIf {
                         providerStatuses.isNotEmpty() &&
@@ -8581,6 +8623,7 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
                 if (requestId == deviceManualMetadataRequestId) {
                     _deviceManualMetadataState.value = DeviceManualMetadataUiState(
                         songId = songId,
+                        targetArtistName = targetArtistName,
                         kind = kind,
                         hasSearched = true,
                         error = DeviceManualMetadataError.REQUEST_FAILED,
@@ -8672,6 +8715,53 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
                 throw error
             } catch (error: Exception) {
                 Log.w(TAG, "Could not apply manual DEVICE artwork", error)
+                if (requestId == deviceManualMetadataRequestId) {
+                    _deviceManualMetadataState.value = state.copy(
+                        error = DeviceManualMetadataError.APPLY_FAILED,
+                    )
+                }
+            }
+        }
+    }
+
+    fun applyDeviceManualArtistArtwork(
+        songId: String,
+        candidate: DeviceArtistArtworkCandidate,
+    ) {
+        val state = _deviceManualMetadataState.value
+        val song = findDeviceSong(songId)
+        val targetArtistName = state.targetArtistName?.trim()?.takeIf(String::isNotEmpty)
+            ?: song?.artist
+            ?: return
+        if (
+            song == null ||
+            state.songId != songId ||
+            state.kind != DeviceManualMetadataKind.ARTIST_ARTWORK ||
+            candidate !in state.artistArtworkCandidates
+        ) return
+
+        deviceManualMetadataJob?.cancel()
+        val requestId = ++deviceManualMetadataRequestId
+        deviceManualMetadataJob = viewModelScope.launch {
+            _deviceManualMetadataState.value = state.copy(isApplying = true, error = null)
+            try {
+                val artwork = repository.applyDeviceArtistArtworkCandidate(
+                    targetArtistName,
+                    candidate,
+                ) ?: error("Artist artwork response was not a valid image")
+                if (requestId != deviceManualMetadataRequestId) return@launch
+                _artists.value = _artists.value.map { artist ->
+                    if (artist.name.equals(targetArtistName, ignoreCase = true)) {
+                        artist.copy(artworkUri = artwork)
+                    } else {
+                        artist
+                    }
+                }
+                _deviceManualMetadataState.value = state.copy(applied = true)
+            } catch (error: CancellationException) {
+                throw error
+            } catch (error: Exception) {
+                Log.w(TAG, "Could not apply manual DEVICE artist artwork", error)
                 if (requestId == deviceManualMetadataRequestId) {
                     _deviceManualMetadataState.value = state.copy(
                         error = DeviceManualMetadataError.APPLY_FAILED,

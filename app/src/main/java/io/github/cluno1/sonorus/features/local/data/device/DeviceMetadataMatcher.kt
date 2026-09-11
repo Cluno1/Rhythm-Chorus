@@ -11,6 +11,8 @@ data class DeviceMatchInput(val title: String, val artist: String, val album: St
 object DeviceMetadataMatcher {
     internal fun similarityForTesting(left: String?, right: String?): Double = similarity(left, right)
 
+    fun artistNameScore(query: String?, candidate: String?): Double = similarity(query, candidate)
+
     fun isAutomaticMatch(best: Double, runnerUp: Double?, minimum: Double = 0.72, margin: Double = 0.03): Boolean =
         best >= minimum && (runnerUp == null || best - runnerUp >= margin)
 

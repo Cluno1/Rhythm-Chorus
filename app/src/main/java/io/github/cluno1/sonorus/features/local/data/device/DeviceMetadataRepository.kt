@@ -13,6 +13,7 @@ import io.github.cluno1.sonorus.features.local.data.database.entity.DeviceAlbumM
 import io.github.cluno1.sonorus.features.local.data.database.entity.DeviceSongAlbumEntity
 import io.github.cluno1.sonorus.features.local.data.database.entity.toEntity
 import io.github.cluno1.sonorus.network.LrcLibLyrics
+import io.github.cluno1.sonorus.network.DeezerArtist
 import io.github.cluno1.sonorus.network.DeezerTrack
 import io.github.cluno1.sonorus.network.MusicBrainzRecording
 import io.github.cluno1.sonorus.network.MusicBrainzRelease
@@ -252,6 +253,52 @@ class DeviceMetadataRepository(private val context: Context) {
         }.throwIfCancelled().fold(
             onSuccess = { result(it) },
             onFailure = { result(failed = true) },
+        )
+    }
+
+    suspend fun searchArtistArtworkResult(
+        artistName: String,
+    ): DeviceProviderSearchResult<DeviceArtistArtworkCandidate> = withContext(Dispatchers.IO) {
+        fun result(
+            candidates: List<DeviceArtistArtworkCandidate> = emptyList(),
+            failed: Boolean = false,
+        ) = DeviceProviderSearchResult(DevicePublicMetadataProvider.DEEZER, candidates, failed)
+
+        if (!NetworkClient.isDevicePublicMetadataEnabled()) return@withContext result()
+        val query = artistName.trim()
+        if (query.isBlank()) return@withContext result()
+        val service = NetworkClient.deezerApiService ?: return@withContext result(failed = true)
+        runCatching { service.searchArtists(query, MAX_MANUAL_RESULTS * 2).data }
+            .throwIfCancelled()
+            .fold(
+                onSuccess = { artists ->
+                    result(
+                        artists.asSequence()
+                            .mapNotNull { artist -> artist.toArtworkCandidate(query) }
+                            .distinctBy(DeviceArtistArtworkCandidate::externalId)
+                            .sortedWith(
+                                compareByDescending<DeviceArtistArtworkCandidate> { it.confidence }
+                                    .thenByDescending { it.fanCount },
+                            )
+                            .take(MAX_MANUAL_RESULTS)
+                            .toList(),
+                    )
+                },
+                onFailure = { result(failed = true) },
+            )
+    }
+
+    private fun DeezerArtist.toArtworkCandidate(query: String): DeviceArtistArtworkCandidate? {
+        val rawUrl = pictureXl ?: pictureBig ?: pictureMedium ?: picture ?: return null
+        val safeUrl = DeviceMetadataPolicy.safeDeezerArtworkUrl(rawUrl) ?: return null
+        return DeviceArtistArtworkCandidate(
+            provider = DevicePublicMetadataProvider.DEEZER,
+            externalId = id.toString(),
+            artistName = name,
+            imageUrl = safeUrl,
+            albumCount = nbAlbum,
+            fanCount = nbFan,
+            confidence = DeviceMetadataMatcher.artistNameScore(query, name),
         )
     }
 

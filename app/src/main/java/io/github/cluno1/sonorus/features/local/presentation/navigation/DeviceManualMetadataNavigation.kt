@@ -9,11 +9,14 @@ internal fun isSameDeviceManualMetadataDestination(
     routePattern: String,
     currentSongId: String?,
     currentKind: String?,
+    currentArtistName: String?,
     targetSongId: String,
     targetKind: DeviceManualMetadataKind,
+    targetArtistName: String?,
 ): Boolean = currentRoute == routePattern &&
     currentSongId == targetSongId &&
-    currentKind == targetKind.name
+    currentKind == targetKind.name &&
+    currentArtistName.orEmpty() == targetArtistName.orEmpty()
 
 internal suspend fun closeSheetThenNavigateToDeviceManualMetadata(
     hideSheet: suspend () -> Unit,

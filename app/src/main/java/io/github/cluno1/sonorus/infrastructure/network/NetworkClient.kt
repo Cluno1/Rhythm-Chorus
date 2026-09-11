@@ -403,6 +403,8 @@ object NetworkClient {
     
     // Helper methods to check if APIs are enabled (respects both BuildConfig AND runtime settings)
     fun isDeezerApiEnabled(): Boolean = BuildConfig.ENABLE_DEEZER && (appSettings?.deezerApiEnabled?.value ?: false)
+    fun isDeezerArtistArtworkEnabled(): Boolean = isDeezerApiEnabled() ||
+        (BuildConfig.DEVICE_PUBLIC_METADATA && (appSettings?.devicePublicMetadataEnabled?.value ?: false))
     fun isLrcLibApiEnabled(): Boolean = BuildConfig.ENABLE_LRCLIB && (appSettings?.lrclibApiEnabled?.value ?: false)
     fun isDevicePublicMetadataEnabled(): Boolean = BuildConfig.DEVICE_PUBLIC_METADATA && (appSettings?.devicePublicMetadataEnabled?.value ?: false)
     fun isBetterLyricsApiEnabled(): Boolean = BuildConfig.ENABLE_BETTERLYRICS && (appSettings?.betterLyricsApiEnabled?.value ?: false)

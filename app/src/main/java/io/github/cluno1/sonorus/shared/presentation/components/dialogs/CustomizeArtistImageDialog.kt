@@ -24,7 +24,8 @@ fun CustomizeArtistImageDialog(
     artistName: String,
     onDismiss: () -> Unit,
     onSelectImage: () -> Unit,
-    onResetImage: () -> Unit
+    onResetImage: () -> Unit,
+    onSearchOnline: (() -> Unit)? = null,
 ) {
     val context = LocalContext.current
 
@@ -60,6 +61,25 @@ fun CustomizeArtistImageDialog(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.spacedBy(10.dp)
             ) {
+                if (onSearchOnline != null) {
+                    Button(
+                        onClick = {
+                            onDismiss()
+                            onSearchOnline()
+                        },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(52.dp),
+                    ) {
+                        Icon(
+                            imageVector = RhythmIcons.Search,
+                            contentDescription = null,
+                            modifier = Modifier.size(16.dp),
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(stringResource(R.string.customizeartistimage_search_online))
+                    }
+                }
                 Button(
                     onClick = {
                         onSelectImage()
