@@ -16,6 +16,7 @@ import io.github.cluno1.sonorus.shared.presentation.components.icons.RhythmIcons
 import io.github.cluno1.sonorus.shared.presentation.components.icons.MaterialSymbolIcon
 import io.github.cluno1.sonorus.shared.presentation.components.icons.Icon
 import io.github.cluno1.sonorus.features.catalog.presentation.components.ScoreWorkGridCard
+import io.github.cluno1.sonorus.features.local.data.device.DeviceMetadataPolicy
 import io.github.cluno1.sonorus.ui.LocalMiniPlayerPadding
 import io.github.cluno1.sonorus.features.streaming.presentation.components.StreamingServiceStateCard
 import io.github.cluno1.sonorus.features.streaming.data.repository.StreamingServiceSession
@@ -277,6 +278,7 @@ fun HomeScreen(
     onNavigateToStats: () -> Unit = {},
     onNavigateToRhythmGuard: () -> Unit = {},
     onNavigateToArtist: (Artist) -> Unit = {},
+    onOpenManualMetadata: ((Song) -> Unit)? = null,
     isStreamingMode: Boolean = false,
     streamingViewModel: io.github.cluno1.sonorus.features.streaming.presentation.viewmodel.StreamingMusicViewModel? = null,
     streamingSongs: List<Song> = emptyList(),
@@ -422,15 +424,19 @@ fun HomeScreen(
 
     // Song info bottom sheet
     if (showSongInfoSheet && selectedSongForPlaylist != null) {
+        val infoSong = selectedSongForPlaylist!!
         SongInfoBottomSheet(
-            song = selectedSongForPlaylist,
+            song = infoSong,
             onDismiss = { showSongInfoSheet = false },
             appSettings = AppSettings.getInstance(context),
             isStreamingMode = isStreamingMode,
+            onOpenManualMetadata = onOpenManualMetadata
+                ?.takeIf { DeviceMetadataPolicy.isEligible(infoSong.id, infoSong.uri.scheme) }
+                ?.let { action -> { action(infoSong) } },
             onEditSong = { title, artist, album, genre, year, trackNumber, artworkUri, removeArtwork, albumArtist, composer, discNumber, onComplete ->
                 pendingMetadataEditCompleteCallback = onComplete
                 musicViewModel.saveMetadataChanges(
-                    song = selectedSongForPlaylist!!,
+                    song = infoSong,
                     title = title,
                     artist = artist,
                     album = album,

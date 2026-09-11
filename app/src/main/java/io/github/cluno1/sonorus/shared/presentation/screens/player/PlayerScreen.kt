@@ -88,6 +88,8 @@ import io.github.cluno1.sonorus.shared.presentation.components.player.SleepTimer
 import io.github.cluno1.sonorus.shared.presentation.components.lyrics.LyricsEditorBottomSheet
 import io.github.cluno1.sonorus.shared.presentation.components.player.formatDuration
 import io.github.cluno1.sonorus.features.local.presentation.navigation.Screen
+import io.github.cluno1.sonorus.features.local.data.device.DeviceManualMetadataKind
+import io.github.cluno1.sonorus.features.local.data.device.DeviceMetadataPolicy
 import io.github.cluno1.sonorus.features.local.presentation.screens.LibraryTab
 import io.github.cluno1.sonorus.features.local.presentation.viewmodel.MusicViewModel
 import io.github.cluno1.sonorus.features.catalog.domain.isCatalogLibrarySong
@@ -740,7 +742,19 @@ fun PlayerScreen(
                         android.util.Log.w("PlayerScreen", "Metadata update failed for song: ${song.title}", e)
                     }
                 },
-                onShowLyricsEditor = { showLyricsEditorDialog = true }
+                onShowLyricsEditor = { showLyricsEditorDialog = true },
+                onOpenManualMetadata = song.takeIf {
+                    DeviceMetadataPolicy.isEligible(it.id, it.uri.scheme)
+                }?.let { targetSong ->
+                    {
+                        navController.navigate(
+                            Screen.DeviceManualMetadata.createRoute(
+                                targetSong.id,
+                                DeviceManualMetadataKind.LYRICS,
+                            ),
+                        )
+                    }
+                },
             )
         }
 
@@ -1006,6 +1020,18 @@ fun PlayerScreen(
             onSeek = onSeek,
             onLyricsSeek = onLyricsSeek,
             onRetryLyrics = onRetryLyrics,
+            onManualLyricsSearch = song?.takeIf {
+                DeviceMetadataPolicy.isEligible(it.id, it.uri.scheme)
+            }?.let { targetSong ->
+                {
+                    navController.navigate(
+                        Screen.DeviceManualMetadata.createRoute(
+                            targetSong.id,
+                            DeviceManualMetadataKind.LYRICS,
+                        ),
+                    )
+                }
+            },
             onClose = { showFullScreenLyrics = false },
             onShowLyricsEditor = { showLyricsEditorDialog = true },
             onNavigateToLyricsSettings = {

@@ -13,6 +13,7 @@ import io.github.cluno1.sonorus.features.local.data.database.entity.DeviceAlbumM
 import io.github.cluno1.sonorus.features.local.data.database.entity.DeviceSongAlbumEntity
 import io.github.cluno1.sonorus.features.local.data.database.entity.toEntity
 import io.github.cluno1.sonorus.network.LrcLibLyrics
+import io.github.cluno1.sonorus.network.DeezerTrack
 import io.github.cluno1.sonorus.network.MusicBrainzRecording
 import io.github.cluno1.sonorus.network.MusicBrainzRelease
 import io.github.cluno1.sonorus.network.NetworkClient
@@ -21,6 +22,7 @@ import io.github.cluno1.sonorus.shared.data.model.Song
 import io.github.cluno1.sonorus.util.MediaUtils
 import com.google.gson.Gson
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.sync.Mutex
@@ -46,6 +48,7 @@ private data class MusicBrainzArtworkMatch(
     val title: String,
     val artist: String,
     val artistAliases: List<String>,
+    val durationSeconds: Double?,
     val release: MusicBrainzRelease,
     val confidence: Double,
     val relatedReleaseIds: List<String>
@@ -59,6 +62,10 @@ private data class CachedArtworkFile(
 )
 
 private data class SiblingArtwork(val file: File, val albumScoped: Boolean)
+
+private fun <T> Result<T>.throwIfCancelled(): Result<T> = onFailure { error ->
+    if (error is CancellationException) throw error
+}
 
 class DeviceMetadataRepository(private val context: Context) {
     private val dao = RhythmDatabase.getInstance(context).deviceMetadataDao()
@@ -109,30 +116,43 @@ class DeviceMetadataRepository(private val context: Context) {
         dao.clearLyrics(song.id)
     }
 
-    suspend fun searchLyrics(song: Song): List<DeviceLyricsCandidate> = withContext(Dispatchers.IO) {
-        if (!song.isDeviceSong()) return@withContext emptyList()
-        if (!NetworkClient.isDevicePublicMetadataEnabled()) return@withContext emptyList()
-        val service = NetworkClient.lrclibApiService ?: return@withContext emptyList()
-        val input = DeviceMatchInput(song.title, song.artist, song.album, song.duration)
-        val request = DeviceMetadataRequest(
-            title = song.title,
-            artist = song.artist.takeUnless { it.isUnknown() },
-            album = song.album.takeUnless { it.isUnknown() },
-            durationSeconds = (song.duration / 1000L).toInt().takeIf { it > 0 }
+    suspend fun searchLyrics(
+        song: Song,
+        query: DeviceMetadataRequest = requestFor(song),
+    ): List<DeviceLyricsCandidate> = searchLyricsResult(song, query).candidates
+
+    suspend fun searchLyricsResult(
+        song: Song,
+        query: DeviceMetadataRequest,
+    ): DeviceProviderSearchResult<DeviceLyricsCandidate> = withContext(Dispatchers.IO) {
+        fun result(candidates: List<DeviceLyricsCandidate> = emptyList(), failed: Boolean = false) =
+            DeviceProviderSearchResult(DevicePublicMetadataProvider.LRCLIB, candidates, failed)
+        if (!song.isDeviceSong()) return@withContext result()
+        if (!NetworkClient.isDevicePublicMetadataEnabled()) return@withContext result()
+        val service = NetworkClient.lrclibApiService ?: return@withContext result(failed = true)
+        val request = query.normalized()
+        if (request.title.isBlank()) return@withContext result()
+        val input = DeviceMatchInput(
+            request.title,
+            request.artist.orEmpty(),
+            request.album.orEmpty(),
+            request.durationSeconds?.times(1000L) ?: 0L,
         )
-        val precise = runCatching {
+        val preciseResult = runCatching {
             service.searchLyrics(
                 trackName = request.title,
                 artistName = request.artist,
                 albumName = request.album,
                 duration = request.durationSeconds
             )
-        }.getOrDefault(emptyList())
-        val broad = runCatching {
-            service.searchLyrics(query = "${song.artist} ${song.title}".trim())
-        }.getOrDefault(emptyList())
+        }.throwIfCancelled()
+        val broadResult = runCatching {
+            service.searchLyrics(query = "${request.artist.orEmpty()} ${request.title}".trim())
+        }.throwIfCancelled()
+        val precise = preciseResult.getOrDefault(emptyList())
+        val broad = broadResult.getOrDefault(emptyList())
         val results = (precise + broad).distinctBy(LrcLibLyrics::id)
-        results.asSequence().filter(LrcLibLyrics::hasLyrics).map { item ->
+        val candidates = results.asSequence().filter(LrcLibLyrics::hasLyrics).map { item ->
             val confidence = DeviceMetadataMatcher.score(input, item.trackName ?: item.name, item.artistName, item.albumName, item.duration)
             DeviceLyricsCandidate(
                 externalId = item.id.toString(), title = item.trackName ?: item.name.orEmpty(),
@@ -141,6 +161,7 @@ class DeviceMetadataRepository(private val context: Context) {
                 lyrics = LyricsData(item.plainLyrics, item.syncedLyrics, source = "LRCLIB")
             )
         }.sortedByDescending(DeviceLyricsCandidate::confidence).take(12).toList()
+        result(candidates, failed = preciseResult.isFailure && broadResult.isFailure)
     }
 
     suspend fun applyLyrics(song: Song, candidate: DeviceLyricsCandidate, userSelected: Boolean = false): LyricsData {
@@ -148,6 +169,111 @@ class DeviceMetadataRepository(private val context: Context) {
         val labelled = candidate.lyrics.copy(source = "$prefix|${candidate.title}|${candidate.artist}|${(candidate.confidence * 100).toInt()}%")
         saveLyrics(song, labelled, "LRCLIB", candidate.externalId, candidate.confidence, pinned = userSelected)
         return labelled
+    }
+
+    suspend fun searchArtwork(
+        song: Song,
+        query: DeviceMetadataRequest,
+        providers: Set<DevicePublicMetadataProvider>,
+    ): List<DeviceArtworkCandidate> = withContext(Dispatchers.IO) {
+        if (!song.isDeviceSong()) return@withContext emptyList()
+        if (!NetworkClient.isDevicePublicMetadataEnabled()) return@withContext emptyList()
+        val request = query.normalized()
+        if (request.title.isBlank()) return@withContext emptyList()
+        providers.flatMap { provider ->
+            searchArtworkResult(song, request, provider).candidates
+        }.distinctBy { it.provider to it.externalId }
+            .sortedByDescending(DeviceArtworkCandidate::confidence)
+            .take(MAX_MANUAL_RESULTS)
+    }
+
+    suspend fun searchArtworkResult(
+        song: Song,
+        query: DeviceMetadataRequest,
+        provider: DevicePublicMetadataProvider,
+    ): DeviceProviderSearchResult<DeviceArtworkCandidate> = withContext(Dispatchers.IO) {
+        fun result(candidates: List<DeviceArtworkCandidate> = emptyList(), failed: Boolean = false) =
+            DeviceProviderSearchResult(provider, candidates, failed)
+        if (!song.isDeviceSong()) return@withContext result()
+        if (!NetworkClient.isDevicePublicMetadataEnabled()) return@withContext result()
+        val request = query.normalized()
+        if (request.title.isBlank()) return@withContext result()
+        val querySong = song.withMetadataRequest(request)
+        runCatching {
+            when (provider) {
+                DevicePublicMetadataProvider.MUSICBRAINZ_CAA -> {
+                    searchMusicBrainzCandidates(querySong, throwOnFailure = true)
+                        .take(MAX_MANUAL_RESULTS).mapNotNull { match ->
+                            val url = "https://coverartarchive.org/release/${match.release.id}/front-500"
+                            DeviceMetadataPolicy.safeCoverArtUrl(url)?.let { safeUrl ->
+                                DeviceArtworkCandidate(
+                                    provider = DevicePublicMetadataProvider.MUSICBRAINZ_CAA,
+                                    externalId = match.release.id,
+                                    releaseGroupId = match.release.releaseGroup?.id,
+                                    title = match.title,
+                                    artist = match.artist,
+                                    album = match.release.title,
+                                    durationSeconds = match.durationSeconds,
+                                    confidence = match.confidence,
+                                    imageUrl = safeUrl,
+                                )
+                                }
+                            }
+                        }
+                DevicePublicMetadataProvider.DEEZER -> {
+                    rankDeezerArtwork(querySong, null, throwOnAllFailure = true)
+                        .take(MAX_MANUAL_RESULTS).mapNotNull { (track, confidence) ->
+                            val album = track.album ?: return@mapNotNull null
+                            val url = album.coverXl ?: album.coverBig ?: album.coverMedium ?: album.cover
+                            val safeUrl = url?.let(DeviceMetadataPolicy::safeDeezerArtworkUrl)
+                                ?: return@mapNotNull null
+                            DeviceArtworkCandidate(
+                                provider = DevicePublicMetadataProvider.DEEZER,
+                                externalId = track.id.toString(),
+                                title = track.title,
+                                artist = track.artist?.name.orEmpty(),
+                                album = album.title,
+                                durationSeconds = track.duration?.toDouble(),
+                                confidence = confidence,
+                                imageUrl = safeUrl,
+                            )
+                        }
+                    }
+                DevicePublicMetadataProvider.LRCLIB -> emptyList()
+            }
+        }.throwIfCancelled().fold(
+            onSuccess = { result(it) },
+            onFailure = { result(failed = true) },
+        )
+    }
+
+    suspend fun applyArtwork(song: Song, candidate: DeviceArtworkCandidate): Uri? = withContext(Dispatchers.IO) {
+        if (!song.isDeviceSong()) return@withContext null
+        val albumKey = DeviceAlbumIdentity.key(song) ?: return@withContext null
+        val downloadProvider = when (candidate.provider) {
+            DevicePublicMetadataProvider.MUSICBRAINZ_CAA -> ArtworkProvider.COVER_ART_ARCHIVE
+            DevicePublicMetadataProvider.DEEZER -> ArtworkProvider.DEEZER
+            DevicePublicMetadataProvider.LRCLIB -> return@withContext null
+        }
+        albumLocks.computeIfAbsent(albumKey) { Mutex() }.withLock {
+            val cached = downloadArtwork(
+                candidate.imageUrl,
+                "album-manual-${sha256("$albumKey|${candidate.provider}|${candidate.externalId}|${candidate.imageUrl}")}.jpg",
+                downloadProvider,
+            ) ?: return@withLock null
+            saveAlbumArtwork(
+                song = song,
+                file = cached.file,
+                source = "USER_SELECTED",
+                provider = candidate.provider.name,
+                externalReleaseId = candidate.externalId,
+                externalReleaseGroupId = candidate.releaseGroupId,
+                confidence = candidate.confidence,
+                cached = cached,
+                pinned = true,
+            )
+            cached.file.toUri()
+        }
     }
 
     suspend fun cachedArtwork(song: Song): Uri? {
@@ -336,7 +462,30 @@ class DeviceMetadataRepository(private val context: Context) {
     }
 
     private suspend fun searchMusicBrainz(song: Song): MusicBrainzArtworkMatch? {
-        val service = NetworkClient.musicBrainzApiService ?: return null
+        val candidates = searchMusicBrainzCandidates(song)
+        val best = candidates.firstOrNull() ?: return null
+        val runnerUp = candidates.drop(1).firstOrNull {
+            it.release.id != best.release.id &&
+                it.release.releaseGroup?.id != best.release.releaseGroup?.id
+        }?.confidence
+        if (!DeviceMetadataMatcher.isAutomaticMatch(
+                best.confidence,
+                runnerUp,
+                MUSICBRAINZ_AUTO_CONFIDENCE,
+                MUSICBRAINZ_AUTO_MARGIN,
+            )
+        ) {
+            return null
+        }
+        return best
+    }
+
+    private suspend fun searchMusicBrainzCandidates(
+        song: Song,
+        throwOnFailure: Boolean = false,
+    ): List<MusicBrainzArtworkMatch> {
+        val service = NetworkClient.musicBrainzApiService
+            ?: if (throwOnFailure) error("MusicBrainz service unavailable") else return emptyList()
         val clauses = buildList {
             add("recording:\"${lucene(song.title)}\"")
             song.artist.takeUnless { it.isUnknown() }?.let { add("artist:\"${lucene(it)}\"") }
@@ -346,8 +495,11 @@ class DeviceMetadataRepository(private val context: Context) {
             val waitMs = MUSICBRAINZ_INTERVAL_MS - (System.currentTimeMillis() - lastMusicBrainzRequestAt)
             if (waitMs > 0) delay(waitMs)
             lastMusicBrainzRequestAt = System.currentTimeMillis()
-            runCatching { service.searchRecordings(clauses.joinToString(" AND ")) }.getOrNull()
-        } ?: return null
+            if (throwOnFailure) service.searchRecordings(clauses.joinToString(" AND "))
+            else runCatching {
+                service.searchRecordings(clauses.joinToString(" AND "))
+            }.throwIfCancelled().getOrNull()
+        } ?: return emptyList()
 
         val input = DeviceMatchInput(song.title, song.artist, song.album, song.duration)
         val candidates = response.recordings.flatMap { recording ->
@@ -369,39 +521,71 @@ class DeviceMetadataRepository(private val context: Context) {
                 Triple(recording, release, confidence.coerceAtMost(1.0)) to aliases
             }
         }.sortedByDescending { it.first.third }
-        val best = candidates.firstOrNull() ?: return null
-        val runnerUp = candidates.drop(1).firstOrNull {
-            it.first.second.id != best.first.second.id &&
-                it.first.second.releaseGroup?.id != best.first.second.releaseGroup?.id
-        }?.first?.third
-        if (!DeviceMetadataMatcher.isAutomaticMatch(best.first.third, runnerUp, MUSICBRAINZ_AUTO_CONFIDENCE, MUSICBRAINZ_AUTO_MARGIN)) return null
+            .distinctBy { it.first.second.id }
 
-        val recording: MusicBrainzRecording = best.first.first
-        val release = best.first.second
-        val groupId = release.releaseGroup?.id
-        val related = candidates.asSequence()
-            .map { it.first.second }
-            .filter { it.status.equals("Official", true) && it.releaseGroup?.id == groupId }
-            .map(MusicBrainzRelease::id)
-            .distinct()
-            .take(MAX_CAA_RELEASE_ATTEMPTS)
-            .toList()
-        return MusicBrainzArtworkMatch(
-            recordingId = recording.id,
-            title = recording.title,
-            artist = recording.artistCredit.joinToString("") { it.name ?: it.artist?.name.orEmpty() },
-            artistAliases = best.second,
-            release = release,
-            confidence = best.first.third,
-            relatedReleaseIds = related
-        )
+        return candidates.map { ranked ->
+            val recording: MusicBrainzRecording = ranked.first.first
+            val release = ranked.first.second
+            val groupId = release.releaseGroup?.id
+            val related = candidates.asSequence()
+                .map { it.first.second }
+                .filter { it.status.equals("Official", true) && it.releaseGroup?.id == groupId }
+                .map(MusicBrainzRelease::id)
+                .distinct()
+                .take(MAX_CAA_RELEASE_ATTEMPTS)
+                .toList()
+            MusicBrainzArtworkMatch(
+                recordingId = recording.id,
+                title = recording.title,
+                artist = recording.artistCredit.joinToString("") { it.name ?: it.artist?.name.orEmpty() },
+                artistAliases = ranked.second,
+                durationSeconds = recording.length?.div(1000.0),
+                release = release,
+                confidence = ranked.first.third,
+                relatedReleaseIds = related,
+            )
+        }
     }
 
     private suspend fun searchDeezerArtwork(
         song: Song,
         musicBrainz: MusicBrainzArtworkMatch?
     ): Triple<String, String, Double>? {
-        val service = NetworkClient.deezerApiService ?: return null
+        val ranked = rankDeezerArtwork(song, musicBrainz)
+        val best = ranked.firstOrNull() ?: return null
+        if (!DeviceMetadataMatcher.isAutomaticMatch(
+                best.second,
+                ranked.getOrNull(1)?.second,
+                MUSICBRAINZ_AUTO_CONFIDENCE,
+                MUSICBRAINZ_AUTO_MARGIN,
+            )
+        ) {
+            return null
+        }
+        val trackAlbum = best.first.album
+        val url = trackAlbum?.coverXl ?: trackAlbum?.coverBig ?: trackAlbum?.coverMedium ?: trackAlbum?.cover
+            ?: run {
+                val service = NetworkClient.deezerApiService ?: return null
+                val albumId = trackAlbum?.id ?: return null
+                val albums = runCatching {
+                    service.searchAlbums(
+                        "album:\"${trackAlbum.title}\" artist:\"${best.first.artist?.name.orEmpty()}\"",
+                        10,
+                    ).data
+                }.throwIfCancelled().getOrDefault(emptyList())
+                val album = albums.firstOrNull { it.id == albumId } ?: albums.firstOrNull()
+                album?.coverXl ?: album?.coverBig ?: album?.coverMedium ?: album?.cover
+            } ?: return null
+        return Triple(url, best.first.id.toString(), best.second)
+    }
+
+    private suspend fun rankDeezerArtwork(
+        song: Song,
+        musicBrainz: MusicBrainzArtworkMatch?,
+        throwOnAllFailure: Boolean = false,
+    ): List<Pair<DeezerTrack, Double>> {
+        val service = NetworkClient.deezerApiService
+            ?: if (throwOnAllFailure) error("Deezer service unavailable") else return emptyList()
         val queries = buildList {
             add("track:\"${song.title}\" artist:\"${song.artist}\"")
             add("${song.title} ${song.artist}".trim())
@@ -414,8 +598,12 @@ class DeviceMetadataRepository(private val context: Context) {
 
         val input = DeviceMatchInput(song.title, song.artist, song.album, song.duration)
         val candidates = linkedMapOf<Long, Pair<io.github.cluno1.sonorus.network.DeezerTrack, Double>>()
+        var successfulRequests = 0
+        var lastFailure: Throwable? = null
         for (query in queries) {
-            val tracks = runCatching { service.searchTracks(query, 25).data }.getOrDefault(emptyList())
+            val response = runCatching { service.searchTracks(query, 25).data }.throwIfCancelled()
+            response.onSuccess { successfulRequests++ }.onFailure { lastFailure = it }
+            val tracks = response.getOrDefault(emptyList())
             tracks.forEach { track ->
                 val score = DeviceMetadataMatcher.score(
                     input, track.title, track.artist?.name, track.album?.title, track.duration?.toDouble()
@@ -429,18 +617,8 @@ class DeviceMetadataRepository(private val context: Context) {
                 } == true
             ) break
         }
-        val ranked = candidates.values.sortedByDescending { it.second }
-        val best = ranked.firstOrNull() ?: return null
-        if (!DeviceMetadataMatcher.isAutomaticMatch(best.second, ranked.getOrNull(1)?.second, MUSICBRAINZ_AUTO_CONFIDENCE, MUSICBRAINZ_AUTO_MARGIN)) return null
-        val trackAlbum = best.first.album
-        val url = trackAlbum?.coverXl ?: trackAlbum?.coverBig ?: trackAlbum?.coverMedium ?: trackAlbum?.cover
-            ?: run {
-                val albumId = trackAlbum?.id ?: return null
-                val albums = runCatching { service.searchAlbums("album:\"${trackAlbum.title}\" artist:\"${best.first.artist?.name.orEmpty()}\"", 10).data }.getOrDefault(emptyList())
-                val album = albums.firstOrNull { it.id == albumId } ?: albums.firstOrNull()
-                album?.coverXl ?: album?.coverBig ?: album?.coverMedium ?: album?.cover
-            } ?: return null
-        return Triple(url, best.first.id.toString(), best.second)
+        if (throwOnAllFailure && successfulRequests == 0 && lastFailure != null) throw lastFailure
+        return candidates.values.sortedByDescending { it.second }
     }
 
     private fun findSiblingArtwork(song: Song): SiblingArtwork? {
@@ -582,6 +760,20 @@ class DeviceMetadataRepository(private val context: Context) {
 
     private fun lucene(value: String): String = value.replace("\\", "\\\\").replace("\"", "\\\"")
 
+    private fun requestFor(song: Song) = DeviceMetadataRequest(
+        title = song.title,
+        artist = song.artist.takeUnless { it.isUnknown() },
+        album = song.album.takeUnless { it.isUnknown() },
+        durationSeconds = (song.duration / 1000L).toInt().takeIf { it > 0 },
+    )
+
+    private fun Song.withMetadataRequest(request: DeviceMetadataRequest): Song = copy(
+        title = request.title,
+        artist = request.artist.orEmpty(),
+        album = request.album.orEmpty(),
+        duration = request.durationSeconds?.times(1000L) ?: 0L,
+    )
+
     private fun metadataDir() = File(context.filesDir, "device_metadata").apply { mkdirs() }
     suspend fun clearAllCachedMetadata() = withContext(Dispatchers.IO) {
         File(context.filesDir, "device_metadata").listFiles()?.forEach(File::delete)
@@ -618,6 +810,7 @@ class DeviceMetadataRepository(private val context: Context) {
         private const val MUSICBRAINZ_INTERVAL_MS = 1_100L
         private const val NEGATIVE_CACHE_MS = 24L * 60L * 60L * 1_000L
         private const val MAX_CAA_RELEASE_ATTEMPTS = 3
+        private const val MAX_MANUAL_RESULTS = 12
         private val albumLocks = ConcurrentHashMap<String, Mutex>()
         private val albumFileValidationCache = ConcurrentHashMap<String, Boolean>()
         private val musicBrainzRateMutex = Mutex()

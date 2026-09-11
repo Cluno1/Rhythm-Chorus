@@ -104,6 +104,9 @@ import io.github.cluno1.sonorus.features.local.data.database.entity.SongEntity
 import io.github.cluno1.sonorus.features.local.data.database.entity.toEntity
 import io.github.cluno1.sonorus.features.local.data.database.entity.SongArtistEntity
 import io.github.cluno1.sonorus.features.local.data.device.DeviceLyricsCandidate
+import io.github.cluno1.sonorus.features.local.data.device.DeviceArtworkCandidate
+import io.github.cluno1.sonorus.features.local.data.device.DeviceMetadataRequest
+import io.github.cluno1.sonorus.features.local.data.device.DevicePublicMetadataProvider
 import io.github.cluno1.sonorus.features.local.data.device.DeviceScanFolderAccess
 import io.github.cluno1.sonorus.features.local.data.device.DeviceMetadataRepository
 import io.github.cluno1.sonorus.features.local.data.device.DeviceMetadataMatcher
@@ -4706,21 +4709,50 @@ class MusicRepository(context: Context) {
     suspend fun searchDeviceLyricsCandidates(song: Song): List<DeviceLyricsCandidate> =
         deviceMetadataRepository.searchLyrics(song)
 
+    suspend fun searchDeviceLyricsCandidates(
+        song: Song,
+        query: DeviceMetadataRequest,
+    ): List<DeviceLyricsCandidate> = deviceMetadataRepository.searchLyrics(song, query)
+
+    suspend fun searchDeviceLyricsCandidatesWithStatus(
+        song: Song,
+        query: DeviceMetadataRequest,
+    ) = deviceMetadataRepository.searchLyricsResult(song, query)
+
+    suspend fun searchDeviceArtworkCandidates(
+        song: Song,
+        query: DeviceMetadataRequest,
+        providers: Set<DevicePublicMetadataProvider>,
+    ): List<DeviceArtworkCandidate> = deviceMetadataRepository.searchArtwork(song, query, providers)
+
+    suspend fun searchDeviceArtworkCandidatesWithStatus(
+        song: Song,
+        query: DeviceMetadataRequest,
+        provider: DevicePublicMetadataProvider,
+    ) = deviceMetadataRepository.searchArtworkResult(song, query, provider)
+
     suspend fun applyDeviceLyricsCandidate(song: Song, candidate: DeviceLyricsCandidate): LyricsData {
-        clearLyricsCacheForSong(song)
         val result = deviceMetadataRepository.applyLyrics(song, candidate, userSelected = true)
+        clearLyricsMemoryCacheForSong(song)
         lyricsCache["${song.id}:${song.artist}:${song.title}".lowercase()] = result
         return result
     }
 
+    suspend fun applyDeviceArtworkCandidate(song: Song, candidate: DeviceArtworkCandidate): Uri? =
+        deviceMetadataRepository.applyArtwork(song, candidate)
+
     suspend fun clearLyricsCacheForSong(song: Song) {
+        clearLyricsMemoryCacheForSong(song)
+        deviceMetadataRepository.clearLyrics(song)
+        val legacyName = "${song.artist}_${song.title}.json".replace(Regex("[^a-zA-Z0-9._-]"), "_")
+        File(context.filesDir, "lyrics/$legacyName").delete()
+    }
+
+    private fun clearLyricsMemoryCacheForSong(song: Song) {
         val legacyPrefix = "${song.artist}:${song.title}".lowercase()
         synchronized(lyricsCache) {
             lyricsCache.keys.filter { DeviceMetadataPolicy.belongsToSong(it, song.id) || it.startsWith(legacyPrefix) }.forEach(lyricsCache::remove)
         }
-        deviceMetadataRepository.clearLyrics(song)
-        val legacyName = "${song.artist}_${song.title}.json".replace(Regex("[^a-zA-Z0-9._-]"), "_")
-        File(context.filesDir, "lyrics/$legacyName").delete()
     }
 
     suspend fun restoreDeviceLocalLyrics(song: Song): LyricsData? {
