@@ -284,10 +284,12 @@ fun AlbumDetailScreen(
     }
 
     val wikipediaApiEnabled by appSettings.wikipediaApiEnabled.collectAsState()
+    val devicePublicMetadataEnabled by appSettings.devicePublicMetadataEnabled.collectAsState()
+    val publicDescriptionEnabled = wikipediaApiEnabled || devicePublicMetadataEnabled
     var description by remember(albumId) { mutableStateOf<String?>(null) }
     var isDescriptionLoading by remember(albumId) { mutableStateOf(false) }
 
-    LaunchedEffect(albumId, albumName, album?.artist, allDisplaySongs, wikipediaApiEnabled) {
+    LaunchedEffect(albumId, albumName, album?.artist, allDisplaySongs, publicDescriptionEnabled) {
         val fallbackArtist = allDisplaySongs.firstOrNull()?.artist
         val effectiveArtistName = album?.artist?.takeIf { it.isNotBlank() && !it.equals("<unknown>", ignoreCase = true) }
             ?: fallbackArtist?.takeIf { it.isNotBlank() && !it.equals("<unknown>", ignoreCase = true) }
@@ -299,7 +301,7 @@ fun AlbumDetailScreen(
                 if (effectiveArtistName != null) {
                     desc = AppleMusicCanvasProvider.getAlbumDescription(albumName, effectiveArtistName)
                 }
-                if (desc.isNullOrBlank() && wikipediaApiEnabled) {
+                if (desc.isNullOrBlank() && publicDescriptionEnabled) {
                     desc = WikipediaProvider.getAlbumDescription(albumName, effectiveArtistName)
                 }
                 withContext(Dispatchers.Main) {

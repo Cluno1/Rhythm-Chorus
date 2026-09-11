@@ -99,6 +99,7 @@ data class DeezerTrack(
     val id: Long,
     val title: String,
     val duration: Int? = null,
+    val rank: Int? = null,
     val artist: DeezerTrackArtist?,
     val album: DeezerTrackAlbum?
 )

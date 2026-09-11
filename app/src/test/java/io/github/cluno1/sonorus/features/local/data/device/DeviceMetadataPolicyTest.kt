@@ -78,4 +78,15 @@ class DeviceMetadataPolicyTest {
         assertNull(DeviceMetadataPolicy.safeCoverArtUrl("http://coverartarchive.org/release/abc/front"))
         assertNull(DeviceMetadataPolicy.safeCoverArtUrl("https://coverartarchive.org.example.com/cover.jpg"))
     }
+
+    @Test fun `itunes artwork only accepts Apple image hosts over https`() {
+        assertEquals(
+            "https://is1-ssl.mzstatic.com/image/thumb/Music/cover/600x600bb.jpg",
+            DeviceMetadataPolicy.safeItunesArtworkUrl(
+                "https://is1-ssl.mzstatic.com/image/thumb/Music/cover/600x600bb.jpg",
+            ),
+        )
+        assertNull(DeviceMetadataPolicy.safeItunesArtworkUrl("http://is1-ssl.mzstatic.com/cover.jpg"))
+        assertNull(DeviceMetadataPolicy.safeItunesArtworkUrl("https://mzstatic.com.example.com/cover.jpg"))
+    }
 }

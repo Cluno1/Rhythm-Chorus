@@ -147,6 +147,8 @@ fun ArtistDetailScreen(
     val artistSeparatorDelimiters by appSettings.artistSeparatorDelimiters.collectAsState()
     val useHoursFormat by appSettings.useHoursInTimeFormat.collectAsState()
     val wikipediaApiEnabled by appSettings.wikipediaApiEnabled.collectAsState()
+    val devicePublicMetadataEnabled by appSettings.devicePublicMetadataEnabled.collectAsState()
+    val publicDescriptionEnabled = wikipediaApiEnabled || devicePublicMetadataEnabled
     val albumScreenGradientBlur by appSettings.albumBottomSheetGradientBlur.collectAsState()
     
     // Get songs and albums from viewModel
@@ -272,11 +274,11 @@ fun ArtistDetailScreen(
     var artistDescription by remember(artistName) { mutableStateOf<String?>(null) }
     var isDescriptionLoading by remember(artistName) { mutableStateOf(false) }
 
-    LaunchedEffect(artistName, wikipediaApiEnabled) {
-        if (artistName.isNotBlank() && wikipediaApiEnabled) {
+    LaunchedEffect(artistName, publicDescriptionEnabled) {
+        if (artistName.isNotBlank() && publicDescriptionEnabled) {
             isDescriptionLoading = true
             withContext(Dispatchers.IO) {
-                val desc = WikipediaProvider.getAlbumDescription(artistName, null)
+                val desc = WikipediaProvider.getArtistDescription(artistName)
                 withContext(Dispatchers.Main) {
                     artistDescription = desc
                     isDescriptionLoading = false

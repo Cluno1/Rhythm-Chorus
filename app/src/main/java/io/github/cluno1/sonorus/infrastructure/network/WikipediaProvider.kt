@@ -64,6 +64,15 @@ object WikipediaProvider {
         }
     }
 
+    suspend fun getArtistDescription(artistName: String): String? = withContext(Dispatchers.IO) {
+        val query = artistName.trim()
+        if (query.isBlank()) return@withContext null
+        fetchPageSummary(query)
+            ?: fetchPageSummary("$query (musician)")
+            ?: fetchPageSummary("$query (singer)")
+            ?: fetchPageSummary("$query (band)")
+    }
+
     private suspend fun fetchPageSummary(title: String): String? = withContext(Dispatchers.IO) {
         try {
             val encodedTitle = URLEncoder.encode(title.replace(" ", "_"), "UTF-8")

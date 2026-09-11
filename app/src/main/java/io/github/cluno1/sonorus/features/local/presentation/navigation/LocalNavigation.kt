@@ -2347,6 +2347,7 @@ private fun LocalNavigationContent(
                 composable(Screen.CatalogSettings.route) {
                     CatalogServerSettingsScreen(
                         state = catalogState,
+                        onEnroll = catalogViewModel::enrollDevice,
                         onEnrollSmartText = catalogViewModel::enrollDeviceFromSmartText,
                         onIssueInvite = catalogViewModel::issueInvite,
                         onClear = catalogViewModel::clearConnection,
@@ -2398,6 +2399,7 @@ private fun LocalNavigationContent(
                         onApplyLyrics = viewModel::applyDeviceManualLyrics,
                         onApplyArtwork = viewModel::applyDeviceManualArtwork,
                         onApplyArtistArtwork = viewModel::applyDeviceManualArtistArtwork,
+                        onApplyDetails = viewModel::applyDeviceManualDetails,
                         onClear = viewModel::clearDeviceManualMetadata,
                         onBack = {
                             if (!navController.popBackStack()) navigateToTopLevel(Screen.Library.route)

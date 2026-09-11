@@ -31,6 +31,23 @@ class DeviceMetadataMatcherTest {
         assertTrue(DeviceMetadataMatcher.isAutomaticMatch(0.91, 0.80))
     }
 
+    @Test fun `first lyrics candidate at ninety eight percent is accepted regardless of runner up`() {
+        assertTrue(
+            DeviceMetadataMatcher.isAutomaticMatch(
+                best = 0.98,
+                runnerUp = 0.98,
+                unconditionalThreshold = DeviceMetadataRepository.EXACT_AUTO_CONFIDENCE,
+            )
+        )
+        assertTrue(
+            !DeviceMetadataMatcher.isAutomaticMatch(
+                best = 0.979,
+                runnerUp = 0.97,
+                unconditionalThreshold = DeviceMetadataRepository.EXACT_AUTO_CONFIDENCE,
+            )
+        )
+    }
+
     @Test fun `traditional Chinese metadata remains comparable to simplified input`() {
         val input = DeviceMatchInput("李香兰", "张学友", "音乐之旅Live演唱会", 553_000)
         val live = DeviceMetadataMatcher.score(input, "李香蘭", "張學友", "音樂之旅Live演唱會", 553.2)

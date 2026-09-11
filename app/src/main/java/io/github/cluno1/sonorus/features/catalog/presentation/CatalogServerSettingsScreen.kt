@@ -57,6 +57,7 @@ import java.time.format.FormatStyle
 @Composable
 fun CatalogServerSettingsScreen(
     state: CatalogUiState,
+    onEnroll: (String, String) -> Unit,
     onEnrollSmartText: (String) -> Unit,
     onIssueInvite: (String, String, String, String, String, Boolean) -> Unit,
     onClear: () -> Unit,
@@ -82,6 +83,7 @@ fun CatalogServerSettingsScreen(
 
     CatalogDeviceEnrollmentScreen(
         state = state,
+        onEnroll = onEnroll,
         onEnrollSmartText = onEnrollSmartText,
         onClear = onClear,
         onOpenAdmin = {
@@ -96,18 +98,25 @@ fun CatalogServerSettingsScreen(
 @Composable
 private fun CatalogDeviceEnrollmentScreen(
     state: CatalogUiState,
+    onEnroll: (String, String) -> Unit,
     onEnrollSmartText: (String) -> Unit,
     onClear: () -> Unit,
     onOpenAdmin: () -> Unit,
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    var serverUrl by rememberSaveable { mutableStateOf("") }
+    var inviteCode by rememberSaveable { mutableStateOf("") }
     var smartText by rememberSaveable { mutableStateOf("") }
     val miniPlayerBottomPadding = LocalMiniPlayerPadding.current.calculateBottomPadding()
     val adminPageDescription = stringResource(R.string.catalog_admin_issue_invite)
 
     LaunchedEffect(state.deviceRegistered) {
-        if (state.deviceRegistered) smartText = ""
+        if (state.deviceRegistered) {
+            serverUrl = ""
+            inviteCode = ""
+            smartText = ""
+        }
     }
 
     CollapsibleHeaderScreen(
@@ -133,6 +142,74 @@ private fun CatalogDeviceEnrollmentScreen(
             verticalArrangement = Arrangement.spacedBy(18.dp),
         ) {
             CatalogSettingsSection {
+                Text(
+                    stringResource(R.string.catalog_manual_enrollment_intro),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+                OutlinedTextField(
+                    value = serverUrl,
+                    onValueChange = { serverUrl = it },
+                    label = { Text(stringResource(R.string.catalog_server_address)) },
+                    singleLine = true,
+                    enabled = !state.loading,
+                    modifier = Modifier.fillMaxWidth(),
+                )
+                OutlinedTextField(
+                    value = inviteCode,
+                    onValueChange = { inviteCode = it },
+                    label = { Text(stringResource(R.string.catalog_one_time_invite)) },
+                    visualTransformation = PasswordVisualTransformation(),
+                    singleLine = true,
+                    enabled = !state.loading,
+                    modifier = Modifier.fillMaxWidth(),
+                )
+                Button(
+                    onClick = { onEnroll(serverUrl, inviteCode) },
+                    enabled = !state.loading && serverUrl.isNotBlank() && inviteCode.isNotBlank(),
+                    modifier = Modifier.fillMaxWidth(),
+                ) {
+                    if (state.loading) {
+                        CircularProgressIndicator()
+                    } else {
+                        Text(stringResource(R.string.catalog_enroll_this_device))
+                    }
+                }
+
+                HorizontalDivider()
+                Text(
+                    stringResource(R.string.catalog_smart_enrollment_option),
+                    style = MaterialTheme.typography.titleSmall,
+                    color = MaterialTheme.colorScheme.primary,
+                )
+                Text(
+                    stringResource(R.string.catalog_enrollment_intro),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+                OutlinedTextField(
+                    value = smartText,
+                    onValueChange = { smartText = it },
+                    label = { Text(stringResource(R.string.catalog_smart_enrollment_text)) },
+                    minLines = 4,
+                    maxLines = 8,
+                    enabled = !state.loading,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .heightIn(min = 132.dp),
+                )
+                Button(
+                    onClick = { onEnrollSmartText(smartText) },
+                    enabled = !state.loading && smartText.isNotBlank(),
+                    modifier = Modifier.fillMaxWidth(),
+                ) {
+                    if (state.loading) {
+                        CircularProgressIndicator()
+                    } else {
+                        Text(stringResource(R.string.catalog_enroll_this_device))
+                    }
+                }
+
                 if (state.deviceRegistered) {
                     Text(
                         stringResource(R.string.catalog_device_registered),
@@ -145,47 +222,18 @@ private fun CatalogDeviceEnrollmentScreen(
                     ) {
                         Text(stringResource(R.string.catalog_remove_device_registration))
                     }
-                } else {
+                } else if (state.configured) {
                     Text(
-                        stringResource(R.string.catalog_enrollment_intro),
-                        style = MaterialTheme.typography.bodyMedium,
+                        stringResource(R.string.catalog_legacy_connection_notice),
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        style = MaterialTheme.typography.bodySmall,
                     )
-                    OutlinedTextField(
-                        value = smartText,
-                        onValueChange = { smartText = it },
-                        label = { Text(stringResource(R.string.catalog_smart_enrollment_text)) },
-                        minLines = 4,
-                        maxLines = 8,
+                    OutlinedButton(
+                        onClick = onClear,
                         enabled = !state.loading,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .heightIn(min = 132.dp),
-                    )
-                    Button(
-                        onClick = { onEnrollSmartText(smartText) },
-                        enabled = !state.loading && smartText.isNotBlank(),
                         modifier = Modifier.fillMaxWidth(),
                     ) {
-                        if (state.loading) {
-                            CircularProgressIndicator()
-                        } else {
-                            Text(stringResource(R.string.catalog_enroll_this_device))
-                        }
-                    }
-                    if (state.configured) {
-                        Text(
-                            stringResource(R.string.catalog_legacy_connection_notice),
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            style = MaterialTheme.typography.bodySmall,
-                        )
-                        OutlinedButton(
-                            onClick = onClear,
-                            enabled = !state.loading,
-                            modifier = Modifier.fillMaxWidth(),
-                        ) {
-                            Text(stringResource(R.string.catalog_remove_legacy_connection))
-                        }
+                        Text(stringResource(R.string.catalog_remove_legacy_connection))
                     }
                 }
                 state.error?.let {

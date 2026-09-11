@@ -55,6 +55,10 @@ import coil.request.ImageRequest
 import io.github.cluno1.sonorus.R
 import io.github.cluno1.sonorus.features.local.data.device.DeviceArtworkCandidate
 import io.github.cluno1.sonorus.features.local.data.device.DeviceArtistArtworkCandidate
+import io.github.cluno1.sonorus.features.local.data.device.DeviceDetailsCandidate
+import io.github.cluno1.sonorus.features.local.data.device.DeviceDetailsField
+import io.github.cluno1.sonorus.features.local.data.device.DeviceEditorialCandidate
+import io.github.cluno1.sonorus.features.local.data.device.DeviceEditorialSubject
 import io.github.cluno1.sonorus.features.local.data.device.DeviceArtworkSaveTarget
 import io.github.cluno1.sonorus.features.local.data.device.DeviceLyricsCandidate
 import io.github.cluno1.sonorus.features.local.data.device.DeviceManualMetadataKind
@@ -90,6 +94,7 @@ fun DeviceManualMetadataScreen(
     onApplyLyrics: (String, DeviceLyricsCandidate) -> Unit,
     onApplyArtwork: (String, DeviceArtworkCandidate, DeviceArtworkSaveTarget, Uri?) -> Unit,
     onApplyArtistArtwork: (String, DeviceArtistArtworkCandidate) -> Unit,
+    onApplyDetails: (String, DeviceDetailsCandidate, Set<DeviceDetailsField>) -> Unit,
     onClear: () -> Unit,
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
@@ -107,10 +112,14 @@ fun DeviceManualMetadataScreen(
     var lrclibSelected by rememberSaveable(song?.id) { mutableStateOf(true) }
     var musicBrainzSelected by rememberSaveable(song?.id) { mutableStateOf(true) }
     var deezerSelected by rememberSaveable(song?.id) { mutableStateOf(true) }
+    var itunesSelected by rememberSaveable(song?.id) { mutableStateOf(true) }
+    var wikipediaSelected by rememberSaveable(song?.id) { mutableStateOf(true) }
     var previewLyrics by remember { mutableStateOf<String?>(null) }
     var selectedLyrics by remember { mutableStateOf<DeviceLyricsCandidate?>(null) }
     var selectedArtwork by remember { mutableStateOf<DeviceArtworkCandidate?>(null) }
     var selectedArtistArtwork by remember { mutableStateOf<DeviceArtistArtworkCandidate?>(null) }
+    var selectedDetails by remember { mutableStateOf<DeviceDetailsCandidate?>(null) }
+    var selectedDetailFields by remember { mutableStateOf<Set<DeviceDetailsField>>(emptySet()) }
     var pendingFolderArtwork by remember { mutableStateOf<DeviceArtworkCandidate?>(null) }
     val folderLauncher = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocumentTree()) { uri ->
         val candidate = pendingFolderArtwork
@@ -224,6 +233,18 @@ fun DeviceManualMetadataScreen(
                             )
                         },
                     )
+                    FilterChip(
+                        selected = kind == DeviceManualMetadataKind.DETAILS,
+                        onClick = { kind = DeviceManualMetadataKind.DETAILS },
+                        label = { Text(stringResource(R.string.device_manual_metadata_details)) },
+                        leadingIcon = {
+                            Icon(
+                                icon = RhythmIcons.Info,
+                                contentDescription = null,
+                                modifier = Modifier.size(18.dp),
+                            )
+                        },
+                    )
                 }
             }
 
@@ -289,6 +310,18 @@ fun DeviceManualMetadataScreen(
                                     it.provider == DevicePublicMetadataProvider.DEEZER
                                 },
                             )
+                            ProviderChip(
+                                selected = itunesSelected,
+                                onClick = { itunesSelected = !itunesSelected },
+                                title = "iTunes Search",
+                                description = stringResource(
+                                    R.string.device_manual_metadata_itunes_artwork_desc,
+                                ),
+                                status = state.providerStatuses[DevicePublicMetadataProvider.ITUNES],
+                                resultCount = state.artworkCandidates.count {
+                                    it.provider == DevicePublicMetadataProvider.ITUNES
+                                },
+                            )
                         }
                         DeviceManualMetadataKind.ARTIST_ARTWORK -> ProviderChip(
                             selected = deezerSelected,
@@ -300,6 +333,58 @@ fun DeviceManualMetadataScreen(
                             status = state.providerStatuses[DevicePublicMetadataProvider.DEEZER],
                             resultCount = state.artistArtworkCandidates.size,
                         )
+                        DeviceManualMetadataKind.DETAILS -> {
+                            ProviderChip(
+                                selected = musicBrainzSelected,
+                                onClick = { musicBrainzSelected = !musicBrainzSelected },
+                                title = "MusicBrainz",
+                                description = stringResource(
+                                    R.string.device_manual_metadata_musicbrainz_details_desc,
+                                ),
+                                status = state.providerStatuses[
+                                    DevicePublicMetadataProvider.MUSICBRAINZ_CAA
+                                ],
+                                resultCount = state.detailsCandidates.count {
+                                    it.provider == DevicePublicMetadataProvider.MUSICBRAINZ_CAA
+                                },
+                            )
+                            ProviderChip(
+                                selected = deezerSelected,
+                                onClick = { deezerSelected = !deezerSelected },
+                                title = "Deezer",
+                                description = stringResource(
+                                    R.string.device_manual_metadata_deezer_details_desc,
+                                ),
+                                status = state.providerStatuses[DevicePublicMetadataProvider.DEEZER],
+                                resultCount = state.detailsCandidates.count {
+                                    it.provider == DevicePublicMetadataProvider.DEEZER
+                                },
+                            )
+                            ProviderChip(
+                                selected = itunesSelected,
+                                onClick = { itunesSelected = !itunesSelected },
+                                title = "iTunes Search",
+                                description = stringResource(
+                                    R.string.device_manual_metadata_itunes_details_desc,
+                                ),
+                                status = state.providerStatuses[DevicePublicMetadataProvider.ITUNES],
+                                resultCount = state.detailsCandidates.count {
+                                    it.provider == DevicePublicMetadataProvider.ITUNES
+                                },
+                            )
+                            ProviderChip(
+                                selected = wikipediaSelected,
+                                onClick = { wikipediaSelected = !wikipediaSelected },
+                                title = "Wikipedia",
+                                description = stringResource(
+                                    R.string.device_manual_metadata_wikipedia_desc,
+                                ),
+                                status = state.providerStatuses[
+                                    DevicePublicMetadataProvider.WIKIPEDIA
+                                ],
+                                resultCount = state.editorialCandidates.size,
+                            )
+                        }
                     }
                 }
             }
@@ -394,8 +479,23 @@ fun DeviceManualMetadataScreen(
                     if (kind == DeviceManualMetadataKind.ARTWORK && deezerSelected) {
                         add(DevicePublicMetadataProvider.DEEZER)
                     }
+                    if (kind == DeviceManualMetadataKind.ARTWORK && itunesSelected) {
+                        add(DevicePublicMetadataProvider.ITUNES)
+                    }
                     if (kind == DeviceManualMetadataKind.ARTIST_ARTWORK && deezerSelected) {
                         add(DevicePublicMetadataProvider.DEEZER)
+                    }
+                    if (kind == DeviceManualMetadataKind.DETAILS && musicBrainzSelected) {
+                        add(DevicePublicMetadataProvider.MUSICBRAINZ_CAA)
+                    }
+                    if (kind == DeviceManualMetadataKind.DETAILS && deezerSelected) {
+                        add(DevicePublicMetadataProvider.DEEZER)
+                    }
+                    if (kind == DeviceManualMetadataKind.DETAILS && itunesSelected) {
+                        add(DevicePublicMetadataProvider.ITUNES)
+                    }
+                    if (kind == DeviceManualMetadataKind.DETAILS && wikipediaSelected) {
+                        add(DevicePublicMetadataProvider.WIKIPEDIA)
                     }
                 }
                 Button(
@@ -443,7 +543,8 @@ fun DeviceManualMetadataScreen(
 
             if (state.hasSearched && !state.isSearching &&
                 state.lyricsCandidates.isEmpty() && state.artworkCandidates.isEmpty()
-                    && state.artistArtworkCandidates.isEmpty()
+                    && state.artistArtworkCandidates.isEmpty() && state.detailsCandidates.isEmpty()
+                    && state.editorialCandidates.isEmpty()
             ) {
                 item {
                     MetadataCard {
@@ -464,7 +565,9 @@ fun DeviceManualMetadataScreen(
             if (
                 state.lyricsCandidates.isNotEmpty() ||
                 state.artworkCandidates.isNotEmpty() ||
-                state.artistArtworkCandidates.isNotEmpty()
+                state.artistArtworkCandidates.isNotEmpty() ||
+                state.detailsCandidates.isNotEmpty() ||
+                state.editorialCandidates.isNotEmpty()
             ) {
                 item {
                     Text(
@@ -504,7 +607,88 @@ fun DeviceManualMetadataScreen(
                     onClick = { selectedArtistArtwork = candidate },
                 )
             }
+            items(
+                state.detailsCandidates,
+                key = { "details:${it.provider}:${it.externalId}" },
+            ) { candidate ->
+                DetailsCandidateCard(
+                    candidate = candidate,
+                    queryDurationSeconds = durationSeconds,
+                    onClick = {
+                        selectedDetails = candidate
+                        selectedDetailFields = defaultDetailsFields(song, candidate)
+                    },
+                )
+            }
+            items(
+                state.editorialCandidates,
+                key = { "editorial:${it.externalId}" },
+            ) { candidate ->
+                EditorialCandidateCard(candidate)
+            }
         }
+    }
+
+    selectedDetails?.let { candidate ->
+        AlertDialog(
+            onDismissRequest = {
+                selectedDetails = null
+                selectedDetailFields = emptySet()
+            },
+            title = { Text(candidate.title) },
+            text = {
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Text(candidate.artist, style = MaterialTheme.typography.titleSmall)
+                    Text(candidate.album, style = MaterialTheme.typography.bodyMedium)
+                    DetailsLines(candidate)
+                    Text(
+                        text = stringResource(R.string.device_manual_metadata_select_detail_fields),
+                        style = MaterialTheme.typography.titleSmall,
+                        fontWeight = FontWeight.SemiBold,
+                    )
+                    FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        availableDetailsFields(candidate).forEach { field ->
+                            FilterChip(
+                                selected = field in selectedDetailFields,
+                                onClick = {
+                                    selectedDetailFields = if (field in selectedDetailFields) {
+                                        selectedDetailFields - field
+                                    } else {
+                                        selectedDetailFields + field
+                                    }
+                                },
+                                label = { Text(stringResource(field.labelResource())) },
+                            )
+                        }
+                    }
+                    Text(
+                        text = stringResource(R.string.device_manual_metadata_details_app_only_desc),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        onApplyDetails(song!!.id, candidate, selectedDetailFields)
+                        selectedDetails = null
+                        selectedDetailFields = emptySet()
+                    },
+                    enabled = !state.isApplying && selectedDetailFields.isNotEmpty(),
+                ) {
+                    Text(stringResource(R.string.device_manual_metadata_use_details_app_only))
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = {
+                    selectedDetails = null
+                    selectedDetailFields = emptySet()
+                }) {
+                    Text(stringResource(android.R.string.cancel))
+                }
+            },
+        )
     }
 
     selectedLyrics?.let { candidate ->
@@ -824,11 +1008,7 @@ private fun ArtworkCandidateCard(
                 verticalArrangement = Arrangement.spacedBy(4.dp),
             ) {
                 Text(
-                    text = when (candidate.provider) {
-                        DevicePublicMetadataProvider.MUSICBRAINZ_CAA -> "MusicBrainz + CAA"
-                        DevicePublicMetadataProvider.DEEZER -> "Deezer"
-                        DevicePublicMetadataProvider.LRCLIB -> "LRCLIB"
-                    },
+                    text = candidate.provider.displayName(),
                     style = MaterialTheme.typography.labelLarge,
                     color = MaterialTheme.colorScheme.primary,
                 )
@@ -924,6 +1104,225 @@ private fun ArtistArtworkCandidateCard(
             }
         }
     }
+}
+
+@Composable
+private fun DetailsCandidateCard(
+    candidate: DeviceDetailsCandidate,
+    queryDurationSeconds: Int?,
+    onClick: () -> Unit,
+) {
+    val context = LocalContext.current
+    Card(
+        onClick = onClick,
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(20.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerHigh),
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(14.dp),
+            horizontalArrangement = Arrangement.spacedBy(14.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            candidate.artworkUrl?.let { artworkUrl ->
+                AsyncImage(
+                    model = ImageRequest.Builder(context).data(artworkUrl).build(),
+                    contentDescription = stringResource(R.string.device_manual_metadata_artwork_preview),
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier.size(88.dp),
+                )
+            }
+            Column(
+                modifier = Modifier.weight(1f),
+                verticalArrangement = Arrangement.spacedBy(4.dp),
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                ) {
+                    Text(
+                        candidate.provider.displayName(),
+                        style = MaterialTheme.typography.labelLarge,
+                        color = MaterialTheme.colorScheme.primary,
+                    )
+                    Text(
+                        stringResource(
+                            R.string.device_manual_metadata_confidence,
+                            (candidate.confidence * 100).toInt(),
+                        ),
+                        style = MaterialTheme.typography.labelMedium,
+                    )
+                }
+                Text(
+                    candidate.title,
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.SemiBold,
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis,
+                )
+                Text(
+                    listOf(candidate.artist, candidate.album)
+                        .filter(String::isNotBlank)
+                        .joinToString(" · "),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis,
+                )
+                CandidateDuration(candidate.durationSeconds, queryDurationSeconds)
+                DetailsLines(candidate)
+            }
+        }
+    }
+}
+
+@Composable
+private fun DetailsLines(candidate: DeviceDetailsCandidate) {
+    val lines = buildList {
+        candidate.releaseDate?.takeIf(String::isNotBlank)?.let {
+            add(stringResource(R.string.device_manual_metadata_details_release_date, it))
+        }
+        candidate.trackNumber?.takeIf { it > 0 }?.let { track ->
+            val count = candidate.trackCount?.takeIf { it > 0 }
+            add(
+                if (count != null) {
+                    stringResource(
+                        R.string.device_manual_metadata_details_track_number,
+                        track,
+                        count,
+                    )
+                } else {
+                    stringResource(R.string.device_manual_metadata_details_track_number_only, track)
+                }
+            )
+        }
+        candidate.discNumber?.takeIf { it > 0 }?.let {
+            add(stringResource(R.string.device_manual_metadata_details_disc_number, it))
+        }
+        candidate.albumType?.takeIf(String::isNotBlank)?.let {
+            add(stringResource(R.string.device_manual_metadata_details_album_type, it))
+        }
+        candidate.genre?.takeIf(String::isNotBlank)?.let {
+            add(stringResource(R.string.device_manual_metadata_details_genre, it))
+        }
+        candidate.country?.takeIf(String::isNotBlank)?.let {
+            add(stringResource(R.string.device_manual_metadata_details_country, it))
+        }
+        candidate.label?.takeIf(String::isNotBlank)?.let {
+            add(stringResource(R.string.device_manual_metadata_details_label, it))
+        }
+        if (candidate.artistAlbumCount != null || candidate.artistFanCount != null) {
+            add(
+                stringResource(
+                    R.string.device_manual_metadata_artist_stats,
+                    candidate.artistAlbumCount ?: 0,
+                    candidate.artistFanCount ?: 0,
+                )
+            )
+        }
+    }
+    lines.forEach { line ->
+        Text(
+            text = line,
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+    }
+}
+
+private fun availableDetailsFields(candidate: DeviceDetailsCandidate): List<DeviceDetailsField> = buildList {
+    if (candidate.title.isNotBlank()) add(DeviceDetailsField.TITLE)
+    if (candidate.artist.isNotBlank()) add(DeviceDetailsField.ARTIST)
+    if (candidate.album.isNotBlank()) add(DeviceDetailsField.ALBUM)
+    if (!candidate.albumArtist.isNullOrBlank()) add(DeviceDetailsField.ALBUM_ARTIST)
+    if (candidate.year != null) add(DeviceDetailsField.YEAR)
+    if ((candidate.trackNumber ?: 0) > 0) add(DeviceDetailsField.TRACK_NUMBER)
+    if ((candidate.discNumber ?: 0) > 0) add(DeviceDetailsField.DISC_NUMBER)
+    if (!candidate.genre.isNullOrBlank()) add(DeviceDetailsField.GENRE)
+}
+
+private fun defaultDetailsFields(
+    song: Song,
+    candidate: DeviceDetailsCandidate,
+): Set<DeviceDetailsField> {
+    val available = availableDetailsFields(candidate).toSet()
+    if (candidate.confidence >= 0.98) return available
+    return buildSet {
+        if (DeviceDetailsField.TITLE in available && song.title.isUnknownMetadata()) {
+            add(DeviceDetailsField.TITLE)
+        }
+        if (DeviceDetailsField.ARTIST in available && song.artist.isUnknownMetadata()) {
+            add(DeviceDetailsField.ARTIST)
+        }
+        if (DeviceDetailsField.ALBUM in available && song.album.isUnknownMetadata()) {
+            add(DeviceDetailsField.ALBUM)
+        }
+        if (DeviceDetailsField.ALBUM_ARTIST in available && song.albumArtist.isNullOrBlank()) {
+            add(DeviceDetailsField.ALBUM_ARTIST)
+        }
+        if (DeviceDetailsField.YEAR in available && song.year <= 0) add(DeviceDetailsField.YEAR)
+        if (DeviceDetailsField.TRACK_NUMBER in available && song.trackNumber <= 0) {
+            add(DeviceDetailsField.TRACK_NUMBER)
+        }
+        if (
+            DeviceDetailsField.DISC_NUMBER in available &&
+            (candidate.discNumber ?: 1) > 1 && song.discNumber <= 1
+        ) {
+            add(DeviceDetailsField.DISC_NUMBER)
+        }
+        if (DeviceDetailsField.GENRE in available && song.genre.isNullOrBlank()) {
+            add(DeviceDetailsField.GENRE)
+        }
+    }
+}
+
+private fun String.isUnknownMetadata(): Boolean =
+    isBlank() || equals("unknown", ignoreCase = true) || startsWith("unknown ", ignoreCase = true) ||
+        (startsWith("<") && endsWith(">"))
+
+private fun DeviceDetailsField.labelResource(): Int = when (this) {
+    DeviceDetailsField.TITLE -> R.string.device_manual_metadata_detail_title
+    DeviceDetailsField.ARTIST -> R.string.device_manual_metadata_detail_artist
+    DeviceDetailsField.ALBUM -> R.string.device_manual_metadata_detail_album
+    DeviceDetailsField.ALBUM_ARTIST -> R.string.device_manual_metadata_detail_album_artist
+    DeviceDetailsField.YEAR -> R.string.device_manual_metadata_detail_year
+    DeviceDetailsField.TRACK_NUMBER -> R.string.device_manual_metadata_detail_track
+    DeviceDetailsField.DISC_NUMBER -> R.string.device_manual_metadata_detail_disc
+    DeviceDetailsField.GENRE -> R.string.device_manual_metadata_detail_genre
+}
+
+@Composable
+private fun EditorialCandidateCard(candidate: DeviceEditorialCandidate) {
+    MetadataCard {
+        Text(
+            text = stringResource(
+                if (candidate.subject == DeviceEditorialSubject.ALBUM) {
+                    R.string.device_manual_metadata_album_description
+                } else {
+                    R.string.device_manual_metadata_artist_description
+                },
+            ),
+            style = MaterialTheme.typography.labelLarge,
+            color = MaterialTheme.colorScheme.primary,
+        )
+        Text(
+            text = candidate.title,
+            style = MaterialTheme.typography.titleMedium,
+            fontWeight = FontWeight.SemiBold,
+        )
+        Text(text = candidate.description, style = MaterialTheme.typography.bodyMedium)
+        Text("Wikipedia", style = MaterialTheme.typography.labelSmall)
+    }
+}
+
+private fun DevicePublicMetadataProvider.displayName(): String = when (this) {
+    DevicePublicMetadataProvider.LRCLIB -> "LRCLIB"
+    DevicePublicMetadataProvider.MUSICBRAINZ_CAA -> "MusicBrainz + CAA"
+    DevicePublicMetadataProvider.DEEZER -> "Deezer"
+    DevicePublicMetadataProvider.ITUNES -> "iTunes Search"
+    DevicePublicMetadataProvider.WIKIPEDIA -> "Wikipedia"
 }
 
 @Composable

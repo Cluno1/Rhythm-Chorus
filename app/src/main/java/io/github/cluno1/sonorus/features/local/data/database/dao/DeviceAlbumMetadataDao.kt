@@ -21,6 +21,9 @@ interface DeviceAlbumMetadataDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun upsertSongAlbum(entity: DeviceSongAlbumEntity)
 
+    @Query("SELECT albumKey FROM device_song_album WHERE songStableId = :songStableId LIMIT 1")
+    suspend fun getAlbumKeyForSong(songStableId: String): String?
+
     @Query("SELECT * FROM device_album_metadata")
     suspend fun getAllAlbums(): List<DeviceAlbumMetadataEntity>
 
