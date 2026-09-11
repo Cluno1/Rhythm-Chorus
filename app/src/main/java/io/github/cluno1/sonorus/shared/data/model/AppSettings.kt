@@ -182,6 +182,7 @@ class AppSettings private constructor(context: Context) {
         private const val KEY_LYRIC_NO_ANIMATION = "lyric_no_animation"
         private const val KEY_TRANSLATION_AUTO_WORD = "translation_auto_word"
         private const val KEY_LYRICS_EDITOR_ENABLED = "lyrics_editor_enabled"
+        private const val KEY_LYRICS_CONTRIBUTOR_NAME = "lyrics_contributor_name"
         
         // Theme Settings
         private const val KEY_USE_SYSTEM_THEME = "use_system_theme"
@@ -2484,6 +2485,13 @@ private val _autoCheckForUpdates = MutableStateFlow(ProductCapabilities.inAppUpd
     fun setLyricsEditorEnabled(enabled: Boolean) {
         prefs.edit { putBoolean(KEY_LYRICS_EDITOR_ENABLED, enabled) }
         _lyricsEditorEnabled.value = enabled
+    }
+
+    fun getLyricsContributorName(): String =
+        prefs.getString(KEY_LYRICS_CONTRIBUTOR_NAME, "").orEmpty()
+
+    fun setLyricsContributorName(name: String) {
+        prefs.edit { putString(KEY_LYRICS_CONTRIBUTOR_NAME, name.trim().take(80)) }
     }
     
     // Theme Settings Methods

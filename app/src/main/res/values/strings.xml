@@ -3011,6 +3011,7 @@
     <string name="lyrics_timing_help_rewind_body">Moves playback back exactly three seconds so you can hear the lead-in again.</string>
     <string name="lyrics_timing_help_play_pause_body">Starts or pauses the same song that is open in the player. Pausing does not leave the editor.</string>
     <string name="lyrics_timing_help_repeat_body">Repeats the whole current song while you work. Turning on A-B turns this mode off.</string>
+    <string name="lyrics_timing_help_repeat_default_body">Current-song repeat turns on automatically when you enter the editor, so the track does not advance while you work. Starting an A-B loop temporarily turns it off. Your previous repeat mode is restored when you leave.</string>
     <string name="lyrics_timing_help_ab_title">A-B section loop</string>
     <string name="lyrics_timing_help_ab_body">First tap sets A, second tap sets B, and the third clears both. Playback jumps from B back to A; B must be at least 0.5 seconds after A.</string>
     <string name="lyrics_timing_help_speed_title">Practice speed</string>
@@ -3036,6 +3037,12 @@
     <string name="lyrics_sync_to_server">Sync</string>
     <string name="lyrics_load_server_version">Use server</string>
     <string name="lyrics_overwrite_server_version">Overwrite server</string>
+    <string name="lyrics_contribution_title">Thank you for contributing</string>
+    <string name="lyrics_contribution_body">Playback is paused while you confirm and upload. You may add a contributor name or continue anonymously.</string>
+    <string name="lyrics_contribution_name_label">Contributor name (optional)</string>
+    <string name="lyrics_contribution_name_support">Leave blank for an anonymous upload. The submitted value becomes the default for your next song; submitting it blank clears that default.</string>
+    <string name="lyrics_contribution_history_hint">The first named contribution is recorded as the uploader. Later names are appended as modifiers with local time; earlier contributors are never replaced.</string>
+    <string name="lyrics_contribution_upload">Upload</string>
     <string name="lyrics_rename_lrc_title">Rename LRC File?</string>
     <string name="lyrics_rename_lrc_body">The loaded LRC file name \'%1$s\' is different from the song\'s file name. Would you like to rename it to match the song or associate it as a custom tagged file?</string>
     <string name="lyrics_remember_choice">Remember my choice (Don\'t ask again)</string>

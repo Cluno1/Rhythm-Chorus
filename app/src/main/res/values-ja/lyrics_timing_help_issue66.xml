@@ -9,4 +9,11 @@
     <string name="lyrics_timing_help_server_body">「同期」は対応する Catalog 曲だけに表示され、現在選択中の歌詞言語をアップロードします。「サーバーと同期済み」になるまで待ってください。「保留中」または「失敗」はローカルにしかない状態です。</string>
     <string name="lyrics_timing_help_conflict_title">競合が起きた場合</string>
     <string name="lyrics_timing_help_conflict_body">「サーバーを使用」はローカル下書きを削除してサーバー版を読み込みます。「サーバーを上書き」は新しいサーバー版をローカル下書きで置き換えます。選択前に両方を確認してください。</string>
+    <string name="lyrics_timing_help_repeat_default_body">エディターを開くと現在の曲のリピートが自動で有効になり、作業中に次の曲へ進みません。A–B ループを始めると一時的に無効になります。エディターを閉じると元のリピート設定に戻ります。</string>
+    <string name="lyrics_contribution_title">ご協力ありがとうございます</string>
+    <string name="lyrics_contribution_body">確認中とアップロード中は再生を一時停止します。投稿者名を追加するか、匿名のまま続行できます。</string>
+    <string name="lyrics_contribution_name_label">投稿者名（任意）</string>
+    <string name="lyrics_contribution_name_support">空欄なら匿名でアップロードします。送信した値は次の曲の初期値になり、空欄で送信すると初期値を消去します。</string>
+    <string name="lyrics_contribution_history_hint">最初の記名投稿はアップロード者として記録されます。以降は端末の時刻付きで修正者として追加され、以前の投稿者は上書きされません。</string>
+    <string name="lyrics_contribution_upload">アップロード</string>
 </resources>
