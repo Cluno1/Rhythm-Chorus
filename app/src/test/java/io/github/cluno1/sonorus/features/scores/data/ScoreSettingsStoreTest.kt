@@ -15,6 +15,7 @@ class ScoreSettingsStoreTest {
         val settings = ScoreGlobalSettings(
             playbackIndicatorMode = "PULSE",
             followScrollEnabled = false,
+            metronomeEnabled = true,
             playbackEndBehavior = "LOOP_CURRENT",
             notationLayout = "MERGED_STAVES",
             partColorMode = "ENHANCED",
@@ -29,6 +30,7 @@ class ScoreSettingsStoreTest {
             """{
                 "playbackIndicatorMode":"unknown",
                 "followScrollEnabled":false,
+                "metronomeEnabled":"not-a-boolean",
                 "playbackEndBehavior":"bad",
                 "notationLayout":"MERGED_STAVES",
                 "partColorMode":"bad"
@@ -37,9 +39,19 @@ class ScoreSettingsStoreTest {
 
         assertEquals("LINE", restored.playbackIndicatorMode)
         assertEquals(false, restored.followScrollEnabled)
+        assertEquals(false, restored.metronomeEnabled)
         assertEquals("PAUSE_AT_END", restored.playbackEndBehavior)
         assertEquals("MERGED_STAVES", restored.notationLayout)
         assertEquals("DEFAULT", restored.partColorMode)
+    }
+
+    @Test
+    fun `legacy global settings keep metronome off`() {
+        val restored = ScoreSettingsCodec.decodeGlobal(
+            """{"followScrollEnabled":false}""",
+        )
+
+        assertEquals(false, restored.metronomeEnabled)
     }
 
     @Test

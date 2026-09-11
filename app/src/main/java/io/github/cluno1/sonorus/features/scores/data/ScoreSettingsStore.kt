@@ -13,6 +13,7 @@ import com.google.gson.JsonParser
 internal data class ScoreGlobalSettings(
     val playbackIndicatorMode: String = "LINE",
     val followScrollEnabled: Boolean = true,
+    val metronomeEnabled: Boolean = false,
     val playbackEndBehavior: String = "PAUSE_AT_END",
     val notationLayout: String = "SEPARATE_PARTS",
     val partColorMode: String = "DEFAULT",
@@ -36,6 +37,7 @@ internal object ScoreSettingsCodec {
     fun encodeGlobal(settings: ScoreGlobalSettings): String = JsonObject().apply {
         addProperty("playbackIndicatorMode", settings.playbackIndicatorMode)
         addProperty("followScrollEnabled", settings.followScrollEnabled)
+        addProperty("metronomeEnabled", settings.metronomeEnabled)
         addProperty("playbackEndBehavior", settings.playbackEndBehavior)
         addProperty("notationLayout", settings.notationLayout)
         addProperty("partColorMode", settings.partColorMode)
@@ -48,6 +50,7 @@ internal object ScoreSettingsCodec {
                 ?.takeIf(indicatorModes::contains)
                 ?: "LINE",
             followScrollEnabled = json.boolean("followScrollEnabled") ?: true,
+            metronomeEnabled = json.boolean("metronomeEnabled") ?: false,
             playbackEndBehavior = json.string("playbackEndBehavior")
                 ?.takeIf(endBehaviors::contains)
                 ?: "PAUSE_AT_END",

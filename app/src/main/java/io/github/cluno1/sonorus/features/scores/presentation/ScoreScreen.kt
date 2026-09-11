@@ -194,6 +194,7 @@ private class ScorePlaybackController(
     private var endTime = 0.0
     private var activePositions: List<ScorePlaybackBeatPosition> = emptyList()
     private var playbackSpeed = 1.0
+    private var metronomeEnabled = false
     private val audioManager = context.getSystemService(Context.AUDIO_SERVICE) as AudioManager
     private var audioFocusRequest: AudioFocusRequest? = null
     private var isPlaying = false
@@ -246,6 +247,7 @@ private class ScorePlaybackController(
         if (this.view === view) {
             playerIsReady = true
             view.api.playbackSpeed = playbackSpeed
+            applyMetronome()
             applyMutedTracks()
         }
     }
@@ -273,6 +275,13 @@ private class ScorePlaybackController(
             }
         }
         Log.i(SCORE_PLAYBACK_TAG, "playback speed=${"%.4f".format(safeSpeed)}x")
+    }
+
+    fun setMetronomeEnabled(enabled: Boolean) {
+        if (enabled == metronomeEnabled) return
+        metronomeEnabled = enabled
+        applyMetronome()
+        Log.i(SCORE_PLAYBACK_TAG, "metronome=${if (enabled) "on" else "off"}")
     }
 
     fun playPause() {
@@ -478,6 +487,19 @@ private class ScorePlaybackController(
         currentView.api.changeTrackMute(mutedTracks, true)
         currentView.api.changeTrackMute(audibleTracks, false)
         Log.i(SCORE_PLAYBACK_TAG, "muted tracks=${mutedTrackIndexes.sorted()}")
+    }
+
+    private fun applyMetronome() {
+        val currentView = view ?: return
+        currentView.post {
+            if (view === currentView && playerIsReady) {
+                currentView.api.metronomeVolume = if (metronomeEnabled) {
+                    SCORE_METRONOME_VOLUME
+                } else {
+                    0.0
+                }
+            }
+        }
     }
 
     private fun requestAudioFocus(): Boolean {
@@ -769,6 +791,9 @@ private fun ScoreReadyContent(
     var followScrollEnabled by remember {
         mutableStateOf(initialGlobalSettings.followScrollEnabled)
     }
+    var metronomeEnabled by remember {
+        mutableStateOf(initialGlobalSettings.metronomeEnabled)
+    }
     var playbackEndBehavior by remember {
         mutableStateOf(
             runCatching {
@@ -874,6 +899,7 @@ private fun ScoreReadyContent(
     fun persistGlobalSettings(
         indicatorMode: ScorePlaybackIndicatorMode = playbackIndicatorMode,
         followScroll: Boolean = followScrollEnabled,
+        metronome: Boolean = metronomeEnabled,
         endBehavior: ScorePlaybackEndBehavior = playbackEndBehavior,
         layout: ScoreNotationLayout = notationLayout,
         colorMode: ScorePartColorMode = partColorMode,
@@ -882,6 +908,7 @@ private fun ScoreReadyContent(
             ScoreGlobalSettings(
                 playbackIndicatorMode = indicatorMode.name,
                 followScrollEnabled = followScroll,
+                metronomeEnabled = metronome,
                 playbackEndBehavior = endBehavior.name,
                 notationLayout = layout.name,
                 partColorMode = colorMode.name,
@@ -971,6 +998,9 @@ private fun ScoreReadyContent(
     }
     LaunchedEffect(playbackController, playbackSpeed) {
         playbackController.setPlaybackSpeed(playbackSpeed)
+    }
+    LaunchedEffect(playbackController, metronomeEnabled) {
+        playbackController.setMetronomeEnabled(metronomeEnabled)
     }
 
     val editSaveSuccess = stringResource(R.string.score_edit_save_success)
@@ -1086,6 +1116,7 @@ private fun ScoreReadyContent(
             status = playbackStatus,
             indicatorMode = playbackIndicatorMode,
             followScrollEnabled = followScrollEnabled,
+            metronomeEnabled = metronomeEnabled,
             sourceBpm = displayedSourceBpm,
             targetBpm = targetPlaybackBpm,
             hasCustomBpm = customPlaybackBpm != null,
@@ -1097,6 +1128,10 @@ private fun ScoreReadyContent(
             onFollowScrollChange = {
                 followScrollEnabled = it
                 persistGlobalSettings(followScroll = it)
+            },
+            onMetronomeEnabledChange = {
+                metronomeEnabled = it
+                persistGlobalSettings(metronome = it)
             },
             onTargetBpmChange = { bpm ->
                 val nextBpm = bpm.coerceIn(
@@ -1742,12 +1777,14 @@ private fun ScorePlaybackControls(
     status: ScorePlaybackStatus,
     indicatorMode: ScorePlaybackIndicatorMode,
     followScrollEnabled: Boolean,
+    metronomeEnabled: Boolean,
     sourceBpm: Int,
     targetBpm: Int,
     hasCustomBpm: Boolean,
     onPlaybackVariantChange: (BundledScoreVariant) -> Unit,
     onIndicatorModeChange: (ScorePlaybackIndicatorMode) -> Unit,
     onFollowScrollChange: (Boolean) -> Unit,
+    onMetronomeEnabledChange: (Boolean) -> Unit,
     onTargetBpmChange: (Int) -> Unit,
     onResetBpm: () -> Unit,
     endBehavior: ScorePlaybackEndBehavior,
@@ -1988,6 +2025,28 @@ private fun ScorePlaybackControls(
                     onTargetBpmChange = onTargetBpmChange,
                     onResetBpm = onResetBpm,
                 )
+                ScoreSettingsCard(
+                    icon = RhythmIcons.Player.Timer,
+                    title = stringResource(R.string.score_metronome),
+                ) {
+                    Row(
+                        modifier = Modifier.horizontalScroll(rememberScrollState()),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    ) {
+                        ScoreModeChip(
+                            selected = metronomeEnabled,
+                            onClick = { onMetronomeEnabledChange(true) },
+                            label = stringResource(R.string.score_metronome_on),
+                            enabled = interactionEnabled,
+                        )
+                        ScoreModeChip(
+                            selected = !metronomeEnabled,
+                            onClick = { onMetronomeEnabledChange(false) },
+                            label = stringResource(R.string.score_metronome_off),
+                            enabled = interactionEnabled,
+                        )
+                    }
+                }
                 settingsFooterContent()
             }
         }
@@ -2777,3 +2836,4 @@ private const val SCORE_STATS_MIN_DURATION_MS = 3_000L
 private const val SOUND_FONT_PLAYER_MAX_ATTEMPTS = 60
 private const val SOUND_FONT_PLAYER_RETRY_MS = 500L
 private const val SCORE_PLAYBACK_BUFFER_MS = 1_500.0
+private const val SCORE_METRONOME_VOLUME = 1.0
