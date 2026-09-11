@@ -3191,4 +3191,6 @@
     <string name="score_playback_end">When playback ends</string>
     <string name="score_pause_at_end">Pause at end</string>
     <string name="score_loop_current">Loop current</string>
+    <string name="labs_lyrics_editor">Lyrics Editor</string>
+    <string name="labs_lyrics_editor_desc">Show the lyrics editor action in full-screen lyrics</string>
 </resources>

@@ -416,6 +416,7 @@ fun RhythmAdaptiveModalSheet(
     contentColor: Color = MaterialTheme.colorScheme.onSurface,
     tonalElevation: Dp = 0.dp,
     scrimColor: Color = BottomSheetDefaults.ScrimColor,
+    sheetGesturesEnabled: Boolean = true,
     dragHandle: @Composable (() -> Unit)? = {
         BottomSheetDefaults.DragHandle(
             color = MaterialTheme.colorScheme.primary
@@ -526,6 +527,7 @@ fun RhythmAdaptiveModalSheet(
                 .widthIn(max = 640.dp)
                 .fillMaxWidth(),
             sheetState = sheetState,
+            sheetGesturesEnabled = sheetGesturesEnabled,
             shape = shape,
             containerColor = containerColor,
             contentColor = contentColor,

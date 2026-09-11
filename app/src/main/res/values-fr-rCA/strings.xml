@@ -2762,4 +2762,6 @@
         <item quantity="other">%1$d listes de lecture</item>
     </plurals>
     <string name="duration_minutes_format">%1$dmois</string>
+    <string name="labs_lyrics_editor">Éditeur de paroles</string>
+    <string name="labs_lyrics_editor_desc">Afficher l’action de modification dans les paroles en plein écran</string>
 </resources>

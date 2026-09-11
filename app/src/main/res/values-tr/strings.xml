@@ -2733,4 +2733,6 @@
         <item quantity="other">%1$d oynatma listesi</item>
     </plurals>
     <string name="duration_minutes_format">%1$dm</string>
+    <string name="labs_lyrics_editor">Şarkı Sözü Düzenleyici</string>
+    <string name="labs_lyrics_editor_desc">Tam ekran şarkı sözlerinde düzenleme düğmesini göster</string>
 </resources>

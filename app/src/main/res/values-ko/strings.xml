@@ -2704,4 +2704,6 @@
         <item quantity="other">%1$d 재생목록</item>
     </plurals>
     <string name="duration_minutes_format">%1$d분</string>
+    <string name="labs_lyrics_editor">가사 편집기</string>
+    <string name="labs_lyrics_editor_desc">전체 화면 가사에 편집 버튼 표시</string>
 </resources>

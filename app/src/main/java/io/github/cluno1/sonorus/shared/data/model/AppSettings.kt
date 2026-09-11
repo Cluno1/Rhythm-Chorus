@@ -181,6 +181,7 @@ class AppSettings private constructor(context: Context) {
         private const val KEY_TRIM_LYRICS = "trim_lyrics"
         private const val KEY_LYRIC_NO_ANIMATION = "lyric_no_animation"
         private const val KEY_TRANSLATION_AUTO_WORD = "translation_auto_word"
+        private const val KEY_LYRICS_EDITOR_ENABLED = "lyrics_editor_enabled"
         
         // Theme Settings
         private const val KEY_USE_SYSTEM_THEME = "use_system_theme"
@@ -797,6 +798,9 @@ class AppSettings private constructor(context: Context) {
 
     private val _translationAutoWord = MutableStateFlow(prefs.getBoolean(KEY_TRANSLATION_AUTO_WORD, false))
     val translationAutoWord: StateFlow<Boolean> = _translationAutoWord.asStateFlow()
+
+    private val _lyricsEditorEnabled = MutableStateFlow(prefs.getBoolean(KEY_LYRICS_EDITOR_ENABLED, false))
+    val lyricsEditorEnabled: StateFlow<Boolean> = _lyricsEditorEnabled.asStateFlow()
     
     // Theme Settings
     private val _useSystemTheme = MutableStateFlow(prefs.getBoolean(KEY_USE_SYSTEM_THEME, true))
@@ -2469,6 +2473,11 @@ private val _autoCheckForUpdates = MutableStateFlow(ProductCapabilities.inAppUpd
     fun setTranslationAutoWord(enable: Boolean) {
         prefs.edit { putBoolean(KEY_TRANSLATION_AUTO_WORD, enable) }
         _translationAutoWord.value = enable
+    }
+
+    fun setLyricsEditorEnabled(enabled: Boolean) {
+        prefs.edit { putBoolean(KEY_LYRICS_EDITOR_ENABLED, enabled) }
+        _lyricsEditorEnabled.value = enabled
     }
     
     // Theme Settings Methods
@@ -5254,6 +5263,7 @@ private val _autoCheckForUpdates = MutableStateFlow(ProductCapabilities.inAppUpd
         _trimLyrics.value = prefs.getBoolean(KEY_TRIM_LYRICS, true)
         _lyricNoAnimation.value = prefs.getBoolean(KEY_LYRIC_NO_ANIMATION, false)
         _translationAutoWord.value = prefs.getBoolean(KEY_TRANSLATION_AUTO_WORD, false)
+        _lyricsEditorEnabled.value = prefs.getBoolean(KEY_LYRICS_EDITOR_ENABLED, false)
         _showLyricsBackgroundArtwork.value = prefs.getBoolean(KEY_SHOW_LYRICS_BACKGROUND_ARTWORK, true)
         _searchHistory.value = prefs.getString(KEY_SEARCH_HISTORY, null)
         _showKeyboardOnSearchOpen.value = prefs.getBoolean(KEY_SHOW_KEYBOARD_ON_SEARCH_OPEN, true)

@@ -2733,4 +2733,6 @@
         <item quantity="other">%1$d afspeellijsten</item>
     </plurals>
     <string name="duration_minutes_format">%1$dm</string>
+    <string name="labs_lyrics_editor">Songteksteditor</string>
+    <string name="labs_lyrics_editor_desc">Toon de bewerkknop in de songtekstweergave op volledig scherm</string>
 </resources>

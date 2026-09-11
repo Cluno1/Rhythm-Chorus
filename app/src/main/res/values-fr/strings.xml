@@ -2983,4 +2983,6 @@
     <string name="onboarding_expressive_shapes_desc">Appliquez les formes Material 3 pour les albums, cadres, et composants d\'interface</string>
     <string name="onboarding_autoeq_desc">Calibre l\'audio pour des milliers de models de casques</string>
     <string name="onboarding_replaygain_desc">Ajuste automatiquement le volume audio entre les chansons</string>
+    <string name="labs_lyrics_editor">Éditeur de paroles</string>
+    <string name="labs_lyrics_editor_desc">Afficher l’action de modification dans les paroles en plein écran</string>
 </resources>

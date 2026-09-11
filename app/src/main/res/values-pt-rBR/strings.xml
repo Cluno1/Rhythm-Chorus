@@ -2770,4 +2770,6 @@
     <string name="settings_album_hide_about">Ocultar seção \'Sobre Álbum\'</string>
     <string name="settings_album_hide_about_desc">Ocultar seção descrição/sobre na tela de detalhes do álbum</string>
     <string name="settings_rhythm_guard_first_break_dialog_title">Sobre a pausa para ouvir</string>
+    <string name="labs_lyrics_editor">Editor de letras</string>
+    <string name="labs_lyrics_editor_desc">Mostrar o botão de edição na tela de letras em tela cheia</string>
 </resources>

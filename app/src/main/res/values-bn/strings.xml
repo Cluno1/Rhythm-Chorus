@@ -2733,4 +2733,6 @@
         <item quantity="other">%1$d প্লেলিস্ট</item>
     </plurals>
     <string name="duration_minutes_format">%1$dমি</string>
+    <string name="labs_lyrics_editor">গানের কথা সম্পাদক</string>
+    <string name="labs_lyrics_editor_desc">পূর্ণ-স্ক্রিন গানের কথায় সম্পাদক বোতাম দেখান</string>
 </resources>

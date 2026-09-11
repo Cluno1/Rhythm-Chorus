@@ -2769,4 +2769,6 @@
     <string name="lyrically_sources_desc">Configura y prioriza las fuentes de letras en Lyrically. Se intentará primero con las fuentes palabra por palabra, y si no se encuentra una fuente, se recurrirá a las sincronizadas o sin formato.</string>
     <string name="error_no_document_app">No se encontró ningún selector de documentos del sistema para seleccionar una carpeta.</string>
     <string name="settings_notifications_library_group">Biblioteca &amp; Sincronización</string>
+    <string name="labs_lyrics_editor">Editor de letras</string>
+    <string name="labs_lyrics_editor_desc">Mostrar la acción de edición en la vista de letras a pantalla completa</string>
 </resources>
