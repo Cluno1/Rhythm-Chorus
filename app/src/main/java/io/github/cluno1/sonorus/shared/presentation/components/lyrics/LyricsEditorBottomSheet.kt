@@ -23,9 +23,6 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContract
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.core.Spring
-import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.core.spring
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInVertically
@@ -215,6 +212,7 @@ fun LyricsEditorBottomSheet(
     val isImeVisible = WindowInsets.ime.getBottom(density) > 0
     val scope = rememberCoroutineScope()
     val toolsScrollState = rememberScrollState()
+    var toolsExpanded by remember { mutableStateOf(false) }
     var showCandidateDialog by remember { mutableStateOf(false) }
     
     var selectedFormat by remember(lyricsData) {
@@ -349,6 +347,10 @@ fun LyricsEditorBottomSheet(
 
     // Animation states
     var showContent by remember { mutableStateOf(true) }
+
+    LaunchedEffect(isImeVisible) {
+        if (isImeVisible) toolsExpanded = false
+    }
 
     // Function to adjust LRC timestamps or word-by-word JSON timestamps
     fun adjustLyricsTimestamps(lyrics: String, offsetMs: Int): String {
@@ -649,6 +651,48 @@ fun LyricsEditorBottomSheet(
             }
     }
 
+    fun selectFormat(targetFormat: LyricFormat) {
+        if (
+            targetFormat == LyricFormat.LINE_BY_LINE &&
+            editedLineByLine.isBlank() &&
+            editedWordByWord.isNotBlank()
+        ) {
+            try {
+                val parsed = RhythmLyricsParser.parseWordByWordLyrics(editedWordByWord)
+                if (parsed.isNotEmpty()) {
+                    editedLineByLine = RhythmLyricsParser.toEnhancedLRCFormat(parsed)
+                }
+            } catch (_: Exception) {}
+        } else if (
+            targetFormat == LyricFormat.WORD_BY_WORD &&
+            editedWordByWord.isBlank() &&
+            io.github.cluno1.sonorus.util.LyricsParser.hasWordTimestamps(editedLineByLine)
+        ) {
+            try {
+                val parsed = RhythmLyricsParser.parseEnhancedLRCtoWordByWord(editedLineByLine)
+                if (parsed.isNotEmpty()) {
+                    editedWordByWord = Gson().toJson(parsed)
+                }
+            } catch (_: Exception) {}
+        } else if (targetFormat == LyricFormat.SOURCE && editedSource.isBlank()) {
+            if (editedWordByWord.isNotBlank()) {
+                try {
+                    val parsed = RhythmLyricsParser.parseWordByWordLyrics(editedWordByWord)
+                    if (parsed.isNotEmpty()) {
+                        editedSource = RhythmLyricsParser.toTtmlFormat(
+                            parsed,
+                            song?.title,
+                            song?.artist,
+                        )
+                    }
+                } catch (_: Exception) {}
+            } else if (editedLineByLine.isNotBlank()) {
+                editedSource = editedLineByLine
+            }
+        }
+        selectedFormat = targetFormat
+    }
+
     var editorValue by remember(selectedFormat) {
         mutableStateOf(TextFieldValue(editedLyrics, TextRange(editedLyrics.length)))
     }
@@ -713,7 +757,6 @@ fun LyricsEditorBottomSheet(
             modifier = Modifier
                 .fillMaxWidth()
                 .fillMaxHeight()
-                .padding(bottom = 24.dp)
         ) {
             // Header with animation
             AnimatedVisibility(
@@ -724,20 +767,81 @@ fun LyricsEditorBottomSheet(
                 LyricsEditorHeader(
                     songTitle = songTitle,
                     formatLabel = detectedFormatLabel,
-                    compact = isImeVisible,
                     onBack = onDismiss,
                 )
             }
 
             if (!isImeVisible) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(start = 16.dp, end = 16.dp, bottom = 8.dp),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    RhythmToggleButtonGroup(
+                        options = listOf(
+                            RhythmToggleOption(text = stringResource(R.string.lyrics_source)),
+                            RhythmToggleOption(text = stringResource(R.string.lyrics_line_by_line)),
+                            RhythmToggleOption(text = stringResource(R.string.lyrics_word_by_word)),
+                        ),
+                        selectedIndices = setOf(
+                            when (selectedFormat) {
+                                LyricFormat.SOURCE -> 0
+                                LyricFormat.LINE_BY_LINE -> 1
+                                LyricFormat.WORD_BY_WORD -> 2
+                            }
+                        ),
+                        onToggle = { index ->
+                            HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT)
+                            selectFormat(
+                                when (index) {
+                                    0 -> LyricFormat.SOURCE
+                                    1 -> LyricFormat.LINE_BY_LINE
+                                    else -> LyricFormat.WORD_BY_WORD
+                                }
+                            )
+                        },
+                        modifier = Modifier.weight(1f),
+                        size = RhythmButtonSize.Small,
+                        isShowingCheck = false,
+                        isFillMaxWidth = false,
+                    )
+                    FilledTonalIconButton(
+                        onClick = {
+                            HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT)
+                            toolsExpanded = !toolsExpanded
+                        },
+                        modifier = Modifier.size(40.dp),
+                    ) {
+                        Icon(
+                            imageVector = if (toolsExpanded) {
+                                RhythmIcons.ExpandLess
+                            } else {
+                                RhythmIcons.Tune
+                            },
+                            contentDescription = stringResource(R.string.settings_section_advanced),
+                            modifier = Modifier.size(20.dp),
+                        )
+                    }
+                }
+            }
+
+            if (!isImeVisible && toolsExpanded) {
+                Surface(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp, vertical = 4.dp)
+                        .heightIn(max = 280.dp),
+                    shape = RoundedCornerShape(20.dp),
+                    color = MaterialTheme.colorScheme.surfaceContainerHigh,
+                ) {
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .weight(0.45f)
-                        .verticalScroll(toolsScrollState),
+                        .verticalScroll(toolsScrollState)
+                        .padding(vertical = 12.dp),
                 ) {
-            Spacer(modifier = Modifier.height(16.dp))
-
             if (song != null && !isImeVisible && !canSyncCatalog) {
                 val songId = song.id
                 val currentPref = songLyricsPreferences[songId]
@@ -748,8 +852,8 @@ fun LyricsEditorBottomSheet(
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 24.dp)
-                        .background(MaterialTheme.colorScheme.surfaceContainerHigh, RoundedCornerShape(16.dp))
+                        .padding(horizontal = 12.dp)
+                        .background(MaterialTheme.colorScheme.surfaceContainer, RoundedCornerShape(16.dp))
                         .padding(16.dp)
                 ) {
                     Row(
@@ -945,78 +1049,9 @@ fun LyricsEditorBottomSheet(
                 Spacer(modifier = Modifier.height(16.dp))
             }
 
-            // Format Selector Button Group like Theme Switcher
-            AnimatedVisibility(
-                visible = showContent && !isImeVisible,
-                enter = fadeIn() + slideInVertically { it },
-                exit = fadeOut() + slideOutVertically { it }
-            ) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 24.dp)
-                ) {
-                    RhythmToggleButtonGroup(
-                        options = listOf(
-                            RhythmToggleOption(text = stringResource(R.string.lyrics_source)),
-                            RhythmToggleOption(text = stringResource(R.string.lyrics_line_by_line)),
-                            RhythmToggleOption(text = stringResource(R.string.lyrics_word_by_word))
-                        ),
-                        selectedIndices = setOf(
-                            when (selectedFormat) {
-                                LyricFormat.SOURCE -> 0
-                                LyricFormat.LINE_BY_LINE -> 1
-                                LyricFormat.WORD_BY_WORD -> 2
-                            }
-                        ),
-                        onToggle = { index ->
-                            HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT)
-                            val targetFormat = when (index) {
-                                0 -> LyricFormat.SOURCE
-                                1 -> LyricFormat.LINE_BY_LINE
-                                else -> LyricFormat.WORD_BY_WORD
-                            }
-                            // Auto-translate between formats when switching
-                            if (targetFormat == LyricFormat.LINE_BY_LINE && editedLineByLine.isBlank() && editedWordByWord.isNotBlank()) {
-                                try {
-                                    val parsed = RhythmLyricsParser.parseWordByWordLyrics(editedWordByWord)
-                                    if (parsed.isNotEmpty()) {
-                                        editedLineByLine = RhythmLyricsParser.toEnhancedLRCFormat(parsed)
-                                    }
-                                } catch (_: Exception) {}
-                            } else if (targetFormat == LyricFormat.WORD_BY_WORD && editedWordByWord.isBlank() && io.github.cluno1.sonorus.util.LyricsParser.hasWordTimestamps(editedLineByLine)) {
-                                try {
-                                    val parsed = RhythmLyricsParser.parseEnhancedLRCtoWordByWord(editedLineByLine)
-                                    if (parsed.isNotEmpty()) {
-                                        editedWordByWord = com.google.gson.Gson().toJson(parsed)
-                                    }
-                                } catch (_: Exception) {}
-                            } else if (targetFormat == LyricFormat.SOURCE && editedSource.isBlank()) {
-                                if (editedWordByWord.isNotBlank()) {
-                                    try {
-                                        val parsed = RhythmLyricsParser.parseWordByWordLyrics(editedWordByWord)
-                                        if (parsed.isNotEmpty()) {
-                                            editedSource = RhythmLyricsParser.toTtmlFormat(parsed, song?.title, song?.artist)
-                                        }
-                                    } catch (_: Exception) {}
-                                } else if (editedLineByLine.isNotBlank()) {
-                                    editedSource = editedLineByLine
-                                }
-                            }
-                            selectedFormat = targetFormat
-                        },
-                        modifier = Modifier.fillMaxWidth(),
-                        size = RhythmButtonSize.Medium,
-                        isShowingCheck = false
-                    )
-                }
-            }
-
-            Spacer(modifier = Modifier.height(if (isImeVisible) 0.dp else 16.dp))
-
             // Timestamp Adjustment Controls
             AnimatedVisibility(
-                visible = showContent && !isImeVisible,
+                visible = showContent && selectedFormat != LyricFormat.WORD_BY_WORD,
                 enter = fadeIn() + slideInVertically { it },
                 exit = fadeOut() + slideOutVertically { it }
             ) {
@@ -1141,7 +1176,8 @@ fun LyricsEditorBottomSheet(
                         }
                     }
 
-                    Spacer(modifier = Modifier.height(16.dp))
+                    if (hasSyncedLyrics) {
+                    Spacer(modifier = Modifier.height(12.dp))
 
                     Row(
                         modifier = Modifier.fillMaxWidth(),
@@ -1153,14 +1189,14 @@ fun LyricsEditorBottomSheet(
                                 imageVector = MaterialSymbolIcon("sync", filled = true),
                                 contentDescription = null,
                                 modifier = Modifier.size(20.dp),
-                                tint = if (hasSyncedLyrics) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
+                                tint = MaterialTheme.colorScheme.primary
                             )
                             Spacer(modifier = Modifier.width(8.dp))
                             Text(
                                 text = context.getString(R.string.sync_adjustment),
-                                style = MaterialTheme.typography.titleMedium,
+                                style = MaterialTheme.typography.titleSmall,
                                 fontWeight = FontWeight.SemiBold,
-                                color = if (hasSyncedLyrics) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurfaceVariant
+                                color = MaterialTheme.colorScheme.onSurface
                             )
                         }
                         
@@ -1168,17 +1204,15 @@ fun LyricsEditorBottomSheet(
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
-                            if (hasSyncedLyrics) {
-                                Text(
-                                    text = stringResource(
-                                        R.string.lyrics_time_offset_ms,
-                                        "${if (timeOffset >= 0) "+" else ""}$timeOffset"
-                                    ),
-                                    style = MaterialTheme.typography.bodyLarge,
-                                    fontWeight = FontWeight.Medium,
-                                    color = MaterialTheme.colorScheme.primary
-                                )
-                            }
+                            Text(
+                                text = stringResource(
+                                    R.string.lyrics_time_offset_ms,
+                                    "${if (timeOffset >= 0) "+" else ""}$timeOffset"
+                                ),
+                                style = MaterialTheme.typography.labelMedium,
+                                fontWeight = FontWeight.Medium,
+                                color = MaterialTheme.colorScheme.primary
+                            )
                             
                             // Reset/Refresh button
                             FilledTonalButton(
@@ -1205,7 +1239,7 @@ fun LyricsEditorBottomSheet(
                     
                     RhythmGroupedButton(
                         modifier = Modifier.fillMaxWidth(),
-                        size = RhythmButtonSize.Large
+                        size = RhythmButtonSize.Medium
                     ) {
                         RhythmButtonWeighted(
                             onClick = {
@@ -1218,37 +1252,11 @@ fun LyricsEditorBottomSheet(
                             weight = 1f,
                             isFirst = true,
                             isLast = false,
-                            enabled = hasSyncedLyrics,
-                            height = 72.dp,
-                            containerColor = if (hasSyncedLyrics) MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f) else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.2f),
-                            contentColor = if (hasSyncedLyrics) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f)
-                        ) {
-                            Column(
-                                horizontalAlignment = Alignment.CenterHorizontally,
-                                verticalArrangement = Arrangement.Center,
-                                modifier = Modifier.fillMaxSize()
-                            ) {
-                                Icon(
-                                    imageVector = RhythmIcons.Remove,
-                                    contentDescription = null,
-                                    modifier = Modifier.size(20.dp)
-                                )
-                                Spacer(modifier = Modifier.height(4.dp))
-                                Text(
-                                    text = stringResource(R.string.lyricseditorbottomsheet_str_500ms),
-                                    style = MaterialTheme.typography.labelMedium,
-                                    fontWeight = FontWeight.Bold
-                                )
-                                Text(
-                                    text = context.getString(R.string.bottomsheet_lyrics_earlier),
-                                    style = MaterialTheme.typography.labelSmall,
-                                    color = if (hasSyncedLyrics) 
-                                        MaterialTheme.colorScheme.primary.copy(alpha = 0.8f)
-                                    else
-                                        MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f)
-                                )
-                            }
-                        }
+                            size = RhythmButtonSize.Medium,
+                            text = "-${stringResource(R.string.lyricseditorbottomsheet_str_500ms)}",
+                            containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f),
+                            contentColor = MaterialTheme.colorScheme.primary,
+                        )
                         
                         RhythmButtonWeighted(
                             onClick = {
@@ -1261,37 +1269,11 @@ fun LyricsEditorBottomSheet(
                             weight = 1f,
                             isFirst = false,
                             isLast = false,
-                            enabled = hasSyncedLyrics,
-                            height = 72.dp,
-                            containerColor = if (hasSyncedLyrics) MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f) else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.2f),
-                            contentColor = if (hasSyncedLyrics) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f)
-                        ) {
-                            Column(
-                                horizontalAlignment = Alignment.CenterHorizontally,
-                                verticalArrangement = Arrangement.Center,
-                                modifier = Modifier.fillMaxSize()
-                            ) {
-                                Icon(
-                                    imageVector = RhythmIcons.Remove,
-                                    contentDescription = null,
-                                    modifier = Modifier.size(20.dp)
-                                )
-                                Spacer(modifier = Modifier.height(4.dp))
-                                Text(
-                                    text = stringResource(R.string.lyricseditorbottomsheet_str_100ms),
-                                    style = MaterialTheme.typography.labelMedium,
-                                    fontWeight = FontWeight.Bold
-                                )
-                                Text(
-                                    text = context.getString(R.string.bottomsheet_lyrics_earlier),
-                                    style = MaterialTheme.typography.labelSmall,
-                                    color = if (hasSyncedLyrics) 
-                                        MaterialTheme.colorScheme.primary.copy(alpha = 0.8f)
-                                    else
-                                        MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f)
-                                )
-                            }
-                        }
+                            size = RhythmButtonSize.Medium,
+                            text = "-${stringResource(R.string.lyricseditorbottomsheet_str_100ms)}",
+                            containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f),
+                            contentColor = MaterialTheme.colorScheme.primary,
+                        )
                         
                         RhythmButtonWeighted(
                             onClick = {
@@ -1304,37 +1286,11 @@ fun LyricsEditorBottomSheet(
                             weight = 1f,
                             isFirst = false,
                             isLast = false,
-                            enabled = hasSyncedLyrics,
-                            height = 72.dp,
-                            containerColor = if (hasSyncedLyrics) MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.3f) else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.2f),
-                            contentColor = if (hasSyncedLyrics) MaterialTheme.colorScheme.secondary else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f)
-                        ) {
-                            Column(
-                                horizontalAlignment = Alignment.CenterHorizontally,
-                                verticalArrangement = Arrangement.Center,
-                                modifier = Modifier.fillMaxSize()
-                            ) {
-                                Icon(
-                                    imageVector = RhythmIcons.Add,
-                                    contentDescription = null,
-                                    modifier = Modifier.size(20.dp)
-                                )
-                                Spacer(modifier = Modifier.height(4.dp))
-                                Text(
-                                    text = stringResource(R.string.lyricseditorbottomsheet_str_100ms),
-                                    style = MaterialTheme.typography.labelMedium,
-                                    fontWeight = FontWeight.Bold
-                                )
-                                Text(
-                                    text = context.getString(R.string.bottomsheet_lyrics_later),
-                                    style = MaterialTheme.typography.labelSmall,
-                                    color = if (hasSyncedLyrics) 
-                                        MaterialTheme.colorScheme.secondary.copy(alpha = 0.8f)
-                                    else
-                                        MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f)
-                                )
-                            }
-                        }
+                            size = RhythmButtonSize.Medium,
+                            text = "+${stringResource(R.string.lyricseditorbottomsheet_str_100ms)}",
+                            containerColor = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.3f),
+                            contentColor = MaterialTheme.colorScheme.secondary,
+                        )
                         
                         RhythmButtonWeighted(
                             onClick = {
@@ -1347,57 +1303,33 @@ fun LyricsEditorBottomSheet(
                             weight = 1f,
                             isFirst = false,
                             isLast = true,
-                            enabled = hasSyncedLyrics,
-                            height = 72.dp,
-                            containerColor = if (hasSyncedLyrics) MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.3f) else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.2f),
-                            contentColor = if (hasSyncedLyrics) MaterialTheme.colorScheme.secondary else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f)
-                        ) {
-                            Column(
-                                horizontalAlignment = Alignment.CenterHorizontally,
-                                verticalArrangement = Arrangement.Center,
-                                modifier = Modifier.fillMaxSize()
-                            ) {
-                                Icon(
-                                    imageVector = RhythmIcons.Add,
-                                    contentDescription = null,
-                                    modifier = Modifier.size(20.dp)
-                                )
-                                Spacer(modifier = Modifier.height(4.dp))
-                                Text(
-                                    text = stringResource(R.string.lyricseditorbottomsheet_str_500ms),
-                                    style = MaterialTheme.typography.labelMedium,
-                                    fontWeight = FontWeight.Bold
-                                )
-                                Text(
-                                    text = context.getString(R.string.bottomsheet_lyrics_later),
-                                    style = MaterialTheme.typography.labelSmall,
-                                    color = if (hasSyncedLyrics) 
-                                        MaterialTheme.colorScheme.secondary.copy(alpha = 0.8f)
-                                    else
-                                        MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f)
-                                )
-                            }
-                        }
+                            size = RhythmButtonSize.Medium,
+                            text = "+${stringResource(R.string.lyricseditorbottomsheet_str_500ms)}",
+                            containerColor = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.3f),
+                            contentColor = MaterialTheme.colorScheme.secondary,
+                        )
+                    }
                     }
                 }
             }
                 }
             }
+            }
 
-            Spacer(modifier = Modifier.height(if (isImeVisible) 8.dp else 16.dp))
+            Spacer(modifier = Modifier.height(8.dp))
 
             // Lyrics Text Field with animation
             AnimatedVisibility(
                 visible = showContent,
                 enter = fadeIn() + slideInVertically { it },
                 exit = fadeOut() + slideOutVertically { it },
-                modifier = Modifier.weight(if (isImeVisible) 1f else 0.55f)
+                modifier = Modifier.weight(1f)
             ) {
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
                         .fillMaxHeight()
-                        .padding(horizontal = 24.dp)
+                        .padding(horizontal = 16.dp)
                 ) {
                     OutlinedTextField(
                         value = editorValue,
@@ -1446,7 +1378,7 @@ fun LyricsEditorBottomSheet(
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(top = 16.dp)
+                        .padding(vertical = 8.dp)
                 ) {
                     if (canSyncCatalog) {
                         val syncStatusText = when (catalogSyncState.status) {
@@ -1461,7 +1393,7 @@ fun LyricsEditorBottomSheet(
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(horizontal = 24.dp),
+                                .padding(horizontal = 16.dp),
                             horizontalArrangement = Arrangement.spacedBy(12.dp),
                             verticalAlignment = Alignment.CenterVertically,
                         ) {
@@ -1477,7 +1409,7 @@ fun LyricsEditorBottomSheet(
                                 } else {
                                     MaterialTheme.colorScheme.onSurfaceVariant
                                 },
-                                maxLines = 2,
+                                maxLines = 1,
                                 overflow = TextOverflow.Ellipsis,
                             )
                             if (catalogSyncState.status != CatalogLyricsSyncStatus.CONFLICT) {
@@ -1518,15 +1450,15 @@ fun LyricsEditorBottomSheet(
                                 }
                             }
                         }
-                        Spacer(modifier = Modifier.height(12.dp))
+                        Spacer(modifier = Modifier.height(8.dp))
                     }
 
                     if (!isImeVisible || !canSyncCatalog) {
                         RhythmGroupedButton(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(horizontal = 24.dp),
-                            size = RhythmButtonSize.Large
+                                .padding(horizontal = 16.dp),
+                            size = RhythmButtonSize.Medium
                         ) {
                         // Load File Button
                         RhythmButtonWeighted(
@@ -1585,13 +1517,13 @@ fun LyricsEditorBottomSheet(
 
                     // Embed in File is local-only — streaming songs have no writable file.
                     if (!isStreamingMode && !canSyncCatalog && !isImeVisible) {
-                        Spacer(modifier = Modifier.height(12.dp))
+                        Spacer(modifier = Modifier.height(8.dp))
 
                         RhythmGroupedButton(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(horizontal = 24.dp),
-                            size = RhythmButtonSize.Large
+                                .padding(horizontal = 16.dp),
+                            size = RhythmButtonSize.Medium
                         ) {
                             RhythmButtonWeighted(
                                 onClick = {
@@ -1771,7 +1703,6 @@ fun LyricsEditorBottomSheet(
 private fun LyricsEditorHeader(
     songTitle: String,
     formatLabel: String? = null,
-    compact: Boolean,
     onBack: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -1779,13 +1710,13 @@ private fun LyricsEditorHeader(
     Row(
         modifier = modifier
             .fillMaxWidth()
-            .padding(horizontal = 20.dp, vertical = if (compact) 8.dp else 16.dp),
+            .padding(horizontal = 12.dp, vertical = 8.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.Start
     ) {
         FilledTonalIconButton(
             onClick = onBack,
-            modifier = Modifier.size(44.dp),
+            modifier = Modifier.size(40.dp),
         ) {
             Icon(
                 imageVector = RhythmIcons.Back,
@@ -1794,55 +1725,38 @@ private fun LyricsEditorHeader(
             )
         }
 
-        if (!compact) {
-            Spacer(modifier = Modifier.width(12.dp))
-            Column(modifier = Modifier.weight(1f)) {
+        Spacer(modifier = Modifier.width(10.dp))
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                text = songTitle,
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.SemiBold,
+                color = MaterialTheme.colorScheme.onSurface,
+                overflow = TextOverflow.Ellipsis,
+                maxLines = 1,
+            )
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(4.dp),
+            ) {
                 Text(
                     text = context.getString(R.string.lyrics_editor_title),
-                    style = MaterialTheme.typography.displayMedium,
-                    fontWeight = FontWeight.Medium,
-                    color = MaterialTheme.colorScheme.onSurface
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
-                Row(
-                    modifier = Modifier.padding(top = 6.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    Box(
-                        modifier = Modifier
-                            .weight(1f, fill = false)
-                            .background(
-                                color = MaterialTheme.colorScheme.surfaceContainerHigh,
-                                shape = CircleShape
-                            )
-                    ) {
-                        Text(
-                            modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
-                            style = MaterialTheme.typography.labelLarge,
-                            text = songTitle,
-                            overflow = TextOverflow.Ellipsis,
-                            maxLines = 1,
-                            color = MaterialTheme.colorScheme.onSurface
-                        )
-                    }
-
-                    if (!formatLabel.isNullOrBlank()) {
-                        Box(
-                            modifier = Modifier
-                                .background(
-                                    color = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.7f),
-                                    shape = CircleShape
-                                )
-                        ) {
-                            Text(
-                                modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
-                                style = MaterialTheme.typography.labelMedium,
-                                fontWeight = FontWeight.SemiBold,
-                                text = formatLabel,
-                                color = MaterialTheme.colorScheme.onSecondaryContainer
-                            )
-                        }
-                    }
+                if (!formatLabel.isNullOrBlank()) {
+                    Text(
+                        text = "·",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.outline,
+                    )
+                    Text(
+                        text = formatLabel,
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.primary,
+                        overflow = TextOverflow.Ellipsis,
+                        maxLines = 1,
+                    )
                 }
             }
         }
