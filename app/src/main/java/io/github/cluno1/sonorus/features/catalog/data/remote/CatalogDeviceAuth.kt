@@ -222,12 +222,14 @@ internal class CatalogDeviceAuthClient(
     }
 
     @Synchronized
-    fun proof(request: Request): Map<String, String> {
+    fun proof(request: Request, precomputedContentSha256: String? = null): Map<String, String> {
         val isRead = request.method == "GET" || request.method == "HEAD"
         val isLyricWrite = request.method == "PUT" &&
             request.url.encodedPath.matches(Regex("^/v2/renditions/[^/]+/lyrics/[^/]+$"))
-        require(isRead || isLyricWrite) {
-            "public Catalog only signs reads and rendition lyric writes"
+        val isChorusWrite = request.url.encodedPath.startsWith("/v2/chorus-") &&
+            request.method in setOf("POST", "PUT", "PATCH", "DELETE")
+        require(isRead || isLyricWrite || isChorusWrite) {
+            "public Catalog only signs reads and narrow owned writes"
         }
         if (credentials.isReenrollmentRequired()) throw CatalogFailure.InvalidCredentials()
         try {
@@ -237,11 +239,15 @@ internal class CatalogDeviceAuthClient(
                 DeviceNonceRequest(current.deviceId),
             ).execute().bodyOrThrow().nonce
             val timestamp = Instant.now().epochSecond
-            val contentSha256 = request.body?.let { body ->
-                val buffer = Buffer()
-                body.writeTo(buffer)
-                CatalogDeviceCanonical.contentSha256(buffer.readByteArray())
-            } ?: CatalogDeviceCanonical.emptySha256
+            val contentSha256 = precomputedContentSha256?.lowercase()?.also {
+                require(it.matches(Regex("^[0-9a-f]{64}$"))) {
+                    "precomputed request body SHA-256 is invalid"
+                }
+            } ?: request.body?.let { body ->
+                    val buffer = Buffer()
+                    body.writeTo(buffer)
+                    CatalogDeviceCanonical.contentSha256(buffer.readByteArray())
+                } ?: CatalogDeviceCanonical.emptySha256
             val canonical = CatalogDeviceCanonical.request(
                 request.method,
                 request.url.encodedPath,

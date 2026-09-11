@@ -127,6 +127,13 @@ private enum class ScorePlaybackStatus {
     ERROR
 }
 
+enum class ScorePlaybackCommandAction { PLAY, PAUSE, STOP }
+
+data class ScorePlaybackCommand(
+    val sequence: Long,
+    val action: ScorePlaybackCommandAction,
+)
+
 internal enum class ScorePlaybackIndicatorMode {
     LINE,
     PULSE,
@@ -182,6 +189,7 @@ private class ScorePlaybackController(
     private val context: Context,
     private val onPlaybackStarted: () -> Unit = {},
     private val onPlaybackPaused: () -> Unit = {},
+    private val onPositionChanged: (tick: Long, timeMs: Long) -> Unit = { _, _ -> },
 ) {
     private var view: AlphaTabView? = null
     private var score: Score? = null
@@ -302,6 +310,18 @@ private class ScorePlaybackController(
         }
     }
 
+    fun play() {
+        if (!isPlaying) playPause()
+    }
+
+    fun pause() {
+        if (!isPlaying) return
+        val currentView = view ?: return
+        isPlaying = false
+        onPlaybackPaused()
+        currentView.api.playPause()
+    }
+
     fun stop() {
         completionTracker.reset()
         isPlaying = false
@@ -351,6 +371,7 @@ private class ScorePlaybackController(
         currentTick = tick
         currentTime = time
         endTime = totalTime
+        onPositionChanged(tick.toLong(), time.toLong())
         displayBindings.forEach { (displayView, binding) ->
             displayView.post {
                 if (displayBindings[displayView] === binding) {
@@ -573,6 +594,9 @@ fun RemoteScoreScreen(
     title: String,
     canonicalMusicXml: ByteArray,
     onBackClick: () -> Unit,
+    onChorusClick: (() -> Unit)? = null,
+    onPlaybackPositionChanged: (tick: Long, timeMs: Long) -> Unit = { _, _ -> },
+    playbackCommand: ScorePlaybackCommand? = null,
     scoreLabel: String? = null,
     revisionLabel: String? = null,
     revisionTimeLabel: String? = null,
@@ -686,6 +710,9 @@ fun RemoteScoreScreen(
                         title = title,
                         subtitle = scoreLabel,
                         onBackClick = onBackClick,
+                        onChorusClick = onChorusClick,
+                        onPlaybackPositionChanged = onPlaybackPositionChanged,
+                        playbackCommand = playbackCommand,
                         scoreSettingsContent = {
                             scoreSettingsContent()
                             if (revisionLabel != null) {
@@ -763,6 +790,9 @@ private fun ScoreReadyContent(
     title: String? = null,
     subtitle: String? = null,
     onBackClick: (() -> Unit)? = null,
+    onChorusClick: (() -> Unit)? = null,
+    onPlaybackPositionChanged: (tick: Long, timeMs: Long) -> Unit = { _, _ -> },
+    playbackCommand: ScorePlaybackCommand? = null,
     scoreSettingsContent: @Composable () -> Unit = {},
     playbackSubject: PlaybackSubject? = null,
     modifier: Modifier = Modifier
@@ -858,14 +888,25 @@ private fun ScoreReadyContent(
             scoreUsageRecorder?.close()
         }
     }
+    val currentPositionCallback by rememberUpdatedState(onPlaybackPositionChanged)
     val playbackController = remember(context, scoreUsageRecorder) {
         ScorePlaybackController(
             context = context.applicationContext,
             onPlaybackStarted = { scoreUsageRecorder?.onPlaybackStarted() },
             onPlaybackPaused = { scoreUsageRecorder?.onPlaybackPaused() },
+            onPositionChanged = { tick, timeMs -> currentPositionCallback(tick, timeMs) },
         )
     }
     val coroutineScope = rememberCoroutineScope()
+
+    LaunchedEffect(playbackCommand) {
+        when (playbackCommand?.action) {
+            ScorePlaybackCommandAction.PLAY -> playbackController.play()
+            ScorePlaybackCommandAction.PAUSE -> playbackController.pause()
+            ScorePlaybackCommandAction.STOP -> playbackController.stop()
+            null -> Unit
+        }
+    }
     var editSession by remember { mutableStateOf<ScoreEditSession?>(null) }
     var editVariant by remember { mutableStateOf<BundledScoreVariant?>(null) }
     var editBaseScore by remember { mutableStateOf<LoadedScore?>(null) }
@@ -1111,6 +1152,7 @@ private fun ScoreReadyContent(
             title = title,
             subtitle = subtitle,
             onBackClick = onBackClick,
+            onChorusClick = onChorusClick,
             viewMode = viewMode,
             playbackVariant = playbackVariant,
             status = playbackStatus,
@@ -1772,6 +1814,7 @@ private fun ScorePlaybackControls(
     title: String?,
     subtitle: String?,
     onBackClick: (() -> Unit)?,
+    onChorusClick: (() -> Unit)?,
     viewMode: ScoreViewMode,
     playbackVariant: BundledScoreVariant,
     status: ScorePlaybackStatus,
@@ -1858,6 +1901,23 @@ private fun ScorePlaybackControls(
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                 )
+            }
+
+            if (onChorusClick != null) {
+                FilledTonalIconButton(
+                    onClick = onChorusClick,
+                    modifier = Modifier.size(48.dp),
+                    colors = IconButtonDefaults.filledTonalIconButtonColors(
+                        containerColor = MaterialTheme.colorScheme.tertiaryContainer,
+                        contentColor = MaterialTheme.colorScheme.onTertiaryContainer,
+                    ),
+                ) {
+                    Icon(
+                        RhythmIcons.MusicNote,
+                        contentDescription = "在线合唱",
+                        modifier = Modifier.size(24.dp),
+                    )
+                }
             }
 
             FilledIconButton(

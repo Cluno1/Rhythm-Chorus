@@ -59,4 +59,17 @@ interface CatalogRepository {
         expectedRevision: Int,
         idempotencyKey: String,
     ): Result<CatalogLyricsWriteResult>
+    suspend fun getChorus(workId: String): Result<ChorusCatalog>
+    suspend fun getChorusProject(projectId: String): Result<ChorusProject>
+    suspend fun uploadChorusTrack(projectId: String, upload: ChorusTrackUpload): Result<ChorusTrack>
+    suspend fun updateChorusTrackAlignment(
+        trackId: String,
+        revision: Int,
+        offsetMs: Long,
+        anchors: List<ChorusSyncAnchor>,
+    ): Result<ChorusTrack>
+    suspend fun submitChorusTrack(trackId: String): Result<ChorusTrack>
+    suspend fun withdrawChorusTrack(trackId: String): Result<ChorusTrack>
+    suspend fun resolveChorusMix(projectId: String, trackIds: List<String>): Result<ChorusMix>
+    suspend fun getChorusMix(mixId: String): Result<ChorusMix>
 }

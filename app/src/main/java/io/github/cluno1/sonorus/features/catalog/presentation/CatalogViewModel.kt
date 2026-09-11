@@ -21,6 +21,12 @@ import io.github.cluno1.sonorus.features.catalog.domain.CatalogIssuedInvite
 import io.github.cluno1.sonorus.features.catalog.domain.CatalogSmartEnrollmentError
 import io.github.cluno1.sonorus.features.catalog.domain.CatalogSmartEnrollmentException
 import io.github.cluno1.sonorus.features.catalog.domain.CatalogSmartEnrollmentText
+import io.github.cluno1.sonorus.features.catalog.domain.ChorusCatalog
+import io.github.cluno1.sonorus.features.catalog.domain.ChorusMix
+import io.github.cluno1.sonorus.features.catalog.domain.ChorusProject
+import io.github.cluno1.sonorus.features.catalog.domain.ChorusSyncAnchor
+import io.github.cluno1.sonorus.features.catalog.domain.ChorusTrack
+import io.github.cluno1.sonorus.features.catalog.domain.ChorusTrackUpload
 import io.github.cluno1.sonorus.features.catalog.data.remote.CatalogEndpoint
 import io.github.cluno1.sonorus.shared.data.model.Song
 import android.net.Uri
@@ -289,6 +295,32 @@ class CatalogViewModel(application: Application) : AndroidViewModel(application)
             ?: return Result.failure(CatalogFailure.InvalidData("谱面修订没有 primary_musicxml"))
         return repository.downloadAsset(asset.assetId, asset.sha256, asset.byteSize)
     }
+
+    suspend fun chorus(workId: String): Result<ChorusCatalog> = repository.getChorus(workId)
+
+    suspend fun chorusProject(projectId: String): Result<ChorusProject> =
+        repository.getChorusProject(projectId)
+
+    suspend fun uploadChorusTrack(projectId: String, upload: ChorusTrackUpload): Result<ChorusTrack> =
+        repository.uploadChorusTrack(projectId, upload)
+
+    suspend fun alignChorusTrack(
+        trackId: String,
+        revision: Int,
+        offsetMs: Long,
+        anchors: List<ChorusSyncAnchor>,
+    ): Result<ChorusTrack> = repository.updateChorusTrackAlignment(trackId, revision, offsetMs, anchors)
+
+    suspend fun submitChorusTrack(trackId: String): Result<ChorusTrack> =
+        repository.submitChorusTrack(trackId)
+
+    suspend fun withdrawChorusTrack(trackId: String): Result<ChorusTrack> =
+        repository.withdrawChorusTrack(trackId)
+
+    suspend fun resolveChorusMix(projectId: String, trackIds: List<String>): Result<ChorusMix> =
+        repository.resolveChorusMix(projectId, trackIds)
+
+    suspend fun chorusMix(mixId: String): Result<ChorusMix> = repository.getChorusMix(mixId)
 
     suspend fun restoreQueue(deviceSongs: List<Song> = emptyList()): Result<RestoredUnifiedQueue?> {
         val record = queueStore.load() ?: return Result.success(null)

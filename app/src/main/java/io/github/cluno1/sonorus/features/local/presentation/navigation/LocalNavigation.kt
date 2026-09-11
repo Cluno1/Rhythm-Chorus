@@ -145,6 +145,8 @@ import io.github.cluno1.sonorus.features.catalog.domain.toRhythmAlbum
 import io.github.cluno1.sonorus.features.catalog.domain.toRhythmSong
 import io.github.cluno1.sonorus.features.catalog.presentation.CatalogServerSettingsScreen
 import io.github.cluno1.sonorus.features.catalog.presentation.CatalogRemoteScoreScreen
+import io.github.cluno1.sonorus.features.chorus.presentation.ChorusRecordingScreen
+import io.github.cluno1.sonorus.features.chorus.presentation.ChorusScreen
 import io.github.cluno1.sonorus.features.catalog.presentation.CatalogViewModel
 import io.github.cluno1.sonorus.features.catalog.presentation.latestPublishedOption
 import io.github.cluno1.sonorus.core.ProductCapabilities
@@ -268,6 +270,14 @@ sealed class Screen(val route: String) {
             parts: Int,
         ) = "catalog_score/${Uri.encode(workId)}/${Uri.encode(scoreId)}/${Uri.encode(revisionId)}" +
             "?title=${Uri.encode(title)}&scoreLabel=${Uri.encode(scoreLabel)}&parts=$parts"
+    }
+    object Chorus : Screen("chorus/{workId}?title={title}") {
+        fun createRoute(workId: String, title: String) =
+            "chorus/${Uri.encode(workId)}?title=${Uri.encode(title)}"
+    }
+    object ChorusRecording : Screen("chorus_record/{projectId}/{revisionId}?title={title}") {
+        fun createRoute(projectId: String, revisionId: String, title: String) =
+            "chorus_record/${Uri.encode(projectId)}/${Uri.encode(revisionId)}?title=${Uri.encode(title)}"
     }
     object AddToPlaylist : Screen("add_to_playlist")
     object PlaylistDetail : Screen("playlist/{playlistId}") {
@@ -2359,6 +2369,46 @@ private fun LocalNavigationContent(
                 }
 
                 composable(
+                    route = Screen.Chorus.route,
+                    arguments = listOf(
+                        navArgument("workId") { type = NavType.StringType },
+                        navArgument("title") { type = NavType.StringType; defaultValue = "在线合唱" },
+                    ),
+                ) { backStackEntry ->
+                    val workId = backStackEntry.arguments?.getString("workId")?.let(Uri::decode).orEmpty()
+                    val chorusTitle = backStackEntry.arguments?.getString("title")?.let(Uri::decode) ?: "在线合唱"
+                    ChorusScreen(
+                        workId = workId,
+                        title = chorusTitle,
+                        viewModel = catalogViewModel,
+                        onBack = { navController.popBackStack() },
+                        onRecord = { projectId, revisionId ->
+                            navController.navigate(
+                                Screen.ChorusRecording.createRoute(projectId, revisionId, chorusTitle),
+                            ) { launchSingleTop = true }
+                        },
+                    )
+                }
+
+                composable(
+                    route = Screen.ChorusRecording.route,
+                    arguments = listOf(
+                        navArgument("projectId") { type = NavType.StringType },
+                        navArgument("revisionId") { type = NavType.StringType },
+                        navArgument("title") { type = NavType.StringType; defaultValue = "录制合唱" },
+                    ),
+                ) { backStackEntry ->
+                    ChorusRecordingScreen(
+                        projectId = backStackEntry.arguments?.getString("projectId")?.let(Uri::decode).orEmpty(),
+                        revisionId = backStackEntry.arguments?.getString("revisionId")?.let(Uri::decode).orEmpty(),
+                        title = backStackEntry.arguments?.getString("title")?.let(Uri::decode) ?: "录制合唱",
+                        viewModel = catalogViewModel,
+                        onBack = { navController.popBackStack() },
+                        onUploaded = { navController.popBackStack() },
+                    )
+                }
+
+                composable(
                     route = Screen.DeviceManualMetadata.route,
                     arguments = listOf(
                         navArgument("songId") { type = NavType.StringType },
@@ -2431,6 +2481,11 @@ private fun LocalNavigationContent(
                         viewModel = catalogViewModel,
                         onBack = {
                             if (!navController.popBackStack()) navigateToTopLevel(Screen.Home.route)
+                        },
+                        onOpenChorus = { targetWorkId, _, targetTitle ->
+                            navController.navigate(Screen.Chorus.createRoute(targetWorkId, targetTitle)) {
+                                launchSingleTop = true
+                            }
                         },
                     )
                 }

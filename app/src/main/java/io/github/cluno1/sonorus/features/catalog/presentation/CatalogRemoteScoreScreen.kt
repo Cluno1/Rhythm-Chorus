@@ -75,6 +75,7 @@ fun CatalogRemoteScoreScreen(
     initialScoreId: String? = null,
     viewModel: CatalogViewModel,
     onBack: () -> Unit,
+    onOpenChorus: (workId: String, revisionId: String, title: String) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val context = LocalContext.current
@@ -137,6 +138,9 @@ fun CatalogRemoteScoreScreen(
             title = scoreWork?.title ?: title,
             canonicalMusicXml = checkNotNull(bytes),
             onBackClick = onBack,
+            onChorusClick = {
+                onOpenChorus(workId, history.getOrNull(selectedIndex)?.id ?: activeRevisionId, scoreWork?.title ?: title)
+            },
             scoreLabel = selectedOption?.scoreLabel ?: scoreLabel.takeIf(String::isNotBlank),
             revisionLabel = history.getOrNull(selectedIndex)?.let {
                 stringResource(R.string.score_revision_label, it.revisionNo)
