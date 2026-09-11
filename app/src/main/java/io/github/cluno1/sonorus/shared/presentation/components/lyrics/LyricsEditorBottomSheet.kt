@@ -106,6 +106,7 @@ import io.github.cluno1.sonorus.shared.presentation.components.common.RhythmTogg
 import io.github.cluno1.sonorus.shared.presentation.components.common.RhythmToggleOption
 import io.github.cluno1.sonorus.util.HapticUtils
 import io.github.cluno1.sonorus.util.HapticType
+import io.github.cluno1.sonorus.util.LyricsContributionAttribution
 import io.github.cluno1.sonorus.util.LyricsFileUtils
 import io.github.cluno1.sonorus.util.LrcTimingEditor
 import io.github.cluno1.sonorus.util.LrcTimingTarget
@@ -126,6 +127,9 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import androidx.compose.ui.res.stringResource
 import com.google.gson.Gson
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 import kotlin.math.abs
 
 enum class LyricFormat {
@@ -239,20 +243,37 @@ fun LyricsEditorBottomSheet(
     var loopStartMs by remember { mutableStateOf<Long?>(null) }
     var loopEndMs by remember { mutableStateOf<Long?>(null) }
     var pauseAfterStamp by remember { mutableStateOf(false) }
+    var showContributionDialog by remember { mutableStateOf(false) }
+    var contributionForceOverwrite by remember { mutableStateOf(false) }
+    var contributionUploadInFlight by remember { mutableStateOf(false) }
+    var resumePlaybackAfterContribution by remember { mutableStateOf(false) }
     var editorPlaybackSpeed by remember { mutableStateOf(playbackSpeed) }
-    val latestRepeatMode by rememberUpdatedState(repeatMode)
     val latestRepeatChangedByEditor by rememberUpdatedState(repeatChangedByEditor)
     val latestSpeedChangedByEditor by rememberUpdatedState(speedChangedByEditor)
     val latestOnSetRepeatMode by rememberUpdatedState(onSetRepeatMode)
     val latestOnSetPlaybackSpeed by rememberUpdatedState(onSetPlaybackSpeed)
+    val latestOnPlayPause by rememberUpdatedState(onPlayPause)
+    val latestResumePlaybackAfterContribution by rememberUpdatedState(
+        resumePlaybackAfterContribution,
+    )
+
+    LaunchedEffect(Unit) {
+        if (initialRepeatMode != Player.REPEAT_MODE_ONE) {
+            repeatChangedByEditor = true
+            onSetRepeatMode(Player.REPEAT_MODE_ONE)
+        }
+    }
 
     DisposableEffect(Unit) {
         onDispose {
-            if (latestRepeatChangedByEditor && latestRepeatMode != initialRepeatMode) {
+            if (latestRepeatChangedByEditor) {
                 latestOnSetRepeatMode(initialRepeatMode)
             }
             if (latestSpeedChangedByEditor) {
                 latestOnSetPlaybackSpeed(initialPlaybackSpeed)
+            }
+            if (latestResumePlaybackAfterContribution) {
+                latestOnPlayPause()
             }
         }
     }
@@ -478,6 +499,9 @@ fun LyricsEditorBottomSheet(
     }
 
     val appSettings = remember { AppSettings.getInstance(context) }
+    var contributionName by remember {
+        mutableStateOf(appSettings.getLyricsContributorName())
+    }
     val songLyricsPreferences by appSettings.songLyricsPreferences.collectAsState()
     val songCustomLrcFiles by appSettings.songCustomLrcFiles.collectAsState()
     val lrcRenameBehavior by appSettings.lrcRenameBehavior.collectAsState()
@@ -488,6 +512,34 @@ fun LyricsEditorBottomSheet(
     var pendingExpectedName by remember { mutableStateOf("") }
     var pendingLyrics by remember { mutableStateOf("") }
     var rememberChoiceCheckbox by remember { mutableStateOf(false) }
+
+    fun restorePlaybackAfterContribution() {
+        val shouldResume = resumePlaybackAfterContribution
+        resumePlaybackAfterContribution = false
+        if (shouldResume) onPlayPause()
+    }
+
+    fun requestCatalogSync(forceOverwrite: Boolean) {
+        contributionForceOverwrite = forceOverwrite
+        showContributionDialog = true
+        if (isPlaying && !resumePlaybackAfterContribution) {
+            resumePlaybackAfterContribution = true
+            onPlayPause()
+        }
+    }
+
+    LaunchedEffect(contributionUploadInFlight, catalogSyncState.status) {
+        if (
+            contributionUploadInFlight &&
+            catalogSyncState.status != CatalogLyricsSyncStatus.SYNCING
+        ) {
+            // Let the ViewModel publish SYNCING first. This also releases playback if the
+            // request cannot start because the Catalog connection disappeared.
+            delay(400)
+            contributionUploadInFlight = false
+            restorePlaybackAfterContribution()
+        }
+    }
 
     fun applyLoadedLyrics(loadedLyrics: String) {
         val loadedTrimmed = loadedLyrics.trim()
@@ -1398,7 +1450,9 @@ fun LyricsEditorBottomSheet(
                     onRewind = {
                         onSeekTo((currentPlaybackPositionMs - 3_000L).coerceAtLeast(0L))
                     },
-                    onPlayPause = onPlayPause,
+                    onPlayPause = {
+                        if (!contributionUploadInFlight) onPlayPause()
+                    },
                     onToggleTrackLoop = {
                         loopStartMs = null
                         loopEndMs = null
@@ -1532,10 +1586,7 @@ fun LyricsEditorBottomSheet(
                             )
                             if (catalogSyncState.status != CatalogLyricsSyncStatus.CONFLICT) {
                                 FilledTonalButton(
-                                    onClick = {
-                                        catalogEditDirty = false
-                                        onSyncCatalog(editedLyrics, selectedFormat.name, false)
-                                    },
+                                    onClick = { requestCatalogSync(forceOverwrite = false) },
                                     enabled = editedLyrics.isNotBlank() &&
                                         catalogSyncState.status != CatalogLyricsSyncStatus.SYNCING,
                                 ) {
@@ -1558,10 +1609,7 @@ fun LyricsEditorBottomSheet(
                                     Text(stringResource(R.string.lyrics_load_server_version))
                                 }
                                 FilledTonalButton(
-                                    onClick = {
-                                        catalogEditDirty = false
-                                        onSyncCatalog(editedLyrics, selectedFormat.name, true)
-                                    },
+                                    onClick = { requestCatalogSync(forceOverwrite = true) },
                                     modifier = Modifier.weight(1f),
                                 ) {
                                     Text(stringResource(R.string.lyrics_overwrite_server_version))
@@ -1812,6 +1860,114 @@ fun LyricsEditorBottomSheet(
             confirmButton = {
                 TextButton(onClick = { showCandidateDialog = false }) { Text(stringResource(R.string.action_cancel)) }
             }
+        )
+    }
+
+    if (showContributionDialog) {
+        AlertDialog(
+            onDismissRequest = {
+                showContributionDialog = false
+                restorePlaybackAfterContribution()
+            },
+            icon = {
+                Icon(
+                    imageVector = MaterialSymbolIcon("volunteer_activism", filled = true),
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.size(28.dp),
+                )
+            },
+            title = {
+                Text(
+                    text = stringResource(R.string.lyrics_contribution_title),
+                    style = MaterialTheme.typography.headlineSmall,
+                    fontWeight = FontWeight.Bold,
+                )
+            },
+            text = {
+                Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                    Text(
+                        text = stringResource(R.string.lyrics_contribution_body),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                    OutlinedTextField(
+                        value = contributionName,
+                        onValueChange = { contributionName = it.take(80) },
+                        modifier = Modifier.fillMaxWidth(),
+                        label = { Text(stringResource(R.string.lyrics_contribution_name_label)) },
+                        supportingText = {
+                            Text(stringResource(R.string.lyrics_contribution_name_support))
+                        },
+                        singleLine = true,
+                        shape = RoundedCornerShape(16.dp),
+                    )
+                    Surface(
+                        shape = RoundedCornerShape(16.dp),
+                        color = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.55f),
+                        contentColor = MaterialTheme.colorScheme.onSecondaryContainer,
+                    ) {
+                        Row(
+                            modifier = Modifier.padding(12.dp),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            verticalAlignment = Alignment.Top,
+                        ) {
+                            Icon(
+                                imageVector = MaterialSymbolIcon("history", filled = true),
+                                contentDescription = null,
+                                modifier = Modifier.size(20.dp),
+                            )
+                            Text(
+                                text = stringResource(R.string.lyrics_contribution_history_hint),
+                                style = MaterialTheme.typography.bodySmall,
+                            )
+                        }
+                    }
+                }
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        val submittedName = contributionName.trim()
+                        appSettings.setLyricsContributorName(submittedName)
+                        val attributedLyrics = LyricsContributionAttribution.append(
+                            lyrics = editedLyrics,
+                            contributorName = submittedName,
+                            updatedAt = SimpleDateFormat(
+                                "yyyy-MM-dd HH:mm:ss XXX",
+                                Locale.ROOT,
+                            ).format(Date()),
+                            format = selectedFormat.name,
+                        )
+                        showContributionDialog = false
+                        contributionUploadInFlight = true
+                        catalogEditDirty = false
+                        onSyncCatalog(
+                            attributedLyrics,
+                            selectedFormat.name,
+                            contributionForceOverwrite,
+                        )
+                    },
+                ) {
+                    Icon(
+                        imageVector = MaterialSymbolIcon("cloud_upload", filled = true),
+                        contentDescription = null,
+                        modifier = Modifier.size(18.dp),
+                    )
+                    Spacer(Modifier.width(6.dp))
+                    Text(stringResource(R.string.lyrics_contribution_upload))
+                }
+            },
+            dismissButton = {
+                OutlinedButton(
+                    onClick = {
+                        showContributionDialog = false
+                        restorePlaybackAfterContribution()
+                    },
+                ) {
+                    Text(stringResource(R.string.action_cancel))
+                }
+            },
         )
     }
 
@@ -2298,7 +2454,7 @@ private fun LyricsTimingHelpSheet(onDismiss: () -> Unit) {
                     LyricsTimingHelpControl(
                         iconName = "repeat_one",
                         title = stringResource(R.string.lyrics_timing_repeat_track),
-                        body = stringResource(R.string.lyrics_timing_help_repeat_body),
+                        body = stringResource(R.string.lyrics_timing_help_repeat_default_body),
                     )
                 }
                 item {

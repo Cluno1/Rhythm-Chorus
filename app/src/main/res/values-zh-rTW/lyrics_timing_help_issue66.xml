@@ -9,4 +9,11 @@
     <string name="lyrics_timing_help_server_body">只有支援的 Catalog 歌曲才會顯示「同步」。它只會上傳此歌曲目前語言的歌詞。請等待「已同步到伺服器」；「待同步」或「同步失敗」仍代表只保存在本機。</string>
     <string name="lyrics_timing_help_conflict_title">發生衝突時</string>
     <string name="lyrics_timing_help_conflict_body">「使用伺服器版本」會刪除本機草稿並重新載入伺服器內容；「覆蓋伺服器版本」會以本機草稿取代伺服器上較新的內容。選擇前請先確認。</string>
+    <string name="lyrics_timing_help_repeat_default_body">進入編輯器時會自動開啟目前歌曲循環，打點期間不會跳到下一首。啟動 A–B 後會暫時關閉整曲循環；離開編輯器時會恢復進入前的循環模式。</string>
+    <string name="lyrics_contribution_title">感謝你的貢獻</string>
+    <string name="lyrics_contribution_body">確認與上傳期間會暫停播放。你可以填寫貢獻者名稱，也可以匿名繼續。</string>
+    <string name="lyrics_contribution_name_label">貢獻者名稱（選填）</string>
+    <string name="lyrics_contribution_name_support">留空將匿名上傳。此次提交的值會成為下一首歌的預設名稱；提交空值會清除預設名稱。</string>
+    <string name="lyrics_contribution_history_hint">第一位具名貢獻者記為上傳者，之後會依本機時間追加為修改者；不會覆蓋先前的貢獻者。</string>
+    <string name="lyrics_contribution_upload">上傳</string>
 </resources>
