@@ -18,6 +18,10 @@ import io.github.cluno1.sonorus.features.catalog.domain.CatalogLibraryAlbum
 import io.github.cluno1.sonorus.features.catalog.domain.CatalogLibrarySong
 import io.github.cluno1.sonorus.features.catalog.domain.CatalogLibraryScoreWork
 import io.github.cluno1.sonorus.features.catalog.domain.CatalogIssuedInvite
+import io.github.cluno1.sonorus.features.catalog.domain.CatalogSmartEnrollmentError
+import io.github.cluno1.sonorus.features.catalog.domain.CatalogSmartEnrollmentException
+import io.github.cluno1.sonorus.features.catalog.domain.CatalogSmartEnrollmentText
+import io.github.cluno1.sonorus.features.catalog.data.remote.CatalogEndpoint
 import io.github.cluno1.sonorus.shared.data.model.Song
 import android.net.Uri
 import kotlinx.coroutines.Job
@@ -102,6 +106,23 @@ class CatalogViewModel(application: Application) : AndroidViewModel(application)
                 onFailure = { _state.value = _state.value.copy(loading = false, error = message(it)) },
             )
         }
+    }
+
+    fun enrollDeviceFromSmartText(text: String) {
+        val payload = try {
+            CatalogSmartEnrollmentText.decodeFromText(text).let { decoded ->
+                decoded.copy(serverUrl = CatalogEndpoint.normalize(decoded.serverUrl))
+            }
+        } catch (error: CatalogSmartEnrollmentException) {
+            _state.value = _state.value.copy(error = smartEnrollmentMessage(error.reason))
+            return
+        } catch (_: IllegalArgumentException) {
+            _state.value = _state.value.copy(
+                error = getApplication<Application>().getString(R.string.catalog_smart_enrollment_invalid),
+            )
+            return
+        }
+        enrollDevice(payload.serverUrl, payload.inviteCode)
     }
 
     fun issueInvite(
@@ -340,4 +361,17 @@ class CatalogViewModel(application: Application) : AndroidViewModel(application)
         else -> (error.message ?: "发生未知错误")
             .replace(Regex("\\bCatalog\\b", RegexOption.IGNORE_CASE), "音乐库")
     }
+
+    private fun smartEnrollmentMessage(reason: CatalogSmartEnrollmentError): String =
+        getApplication<Application>().getString(
+            when (reason) {
+                CatalogSmartEnrollmentError.INPUT_TOO_LONG -> R.string.catalog_smart_enrollment_input_too_long
+                CatalogSmartEnrollmentError.MULTIPLE_TOKENS -> R.string.catalog_smart_enrollment_multiple
+                CatalogSmartEnrollmentError.TOKEN_TOO_LONG -> R.string.catalog_smart_enrollment_token_too_long
+                CatalogSmartEnrollmentError.TOKEN_MISSING,
+                CatalogSmartEnrollmentError.INVALID_TOKEN,
+                CatalogSmartEnrollmentError.UNSUPPORTED_ADDRESS,
+                -> R.string.catalog_smart_enrollment_invalid
+            },
+        )
 }

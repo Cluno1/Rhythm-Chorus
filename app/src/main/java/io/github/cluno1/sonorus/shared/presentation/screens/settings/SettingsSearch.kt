@@ -823,7 +823,6 @@ fun buildSettingsSearchIndex(context: Context): List<SearchableSettingItem> {
                 "library",
                 "server",
                 "catalog",
-                "ihope",
                 "invite",
                 "invitation",
                 "device",
