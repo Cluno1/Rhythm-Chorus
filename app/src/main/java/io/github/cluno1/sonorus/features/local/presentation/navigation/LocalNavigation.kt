@@ -248,11 +248,15 @@ sealed class Screen(val route: String) {
     object Player : Screen("player")
     object Settings : Screen("settings")
     object CatalogSettings : Screen("catalog_settings")
-    object DeviceManualMetadata : Screen("device_manual_metadata/{songId}?kind={kind}") {
+    object DeviceManualMetadata : Screen(
+        "device_manual_metadata/{songId}?kind={kind}&artistName={artistName}",
+    ) {
         fun createRoute(
             songId: String,
             kind: io.github.cluno1.sonorus.features.local.data.device.DeviceManualMetadataKind,
-        ): String = "device_manual_metadata/${Uri.encode(songId)}?kind=${kind.name}"
+            artistName: String? = null,
+        ): String = "device_manual_metadata/${Uri.encode(songId)}?kind=${kind.name}" +
+            "&artistName=${Uri.encode(artistName.orEmpty())}"
     }
     object CatalogScore : Screen("catalog_score/{workId}/{scoreId}/{revisionId}?title={title}&scoreLabel={scoreLabel}&parts={parts}") {
         fun createRoute(
@@ -317,22 +321,26 @@ sealed class Screen(val route: String) {
 fun NavController.navigateToDeviceManualMetadata(
     songId: String,
     kind: io.github.cluno1.sonorus.features.local.data.device.DeviceManualMetadataKind,
+    artistName: String? = null,
 ) {
     val currentEntry = currentBackStackEntry
     val currentSongId = currentEntry?.arguments?.getString("songId")?.let(Uri::decode)
     val currentKind = currentEntry?.arguments?.getString("kind")
+    val currentArtistName = currentEntry?.arguments?.getString("artistName")?.let(Uri::decode)
     if (isSameDeviceManualMetadataDestination(
             currentRoute = currentEntry?.destination?.route,
             routePattern = Screen.DeviceManualMetadata.route,
             currentSongId = currentSongId,
             currentKind = currentKind,
+            currentArtistName = currentArtistName,
             targetSongId = songId,
             targetKind = kind,
+            targetArtistName = artistName,
         )
     ) {
         return
     }
-    navigate(Screen.DeviceManualMetadata.createRoute(songId, kind)) {
+    navigate(Screen.DeviceManualMetadata.createRoute(songId, kind, artistName)) {
         launchSingleTop = true
     }
 }
@@ -2358,6 +2366,10 @@ private fun LocalNavigationContent(
                             defaultValue = io.github.cluno1.sonorus.features.local.data.device
                                 .DeviceManualMetadataKind.LYRICS.name
                         },
+                        navArgument("artistName") {
+                            type = NavType.StringType
+                            defaultValue = ""
+                        },
                     ),
                 ) { backStackEntry ->
                     val songId = backStackEntry.arguments?.getString("songId")?.let(Uri::decode).orEmpty()
@@ -2368,6 +2380,9 @@ private fun LocalNavigationContent(
                     }.getOrDefault(
                         io.github.cluno1.sonorus.features.local.data.device.DeviceManualMetadataKind.LYRICS,
                     )
+                    val initialArtistName = backStackEntry.arguments?.getString("artistName")
+                        ?.let(Uri::decode)
+                        ?.takeIf(String::isNotBlank)
                     val manualState by viewModel.deviceManualMetadataState.collectAsState()
                     val targetSong = remember(songId, songs, currentSong) {
                         songs.firstOrNull { it.id == songId } ?: currentSong?.takeIf { it.id == songId }
@@ -2375,12 +2390,14 @@ private fun LocalNavigationContent(
                     io.github.cluno1.sonorus.features.local.presentation.screens.DeviceManualMetadataScreen(
                         song = targetSong,
                         initialKind = initialKind,
+                        initialArtistName = initialArtistName,
                         state = manualState,
                         appSettings = appSettings,
                         onStart = viewModel::startDeviceManualMetadata,
                         onSearch = viewModel::searchDeviceManualMetadata,
                         onApplyLyrics = viewModel::applyDeviceManualLyrics,
                         onApplyArtwork = viewModel::applyDeviceManualArtwork,
+                        onApplyArtistArtwork = viewModel::applyDeviceManualArtistArtwork,
                         onClear = viewModel::clearDeviceManualMetadata,
                         onBack = {
                             if (!navController.popBackStack()) navigateToTopLevel(Screen.Library.route)
@@ -4145,6 +4162,14 @@ private fun LocalNavigationContent(
                         onShowSongInfo = { song ->
                             selectedSongForInfo = song
                             showSongInfoSheet = true
+                        },
+                        onOpenManualArtistArtwork = { song, targetArtistName ->
+                            navController.navigateToDeviceManualMetadata(
+                                song.id,
+                                io.github.cluno1.sonorus.features.local.data.device
+                                    .DeviceManualMetadataKind.ARTIST_ARTWORK,
+                                targetArtistName,
+                            )
                         },
                         currentSong = currentSong,
                         isPlaying = isPlaying

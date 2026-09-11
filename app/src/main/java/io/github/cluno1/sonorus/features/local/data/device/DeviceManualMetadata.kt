@@ -1,7 +1,7 @@
 /* SPDX-License-Identifier: GPL-3.0-or-later */
 package io.github.cluno1.sonorus.features.local.data.device
 
-enum class DeviceManualMetadataKind { LYRICS, ARTWORK }
+enum class DeviceManualMetadataKind { LYRICS, ARTWORK, ARTIST_ARTWORK }
 
 enum class DevicePublicMetadataProvider { LRCLIB, MUSICBRAINZ_CAA, DEEZER }
 
@@ -24,6 +24,16 @@ data class DeviceArtworkCandidate(
     val durationSeconds: Double?,
     val confidence: Double,
     val imageUrl: String,
+)
+
+data class DeviceArtistArtworkCandidate(
+    val provider: DevicePublicMetadataProvider,
+    val externalId: String,
+    val artistName: String,
+    val imageUrl: String,
+    val albumCount: Int,
+    val fanCount: Int,
+    val confidence: Double,
 )
 
 fun DeviceMetadataRequest.normalized(): DeviceMetadataRequest = copy(

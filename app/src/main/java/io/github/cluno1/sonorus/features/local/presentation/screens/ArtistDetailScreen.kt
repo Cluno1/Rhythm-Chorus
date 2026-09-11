@@ -65,6 +65,7 @@ import io.github.cluno1.sonorus.shared.presentation.components.player.formatDura
 import io.github.cluno1.sonorus.shared.presentation.components.AudioQualityIcon
 import io.github.cluno1.sonorus.ui.LocalMiniPlayerPadding
 import io.github.cluno1.sonorus.features.local.presentation.viewmodel.MusicViewModel
+import io.github.cluno1.sonorus.features.local.data.device.DeviceMetadataPolicy
 import io.github.cluno1.sonorus.shared.data.model.Album
 import io.github.cluno1.sonorus.shared.data.model.AppSettings
 import io.github.cluno1.sonorus.shared.data.model.ArtistArtworkSource
@@ -121,6 +122,7 @@ fun ArtistDetailScreen(
     onToggleFavorite: (Song) -> Unit = {},
     favoriteSongs: Set<String> = emptySet(),
     onShowSongInfo: (Song) -> Unit = {},
+    onOpenManualArtistArtwork: ((Song, String) -> Unit)? = null,
     showPlayNextAction: Boolean = true,
     showAddToQueueAction: Boolean = true,
     showToggleFavoriteAction: Boolean = true,
@@ -170,20 +172,6 @@ fun ArtistDetailScreen(
             }
         }
     }
-
-    if (showCustomizeImageDialog && artist != null) {
-        CustomizeArtistImageDialog(
-            artistName = artist.name,
-            onDismiss = { showCustomizeImageDialog = false },
-            onSelectImage = { imagePickerLauncher.launch("image/*") },
-            onResetImage = {
-                viewModel.updateArtistArtwork(artist, null) {
-                    currentArtworkUri = null
-                }
-            }
-        )
-    }
-
 
     val artistContent by produceState<ArtistDetailContent?>(
         initialValue = if (songsOverride != null && albumsOverride != null) {
@@ -244,6 +232,27 @@ fun ArtistDetailScreen(
             artistContent == null
         }
     )
+
+    if (showCustomizeImageDialog && artist != null) {
+        val deviceSong = rawArtistSongs.firstOrNull {
+            DeviceMetadataPolicy.isEligible(it.id, it.uri.scheme)
+        }
+        CustomizeArtistImageDialog(
+            artistName = artist.name,
+            onDismiss = { showCustomizeImageDialog = false },
+            onSelectImage = { imagePickerLauncher.launch("image/*") },
+            onResetImage = {
+                viewModel.updateArtistArtwork(artist, null) {
+                    currentArtworkUri = null
+                }
+            },
+            onSearchOnline = if (deviceSong != null && onOpenManualArtistArtwork != null) {
+                { onOpenManualArtistArtwork(deviceSong, artist.name) }
+            } else {
+                null
+            },
+        )
+    }
 
     // Sort State
     var sortOrder by remember { mutableStateOf(ArtistSortOrder.DEFAULT) }

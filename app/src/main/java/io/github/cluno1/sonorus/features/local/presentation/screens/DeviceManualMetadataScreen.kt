@@ -54,6 +54,7 @@ import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import io.github.cluno1.sonorus.R
 import io.github.cluno1.sonorus.features.local.data.device.DeviceArtworkCandidate
+import io.github.cluno1.sonorus.features.local.data.device.DeviceArtistArtworkCandidate
 import io.github.cluno1.sonorus.features.local.data.device.DeviceArtworkSaveTarget
 import io.github.cluno1.sonorus.features.local.data.device.DeviceLyricsCandidate
 import io.github.cluno1.sonorus.features.local.data.device.DeviceManualMetadataKind
@@ -76,9 +77,10 @@ import kotlin.math.roundToInt
 fun DeviceManualMetadataScreen(
     song: Song?,
     initialKind: DeviceManualMetadataKind,
+    initialArtistName: String?,
     state: DeviceManualMetadataUiState,
     appSettings: AppSettings,
-    onStart: (String, DeviceManualMetadataKind) -> Unit,
+    onStart: (String, DeviceManualMetadataKind, String?) -> Unit,
     onSearch: (
         String,
         DeviceManualMetadataKind,
@@ -87,6 +89,7 @@ fun DeviceManualMetadataScreen(
     ) -> Unit,
     onApplyLyrics: (String, DeviceLyricsCandidate) -> Unit,
     onApplyArtwork: (String, DeviceArtworkCandidate, DeviceArtworkSaveTarget, Uri?) -> Unit,
+    onApplyArtistArtwork: (String, DeviceArtistArtworkCandidate) -> Unit,
     onClear: () -> Unit,
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
@@ -94,7 +97,9 @@ fun DeviceManualMetadataScreen(
     val publicMetadataEnabled by appSettings.devicePublicMetadataEnabled.collectAsState()
     var kind by rememberSaveable(song?.id, initialKind) { mutableStateOf(initialKind) }
     var title by rememberSaveable(song?.id) { mutableStateOf(song?.title.orEmpty()) }
-    var artist by rememberSaveable(song?.id) { mutableStateOf(song?.artist.orEmpty()) }
+    var artist by rememberSaveable(song?.id, initialArtistName) {
+        mutableStateOf(initialArtistName?.takeIf(String::isNotBlank) ?: song?.artist.orEmpty())
+    }
     var album by rememberSaveable(song?.id) { mutableStateOf(song?.album.orEmpty()) }
     var duration by rememberSaveable(song?.id) {
         mutableStateOf(song?.duration?.takeIf { it > 0 }?.let(::formatDurationInput).orEmpty())
@@ -105,6 +110,7 @@ fun DeviceManualMetadataScreen(
     var previewLyrics by remember { mutableStateOf<String?>(null) }
     var selectedLyrics by remember { mutableStateOf<DeviceLyricsCandidate?>(null) }
     var selectedArtwork by remember { mutableStateOf<DeviceArtworkCandidate?>(null) }
+    var selectedArtistArtwork by remember { mutableStateOf<DeviceArtistArtworkCandidate?>(null) }
     var pendingFolderArtwork by remember { mutableStateOf<DeviceArtworkCandidate?>(null) }
     val folderLauncher = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocumentTree()) { uri ->
         val candidate = pendingFolderArtwork
@@ -117,8 +123,8 @@ fun DeviceManualMetadataScreen(
     val durationSeconds = parseDurationSeconds(duration)
     val durationValid = duration.isBlank() || durationSeconds != null
 
-    LaunchedEffect(song?.id, kind) {
-        song?.let { onStart(it.id, kind) }
+    LaunchedEffect(song?.id, kind, initialArtistName) {
+        song?.let { onStart(it.id, kind, initialArtistName) }
     }
     LaunchedEffect(state.applied) {
         if (state.applied) onBack()
@@ -206,6 +212,18 @@ fun DeviceManualMetadataScreen(
                             )
                         },
                     )
+                    FilterChip(
+                        selected = kind == DeviceManualMetadataKind.ARTIST_ARTWORK,
+                        onClick = { kind = DeviceManualMetadataKind.ARTIST_ARTWORK },
+                        label = { Text(stringResource(R.string.device_manual_metadata_artist_artwork)) },
+                        leadingIcon = {
+                            Icon(
+                                icon = RhythmIcons.Artist,
+                                contentDescription = null,
+                                modifier = Modifier.size(18.dp),
+                            )
+                        },
+                    )
                 }
             }
 
@@ -272,6 +290,16 @@ fun DeviceManualMetadataScreen(
                                 },
                             )
                         }
+                        DeviceManualMetadataKind.ARTIST_ARTWORK -> ProviderChip(
+                            selected = deezerSelected,
+                            onClick = { deezerSelected = !deezerSelected },
+                            title = "Deezer",
+                            description = stringResource(
+                                R.string.device_manual_metadata_deezer_artist_desc,
+                            ),
+                            status = state.providerStatuses[DevicePublicMetadataProvider.DEEZER],
+                            resultCount = state.artistArtworkCandidates.size,
+                        )
                     }
                 }
             }
@@ -283,52 +311,74 @@ fun DeviceManualMetadataScreen(
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.SemiBold,
                     )
-                    OutlinedTextField(
-                        value = title,
-                        onValueChange = { title = it },
-                        label = { Text(stringResource(R.string.device_manual_metadata_field_title)) },
-                        singleLine = true,
-                        modifier = Modifier.fillMaxWidth(),
-                    )
+                    if (kind != DeviceManualMetadataKind.ARTIST_ARTWORK) {
+                        OutlinedTextField(
+                            value = title,
+                            onValueChange = { title = it },
+                            label = { Text(stringResource(R.string.device_manual_metadata_field_title)) },
+                            singleLine = true,
+                            modifier = Modifier.fillMaxWidth(),
+                        )
+                    }
                     OutlinedTextField(
                         value = artist,
                         onValueChange = { artist = it },
-                        label = { Text(stringResource(R.string.device_manual_metadata_field_artist)) },
-                        singleLine = true,
-                        modifier = Modifier.fillMaxWidth(),
-                    )
-                    OutlinedTextField(
-                        value = album,
-                        onValueChange = { album = it },
-                        label = { Text(stringResource(R.string.device_manual_metadata_field_album)) },
-                        singleLine = true,
-                        modifier = Modifier.fillMaxWidth(),
-                    )
-                    OutlinedTextField(
-                        value = duration,
-                        onValueChange = { duration = it },
-                        label = { Text(stringResource(R.string.device_manual_metadata_field_duration)) },
-                        supportingText = if (!durationValid) {
-                            { Text(stringResource(R.string.device_manual_metadata_duration_error)) }
-                        } else {
-                            null
+                        label = {
+                            Text(
+                                stringResource(
+                                    if (kind == DeviceManualMetadataKind.ARTIST_ARTWORK) {
+                                        R.string.device_manual_metadata_field_artist_required
+                                    } else {
+                                        R.string.device_manual_metadata_field_artist
+                                    },
+                                ),
+                            )
                         },
-                        isError = !durationValid,
                         singleLine = true,
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
                         modifier = Modifier.fillMaxWidth(),
                     )
+                    if (kind != DeviceManualMetadataKind.ARTIST_ARTWORK) {
+                        OutlinedTextField(
+                            value = album,
+                            onValueChange = { album = it },
+                            label = { Text(stringResource(R.string.device_manual_metadata_field_album)) },
+                            singleLine = true,
+                            modifier = Modifier.fillMaxWidth(),
+                        )
+                        OutlinedTextField(
+                            value = duration,
+                            onValueChange = { duration = it },
+                            label = { Text(stringResource(R.string.device_manual_metadata_field_duration)) },
+                            supportingText = if (!durationValid) {
+                                { Text(stringResource(R.string.device_manual_metadata_duration_error)) }
+                            } else {
+                                null
+                            },
+                            isError = !durationValid,
+                            singleLine = true,
+                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
+                            modifier = Modifier.fillMaxWidth(),
+                        )
+                    }
                     OutlinedButton(
                         onClick = {
                             title = song.title
-                            artist = song.artist
+                            artist = initialArtistName?.takeIf(String::isNotBlank) ?: song.artist
                             album = song.album
                             duration = song.duration.takeIf { it > 0 }?.let(::formatDurationInput).orEmpty()
                         },
                         enabled = !state.isSearching && !state.isApplying,
                         modifier = Modifier.fillMaxWidth(),
                     ) {
-                        Text(stringResource(R.string.device_manual_metadata_restore_defaults))
+                        Text(
+                            stringResource(
+                                if (kind == DeviceManualMetadataKind.ARTIST_ARTWORK) {
+                                    R.string.device_manual_metadata_restore_artist
+                                } else {
+                                    R.string.device_manual_metadata_restore_defaults
+                                },
+                            ),
+                        )
                     }
                 }
             }
@@ -342,6 +392,9 @@ fun DeviceManualMetadataScreen(
                         add(DevicePublicMetadataProvider.MUSICBRAINZ_CAA)
                     }
                     if (kind == DeviceManualMetadataKind.ARTWORK && deezerSelected) {
+                        add(DevicePublicMetadataProvider.DEEZER)
+                    }
+                    if (kind == DeviceManualMetadataKind.ARTIST_ARTWORK && deezerSelected) {
                         add(DevicePublicMetadataProvider.DEEZER)
                     }
                 }
@@ -359,7 +412,8 @@ fun DeviceManualMetadataScreen(
                             providers,
                         )
                     },
-                    enabled = publicMetadataEnabled && durationValid &&
+                    enabled = publicMetadataEnabled &&
+                        (kind == DeviceManualMetadataKind.ARTIST_ARTWORK || durationValid) &&
                         !state.isSearching && !state.isApplying,
                     modifier = Modifier.fillMaxWidth(),
                 ) {
@@ -389,6 +443,7 @@ fun DeviceManualMetadataScreen(
 
             if (state.hasSearched && !state.isSearching &&
                 state.lyricsCandidates.isEmpty() && state.artworkCandidates.isEmpty()
+                    && state.artistArtworkCandidates.isEmpty()
             ) {
                 item {
                     MetadataCard {
@@ -406,7 +461,11 @@ fun DeviceManualMetadataScreen(
                 }
             }
 
-            if (state.lyricsCandidates.isNotEmpty() || state.artworkCandidates.isNotEmpty()) {
+            if (
+                state.lyricsCandidates.isNotEmpty() ||
+                state.artworkCandidates.isNotEmpty() ||
+                state.artistArtworkCandidates.isNotEmpty()
+            ) {
                 item {
                     Text(
                         text = stringResource(R.string.device_manual_metadata_results),
@@ -434,6 +493,15 @@ fun DeviceManualMetadataScreen(
                     candidate = candidate,
                     queryDurationSeconds = durationSeconds,
                     onClick = { selectedArtwork = candidate },
+                )
+            }
+            items(
+                state.artistArtworkCandidates,
+                key = { "artist-artwork:${it.provider}:${it.externalId}" },
+            ) { candidate ->
+                ArtistArtworkCandidateCard(
+                    candidate = candidate,
+                    onClick = { selectedArtistArtwork = candidate },
                 )
             }
         }
@@ -534,6 +602,41 @@ fun DeviceManualMetadataScreen(
             },
             dismissButton = {
                 TextButton(onClick = { selectedArtwork = null }) {
+                    Text(stringResource(R.string.dialog_cancel))
+                }
+            },
+        )
+    }
+
+    selectedArtistArtwork?.let { candidate ->
+        AlertDialog(
+            onDismissRequest = { selectedArtistArtwork = null },
+            title = { Text(candidate.artistName) },
+            text = {
+                AsyncImage(
+                    model = ImageRequest.Builder(LocalContext.current).data(candidate.imageUrl).build(),
+                    contentDescription = stringResource(
+                        R.string.device_manual_metadata_artist_artwork_preview,
+                    ),
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(320.dp),
+                )
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        selectedArtistArtwork = null
+                        song?.let { onApplyArtistArtwork(it.id, candidate) }
+                    },
+                    enabled = !state.isApplying,
+                ) {
+                    Text(stringResource(R.string.device_manual_metadata_use_artist_artwork))
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { selectedArtistArtwork = null }) {
                     Text(stringResource(R.string.dialog_cancel))
                 }
             },
@@ -749,6 +852,70 @@ private fun ArtworkCandidateCard(
 }
 
 @Composable
+private fun ArtistArtworkCandidateCard(
+    candidate: DeviceArtistArtworkCandidate,
+    onClick: () -> Unit,
+) {
+    val context = LocalContext.current
+    Card(
+        onClick = onClick,
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(20.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerHigh),
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(14.dp),
+            horizontalArrangement = Arrangement.spacedBy(14.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            AsyncImage(
+                model = ImageRequest.Builder(context).data(candidate.imageUrl).build(),
+                contentDescription = stringResource(
+                    R.string.device_manual_metadata_artist_artwork_preview,
+                ),
+                contentScale = ContentScale.Crop,
+                modifier = Modifier.size(88.dp),
+            )
+            Column(
+                modifier = Modifier.weight(1f),
+                verticalArrangement = Arrangement.spacedBy(4.dp),
+            ) {
+                Text(
+                    text = "Deezer",
+                    style = MaterialTheme.typography.labelLarge,
+                    color = MaterialTheme.colorScheme.primary,
+                )
+                Text(
+                    text = candidate.artistName,
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.SemiBold,
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis,
+                )
+                Text(
+                    text = stringResource(
+                        R.string.device_manual_metadata_artist_stats,
+                        candidate.albumCount,
+                        candidate.fanCount,
+                    ),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+                Text(
+                    stringResource(
+                        R.string.device_manual_metadata_confidence,
+                        (candidate.confidence * 100).toInt(),
+                    ),
+                    style = MaterialTheme.typography.labelMedium,
+                )
+            }
+        }
+    }
+}
+
+@Composable
 private fun CandidateDuration(candidateSeconds: Double?, queryDurationSeconds: Int?) {
     val rounded = candidateSeconds?.takeIf { it > 0 }?.roundToInt() ?: return
     val durationText = formatDurationInput(rounded * 1000L)
@@ -796,6 +963,7 @@ private fun formatDurationInput(durationMs: Long): String {
 private fun DeviceManualMetadataError.stringResource(): Int = when (this) {
     DeviceManualMetadataError.SONG_UNAVAILABLE -> R.string.device_manual_metadata_song_unavailable
     DeviceManualMetadataError.TITLE_REQUIRED -> R.string.device_manual_metadata_title_required
+    DeviceManualMetadataError.ARTIST_REQUIRED -> R.string.device_manual_metadata_artist_required
     DeviceManualMetadataError.PROVIDER_REQUIRED -> R.string.device_manual_metadata_provider_required
     DeviceManualMetadataError.REQUEST_FAILED -> R.string.device_manual_metadata_request_failed
     DeviceManualMetadataError.APPLY_FAILED -> R.string.device_manual_metadata_apply_failed

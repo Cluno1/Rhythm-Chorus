@@ -1,6 +1,7 @@
 package io.github.cluno1.sonorus.features.local.data.device
 
 import org.junit.Assert.assertTrue
+import org.junit.Assert.assertEquals
 import org.junit.Test
 
 class DeviceMetadataMatcherTest {
@@ -49,5 +50,11 @@ class DeviceMetadataMatcherTest {
         val matching = DeviceMetadataMatcher.score(input, "Song", "Artist", "Album Live", 240.0)
         val studio = DeviceMetadataMatcher.score(input, "Song", "Artist", "Album", 240.0)
         assertTrue(matching > studio)
+    }
+
+    @Test fun `artist names ignore case accents and punctuation`() {
+        assertEquals(1.0, DeviceMetadataMatcher.artistNameScore("Beyoncé", "BEYONCE"), 0.0)
+        assertTrue(DeviceMetadataMatcher.artistNameScore("My Chemical Romance", "My-Chemical Romance") > 0.95)
+        assertTrue(DeviceMetadataMatcher.artistNameScore("Artist A", "Different Artist") < 0.5)
     }
 }
