@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="lyrics_timing_help_storage_section">保存とサーバー同期</string>
+    <string name="lyrics_timing_help_local_title">ローカル下書き（アプリ内）</string>
+    <string name="lyrics_timing_help_local_body">Catalog の曲では、編集を少し止めると、この端末に下書きとして自動保存されます。「ローカル下書きは未同期」は、端末には保存済みですがサーバーには届いていない状態です。アプリのデータを消去すると下書きも削除される場合があります。</string>
+    <string name="lyrics_timing_help_export_title">歌詞を保存（ファイルを書き出す）</string>
+    <string name="lyrics_timing_help_export_body">下部の「歌詞を保存」は、LRC、JSON、TTML ファイルの書き出し先を選び、アプリのローカルキャッシュも更新します。ファイルの保存だけではサーバーにアップロードされません。</string>
+    <string name="lyrics_timing_help_server_title">同期（サーバーへアップロード）</string>
+    <string name="lyrics_timing_help_server_body">「同期」は対応する Catalog 曲だけに表示され、現在選択中の歌詞言語をアップロードします。「サーバーと同期済み」になるまで待ってください。「保留中」または「失敗」はローカルにしかない状態です。</string>
+    <string name="lyrics_timing_help_conflict_title">競合が起きた場合</string>
+    <string name="lyrics_timing_help_conflict_body">「サーバーを使用」はローカル下書きを削除してサーバー版を読み込みます。「サーバーを上書き」は新しいサーバー版をローカル下書きで置き換えます。選択前に両方を確認してください。</string>
+</resources>

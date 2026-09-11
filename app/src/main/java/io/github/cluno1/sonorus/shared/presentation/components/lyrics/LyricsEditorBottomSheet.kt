@@ -746,9 +746,12 @@ fun LyricsEditorBottomSheet(
     var editorValue by remember(selectedFormat) {
         mutableStateOf(TextFieldValue(editedLyrics, TextRange(editedLyrics.length)))
     }
-    var timingLineIndex by remember(lyricsData) { mutableIntStateOf(0) }
-    var previousTimingText by remember(lyricsData) { mutableStateOf<String?>(null) }
-    var catalogEditDirty by remember(lyricsData) { mutableStateOf(false) }
+    val editorSessionKey = song?.id ?: songTitle
+    // Saving a stamp refreshes lyricsData with the just-saved lyrics. That refresh belongs to
+    // the same editor session and must not move the timing cursor back to the first line.
+    var timingLineIndex by remember(editorSessionKey) { mutableIntStateOf(0) }
+    var previousTimingText by remember(editorSessionKey) { mutableStateOf<String?>(null) }
+    var catalogEditDirty by remember(editorSessionKey) { mutableStateOf(false) }
     val timingTarget = remember(editedLyrics, timingLineIndex, selectedFormat) {
         if (selectedFormat == LyricFormat.WORD_BY_WORD) {
             null
@@ -2233,6 +2236,41 @@ private fun LyricsTimingHelpSheet(onDismiss: () -> Unit) {
                         number = 4,
                         title = stringResource(R.string.lyrics_timing_help_step_finish_title),
                         body = stringResource(R.string.lyrics_timing_help_step_finish_body),
+                    )
+                }
+
+                item {
+                    LyricsTimingHelpSectionTitle(
+                        iconName = "cloud_sync",
+                        text = stringResource(R.string.lyrics_timing_help_storage_section),
+                    )
+                }
+                item {
+                    LyricsTimingHelpNote(
+                        iconName = "draft",
+                        title = stringResource(R.string.lyrics_timing_help_local_title),
+                        body = stringResource(R.string.lyrics_timing_help_local_body),
+                    )
+                }
+                item {
+                    LyricsTimingHelpNote(
+                        iconName = "save",
+                        title = stringResource(R.string.lyrics_timing_help_export_title),
+                        body = stringResource(R.string.lyrics_timing_help_export_body),
+                    )
+                }
+                item {
+                    LyricsTimingHelpNote(
+                        iconName = "cloud_upload",
+                        title = stringResource(R.string.lyrics_timing_help_server_title),
+                        body = stringResource(R.string.lyrics_timing_help_server_body),
+                    )
+                }
+                item {
+                    LyricsTimingHelpNote(
+                        iconName = "sync_problem",
+                        title = stringResource(R.string.lyrics_timing_help_conflict_title),
+                        body = stringResource(R.string.lyrics_timing_help_conflict_body),
                     )
                 }
 

@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="lyrics_timing_help_storage_section">Spara och synkronisera med servern</string>
+    <string name="lyrics_timing_help_local_title">Lokalt utkast (i appen)</string>
+    <string name="lyrics_timing_help_local_body">För en Catalog-låt sparas ändringar automatiskt som ett utkast på den här enheten efter en kort paus. ”Lokalt utkast ej synkroniserat” betyder att arbetet är säkert lokalt men ännu inte finns på servern. Om appdata rensas kan utkastet försvinna.</string>
+    <string name="lyrics_timing_help_export_title">Spara sångtext (exportera fil)</string>
+    <string name="lyrics_timing_help_export_body">Knappen ”Spara sångtext” längst ned låter dig välja var en LRC-, JSON- eller TTML-fil ska exporteras och uppdaterar appens lokala cache. Att exportera filen laddar inte upp den till servern.</string>
+    <string name="lyrics_timing_help_server_title">Synkronisera (ladda upp till servern)</string>
+    <string name="lyrics_timing_help_server_body">”Synkronisera” visas bara för Catalog-låtar som stöds och laddar upp det valda sångtextspråket. Vänta på ”Synkroniserad med servern”; ”Väntar” eller ”Misslyckades” betyder fortfarande att kopian bara är lokal.</string>
+    <string name="lyrics_timing_help_conflict_title">Vid en konflikt</string>
+    <string name="lyrics_timing_help_conflict_body">”Använd servern” tar bort det lokala utkastet och läser in serverkopian. ”Skriv över servern” ersätter den nyare serverkopian med ditt lokala utkast. Kontrollera båda innan du väljer.</string>
+</resources>

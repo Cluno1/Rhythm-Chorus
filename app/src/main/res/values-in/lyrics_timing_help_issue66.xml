@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="lyrics_timing_help_storage_section">Penyimpanan dan sinkronisasi server</string>
+    <string name="lyrics_timing_help_local_title">Draf lokal (di dalam aplikasi)</string>
+    <string name="lyrics_timing_help_local_body">Untuk lagu Catalog, perubahan otomatis disimpan sebagai draf di perangkat ini setelah Anda berhenti mengedit sejenak. “Draf lokal belum disinkronkan” berarti pekerjaan aman secara lokal tetapi belum sampai ke server. Menghapus data aplikasi dapat menghapus draf ini.</string>
+    <string name="lyrics_timing_help_export_title">Simpan lirik (ekspor berkas)</string>
+    <string name="lyrics_timing_help_export_body">Tombol “Simpan Lirik” di bagian bawah meminta lokasi ekspor berkas LRC, JSON, atau TTML dan memperbarui cache lokal aplikasi. Mengekspor berkas tidak mengunggahnya ke server.</string>
+    <string name="lyrics_timing_help_server_title">Sinkronkan (unggah ke server)</string>
+    <string name="lyrics_timing_help_server_body">“Sinkronkan” hanya muncul untuk lagu Catalog yang didukung dan mengunggah bahasa lirik yang sedang dipilih untuk lagu ini. Tunggu “Disinkronkan ke server”; “Tertunda” atau “Gagal” berarti masih hanya tersimpan lokal.</string>
+    <string name="lyrics_timing_help_conflict_title">Jika terjadi konflik</string>
+    <string name="lyrics_timing_help_conflict_body">“Gunakan server” menghapus draf lokal dan memuat salinan server. “Timpa server” mengganti salinan server yang lebih baru dengan draf lokal Anda. Periksa keduanya sebelum memilih.</string>
+</resources>

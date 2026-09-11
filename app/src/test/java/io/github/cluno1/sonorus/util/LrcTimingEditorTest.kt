@@ -42,6 +42,27 @@ class LrcTimingEditorTest {
     }
 
     @Test
+    fun consecutiveStampsUseTheReturnedNextEditableLine() {
+        val first = requireNotNull(
+            LrcTimingEditor.stampLine("First\n\nSecond\nThird", 0, 1_000L),
+        )
+        assertEquals(2, first.nextLineIndex)
+
+        val second = requireNotNull(
+            LrcTimingEditor.stampLine(
+                first.text,
+                requireNotNull(first.nextLineIndex),
+                2_500L,
+            ),
+        )
+        assertEquals(
+            "[00:01.000]First\n\n[00:02.500]Second\nThird",
+            second.text,
+        )
+        assertEquals(3, second.nextLineIndex)
+    }
+
+    @Test
     fun lineAndCursorHelpersRespectBlankLines() {
         val text = "One\n\nThree"
         assertEquals(2, LrcTimingEditor.lineIndexAtOffset(text, text.length))

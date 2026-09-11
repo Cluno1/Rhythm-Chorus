@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="lyrics_timing_help_storage_section">Saqlash va server bilan sinxronlash</string>
+    <string name="lyrics_timing_help_local_title">Mahalliy qoralama (ilova ichida)</string>
+    <string name="lyrics_timing_help_local_body">Catalog qo‘shig‘ida tahrirlash qisqa muddat to‘xtatilgach, o‘zgarishlar shu qurilmada qoralama sifatida avtomatik saqlanadi. “Mahalliy qoralama sinxronlanmagan” ishingiz mahalliy saqlanganini, ammo serverga hali yetib bormaganini bildiradi. Ilova ma’lumotlarini tozalash qoralamani o‘chirishi mumkin.</string>
+    <string name="lyrics_timing_help_export_title">Qo‘shiq matnini saqlash (faylni eksport qilish)</string>
+    <string name="lyrics_timing_help_export_body">Pastdagi “Qo‘shiq matnini saqlash” tugmasi LRC, JSON yoki TTML faylini qayerga eksport qilishni so‘raydi va ilovaning mahalliy keshini yangilaydi. Faylni eksport qilish uni serverga yuklamaydi.</string>
+    <string name="lyrics_timing_help_server_title">Sinxronlash (serverga yuklash)</string>
+    <string name="lyrics_timing_help_server_body">“Sinxronlash” faqat qo‘llab-quvvatlanadigan Catalog qo‘shiqlarida ko‘rinadi va shu qo‘shiqning hozir tanlangan matn tilini yuklaydi. “Server bilan sinxronlandi” holatini kuting; “Kutilmoqda” yoki “Xato” hali ham faqat mahalliy nusxani anglatadi.</string>
+    <string name="lyrics_timing_help_conflict_title">Ziddiyat yuz bersa</string>
+    <string name="lyrics_timing_help_conflict_body">“Serverdan foydalanish” mahalliy qoralamani o‘chirib, server nusxasini yuklaydi. “Server ustiga yozish” serverdagi yangiroq nusxani mahalliy qoralama bilan almashtiradi. Tanlashdan oldin ikkalasini tekshiring.</string>
+</resources>

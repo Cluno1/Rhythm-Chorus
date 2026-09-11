@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="lyrics_timing_help_storage_section">সংরক্ষণ ও সার্ভার সিঙ্ক</string>
+    <string name="lyrics_timing_help_local_title">স্থানীয় খসড়া (অ্যাপের ভিতরে)</string>
+    <string name="lyrics_timing_help_local_body">Catalog গানের ক্ষেত্রে অল্পক্ষণ সম্পাদনা বন্ধ রাখলে পরিবর্তনগুলো এই ডিভাইসে খসড়া হিসেবে স্বয়ংক্রিয়ভাবে সংরক্ষিত হয়। “স্থানীয় খসড়া সিঙ্ক হয়নি” মানে কাজটি স্থানীয়ভাবে নিরাপদ, কিন্তু এখনো সার্ভারে পৌঁছায়নি। অ্যাপের ডেটা মুছলে খসড়াটিও মুছে যেতে পারে।</string>
+    <string name="lyrics_timing_help_export_title">গানের কথা সংরক্ষণ (ফাইল রপ্তানি)</string>
+    <string name="lyrics_timing_help_export_body">নিচের “গানের কথা সংরক্ষণ” বোতাম LRC, JSON বা TTML ফাইল কোথায় রপ্তানি করবেন তা জিজ্ঞেস করে এবং অ্যাপের স্থানীয় ক্যাশ আপডেট করে। ফাইল রপ্তানি করলে তা সার্ভারে আপলোড হয় না।</string>
+    <string name="lyrics_timing_help_server_title">সিঙ্ক (সার্ভারে আপলোড)</string>
+    <string name="lyrics_timing_help_server_body">“সিঙ্ক” শুধু সমর্থিত Catalog গানে দেখা যায় এবং এই গানের বর্তমানে নির্বাচিত ভাষার কথা আপলোড করে। “সার্ভারের সঙ্গে সিঙ্ক হয়েছে” পর্যন্ত অপেক্ষা করুন; “অপেক্ষমাণ” বা “ব্যর্থ” মানে এটি এখনো শুধু স্থানীয়।</string>
+    <string name="lyrics_timing_help_conflict_title">দ্বন্দ্ব হলে</string>
+    <string name="lyrics_timing_help_conflict_body">“সার্ভার ব্যবহার” স্থানীয় খসড়া মুছে সার্ভারের কপি লোড করে। “সার্ভার ওভাররাইট” সার্ভারের নতুন কপিকে আপনার স্থানীয় খসড়া দিয়ে বদলে দেয়। বেছে নেওয়ার আগে দুটোই যাচাই করুন।</string>
+</resources>
