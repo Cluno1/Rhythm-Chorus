@@ -35,6 +35,7 @@ import io.github.cluno1.sonorus.R
 import io.github.cluno1.sonorus.util.RhythmLyricsParser
 import io.github.cluno1.sonorus.util.WordByWordLyricLine
 import io.github.cluno1.sonorus.shared.data.model.AppSettings
+import io.github.cluno1.sonorus.shared.data.model.LyricsContribution
 import io.github.cluno1.sonorus.RhythmApplication
 import androidx.compose.foundation.interaction.collectIsDraggedAsState
 import kotlinx.coroutines.delay
@@ -129,6 +130,7 @@ fun WordByWordLyricsView(
     syncOffset: Long = 0L, // TODO: Add UI controls for adjusting sync offset in real-time
     animationPreset: WordAnimationPreset = WordAnimationPreset.DEFAULT, // TODO: Implement animation presets
     lyricsSource: String? = null, // Source of lyrics
+    contributions: List<LyricsContribution> = emptyList(),
     textSizeMultiplier: Float = 1.0f, // Scale factor for lyrics text size
     textAlignment: TextAlign = TextAlign.Center, // Alignment of lyrics text
     showTranslation: Boolean = true,
@@ -452,16 +454,14 @@ fun WordByWordLyricsView(
                 }
             }
             
-            // Display lyrics source at the bottom
-            if (!lyricsSource.isNullOrBlank()) {
+            if (!lyricsSource.isNullOrBlank() || contributions.isNotEmpty()) {
                 item {
-                    Spacer(modifier = Modifier.height(24.dp))
-                    Text(
-                        text = stringResource(R.string.lyrics_source_attribution, localizedLyricsSourceLabel(lyricsSource)),
-                        style = MaterialTheme.typography.labelSmall,
+                    LyricsAttributionFooter(
+                        lyricsSource = lyricsSource,
+                        contributions = contributions,
                         color = (textColor ?: MaterialTheme.colorScheme.onSurface).copy(alpha = 0.5f),
+                        textStyle = MaterialTheme.typography.labelSmall,
                         textAlign = TextAlign.Center,
-                        modifier = Modifier.padding(bottom = 8.dp)
                     )
                 }
             }

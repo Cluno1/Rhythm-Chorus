@@ -2020,7 +2020,7 @@
     <string name="onboardingscreen_connect_to_jellyfin_subsonic">Conéctese a los servidores Jellyfin, Subsonic o Navidrome para transmitir toda su biblioteca mientras viaja, con soporte de almacenamiento en caché para escuchar sin conexión.</string>
     <string name="onboardingscreen_playback_mode_tips">Consejos para el modo de reproducción</string>
     <string name="onboardingscreen_switch_easily_anytime_in">Cambie fácilmente en cualquier momento en Configuración &gt; Integración.</string>
-    <string name="onboardingscreen_local_mode_scans_and">El modo local escanea y cataloga archivos de audio en su dispositivo.</string>
+    <string name="onboardingscreen_local_mode_scans_and">El modo local escanea e indexa archivos de audio en su dispositivo.</string>
     <string name="onboardingscreen_go_streaming_connects_via">GO Streaming se conecta a través del servidor subsónico/jellyfin API.</string>
     <string name="onboardingscreen_connect_your_streaming_service">Conecte su servicio de transmisión</string>
     <string name="onboardingscreen_connect_your_subsonicnavidrome_or">Conecte su servidor Subsonic/Navidrome o Jellyfin para comenzar a transmitir.</string>

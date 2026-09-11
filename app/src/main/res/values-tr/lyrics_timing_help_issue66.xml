@@ -2,11 +2,11 @@
 <resources>
     <string name="lyrics_timing_help_storage_section">Kaydetme ve sunucu eşitleme</string>
     <string name="lyrics_timing_help_local_title">Yerel taslak (uygulama içinde)</string>
-    <string name="lyrics_timing_help_local_body">Bir Catalog şarkısında, düzenlemeye kısa süre ara verildiğinde değişiklikler bu cihazda taslak olarak otomatik kaydedilir. “Yerel taslak eşitlenmedi” çalışmanızın yerelde güvende olduğu, ancak henüz sunucuya ulaşmadığı anlamına gelir. Uygulama verilerini temizlemek taslağı silebilir.</string>
+    <string name="lyrics_timing_help_local_body">Bir müzik kitaplığı şarkısında, düzenlemeye kısa süre ara verildiğinde değişiklikler bu cihazda taslak olarak otomatik kaydedilir. “Yerel taslak eşitlenmedi” çalışmanızın yerelde güvende olduğu, ancak henüz sunucuya ulaşmadığı anlamına gelir. Uygulama verilerini temizlemek taslağı silebilir.</string>
     <string name="lyrics_timing_help_export_title">Şarkı sözlerini kaydet (dosya dışa aktar)</string>
     <string name="lyrics_timing_help_export_body">Alttaki “Şarkı Sözlerini Kaydet” düğmesi LRC, JSON veya TTML dosyasının nereye aktarılacağını sorar ve uygulamanın yerel önbelleğini yeniler. Dosyayı dışa aktarmak sunucuya yüklemez.</string>
     <string name="lyrics_timing_help_server_title">Eşitle (sunucuya yükle)</string>
-    <string name="lyrics_timing_help_server_body">“Eşitle” yalnızca desteklenen Catalog şarkılarında görünür ve bu şarkının seçili söz dilini yükler. “Sunucuyla eşitlendi” durumunu bekleyin; “Bekliyor” veya “Başarısız” hâlâ yalnızca yerel demektir.</string>
+    <string name="lyrics_timing_help_server_body">“Eşitle” yalnızca desteklenen müzik kitaplığı şarkılarında görünür ve bu şarkının seçili söz dilini yükler. “Sunucuyla eşitlendi” durumunu bekleyin; “Bekliyor” veya “Başarısız” hâlâ yalnızca yerel demektir.</string>
     <string name="lyrics_timing_help_conflict_title">Çakışma olduğunda</string>
     <string name="lyrics_timing_help_conflict_body">“Sunucuyu kullan” yerel taslağı siler ve sunucu kopyasını yükler. “Sunucunun üzerine yaz” daha yeni sunucu kopyasını yerel taslağınızla değiştirir. Seçmeden önce ikisini de gözden geçirin.</string>
 </resources>

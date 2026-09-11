@@ -2,11 +2,11 @@
 <resources>
     <string name="lyrics_timing_help_storage_section">Salvataggio e sincronizzazione server</string>
     <string name="lyrics_timing_help_local_title">Bozza locale (nell’app)</string>
-    <string name="lyrics_timing_help_local_body">Per un brano Catalog, dopo una breve pausa le modifiche vengono salvate automaticamente come bozza su questo dispositivo. “Bozza locale non sincronizzata” significa che il lavoro è al sicuro in locale ma non è ancora sul server. La cancellazione dei dati dell’app può eliminare la bozza.</string>
+    <string name="lyrics_timing_help_local_body">Per un brano della raccolta musicale, dopo una breve pausa le modifiche vengono salvate automaticamente come bozza su questo dispositivo. “Bozza locale non sincronizzata” significa che il lavoro è al sicuro in locale ma non è ancora sul server. La cancellazione dei dati dell’app può eliminare la bozza.</string>
     <string name="lyrics_timing_help_export_title">Salva testo (esporta file)</string>
     <string name="lyrics_timing_help_export_body">Il pulsante “Salva testo” in basso consente di scegliere dove esportare un file LRC, JSON o TTML e aggiorna la cache locale dell’app. Esportare un file non lo carica sul server.</string>
     <string name="lyrics_timing_help_server_title">Sincronizza (carica sul server)</string>
-    <string name="lyrics_timing_help_server_body">“Sincronizza” appare solo per i brani Catalog supportati. Carica la lingua del testo attualmente selezionata per questo brano. Attendi “Sincronizzato con il server”; “In attesa” o “Non riuscito” significa che è ancora solo locale.</string>
+    <string name="lyrics_timing_help_server_body">“Sincronizza” appare solo per i brani supportati della raccolta musicale. Carica la lingua del testo attualmente selezionata per questo brano. Attendi “Sincronizzato con il server”; “In attesa” o “Non riuscito” significa che è ancora solo locale.</string>
     <string name="lyrics_timing_help_conflict_title">In caso di conflitto</string>
     <string name="lyrics_timing_help_conflict_body">“Usa server” elimina la bozza locale e ricarica la copia del server. “Sovrascrivi server” sostituisce la copia più recente del server con la bozza locale. Controlla entrambe prima di scegliere.</string>
 </resources>

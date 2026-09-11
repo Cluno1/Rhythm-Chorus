@@ -2,11 +2,11 @@
 <resources>
     <string name="lyrics_timing_help_storage_section">Speichern und Serversynchronisierung</string>
     <string name="lyrics_timing_help_local_title">Lokaler Entwurf (in der App)</string>
-    <string name="lyrics_timing_help_local_body">Bei einem Catalog-Titel werden Änderungen nach einer kurzen Pause automatisch als Entwurf auf diesem Gerät gespeichert. „Lokaler Entwurf nicht synchronisiert“ bedeutet, dass deine Arbeit lokal sicher ist, aber den Server noch nicht erreicht hat. Beim Löschen der App-Daten kann dieser Entwurf verloren gehen.</string>
+    <string name="lyrics_timing_help_local_body">Bei einem Titel aus der Musikbibliothek werden Änderungen nach einer kurzen Pause automatisch als Entwurf auf diesem Gerät gespeichert. „Lokaler Entwurf nicht synchronisiert” bedeutet, dass deine Arbeit lokal sicher ist, aber den Server noch nicht erreicht hat. Beim Löschen der App-Daten kann dieser Entwurf verloren gehen.</string>
     <string name="lyrics_timing_help_export_title">Liedtext speichern (Datei exportieren)</string>
     <string name="lyrics_timing_help_export_body">„Liedtext speichern“ unten fragt nach einem Speicherort für eine LRC-, JSON- oder TTML-Datei und aktualisiert den lokalen App-Cache. Eine exportierte Datei wird nicht auf den Server hochgeladen.</string>
     <string name="lyrics_timing_help_server_title">Synchronisieren (auf den Server laden)</string>
-    <string name="lyrics_timing_help_server_body">„Synchronisieren“ erscheint nur bei unterstützten Catalog-Titeln. Hochgeladen wird die aktuell gewählte Liedtextsprache dieses Titels. Warte auf „Mit dem Server synchronisiert“; „Ausstehend“ oder „Fehlgeschlagen“ bedeutet weiterhin nur lokal.</string>
+    <string name="lyrics_timing_help_server_body">„Synchronisieren” erscheint nur bei unterstützten Titeln aus der Musikbibliothek. Hochgeladen wird die aktuell gewählte Liedtextsprache dieses Titels. Warte auf „Mit dem Server synchronisiert”; „Ausstehend” oder „Fehlgeschlagen” bedeutet weiterhin nur lokal.</string>
     <string name="lyrics_timing_help_conflict_title">Bei einem Konflikt</string>
     <string name="lyrics_timing_help_conflict_body">„Server verwenden“ entfernt den lokalen Entwurf und lädt die Serverfassung. „Server überschreiben“ ersetzt die neuere Serverfassung durch deinen lokalen Entwurf. Prüfe beides vor der Auswahl.</string>
 </resources>

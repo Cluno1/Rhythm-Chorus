@@ -48,6 +48,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import io.github.cluno1.sonorus.shared.data.model.LyricsData
+import io.github.cluno1.sonorus.shared.data.model.LyricsContribution
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.ui.input.pointer.PointerEventPass
@@ -751,6 +752,7 @@ fun FullScreenLyricsView(
                                     modifier = Modifier.fillMaxSize(),
                                     onSeek = onLyricsSeek,
                                     lyricsSource = lyrics.source,
+                                    contributions = lyrics.contributions,
                                     textSizeMultiplier = playerLyricsTextSize,
                                     textAlignment = lyricsTextAlign,
                                     showTranslation = showTranslation,
@@ -772,6 +774,7 @@ fun FullScreenLyricsView(
                                         showTranslation = showTranslation,
                                         showRomanization = showRomanization,
                                         lyricsSource = lyrics.source,
+                                        contributions = lyrics.contributions,
                                         textSizeMultiplier = playerLyricsTextSize,
                                         textAlignment = lyricsTextAlign
                                     )
@@ -779,6 +782,7 @@ fun FullScreenLyricsView(
                                     FullScreenPlainLyricsView(
                                         lyrics = lyricsText,
                                         lyricsSource = lyrics.source,
+                                        contributions = lyrics.contributions,
                                         textSizeMultiplier = playerLyricsTextSize,
                                         textAlignment = lyricsTextAlign,
                                         textColor = textPrimaryColor,
@@ -1115,6 +1119,7 @@ fun FullScreenLyricsView(
                                     modifier = Modifier.fillMaxSize(),
                                     onSeek = onLyricsSeek,
                                     lyricsSource = lyrics.source,
+                                    contributions = lyrics.contributions,
                                     textSizeMultiplier = playerLyricsTextSize,
                                     textAlignment = lyricsTextAlign,
                                     showTranslation = showTranslation,
@@ -1136,6 +1141,7 @@ fun FullScreenLyricsView(
                                         showTranslation = showTranslation,
                                         showRomanization = showRomanization,
                                         lyricsSource = lyrics.source,
+                                        contributions = lyrics.contributions,
                                         textSizeMultiplier = playerLyricsTextSize,
                                         textAlignment = lyricsTextAlign
                                     )
@@ -1143,6 +1149,7 @@ fun FullScreenLyricsView(
                                     FullScreenPlainLyricsView(
                                         lyrics = lyricsText,
                                         lyricsSource = lyrics.source,
+                                        contributions = lyrics.contributions,
                                         textSizeMultiplier = playerLyricsTextSize,
                                         textAlignment = lyricsTextAlign,
                                         textColor = textPrimaryColor,
@@ -1427,6 +1434,7 @@ fun FullScreenLyricsView(
 private fun FullScreenPlainLyricsView(
     lyrics: String,
     lyricsSource: String?,
+    contributions: List<LyricsContribution>,
     textSizeMultiplier: Float,
     textAlignment: TextAlign,
     textColor: Color,
@@ -1443,8 +1451,11 @@ private fun FullScreenPlainLyricsView(
             else -> Alignment.CenterHorizontally
         },
     ) {
+        val visibleLyrics = remember(lyrics) {
+            io.github.cluno1.sonorus.util.LyricsContributionAttribution.visibleLyrics(lyrics, "plain")
+        }
         Text(
-            text = lyrics,
+            text = visibleLyrics,
             style = MaterialTheme.typography.titleLarge.copy(
                 fontSize = MaterialTheme.typography.titleLarge.fontSize * textSizeMultiplier,
                 lineHeight = MaterialTheme.typography.titleLarge.lineHeight * 1.5f * textSizeMultiplier,
@@ -1455,15 +1466,12 @@ private fun FullScreenPlainLyricsView(
             textAlign = textAlignment,
             modifier = Modifier.fillMaxWidth(),
         )
-        if (!lyricsSource.isNullOrBlank()) {
-            Spacer(modifier = Modifier.height(24.dp))
-            Text(
-                text = stringResource(
-                    R.string.lyrics_source_attribution,
-                    localizedLyricsSourceLabel(lyricsSource),
-                ),
-                style = MaterialTheme.typography.labelMedium,
+        if (!lyricsSource.isNullOrBlank() || contributions.isNotEmpty()) {
+            LyricsAttributionFooter(
+                lyricsSource = lyricsSource,
+                contributions = contributions,
                 color = sourceColor.copy(alpha = 0.7f),
+                textStyle = MaterialTheme.typography.labelMedium,
                 textAlign = textAlignment,
                 modifier = Modifier
                     .fillMaxWidth()

@@ -2711,6 +2711,11 @@
     <string name="player_release_to_close">放開關閉</string>
     <string name="player_swipe_down_to_close">向下滑動關閉</string>
     <string name="lyrics_source_attribution">歌詞：%1$s</string>
+    <string name="lyrics_source_display">歌詞：%1$s</string>
+    <string name="lyrics_source_music_library">音樂庫</string>
+    <string name="lyrics_source_music_library_language">音樂庫 · %1$s</string>
+    <string name="lyrics_contribution_uploader_display">上傳者：%1$s · %2$s</string>
+    <string name="lyrics_contribution_modifier_display">修改者：%1$s · %2$s</string>
     <string name="lyrics_currently_no_lyrics">目前這首歌還沒有歌詞。\n</string>
     <string name="lyrics_no_lyrics">這首歌沒有可用的歌詞。</string>
     <string name="artist_options">藝人選項</string>

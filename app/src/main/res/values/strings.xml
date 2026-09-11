@@ -439,7 +439,7 @@
     <string name="storage_permission_desc">To browse your music files and explore your device\'s storage, Sonorus needs permission to access your files and media.</string>
     <string name="storage_permission_audio_only">This allows access only to audio files and folders containing music.</string>
     <string name="local_library_disabled_title">Local music library disabled</string>
-    <string name="local_library_disabled_desc">Sonorus only plays managed audio from your private work catalog. The work list and rendition picker are being connected to the server.</string>
+    <string name="local_library_disabled_desc">Sonorus only plays managed audio from your private music library. The work list and rendition picker are being connected to the server.</string>
 <string name="player_loading_lyrics">Loading lyrics…</string>
     <string name="player_queue">Queue</string>
     <string name="player_speed_label">Speed</string>
@@ -1941,7 +1941,7 @@
     <string name="onboardingscreen_connect_to_jellyfin_subsonic">Connect to Jellyfin, Subsonic, or Navidrome servers to stream your entire library on the go, with caching support for offline listening.</string>
     <string name="onboardingscreen_playback_mode_tips">Playback Mode Tips</string>
     <string name="onboardingscreen_switch_easily_anytime_in">Switch easily anytime in Settings &gt; Integration.</string>
-    <string name="onboardingscreen_local_mode_scans_and">Local mode scans and catalogs audio files on your device.</string>
+    <string name="onboardingscreen_local_mode_scans_and">Local mode scans and indexes audio files on your device.</string>
     <string name="onboardingscreen_go_streaming_connects_via">GO Streaming connects via subsonic/jellyfin API server.</string>
     <string name="onboardingscreen_connect_your_streaming_service">Connect Your Streaming Service</string>
     <string name="onboardingscreen_connect_your_subsonicnavidrome_or">Connect your Subsonic/Navidrome or Jellyfin server to start streaming.</string>
@@ -2640,6 +2640,11 @@
     <string name="player_release_to_close">Release to close</string>
     <string name="player_swipe_down_to_close">Swipe down to close</string>
     <string name="lyrics_source_attribution">Lyrics by %1$s</string>
+    <string name="lyrics_source_display">Lyrics: %1$s</string>
+    <string name="lyrics_source_music_library">Music library</string>
+    <string name="lyrics_source_music_library_language">Music library · %1$s</string>
+    <string name="lyrics_contribution_uploader_display">Uploaded by %1$s · %2$s</string>
+    <string name="lyrics_contribution_modifier_display">Modified by %1$s · %2$s</string>
     <string name="lyrics_currently_no_lyrics">Currently no lyrics are available for this song.\n</string>
     <string name="lyrics_no_lyrics">No lyrics available for this song.</string>
     <string name="artist_options">Artist Options</string>
@@ -3000,11 +3005,11 @@
     <string name="lyrics_timing_help_step_finish_body">Use Previous line, Undo, the seek bar, or Back 3 seconds to correct mistakes. Review the full song, then save locally or sync it to the server.</string>
     <string name="lyrics_timing_help_storage_section">Saving and server sync</string>
     <string name="lyrics_timing_help_local_title">Local draft (inside the app)</string>
-    <string name="lyrics_timing_help_local_body">For a Catalog song, edits are automatically stored as a draft on this device after a short pause. “Local draft not synced” means your work is safe locally but has not reached the server. Clearing app data can remove this draft.</string>
+    <string name="lyrics_timing_help_local_body">For a music-library song, edits are automatically stored as a draft on this device after a short pause. “Local draft not synced” means your work is safe locally but has not reached the server. Clearing app data can remove this draft.</string>
     <string name="lyrics_timing_help_export_title">Save Lyrics (export a file)</string>
     <string name="lyrics_timing_help_export_body">The Save Lyrics button at the bottom asks where to export an LRC, JSON, or TTML file and refreshes the app’s local cache. Saving a file does not upload it to the server.</string>
     <string name="lyrics_timing_help_server_title">Sync (upload to the server)</string>
-    <string name="lyrics_timing_help_server_body">Sync is shown only for supported Catalog songs. It uploads the current lyrics language for this song. Wait for “Synced to the server”; Pending or Failed is still local only.</string>
+    <string name="lyrics_timing_help_server_body">Sync is shown only for supported music-library songs. It uploads the current lyrics language for this song. Wait for “Synced to the server”; Pending or Failed is still local only.</string>
     <string name="lyrics_timing_help_conflict_title">When there is a conflict</string>
     <string name="lyrics_timing_help_conflict_body">Use server removes the local draft and reloads the server copy. Overwrite server sends your local draft over the newer server copy. Review both before choosing.</string>
     <string name="lyrics_timing_help_playback_controls">Playback controls</string>

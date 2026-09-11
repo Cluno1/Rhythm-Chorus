@@ -2,11 +2,11 @@
 <resources>
     <string name="lyrics_timing_help_storage_section">저장 및 서버 동기화</string>
     <string name="lyrics_timing_help_local_title">로컬 초안(앱 내부)</string>
-    <string name="lyrics_timing_help_local_body">Catalog 곡은 편집을 잠시 멈추면 이 기기에 초안으로 자동 저장됩니다. “로컬 초안이 동기화되지 않음”은 작업이 기기에는 안전하게 저장됐지만 서버에는 아직 도착하지 않았다는 뜻입니다. 앱 데이터를 지우면 초안도 삭제될 수 있습니다.</string>
+    <string name="lyrics_timing_help_local_body">음악 라이브러리 곡은 편집을 잠시 멈추면 이 기기에 초안으로 자동 저장됩니다. “로컬 초안이 동기화되지 않음”은 작업이 기기에는 안전하게 저장됐지만 서버에는 아직 도착하지 않았다는 뜻입니다. 앱 데이터를 지우면 초안도 삭제될 수 있습니다.</string>
     <string name="lyrics_timing_help_export_title">가사 저장(파일 내보내기)</string>
     <string name="lyrics_timing_help_export_body">아래의 “가사 저장”은 LRC, JSON 또는 TTML 파일을 내보낼 위치를 선택하고 앱의 로컬 캐시도 갱신합니다. 파일 저장은 서버 업로드가 아닙니다.</string>
     <string name="lyrics_timing_help_server_title">동기화(서버에 업로드)</string>
-    <string name="lyrics_timing_help_server_body">“동기화”는 지원되는 Catalog 곡에만 표시되며 현재 선택한 가사 언어를 업로드합니다. “서버와 동기화됨”이 될 때까지 기다리세요. “대기 중” 또는 “실패”는 여전히 로컬에만 있다는 뜻입니다.</string>
+    <string name="lyrics_timing_help_server_body">“동기화”는 지원되는 음악 라이브러리 곡에만 표시되며 현재 선택한 가사 언어를 업로드합니다. “서버와 동기화됨”이 될 때까지 기다리세요. “대기 중” 또는 “실패”는 여전히 로컬에만 있다는 뜻입니다.</string>
     <string name="lyrics_timing_help_conflict_title">충돌이 발생한 경우</string>
     <string name="lyrics_timing_help_conflict_body">“서버 사용”은 로컬 초안을 삭제하고 서버 사본을 불러옵니다. “서버 덮어쓰기”는 더 새로운 서버 사본을 로컬 초안으로 교체합니다. 선택하기 전에 둘 다 확인하세요.</string>
 </resources>

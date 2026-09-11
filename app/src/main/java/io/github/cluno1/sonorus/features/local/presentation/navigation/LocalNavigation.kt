@@ -1048,7 +1048,7 @@ private fun LocalNavigationContent(
                 it.isCatalogLibrarySong() && catalogQueueEntryForSong(it) == null
             }
             if (missingCatalogIdentity) {
-                coroutineScope.launch { snackbarHostState.showSnackbar("Catalog 歌曲身份已过期，请刷新曲库") }
+                coroutineScope.launch { snackbarHostState.showSnackbar("音乐库歌曲身份已过期，请刷新曲库") }
             } else {
                 val entries = orderedSongs.mapNotNull(catalogQueueEntryForSong)
                 viewModel.playUnifiedQueue(

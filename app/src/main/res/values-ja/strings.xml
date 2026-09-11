@@ -2689,6 +2689,11 @@
     <string name="player_release_to_close">放して閉じる</string>
     <string name="player_swipe_down_to_close">下にスワイプして閉じます</string>
     <string name="lyrics_source_attribution">歌詞: %1$s</string>
+    <string name="lyrics_source_display">歌詞：%1$s</string>
+    <string name="lyrics_source_music_library">音楽ライブラリ</string>
+    <string name="lyrics_source_music_library_language">音楽ライブラリ · %1$s</string>
+    <string name="lyrics_contribution_uploader_display">アップロード：%1$s · %2$s</string>
+    <string name="lyrics_contribution_modifier_display">編集：%1$s · %2$s</string>
     <string name="lyrics_currently_no_lyrics">現在、この曲の歌詞はありません。\n</string>
     <string name="lyrics_no_lyrics">この曲には歌詞がありません。</string>
     <string name="artist_options">アーティストオプション</string>

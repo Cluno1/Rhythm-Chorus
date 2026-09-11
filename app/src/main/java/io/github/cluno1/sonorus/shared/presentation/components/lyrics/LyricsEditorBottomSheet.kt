@@ -1930,8 +1930,13 @@ fun LyricsEditorBottomSheet(
                     onClick = {
                         val submittedName = contributionName.trim()
                         appSettings.setLyricsContributorName(submittedName)
-                        val attributedLyrics = LyricsContributionAttribution.append(
+                        val lyricsWithHistory = LyricsContributionAttribution.preserveHistory(
                             lyrics = editedLyrics,
+                            existing = lyricsData?.contributions.orEmpty(),
+                            format = selectedFormat.name,
+                        )
+                        val attributedLyrics = LyricsContributionAttribution.append(
+                            lyrics = lyricsWithHistory,
                             contributorName = submittedName,
                             updatedAt = SimpleDateFormat(
                                 "yyyy-MM-dd HH:mm:ss XXX",

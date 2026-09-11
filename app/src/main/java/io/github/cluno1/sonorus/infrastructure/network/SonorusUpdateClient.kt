@@ -232,8 +232,8 @@ class SonorusUpdateClient(
     }
 
     private fun enrolledOrigin(): HttpUrl {
-        val server = credentials.loadServerUrl() ?: throw IOException("Catalog device is not enrolled")
-        require(credentials.loadDevice() != null) { "Catalog device is not enrolled" }
+        val server = credentials.loadServerUrl() ?: throw IOException("Music library device is not enrolled")
+        require(credentials.loadDevice() != null) { "Music library device is not enrolled" }
         return (CatalogEndpoint.normalize(server) + "/").toHttpUrl()
     }
 

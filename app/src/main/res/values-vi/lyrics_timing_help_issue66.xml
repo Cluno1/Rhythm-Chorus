@@ -2,11 +2,11 @@
 <resources>
     <string name="lyrics_timing_help_storage_section">Lưu và đồng bộ máy chủ</string>
     <string name="lyrics_timing_help_local_title">Bản nháp cục bộ (trong ứng dụng)</string>
-    <string name="lyrics_timing_help_local_body">Với bài hát Catalog, thay đổi sẽ tự động được lưu thành bản nháp trên thiết bị này sau khi bạn ngừng chỉnh sửa một lúc. “Bản nháp cục bộ chưa đồng bộ” nghĩa là công việc đã an toàn trên máy nhưng chưa đến máy chủ. Việc xóa dữ liệu ứng dụng có thể xóa bản nháp này.</string>
+    <string name="lyrics_timing_help_local_body">Với bài hát trong thư viện nhạc, thay đổi sẽ tự động được lưu thành bản nháp trên thiết bị này sau khi bạn ngừng chỉnh sửa một lúc. “Bản nháp cục bộ chưa đồng bộ” nghĩa là công việc đã an toàn trên máy nhưng chưa đến máy chủ. Việc xóa dữ liệu ứng dụng có thể xóa bản nháp này.</string>
     <string name="lyrics_timing_help_export_title">Lưu lời bài hát (xuất tệp)</string>
     <string name="lyrics_timing_help_export_body">Nút “Lưu Lời bài hát” ở dưới cho phép chọn nơi xuất tệp LRC, JSON hoặc TTML và cập nhật bộ nhớ đệm cục bộ. Xuất tệp không tải tệp đó lên máy chủ.</string>
     <string name="lyrics_timing_help_server_title">Đồng bộ (tải lên máy chủ)</string>
-    <string name="lyrics_timing_help_server_body">“Đồng bộ” chỉ xuất hiện với bài hát Catalog được hỗ trợ và tải lên ngôn ngữ lời đang chọn của bài hát này. Hãy chờ “Đã đồng bộ với máy chủ”; “Đang chờ” hoặc “Thất bại” vẫn có nghĩa là chỉ lưu cục bộ.</string>
+    <string name="lyrics_timing_help_server_body">“Đồng bộ” chỉ xuất hiện với bài hát trong thư viện nhạc được hỗ trợ và tải lên ngôn ngữ lời đang chọn của bài hát này. Hãy chờ “Đã đồng bộ với máy chủ”; “Đang chờ” hoặc “Thất bại” vẫn có nghĩa là chỉ lưu cục bộ.</string>
     <string name="lyrics_timing_help_conflict_title">Khi có xung đột</string>
     <string name="lyrics_timing_help_conflict_body">“Dùng máy chủ” xóa bản nháp cục bộ và tải bản sao trên máy chủ. “Ghi đè máy chủ” thay bản mới hơn trên máy chủ bằng bản nháp cục bộ. Hãy kiểm tra cả hai trước khi chọn.</string>
 </resources>

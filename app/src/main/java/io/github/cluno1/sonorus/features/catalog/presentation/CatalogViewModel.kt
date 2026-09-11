@@ -72,7 +72,7 @@ class CatalogViewModel(application: Application) : AndroidViewModel(application)
                 songs = repository.cachedLibrary()?.songs.orEmpty(),
                 albums = repository.cachedLibrary()?.albums.orEmpty(),
                 scoreWorks = repository.cachedLibrary()?.scoreWorks.orEmpty(),
-                error = if (it.reenrollmentRequired) "Catalog 登记已失效，请重新登记" else null,
+                error = if (it.reenrollmentRequired) "音乐库登记已失效，请重新登记" else null,
             )
         },
     )
@@ -334,9 +334,10 @@ class CatalogViewModel(application: Application) : AndroidViewModel(application)
     }
 
     private fun message(error: Throwable): String = when (error) {
-        is CatalogFailure.InvalidCredentials -> "Catalog 登记已失效，请重新登记"
+        is CatalogFailure.InvalidCredentials -> "音乐库登记已失效，请重新登记"
         is CatalogFailure.AdminInvalidCredentials -> getApplication<Application>()
             .getString(R.string.catalog_admin_invalid_credentials)
-        else -> error.message ?: "发生未知错误"
+        else -> (error.message ?: "发生未知错误")
+            .replace(Regex("\\bCatalog\\b", RegexOption.IGNORE_CASE), "音乐库")
     }
 }

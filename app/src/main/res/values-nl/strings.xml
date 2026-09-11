@@ -2002,7 +2002,7 @@
     <string name="onboardingscreen_connect_to_jellyfin_subsonic">Maak verbinding met Jellyfin-, Subsonic- of Navidrome-servers om uw volledige bibliotheek onderweg te streamen, met caching-ondersteuning voor offline luisteren.</string>
     <string name="onboardingscreen_playback_mode_tips">Tips voor de afspeelmodus</string>
     <string name="onboardingscreen_switch_easily_anytime_in">Schakel op elk gewenst moment eenvoudig over via Instellingen &gt; Integratie.</string>
-    <string name="onboardingscreen_local_mode_scans_and">De lokale modus scant en catalogiseert audiobestanden op uw apparaat.</string>
+    <string name="onboardingscreen_local_mode_scans_and">De lokale modus scant en indexeert audiobestanden op uw apparaat.</string>
     <string name="onboardingscreen_go_streaming_connects_via">GO Streaming maakt verbinding via subsonic/jellyfin API-server.</string>
     <string name="onboardingscreen_connect_your_streaming_service">Verbind uw streamingdienst</string>
     <string name="onboardingscreen_connect_your_subsonicnavidrome_or">Verbind uw Subsonic/Navidrome- of Jellyfin-server om te beginnen met streamen.</string>
