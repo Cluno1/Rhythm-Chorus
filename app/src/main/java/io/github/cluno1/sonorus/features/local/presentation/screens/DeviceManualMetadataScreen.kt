@@ -563,6 +563,17 @@ fun DeviceManualMetadataScreen(
                             .fillMaxWidth()
                             .height(320.dp),
                     )
+                    song?.let { targetSong ->
+                        Text(
+                            text = stringResource(
+                                R.string.device_manual_metadata_artwork_target,
+                                targetSong.title,
+                                targetSong.album,
+                            ),
+                            style = MaterialTheme.typography.titleSmall,
+                            fontWeight = FontWeight.SemiBold,
+                        )
+                    }
                     Text(
                         text = stringResource(R.string.device_manual_metadata_artwork_save_desc),
                         style = MaterialTheme.typography.bodyMedium,

@@ -2900,9 +2900,10 @@
     <string name="device_manual_metadata_artwork_preview">封面預覽</string>
     <string name="device_manual_metadata_artist_artwork_preview">藝人頭像預覽</string>
     <string name="device_manual_metadata_artist_stats">%1$d 張專輯 · %2$d 位粉絲</string>
-    <string name="device_manual_metadata_artwork_save_desc">可以僅儲存在 Sonorus 中，也可以同時在您選擇的音樂資料夾中儲存通用封面檔案。</string>
+    <string name="device_manual_metadata_artwork_target">目標：%1$s · 專輯 %2$s</string>
+    <string name="device_manual_metadata_artwork_save_desc">即使切換播放歌曲，修改目標也不會改變。儲存到資料夾時會建立與目前音訊同名的圖片，避免混放目錄內的其他歌曲繼承該封面。</string>
     <string name="device_manual_metadata_artwork_app_only">僅在 Sonorus 中使用</string>
-    <string name="device_manual_metadata_artwork_music_folder">儲存到音樂資料夾</string>
+    <string name="device_manual_metadata_artwork_music_folder">儲存歌曲同名圖片到資料夾</string>
     <string name="customizeartistimage_search_online">手動線上取得</string>
     <string name="lyrics_online_rematch">線上重新配對</string>
     <string name="lyrics_choose_version">選擇其他版本</string>

@@ -3277,9 +3277,10 @@
     <string name="device_manual_metadata_artwork_preview">Artwork preview</string>
     <string name="device_manual_metadata_artist_artwork_preview">Artist image preview</string>
     <string name="device_manual_metadata_artist_stats">%1$d albums · %2$d fans</string>
-    <string name="device_manual_metadata_artwork_save_desc">Keep the cover only in Sonorus, or also save a conventional cover file in a music folder you choose.</string>
+    <string name="device_manual_metadata_artwork_target">Target: %1$s · album %2$s</string>
+    <string name="device_manual_metadata_artwork_save_desc">The target stays fixed even if playback changes. Saving to a folder creates an image with the same name as this audio file, so other songs in a mixed folder do not inherit it.</string>
     <string name="device_manual_metadata_artwork_app_only">Sonorus only</string>
-    <string name="device_manual_metadata_artwork_music_folder">Save to music folder</string>
+    <string name="device_manual_metadata_artwork_music_folder">Save song-named image to folder</string>
     <string name="customizeartistimage_search_online">Search public APIs manually</string>
     <string name="lyrics_online_rematch">Match online again</string>
     <string name="lyrics_choose_version">Choose another version</string>

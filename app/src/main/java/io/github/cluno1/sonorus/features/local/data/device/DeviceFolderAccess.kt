@@ -44,8 +44,13 @@ class DeviceFolderAccess(private val context: Context) {
         prefs.edit { putStringSet(KEY_ROOTS, roots().filterNot { it == uri }.map(Uri::toString).toSet()) }
     }
 
-    /** Writes a conventional cover file only after the user explicitly selected the destination tree. */
-    fun writeArtwork(directoryUri: Uri, source: File, mediaType: String): DeviceArtworkFolderFile? =
+    /** Writes song-scoped artwork only after the user explicitly selected the destination tree. */
+    fun writeArtwork(
+        directoryUri: Uri,
+        source: File,
+        mediaType: String,
+        audioFileName: String,
+    ): DeviceArtworkFolderFile? =
         runCatching {
             if (!source.isFile || source.length() <= 0L) return@runCatching null
             addWritable(directoryUri)
@@ -53,7 +58,7 @@ class DeviceFolderAccess(private val context: Context) {
                 ?.takeIf { it.isDirectory && it.canWrite() }
                 ?: return@runCatching null
             val normalizedType = DeviceArtworkFolderPolicy.normalizedMediaType(mediaType)
-            val displayName = DeviceArtworkFolderPolicy.fileName(normalizedType)
+            val displayName = DeviceArtworkFolderPolicy.fileName(audioFileName, normalizedType)
             val existing = directory.listFiles().firstOrNull {
                 it.isFile && it.name.equals(displayName, ignoreCase = true)
             }
@@ -156,9 +161,17 @@ object DeviceArtworkFolderPolicy {
         else -> "image/jpeg"
     }
 
-    fun fileName(mediaType: String): String = when (normalizedMediaType(mediaType)) {
-        "image/png" -> "cover.png"
-        "image/webp" -> "cover.webp"
-        else -> "cover.jpg"
+    fun fileName(audioFileName: String, mediaType: String): String {
+        val rawStem = audioFileName.substringBeforeLast('.', audioFileName).trim()
+        val stem = rawStem
+            .replace(Regex("[/\\\\\u0000-\u001F]"), "_")
+            .trim('.', ' ')
+            .ifBlank { "sonorus-artwork" }
+        val extension = when (normalizedMediaType(mediaType)) {
+            "image/png" -> "png"
+            "image/webp" -> "webp"
+            else -> "jpg"
+        }
+        return "$stem.$extension"
     }
 }
