@@ -2301,7 +2301,7 @@ private fun LocalNavigationContent(
                 composable(Screen.CatalogSettings.route) {
                     CatalogServerSettingsScreen(
                         state = catalogState,
-                        onEnroll = catalogViewModel::enrollDevice,
+                        onEnrollSmartText = catalogViewModel::enrollDeviceFromSmartText,
                         onIssueInvite = catalogViewModel::issueInvite,
                         onClear = catalogViewModel::clearConnection,
                         onClearInviteUiState = catalogViewModel::clearInviteUiState,

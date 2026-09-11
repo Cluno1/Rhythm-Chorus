@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -29,6 +30,7 @@ import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -41,6 +43,8 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import io.github.cluno1.sonorus.R
 import io.github.cluno1.sonorus.features.catalog.domain.CatalogIssuedInvite
+import io.github.cluno1.sonorus.features.catalog.domain.CatalogSmartEnrollmentText
+import io.github.cluno1.sonorus.features.catalog.data.remote.CatalogEndpoint
 import io.github.cluno1.sonorus.shared.presentation.components.common.CollapsibleHeaderScreen
 import io.github.cluno1.sonorus.shared.presentation.components.icons.Icon
 import io.github.cluno1.sonorus.shared.presentation.components.icons.RhythmIcons
@@ -53,7 +57,7 @@ import java.time.format.FormatStyle
 @Composable
 fun CatalogServerSettingsScreen(
     state: CatalogUiState,
-    onEnroll: (String, String) -> Unit,
+    onEnrollSmartText: (String) -> Unit,
     onIssueInvite: (String, String, String, String, String, Boolean) -> Unit,
     onClear: () -> Unit,
     onClearInviteUiState: () -> Unit,
@@ -78,7 +82,7 @@ fun CatalogServerSettingsScreen(
 
     CatalogDeviceEnrollmentScreen(
         state = state,
-        onEnroll = onEnroll,
+        onEnrollSmartText = onEnrollSmartText,
         onClear = onClear,
         onOpenAdmin = {
             onClearInviteUiState()
@@ -92,16 +96,19 @@ fun CatalogServerSettingsScreen(
 @Composable
 private fun CatalogDeviceEnrollmentScreen(
     state: CatalogUiState,
-    onEnroll: (String, String) -> Unit,
+    onEnrollSmartText: (String) -> Unit,
     onClear: () -> Unit,
     onOpenAdmin: () -> Unit,
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    var serverUrl by rememberSaveable { mutableStateOf("") }
-    var inviteCode by rememberSaveable { mutableStateOf("") }
+    var smartText by rememberSaveable { mutableStateOf("") }
     val miniPlayerBottomPadding = LocalMiniPlayerPadding.current.calculateBottomPadding()
     val adminPageDescription = stringResource(R.string.catalog_admin_issue_invite)
+
+    LaunchedEffect(state.deviceRegistered) {
+        if (state.deviceRegistered) smartText = ""
+    }
 
     CollapsibleHeaderScreen(
         title = stringResource(R.string.settings_catalog_server),
@@ -126,39 +133,6 @@ private fun CatalogDeviceEnrollmentScreen(
             verticalArrangement = Arrangement.spacedBy(18.dp),
         ) {
             CatalogSettingsSection {
-                Text(
-                    stringResource(R.string.catalog_enrollment_intro),
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-                OutlinedTextField(
-                    value = serverUrl,
-                    onValueChange = { serverUrl = it },
-                    label = { Text(stringResource(R.string.catalog_server_address)) },
-                    singleLine = true,
-                    enabled = !state.loading,
-                    modifier = Modifier.fillMaxWidth(),
-                )
-                OutlinedTextField(
-                    value = inviteCode,
-                    onValueChange = { inviteCode = it },
-                    label = { Text(stringResource(R.string.catalog_one_time_invite)) },
-                    visualTransformation = PasswordVisualTransformation(),
-                    singleLine = true,
-                    enabled = !state.loading,
-                    modifier = Modifier.fillMaxWidth(),
-                )
-                Button(
-                    onClick = { onEnroll(serverUrl, inviteCode) },
-                    enabled = !state.loading && serverUrl.isNotBlank() && inviteCode.isNotBlank(),
-                    modifier = Modifier.fillMaxWidth(),
-                ) {
-                    if (state.loading) {
-                        CircularProgressIndicator()
-                    } else {
-                        Text(stringResource(R.string.catalog_enroll_this_device))
-                    }
-                }
                 if (state.deviceRegistered) {
                     Text(
                         stringResource(R.string.catalog_device_registered),
@@ -171,18 +145,47 @@ private fun CatalogDeviceEnrollmentScreen(
                     ) {
                         Text(stringResource(R.string.catalog_remove_device_registration))
                     }
-                } else if (state.configured) {
+                } else {
                     Text(
-                        stringResource(R.string.catalog_legacy_connection_notice),
+                        stringResource(R.string.catalog_enrollment_intro),
+                        style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        style = MaterialTheme.typography.bodySmall,
                     )
-                    OutlinedButton(
-                        onClick = onClear,
+                    OutlinedTextField(
+                        value = smartText,
+                        onValueChange = { smartText = it },
+                        label = { Text(stringResource(R.string.catalog_smart_enrollment_text)) },
+                        minLines = 4,
+                        maxLines = 8,
                         enabled = !state.loading,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .heightIn(min = 132.dp),
+                    )
+                    Button(
+                        onClick = { onEnrollSmartText(smartText) },
+                        enabled = !state.loading && smartText.isNotBlank(),
                         modifier = Modifier.fillMaxWidth(),
                     ) {
-                        Text(stringResource(R.string.catalog_remove_legacy_connection))
+                        if (state.loading) {
+                            CircularProgressIndicator()
+                        } else {
+                            Text(stringResource(R.string.catalog_enroll_this_device))
+                        }
+                    }
+                    if (state.configured) {
+                        Text(
+                            stringResource(R.string.catalog_legacy_connection_notice),
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            style = MaterialTheme.typography.bodySmall,
+                        )
+                        OutlinedButton(
+                            onClick = onClear,
+                            enabled = !state.loading,
+                            modifier = Modifier.fillMaxWidth(),
+                        ) {
+                            Text(stringResource(R.string.catalog_remove_legacy_connection))
+                        }
                     }
                 }
                 state.error?.let {
@@ -346,19 +349,35 @@ private fun CatalogIssuedInviteDialog(
 ) {
     val context = LocalContext.current
     val formattedExpiry = formatInviteExpiry(invite.expiresAt)
-    val shareText = stringResource(
-        R.string.catalog_invite_share_text,
-        invite.userId,
-        invite.inviteCode,
-        formattedExpiry,
-        serverUrl,
+
+    fun createSmartText(): String = context.getString(
+        R.string.catalog_smart_enrollment_share_text,
+        CatalogSmartEnrollmentText.encode(
+            normalizedServerUrl = CatalogEndpoint.normalize(serverUrl),
+            inviteCode = invite.inviteCode,
+        ),
     )
+
+    fun withSmartText(action: (String) -> Unit) {
+        runCatching { createSmartText() }
+            .onSuccess(action)
+            .onFailure {
+                Toast.makeText(
+                    context,
+                    R.string.catalog_smart_enrollment_generation_failed,
+                    Toast.LENGTH_SHORT,
+                ).show()
+            }
+    }
 
     AlertDialog(
         onDismissRequest = onDismiss,
         title = { Text(stringResource(R.string.catalog_invite_generated)) },
         text = {
-            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            Column(
+                modifier = Modifier.verticalScroll(rememberScrollState()),
+                verticalArrangement = Arrangement.spacedBy(12.dp),
+            ) {
                 Text(stringResource(R.string.catalog_invite_for_user, invite.userId))
                 Text(
                     text = invite.inviteCode,
@@ -366,39 +385,60 @@ private fun CatalogIssuedInviteDialog(
                     fontWeight = FontWeight.SemiBold,
                 )
                 Text(stringResource(R.string.catalog_invite_expires_at, formattedExpiry))
+                Text(
+                    stringResource(R.string.catalog_smart_enrollment_admin_notice),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+                OutlinedButton(
+                    onClick = {
+                        val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+                        clipboard.setPrimaryClip(ClipData.newPlainText("Sonorus invitation", invite.inviteCode))
+                        Toast.makeText(context, R.string.catalog_invite_copied, Toast.LENGTH_SHORT).show()
+                    },
+                    modifier = Modifier.fillMaxWidth(),
+                ) {
+                    Text(stringResource(R.string.catalog_copy_invite))
+                }
+                Button(
+                    onClick = {
+                        withSmartText { smartText ->
+                            val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+                            clipboard.setPrimaryClip(ClipData.newPlainText("Sonorus smart enrollment", smartText))
+                            Toast.makeText(
+                                context,
+                                R.string.catalog_smart_enrollment_copied,
+                                Toast.LENGTH_SHORT,
+                            ).show()
+                        }
+                    },
+                    modifier = Modifier.fillMaxWidth(),
+                ) {
+                    Text(stringResource(R.string.catalog_copy_smart_enrollment))
+                }
+                OutlinedButton(
+                    onClick = {
+                        withSmartText { smartText ->
+                            context.startActivity(
+                                Intent.createChooser(
+                                    Intent(Intent.ACTION_SEND).apply {
+                                        type = "text/plain"
+                                        putExtra(Intent.EXTRA_TEXT, smartText)
+                                    },
+                                    context.getString(R.string.catalog_share_smart_enrollment),
+                                ),
+                            )
+                        }
+                    },
+                    modifier = Modifier.fillMaxWidth(),
+                ) {
+                    Text(stringResource(R.string.catalog_share_smart_enrollment))
+                }
             }
         },
         confirmButton = {
-            TextButton(
-                onClick = {
-                    val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-                    clipboard.setPrimaryClip(ClipData.newPlainText("Sonorus invitation", invite.inviteCode))
-                    Toast.makeText(context, R.string.catalog_invite_copied, Toast.LENGTH_SHORT).show()
-                },
-            ) {
-                Text(stringResource(R.string.catalog_copy_invite))
-            }
-        },
-        dismissButton = {
-            Row {
-                TextButton(
-                    onClick = {
-                        context.startActivity(
-                            Intent.createChooser(
-                                Intent(Intent.ACTION_SEND).apply {
-                                    type = "text/plain"
-                                    putExtra(Intent.EXTRA_TEXT, shareText)
-                                },
-                                context.getString(R.string.catalog_share_invite),
-                            ),
-                        )
-                    },
-                ) {
-                    Text(stringResource(R.string.catalog_share_invite))
-                }
-                TextButton(onClick = onDismiss) {
-                    Text(stringResource(R.string.sonorus_close))
-                }
+            TextButton(onClick = onDismiss) {
+                Text(stringResource(R.string.sonorus_close))
             }
         },
     )
