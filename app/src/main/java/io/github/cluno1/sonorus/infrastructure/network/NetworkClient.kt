@@ -153,6 +153,42 @@ object NetworkClient {
         chain.proceed(request)
     }
 
+    internal fun lrclibHeadersInterceptor(
+        versionName: String = BuildConfig.VERSION_NAME,
+    ) = Interceptor { chain ->
+        val original = chain.request()
+        val builder = original.newBuilder()
+        if (original.header("User-Agent").isNullOrBlank()) {
+            builder.header(
+                "User-Agent",
+                "Sonorus/$versionName (https://github.com/Cluno1/Rhythm-Chorus)",
+            )
+        }
+        if (original.header("Accept").isNullOrBlank()) {
+            builder.header("Accept", "application/json")
+        }
+        chain.proceed(builder.build())
+    }
+
+    internal fun lrclibRetryAfterInterceptor(
+        maxRetries: Int = 2,
+        sleep: (Long) -> Unit = Thread::sleep,
+    ) = Interceptor { chain ->
+        val request = chain.request()
+        var response = chain.proceed(request)
+        var retries = 0
+        while (response.code == 429 && retries < maxRetries) {
+            val retryAfterSeconds = response.header("Retry-After")?.toLongOrNull()
+                ?: (retries + 1).toLong()
+            val delayMs = (retryAfterSeconds.coerceAtLeast(0L) * 1_000L).coerceAtMost(30_000L)
+            response.close()
+            if (delayMs > 0L) sleep(delayMs)
+            retries++
+            response = chain.proceed(request)
+        }
+        response
+    }
+
     private val musicBrainzHttpClient: OkHttpClient by lazy {
         OkHttpClient.Builder()
             .addInterceptor(musicBrainzHeadersInterceptor())
@@ -194,7 +230,9 @@ object NetworkClient {
     
     private val lrclibHttpClient: OkHttpClient by lazy {
         OkHttpClient.Builder()
+            .addInterceptor(lrclibHeadersInterceptor())
             .addInterceptor(loggingInterceptor)
+            .addInterceptor(lrclibRetryAfterInterceptor())
             .connectTimeout(CONNECT_TIMEOUT, TimeUnit.SECONDS)
             .readTimeout(READ_TIMEOUT, TimeUnit.SECONDS)
             .writeTimeout(WRITE_TIMEOUT, TimeUnit.SECONDS)

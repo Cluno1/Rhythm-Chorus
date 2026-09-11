@@ -310,6 +310,7 @@ fun ExpressivePlayerScreen(
     onRetryLyrics: () -> Unit,
     onShowLyricsEditor: () -> Unit,
     onPickLyricsFile: () -> Unit,
+    onManualLyricsSearch: (() -> Unit)? = null,
     isMediaLoading: Boolean,
     isSeeking: Boolean,
     onPlayPause: () -> Unit,
@@ -1309,6 +1310,7 @@ fun ExpressivePlayerScreen(
                         onRetryLyrics = onRetryLyrics,
                         onShowLyricsEditor = onShowLyricsEditor,
                         onPickLyricsFile = onPickLyricsFile,
+                        onManualLyricsSearch = onManualLyricsSearch,
                         showTranslation = showLyricsTranslation,
                         showRomanization = showLyricsRomanization,
                         textAlignment = lyricsTextAlign,
@@ -2485,6 +2487,7 @@ private fun RhythmPlayerLyricsPanel(
     onRetryLyrics: () -> Unit,
     onShowLyricsEditor: () -> Unit,
     onPickLyricsFile: () -> Unit,
+    onManualLyricsSearch: (() -> Unit)?,
     showTranslation: Boolean,
     showRomanization: Boolean,
     textAlignment: TextAlign,
@@ -2519,6 +2522,23 @@ private fun RhythmPlayerLyricsPanel(
                     Text(message, style = MaterialTheme.typography.bodyLarge, color = textColor.copy(alpha = 0.8f), textAlign = textAlignment)
                     if (!isLoadingLyrics) {
                         Spacer(Modifier.height(16.dp))
+                        onManualLyricsSearch?.let { action ->
+                            Button(
+                                onClick = {
+                                    HapticUtils.performHapticFeedback(context, haptic, HapticType.MEDIUM)
+                                    action()
+                                },
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = buttonContainerColor ?: activeColor,
+                                    contentColor = buttonContentColor ?: MaterialTheme.colorScheme.onPrimary,
+                                ),
+                            ) {
+                                Icon(RhythmIcons.Search, contentDescription = null, modifier = Modifier.size(18.dp))
+                                Spacer(Modifier.width(8.dp))
+                                Text(stringResource(R.string.device_manual_metadata_find_lyrics))
+                            }
+                            Spacer(Modifier.height(12.dp))
+                        }
                         RhythmGroupedButton(
                             size = RhythmButtonSize.Small
                         ) {

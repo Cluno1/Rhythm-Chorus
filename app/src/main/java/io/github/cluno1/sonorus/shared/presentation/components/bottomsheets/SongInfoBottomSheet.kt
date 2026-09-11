@@ -74,6 +74,7 @@ import androidx.compose.ui.window.DialogProperties
 import io.github.cluno1.sonorus.R
 import io.github.cluno1.sonorus.shared.data.model.Song
 import io.github.cluno1.sonorus.shared.data.model.AppSettings
+import io.github.cluno1.sonorus.features.local.presentation.navigation.closeSheetThenNavigateToDeviceManualMetadata
 import io.github.cluno1.sonorus.shared.presentation.components.common.M3PlaceholderType
 import io.github.cluno1.sonorus.shared.presentation.components.common.ActionProgressLoader
 import io.github.cluno1.sonorus.shared.presentation.components.common.ContentLoadingIndicator
@@ -211,6 +212,27 @@ fun SongInfoBottomSheet(
     
     val isTablet = windowScreenWidthDp() >= 600
     val isLandscapeTablet = isTablet && windowScreenWidthDp() > windowScreenHeightDp()
+    val coroutineScope = rememberCoroutineScope()
+    var manualMetadataNavigationInFlight by remember { mutableStateOf(false) }
+    val openManualMetadata = {
+        val action = onOpenManualMetadata
+        if (action != null && !manualMetadataNavigationInFlight) {
+            manualMetadataNavigationInFlight = true
+            coroutineScope.launch {
+                try {
+                    closeSheetThenNavigateToDeviceManualMetadata(
+                        hideSheet = {
+                            if (!isLandscapeTablet) sheetState.hide()
+                        },
+                        dismissSheet = onDismiss,
+                        navigate = action,
+                    )
+                } finally {
+                    manualMetadataNavigationInFlight = false
+                }
+            }
+        }
+    }
     
     val useHoursFormat by appSettings.useHoursInTimeFormat.collectAsState()
     
@@ -660,12 +682,11 @@ fun SongInfoBottomSheet(
                                         verticalArrangement = Arrangement.spacedBy(24.dp),
                                         userScrollEnabled = true
                                     ) {
-                                        onOpenManualMetadata?.let { action ->
+                                        if (onOpenManualMetadata != null) {
                                             item {
                                                 ManualMetadataAction(
-                                                    onClick = {
-                                                        action()
-                                                    },
+                                                    onClick = openManualMetadata,
+                                                    enabled = !manualMetadataNavigationInFlight,
                                                 )
                                             }
                                         }
@@ -849,11 +870,10 @@ fun SongInfoBottomSheet(
                     Column(
                         verticalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
-                        onOpenManualMetadata?.let { action ->
+                        if (onOpenManualMetadata != null) {
                             ManualMetadataAction(
-                                onClick = {
-                                    action()
-                                },
+                                onClick = openManualMetadata,
+                                enabled = !manualMetadataNavigationInFlight,
                             )
                         }
                         Row(
@@ -1028,7 +1048,7 @@ fun SongInfoBottomSheet(
 }
 
 @Composable
-private fun ManualMetadataAction(onClick: () -> Unit) {
+private fun ManualMetadataAction(onClick: () -> Unit, enabled: Boolean = true) {
     val context = LocalContext.current
     val haptics = LocalHapticFeedback.current
     Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
@@ -1037,6 +1057,7 @@ private fun ManualMetadataAction(onClick: () -> Unit) {
                 HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
                 onClick()
             },
+            enabled = enabled,
             type = RhythmButtonType.Tonal,
             icon = RhythmIcons.Search,
             text = stringResource(R.string.device_manual_metadata_entry),

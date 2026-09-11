@@ -88,6 +88,7 @@ import io.github.cluno1.sonorus.shared.presentation.components.player.SleepTimer
 import io.github.cluno1.sonorus.shared.presentation.components.lyrics.LyricsEditorBottomSheet
 import io.github.cluno1.sonorus.shared.presentation.components.player.formatDuration
 import io.github.cluno1.sonorus.features.local.presentation.navigation.Screen
+import io.github.cluno1.sonorus.features.local.presentation.navigation.navigateToDeviceManualMetadata
 import io.github.cluno1.sonorus.features.local.data.device.DeviceManualMetadataKind
 import io.github.cluno1.sonorus.features.local.data.device.DeviceMetadataPolicy
 import io.github.cluno1.sonorus.features.local.presentation.screens.LibraryTab
@@ -490,6 +491,16 @@ fun PlayerScreen(
             onRetryLyrics = onRetryLyrics,
             onShowLyricsEditor = { showLyricsEditorDialog = true },
             onPickLyricsFile = onPickLyricsFile,
+            onManualLyricsSearch = song?.takeIf {
+                DeviceMetadataPolicy.isEligible(it.id, it.uri.scheme)
+            }?.let { targetSong ->
+                {
+                    navController.navigateToDeviceManualMetadata(
+                        targetSong.id,
+                        DeviceManualMetadataKind.LYRICS,
+                    )
+                }
+            },
             onNavigateToLyricsSettings = {
                 try {
                     navController.navigate(Screen.TunerLyrics.route) {
@@ -747,11 +758,9 @@ fun PlayerScreen(
                     DeviceMetadataPolicy.isEligible(it.id, it.uri.scheme)
                 }?.let { targetSong ->
                     {
-                        navController.navigate(
-                            Screen.DeviceManualMetadata.createRoute(
-                                targetSong.id,
-                                DeviceManualMetadataKind.LYRICS,
-                            ),
+                        navController.navigateToDeviceManualMetadata(
+                            targetSong.id,
+                            DeviceManualMetadataKind.LYRICS,
                         )
                     }
                 },
@@ -1024,11 +1033,9 @@ fun PlayerScreen(
                 DeviceMetadataPolicy.isEligible(it.id, it.uri.scheme)
             }?.let { targetSong ->
                 {
-                    navController.navigate(
-                        Screen.DeviceManualMetadata.createRoute(
-                            targetSong.id,
-                            DeviceManualMetadataKind.LYRICS,
-                        ),
+                    navController.navigateToDeviceManualMetadata(
+                        targetSong.id,
+                        DeviceManualMetadataKind.LYRICS,
                     )
                 }
             },
