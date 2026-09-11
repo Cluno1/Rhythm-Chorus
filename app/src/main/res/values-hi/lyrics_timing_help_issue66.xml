@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="lyrics_timing_help_storage_section">सहेजना और सर्वर सिंक</string>
+    <string name="lyrics_timing_help_local_title">स्थानीय ड्राफ़्ट (ऐप के अंदर)</string>
+    <string name="lyrics_timing_help_local_body">Catalog गीत में थोड़ी देर संपादन रुकने पर बदलाव इस डिवाइस पर ड्राफ़्ट के रूप में अपने आप सहेजे जाते हैं। “स्थानीय ड्राफ़्ट सिंक नहीं हुआ” का अर्थ है कि आपका काम स्थानीय रूप से सुरक्षित है, लेकिन अभी सर्वर तक नहीं पहुँचा। ऐप डेटा साफ़ करने पर यह ड्राफ़्ट मिट सकता है।</string>
+    <string name="lyrics_timing_help_export_title">गीत सहेजें (फ़ाइल निर्यात करें)</string>
+    <string name="lyrics_timing_help_export_body">नीचे का “गीत सहेजें” बटन LRC, JSON या TTML फ़ाइल निर्यात करने की जगह पूछता है और ऐप का स्थानीय कैश अपडेट करता है। फ़ाइल निर्यात करने से वह सर्वर पर अपलोड नहीं होती।</string>
+    <string name="lyrics_timing_help_server_title">सिंक (सर्वर पर अपलोड)</string>
+    <string name="lyrics_timing_help_server_body">“सिंक” केवल समर्थित Catalog गीतों पर दिखता है और इस गीत की वर्तमान चुनी हुई भाषा के बोल अपलोड करता है। “सर्वर से सिंक हो गया” आने तक प्रतीक्षा करें; “लंबित” या “विफल” का अर्थ अभी भी केवल स्थानीय है।</string>
+    <string name="lyrics_timing_help_conflict_title">टकराव होने पर</string>
+    <string name="lyrics_timing_help_conflict_body">“सर्वर का उपयोग करें” स्थानीय ड्राफ़्ट हटाकर सर्वर की प्रति लोड करता है। “सर्वर ओवरराइट करें” सर्वर की नई प्रति को आपके स्थानीय ड्राफ़्ट से बदल देता है। चुनने से पहले दोनों जाँचें।</string>
+</resources>

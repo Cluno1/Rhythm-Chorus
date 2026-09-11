@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="lyrics_timing_help_storage_section">Збереження й синхронізація із сервером</string>
+    <string name="lyrics_timing_help_local_title">Локальна чернетка (у застосунку)</string>
+    <string name="lyrics_timing_help_local_body">Для пісні Catalog зміни після короткої паузи автоматично зберігаються як чернетка на цьому пристрої. «Локальну чернетку не синхронізовано» означає, що роботу збережено локально, але ще не надіслано на сервер. Очищення даних застосунку може видалити чернетку.</string>
+    <string name="lyrics_timing_help_export_title">Зберегти текст (експорт файлу)</string>
+    <string name="lyrics_timing_help_export_body">Кнопка «Зберегти текст» унизу дає змогу вибрати місце для файлу LRC, JSON або TTML й оновлює локальний кеш. Експорт файлу не завантажує його на сервер.</string>
+    <string name="lyrics_timing_help_server_title">Синхронізувати (надіслати на сервер)</string>
+    <string name="lyrics_timing_help_server_body">«Синхронізувати» доступно лише для підтримуваних пісень Catalog і надсилає вибрану мову тексту цієї пісні. Дочекайтеся «Синхронізовано із сервером»; «Очікує» або «Помилка» означає, що дані залишилися тільки локально.</string>
+    <string name="lyrics_timing_help_conflict_title">Якщо виник конфлікт</string>
+    <string name="lyrics_timing_help_conflict_body">«Використати сервер» видаляє локальну чернетку й завантажує серверну копію. «Перезаписати сервер» замінює новішу серверну копію локальною чернеткою. Перевірте обидві перед вибором.</string>
+</resources>

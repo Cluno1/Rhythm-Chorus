@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="lyrics_timing_help_storage_section">Salvestamine ja serveriga sünkroonimine</string>
+    <string name="lyrics_timing_help_local_title">Kohalik mustand (rakenduses)</string>
+    <string name="lyrics_timing_help_local_body">Catalogi loo muudatused salvestatakse pärast lühikest pausi automaatselt selle seadme mustandina. „Kohalik mustand pole sünkroonitud” tähendab, et töö on kohapeal alles, kuid pole veel serverisse jõudnud. Rakenduse andmete kustutamine võib mustandi eemaldada.</string>
+    <string name="lyrics_timing_help_export_title">Salvesta sõnad (ekspordi fail)</string>
+    <string name="lyrics_timing_help_export_body">All olev nupp „Salvesta sõnad” palub valida LRC-, JSON- või TTML-faili asukoha ja uuendab rakenduse kohalikku vahemälu. Faili eksportimine ei laadi seda serverisse.</string>
+    <string name="lyrics_timing_help_server_title">Sünkrooni (laadi serverisse)</string>
+    <string name="lyrics_timing_help_server_body">„Sünkrooni” kuvatakse ainult toetatud Catalogi lugude puhul ja see laadib üles selle loo parajasti valitud sõnade keele. Oota olekut „Serveriga sünkroonitud”; „Ootel” või „Nurjus” tähendab endiselt ainult kohalikku koopiat.</string>
+    <string name="lyrics_timing_help_conflict_title">Konflikti korral</string>
+    <string name="lyrics_timing_help_conflict_body">„Kasuta serverit” eemaldab kohaliku mustandi ja laadib serveri koopia. „Kirjuta server üle” asendab uuema serverikoopia kohaliku mustandiga. Vaata mõlemad enne valikut üle.</string>
+</resources>

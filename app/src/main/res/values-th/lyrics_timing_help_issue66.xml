@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="lyrics_timing_help_storage_section">การบันทึกและซิงค์กับเซิร์ฟเวอร์</string>
+    <string name="lyrics_timing_help_local_title">ฉบับร่างในเครื่อง (ภายในแอป)</string>
+    <string name="lyrics_timing_help_local_body">สำหรับเพลง Catalog การแก้ไขจะถูกบันทึกเป็นฉบับร่างบนอุปกรณ์นี้โดยอัตโนมัติหลังหยุดพิมพ์ชั่วครู่ “ฉบับร่างในเครื่องยังไม่ซิงค์” หมายถึงงานปลอดภัยอยู่ในเครื่องแต่ยังไม่ถึงเซิร์ฟเวอร์ การล้างข้อมูลแอปอาจลบฉบับร่างนี้</string>
+    <string name="lyrics_timing_help_export_title">บันทึกเนื้อเพลง (ส่งออกไฟล์)</string>
+    <string name="lyrics_timing_help_export_body">ปุ่ม “บันทึกเนื้อเพลง” ด้านล่างให้เลือกตำแหน่งส่งออกไฟล์ LRC, JSON หรือ TTML และอัปเดตแคชในเครื่องของแอป การส่งออกไฟล์ไม่ได้อัปโหลดไปยังเซิร์ฟเวอร์</string>
+    <string name="lyrics_timing_help_server_title">ซิงค์ (อัปโหลดไปยังเซิร์ฟเวอร์)</string>
+    <string name="lyrics_timing_help_server_body">“ซิงค์” จะแสดงเฉพาะเพลง Catalog ที่รองรับ และอัปโหลดภาษาเนื้อเพลงที่เลือกอยู่ของเพลงนี้ รอจนขึ้น “ซิงค์กับเซิร์ฟเวอร์แล้ว”; “รอดำเนินการ” หรือ “ล้มเหลว” หมายถึงยังอยู่ในเครื่องเท่านั้น</string>
+    <string name="lyrics_timing_help_conflict_title">เมื่อเกิดข้อขัดแย้ง</string>
+    <string name="lyrics_timing_help_conflict_body">“ใช้เซิร์ฟเวอร์” จะลบฉบับร่างในเครื่องและโหลดสำเนาจากเซิร์ฟเวอร์ “เขียนทับเซิร์ฟเวอร์” จะแทนที่สำเนาใหม่กว่าบนเซิร์ฟเวอร์ด้วยฉบับร่างในเครื่อง โปรดตรวจสอบทั้งสองก่อนเลือก</string>
+</resources>

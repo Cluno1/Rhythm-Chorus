@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="lyrics_timing_help_storage_section">Zapisywanie i synchronizacja z serwerem</string>
+    <string name="lyrics_timing_help_local_title">Lokalna wersja robocza (w aplikacji)</string>
+    <string name="lyrics_timing_help_local_body">Dla utworu Catalog zmiany są po krótkiej przerwie automatycznie zapisywane jako wersja robocza na tym urządzeniu. „Lokalna wersja robocza niezsynchronizowana” oznacza, że praca jest bezpieczna lokalnie, ale nie dotarła jeszcze na serwer. Wyczyszczenie danych aplikacji może ją usunąć.</string>
+    <string name="lyrics_timing_help_export_title">Zapisz tekst (eksportuj plik)</string>
+    <string name="lyrics_timing_help_export_body">Przycisk „Zapisz tekst” na dole pozwala wybrać miejsce eksportu pliku LRC, JSON lub TTML i odświeża lokalną pamięć podręczną aplikacji. Eksport pliku nie wysyła go na serwer.</string>
+    <string name="lyrics_timing_help_server_title">Synchronizuj (wyślij na serwer)</string>
+    <string name="lyrics_timing_help_server_body">„Synchronizuj” jest widoczne tylko dla obsługiwanych utworów Catalog i wysyła aktualnie wybrany język tekstu tego utworu. Poczekaj na „Zsynchronizowano z serwerem”; „Oczekuje” lub „Niepowodzenie” nadal oznacza kopię tylko lokalną.</string>
+    <string name="lyrics_timing_help_conflict_title">Gdy wystąpi konflikt</string>
+    <string name="lyrics_timing_help_conflict_body">„Użyj serwera” usuwa lokalną wersję roboczą i wczytuje kopię z serwera. „Nadpisz serwer” zastępuje nowszą kopię serwera lokalną wersją roboczą. Sprawdź obie przed wyborem.</string>
+</resources>

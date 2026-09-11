@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="lyrics_timing_help_storage_section">Opslaan en serversynchronisatie</string>
+    <string name="lyrics_timing_help_local_title">Lokaal concept (in de app)</string>
+    <string name="lyrics_timing_help_local_body">Bij een Catalog-nummer worden wijzigingen na een korte pauze automatisch als concept op dit apparaat opgeslagen. ‘Lokaal concept niet gesynchroniseerd’ betekent dat je werk lokaal veilig is, maar de server nog niet heeft bereikt. Het wissen van appgegevens kan dit concept verwijderen.</string>
+    <string name="lyrics_timing_help_export_title">Songtekst opslaan (bestand exporteren)</string>
+    <string name="lyrics_timing_help_export_body">De knop ‘Songtekst opslaan’ onderaan vraagt waar een LRC-, JSON- of TTML-bestand moet worden geëxporteerd en vernieuwt de lokale appcache. Een bestand exporteren uploadt het niet naar de server.</string>
+    <string name="lyrics_timing_help_server_title">Synchroniseren (naar server uploaden)</string>
+    <string name="lyrics_timing_help_server_body">‘Synchroniseren’ verschijnt alleen bij ondersteunde Catalog-nummers en uploadt de momenteel gekozen songteksttaal. Wacht op ‘Gesynchroniseerd met de server’; ‘In behandeling’ of ‘Mislukt’ betekent dat het nog alleen lokaal staat.</string>
+    <string name="lyrics_timing_help_conflict_title">Bij een conflict</string>
+    <string name="lyrics_timing_help_conflict_body">‘Server gebruiken’ verwijdert het lokale concept en laadt de serverkopie. ‘Server overschrijven’ vervangt de nieuwere serverkopie door je lokale concept. Controleer beide voordat je kiest.</string>
+</resources>
