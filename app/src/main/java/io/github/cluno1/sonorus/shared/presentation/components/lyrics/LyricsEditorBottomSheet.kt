@@ -31,6 +31,8 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.background
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -212,6 +214,7 @@ fun LyricsEditorBottomSheet(
     val density = LocalDensity.current
     val isImeVisible = WindowInsets.ime.getBottom(density) > 0
     val scope = rememberCoroutineScope()
+    val toolsScrollState = rememberScrollState()
     var showCandidateDialog by remember { mutableStateOf(false) }
     
     var selectedFormat by remember(lyricsData) {
@@ -710,6 +713,13 @@ fun LyricsEditorBottomSheet(
                 .fillMaxHeight()
                 .padding(bottom = 24.dp)
         ) {
+            if (!isImeVisible) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .weight(0.45f)
+                        .verticalScroll(toolsScrollState),
+                ) {
             // Header with animation
             AnimatedVisibility(
                 visible = showContent && !isImeVisible,
@@ -725,7 +735,7 @@ fun LyricsEditorBottomSheet(
 
             Spacer(modifier = Modifier.height(if (isImeVisible) 8.dp else 16.dp))
 
-            if (song != null && !isImeVisible) {
+            if (song != null && !isImeVisible && !canSyncCatalog) {
                 val songId = song.id
                 val currentPref = songLyricsPreferences[songId]
                 val customLrc = songCustomLrcFiles[songId]
@@ -1368,6 +1378,8 @@ fun LyricsEditorBottomSheet(
                     }
                 }
             }
+                }
+            }
 
             Spacer(modifier = Modifier.height(if (isImeVisible) 8.dp else 16.dp))
 
@@ -1376,7 +1388,7 @@ fun LyricsEditorBottomSheet(
                 visible = showContent,
                 enter = fadeIn() + slideInVertically { it },
                 exit = fadeOut() + slideOutVertically { it },
-                modifier = Modifier.weight(1f)
+                modifier = Modifier.weight(if (isImeVisible) 1f else 0.55f)
             ) {
                 Column(
                     modifier = Modifier
