@@ -159,6 +159,53 @@ internal object SonorusUpdateAssetSelector {
     }
 }
 
+internal object SonorusUpdateCosRedirectPolicy {
+    private const val HOST = "sonorus-updates-1328751369.cos.ap-guangzhou.myqcloud.com"
+    private val privateHeaderPrefixes = listOf("x-rhythm-", "x-sonorus-")
+    private val requiredQueryParameters = setOf(
+        "q-ak",
+        "q-sign-time",
+        "q-key-time",
+        "q-signature",
+    )
+
+    fun validate(url: HttpUrl, expectedPath: String) {
+        require(url.scheme == "https" && url.host == HOST && url.port == 443) {
+            "APK redirect left the trusted COS origin"
+        }
+        require(url.encodedUsername.isEmpty() && url.encodedPassword.isEmpty()) {
+            "APK redirect contains userinfo"
+        }
+        require(url.encodedPath == expectedPath && url.fragment == null) {
+            "APK redirect does not match the signed manifest identity"
+        }
+        require(url.queryParameter("q-sign-algorithm") == "sha1") {
+            "APK redirect is not a COS v5 signed URL"
+        }
+        require(url.queryParameter("q-header-list") == "host") {
+            "APK redirect does not bind the COS host"
+        }
+        requiredQueryParameters.forEach { name ->
+            require(url.queryParameterValues(name).singleOrNull().isNullOrBlank().not()) {
+                "APK redirect is missing COS signature data"
+            }
+        }
+    }
+
+    fun sanitize(request: Request): Request {
+        val builder = request.newBuilder()
+            .removeHeader("Authorization")
+            .removeHeader("Proxy-Authorization")
+            .removeHeader("Cookie")
+            .removeHeader("If-Match")
+            .removeHeader("If-None-Match")
+        request.headers.names()
+            .filter { name -> privateHeaderPrefixes.any(name.lowercase(Locale.ROOT)::startsWith) }
+            .forEach(builder::removeHeader)
+        return builder.build()
+    }
+}
+
 /** First-party update transport. Every request stays on the enrolled Catalog origin and is device-signed. */
 class SonorusUpdateClient(
     context: Context,
@@ -212,10 +259,32 @@ class SonorusUpdateClient(
             }
         }
 
-    fun newDownloadCall(request: Request): Call {
+    fun newDownloadCall(request: Request, expectedSha256: String): Call {
         val origin = enrolledOrigin()
         requireDownloadUrl(origin, request.url)
-        return http.newCall(authenticatedRequest(request, origin))
+        val segments = request.url.pathSegments
+        require(segments.size == 5) { "APK URL has an invalid path" }
+        val digest = expectedSha256.lowercase(Locale.ROOT)
+        require(digest.matches(Regex("^[0-9a-f]{64}$"))) { "APK SHA-256 is invalid" }
+        val expectedCosPath = "/${BuildConfig.UPDATE_CHANNEL}/releases/${segments[3]}/$digest"
+        val downloadHttp = http.newBuilder()
+            .followRedirects(true)
+            .followSslRedirects(true)
+            .addNetworkInterceptor { chain ->
+                val outgoing = chain.request()
+                if (CatalogEndpoint.sameOrigin(outgoing.url, origin)) {
+                    require(outgoing.url == request.url) { "APK redirect changed the update service path" }
+                    chain.proceed(outgoing)
+                } else {
+                    SonorusUpdateCosRedirectPolicy.validate(outgoing.url, expectedCosPath)
+                    chain.proceed(SonorusUpdateCosRedirectPolicy.sanitize(outgoing))
+                }
+            }
+            .build()
+        val cosCapableRequest = request.newBuilder()
+            .header("X-Sonorus-COS-Redirect", "1")
+            .build()
+        return downloadHttp.newCall(authenticatedRequest(cosCapableRequest, origin))
     }
 
     private fun authenticatedRequest(request: Request, origin: HttpUrl): Request {

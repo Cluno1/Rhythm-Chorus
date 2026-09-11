@@ -1,0 +1,3 @@
+sonorus-deploy ALL=(ubuntu) NOPASSWD: \
+    /usr/local/bin/sonorus-sync-update-cos --channel debug --version *, \
+    /usr/local/bin/sonorus-sync-update-cos --channel stable --version *

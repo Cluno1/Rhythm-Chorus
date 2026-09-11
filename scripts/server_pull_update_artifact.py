@@ -34,6 +34,7 @@ SAFE_APK = re.compile(r"^[A-Za-z0-9._-]+\.apk$")
 MAX_ARCHIVE_BYTES = 256 * 1024 * 1024
 MAX_EXTRACTED_BYTES = 384 * 1024 * 1024
 MAX_MEMBERS = 16
+COS_SYNC = "/usr/local/bin/sonorus-sync-update-cos"
 
 
 def sha256(path: Path) -> str:
@@ -257,6 +258,20 @@ def publish(version: int, latest_raw: bytes, source: Path, files: list[Path]) ->
     releases.mkdir(parents=True, exist_ok=True)
     if not release.exists():
         os.replace(source, release)
+    subprocess.run(
+        [
+            "sudo",
+            "-n",
+            "-u",
+            "ubuntu",
+            COS_SYNC,
+            "--channel",
+            CHANNEL,
+            "--version",
+            str(version),
+        ],
+        check=True,
+    )
     latest_tmp = channel_root / f".latest-{os.getpid()}.json"
     try:
         latest_tmp.write_bytes(latest_raw)

@@ -58,7 +58,24 @@ scripts/publish_update_bundle.py \
 
 The workflow stores the signed bundle as an immutable GitHub Actions artifact, resolves the artifact API's short-lived download URL, and sends only that callback over pinned public SSH. `/usr/local/bin/sonorus-pull-update` then downloads the artifact through the server's loopback Mihomo proxy, verifies the GitHub artifact digest, ZIP allowlist, Ed25519 manifest signature, APK SHA-256, frozen certificate identity and monotonic version before switching `latest.json` atomically. The server never stores a GitHub token, and no HTTP callback port is opened.
 
-Configure the `sonorus-debug` GitHub environment with the fixed Debug keystore/password secrets, Debug manifest private key, raw manifest public key, frozen APK certificate fingerprint, deployment SSH private key, pinned `SONORUS_UPDATE_KNOWN_HOSTS`, and the public `SONORUS_UPDATE_SSH_TARGET`. The SSH account must be dedicated to this job, have no sudo access, and use key-only authentication; host-key checking remains mandatory. It needs write access only to `/srv/sonorus-updates/debug`. The server puller is root-owned, uses `http://127.0.0.1:7890`, and accepts only GitHub Actions artifact hosts over HTTPS.
+Before either publisher switches `latest.json`, it invokes the narrowly privileged
+`/usr/local/bin/sonorus-sync-update-cos`. The helper independently verifies the channel's
+Ed25519 manifest and every local APK, uploads only the immutable
+`{channel}/releases/{versionCode}/{sha256}` content-addressed key to the private
+`sonorus-updates-1328751369` bucket, then performs a full COS read-back SHA-256 check. COS
+credentials remain readable only by the `ubuntu` account; the deployment account can invoke this
+single verifier/uploader through its fixed sudo rule and cannot read the credentials. A failed COS
+upload leaves `latest.json` unchanged, so neither the browser nor the app is pointed at a missing
+object.
+
+The COS key intentionally has no `.apk` extension and uses
+`application/octet-stream`: Tencent blocks APK/IPA delivery from default domains on buckets
+created after 2024. The signed manifest still owns the real `.apk` file name, and Android writes
+and validates the downloaded bytes under that name. Until a custom COS domain is configured, the
+two unauthenticated browser URLs continue serving their APKs from the gateway so a browser receives
+the correct installable file name.
+
+Configure the `sonorus-debug` GitHub environment with the fixed Debug keystore/password secrets, Debug manifest private key, raw manifest public key, frozen APK certificate fingerprint, deployment SSH private key, pinned `SONORUS_UPDATE_KNOWN_HOSTS`, and the public `SONORUS_UPDATE_SSH_TARGET`. The SSH account must be dedicated to this job and use key-only authentication; host-key checking remains mandatory. It needs write access only to `/srv/sonorus-updates/debug` and has no general sudo access: its sole sudo rule runs the root-owned COS verifier as `ubuntu`, with a fixed channel/version command shape. The server puller is root-owned, uses `http://127.0.0.1:7890`, and accepts only GitHub Actions artifact hosts over HTTPS.
 
 Stable remains deliberately manual: `.github/workflows/release.yml` creates and retains the signed Stable bundle, but does not switch the server pointer. Download and inspect that artifact, then run the publisher with `--channel stable` over the same pinned public SSH path. The Stable deployment account needs write access only to `/srv/sonorus-updates/stable`.
 

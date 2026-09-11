@@ -703,7 +703,7 @@ class AppUpdaterViewModel(
                 val request = requestBuilder.build()
 
                 // Execute request
-                activeCall = updateClient.newDownloadCall(request)
+                activeCall = updateClient.newDownloadCall(request, expectedChecksum)
                 activeCall?.enqueue(
                     object : Callback {
                         override fun onFailure(
