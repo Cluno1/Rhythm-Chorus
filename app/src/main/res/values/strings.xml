@@ -3269,6 +3269,9 @@
     <string name="device_manual_metadata_use_lyrics">Use these lyrics</string>
     <string name="device_manual_metadata_use_artwork">Use this artwork</string>
     <string name="device_manual_metadata_artwork_preview">Artwork preview</string>
+    <string name="device_manual_metadata_artwork_save_desc">Keep the cover only in Sonorus, or also save a conventional cover file in a music folder you choose.</string>
+    <string name="device_manual_metadata_artwork_app_only">Sonorus only</string>
+    <string name="device_manual_metadata_artwork_music_folder">Save to music folder</string>
     <string name="lyrics_online_rematch">Match online again</string>
     <string name="lyrics_choose_version">Choose another version</string>
     <string name="lyrics_restore_local">Restore local lyrics</string>

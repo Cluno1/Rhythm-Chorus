@@ -2908,6 +2908,9 @@
     <string name="device_manual_metadata_use_lyrics">使用此歌词</string>
     <string name="device_manual_metadata_use_artwork">使用此封面</string>
     <string name="device_manual_metadata_artwork_preview">封面预览</string>
+    <string name="device_manual_metadata_artwork_save_desc">可以仅保存在 Sonorus 中，也可以同时在您选择的音乐文件夹中保存通用封面文件。</string>
+    <string name="device_manual_metadata_artwork_app_only">仅在 Sonorus 中使用</string>
+    <string name="device_manual_metadata_artwork_music_folder">保存到音乐文件夹</string>
     <string name="lyrics_online_rematch">在线重新匹配</string>
     <string name="lyrics_choose_version">选择其他版本</string>
     <string name="lyrics_restore_local">恢复本地歌词</string>

@@ -5,6 +5,9 @@ enum class DeviceManualMetadataKind { LYRICS, ARTWORK }
 
 enum class DevicePublicMetadataProvider { LRCLIB, MUSICBRAINZ_CAA, DEEZER }
 
+/** Where a manually selected cover should be materialized. */
+enum class DeviceArtworkSaveTarget { APP_ONLY, MUSIC_FOLDER }
+
 data class DeviceProviderSearchResult<T>(
     val provider: DevicePublicMetadataProvider,
     val candidates: List<T>,

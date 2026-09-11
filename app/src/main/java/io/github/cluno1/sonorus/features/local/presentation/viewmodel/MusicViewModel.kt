@@ -50,6 +50,7 @@ import io.github.cluno1.sonorus.shared.data.model.ScanPhase
 import io.github.cluno1.sonorus.features.local.data.repository.MusicRepository
 import io.github.cluno1.sonorus.features.local.data.device.DeviceLyricsCandidate
 import io.github.cluno1.sonorus.features.local.data.device.DeviceArtworkCandidate
+import io.github.cluno1.sonorus.features.local.data.device.DeviceArtworkSaveTarget
 import io.github.cluno1.sonorus.features.local.data.device.DeviceDocumentPolicy
 import io.github.cluno1.sonorus.features.local.data.device.DeviceManualMetadataKind
 import io.github.cluno1.sonorus.features.local.data.device.DeviceMetadataRequest
@@ -2283,11 +2284,12 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
                     fresh
                 }
             }
-            _songs.value = mergedSongs
+            val projectedSongs = repository.projectDeviceArtwork(mergedSongs)
+            _songs.value = projectedSongs
             _albums.value = freshAlbums
             _artists.value = freshArtists
-            _folderTree.value = repository.buildFolderTree(mergedSongs)
-            repository.updateAndPersistSongs(mergedSongs)
+            _folderTree.value = repository.buildFolderTree(projectedSongs)
+            repository.updateAndPersistSongs(projectedSongs)
             appSettings.setLastScanTimestamp(System.currentTimeMillis())
 
             if (appSettings.defaultPlaylistsEnabled.value) {
@@ -2307,8 +2309,8 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
             // Only invalidate the embedded artwork extraction flag when new songs have appeared.
             // Resetting it unconditionally caused extraction to re-run on every launch because the
             // MediaStore observer fires on startup, triggering this refresh and clearing the flag.
-            if (mergedSongs.size > currentCount) {
-                Log.d(TAG, "New songs detected (${mergedSongs.size - currentCount} added), resetting embedded artwork extraction flag")
+            if (projectedSongs.size > currentCount) {
+                Log.d(TAG, "New songs detected (${projectedSongs.size - currentCount} added), resetting embedded artwork extraction flag")
                 appSettings.setEmbeddedArtworkExtractionCompleted(false)
             }
             Log.d(TAG, "MediaStore refresh complete: $currentCount -> ${mergedSongs.size} songs")
@@ -8614,7 +8616,12 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
-    fun applyDeviceManualArtwork(songId: String, candidate: DeviceArtworkCandidate) {
+    fun applyDeviceManualArtwork(
+        songId: String,
+        candidate: DeviceArtworkCandidate,
+        saveTarget: DeviceArtworkSaveTarget,
+        destinationTreeUri: Uri?,
+    ) {
         val state = _deviceManualMetadataState.value
         val song = findDeviceSong(songId)
         if (song == null || state.songId != songId || candidate !in state.artworkCandidates) return
@@ -8623,19 +8630,42 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
         deviceManualMetadataJob = viewModelScope.launch {
             _deviceManualMetadataState.value = state.copy(isApplying = true, error = null)
             try {
-                val artwork = repository.applyDeviceArtworkCandidate(song, candidate)
+                val artwork = repository.applyDeviceArtworkCandidate(
+                    song,
+                    candidate,
+                    saveTarget,
+                    destinationTreeUri,
+                )
                     ?: error("Artwork response was not a valid image")
                 if (requestId != deviceManualMetadataRequestId) return@launch
+                val targetAlbumKey = io.github.cluno1.sonorus.features.local.data.device
+                    .DeviceAlbumIdentity.key(song)
                 val withSelection = _songs.value.map { current ->
-                    if (current.id == songId) current.copy(artworkUri = artwork) else current
+                    if (
+                        targetAlbumKey != null &&
+                        io.github.cluno1.sonorus.features.local.data.device.DeviceAlbumIdentity.key(current) == targetAlbumKey
+                    ) current.copy(artworkUri = artwork) else current
                 }
                 val projected = repository.projectDeviceArtwork(withSelection)
                 _songs.value = projected
+                val projectedById = projected.associateBy(Song::id)
+                _currentQueue.value = _currentQueue.value.copy(
+                    songs = _currentQueue.value.songs.map { queued ->
+                        projectedById[queued.id] ?: queued
+                    },
+                )
+                _recentlyPlayed.value = _recentlyPlayed.value.map { recent ->
+                    projectedById[recent.id] ?: recent
+                }
                 repository.updateAndPersistSongs(projected)
                 _albums.value = repository.loadAlbums()
-                if (_currentSong.value?.id == songId) {
-                    _currentSong.value = projected.firstOrNull { it.id == songId }
-                        ?: song.copy(artworkUri = artwork)
+                val currentSong = _currentSong.value
+                if (
+                    currentSong != null &&
+                    io.github.cluno1.sonorus.features.local.data.device.DeviceAlbumIdentity.key(currentSong) == targetAlbumKey
+                ) {
+                    _currentSong.value = projected.firstOrNull { it.id == currentSong.id }
+                        ?: currentSong.copy(artworkUri = artwork)
                 }
                 _deviceManualMetadataState.value = state.copy(applied = true)
             } catch (error: CancellationException) {

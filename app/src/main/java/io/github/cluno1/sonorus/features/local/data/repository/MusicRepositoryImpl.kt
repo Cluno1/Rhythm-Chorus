@@ -105,6 +105,7 @@ import io.github.cluno1.sonorus.features.local.data.database.entity.toEntity
 import io.github.cluno1.sonorus.features.local.data.database.entity.SongArtistEntity
 import io.github.cluno1.sonorus.features.local.data.device.DeviceLyricsCandidate
 import io.github.cluno1.sonorus.features.local.data.device.DeviceArtworkCandidate
+import io.github.cluno1.sonorus.features.local.data.device.DeviceArtworkSaveTarget
 import io.github.cluno1.sonorus.features.local.data.device.DeviceMetadataRequest
 import io.github.cluno1.sonorus.features.local.data.device.DevicePublicMetadataProvider
 import io.github.cluno1.sonorus.features.local.data.device.DeviceScanFolderAccess
@@ -4647,7 +4648,7 @@ class MusicRepository(context: Context) {
     private suspend fun fetchDeviceLyrics(song: Song, forceRefresh: Boolean, forceOnline: Boolean): LyricsData? {
         val cacheKey = DeviceMetadataPolicy.cacheKey(song.id, song.artist, song.title)
 
-        if (!forceRefresh && !forceOnline) {
+        if (!forceOnline) {
             deviceMetadataRepository.pinnedLyrics(song)?.let {
                 lyricsCache[cacheKey] = it
                 return it
@@ -4738,8 +4739,12 @@ class MusicRepository(context: Context) {
         return result
     }
 
-    suspend fun applyDeviceArtworkCandidate(song: Song, candidate: DeviceArtworkCandidate): Uri? =
-        deviceMetadataRepository.applyArtwork(song, candidate)
+    suspend fun applyDeviceArtworkCandidate(
+        song: Song,
+        candidate: DeviceArtworkCandidate,
+        saveTarget: DeviceArtworkSaveTarget,
+        destinationTreeUri: Uri? = null,
+    ): Uri? = deviceMetadataRepository.applyArtwork(song, candidate, saveTarget, destinationTreeUri)
 
     suspend fun clearLyricsCacheForSong(song: Song) {
         clearLyricsMemoryCacheForSong(song)

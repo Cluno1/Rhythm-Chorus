@@ -1,6 +1,9 @@
 /* SPDX-License-Identifier: GPL-3.0-or-later */
 package io.github.cluno1.sonorus.features.local.presentation.screens
 
+import android.net.Uri
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
@@ -51,6 +54,7 @@ import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import io.github.cluno1.sonorus.R
 import io.github.cluno1.sonorus.features.local.data.device.DeviceArtworkCandidate
+import io.github.cluno1.sonorus.features.local.data.device.DeviceArtworkSaveTarget
 import io.github.cluno1.sonorus.features.local.data.device.DeviceLyricsCandidate
 import io.github.cluno1.sonorus.features.local.data.device.DeviceManualMetadataKind
 import io.github.cluno1.sonorus.features.local.data.device.DeviceMetadataRequest
@@ -82,7 +86,7 @@ fun DeviceManualMetadataScreen(
         Set<DevicePublicMetadataProvider>,
     ) -> Unit,
     onApplyLyrics: (String, DeviceLyricsCandidate) -> Unit,
-    onApplyArtwork: (String, DeviceArtworkCandidate) -> Unit,
+    onApplyArtwork: (String, DeviceArtworkCandidate, DeviceArtworkSaveTarget, Uri?) -> Unit,
     onClear: () -> Unit,
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
@@ -101,6 +105,14 @@ fun DeviceManualMetadataScreen(
     var previewLyrics by remember { mutableStateOf<String?>(null) }
     var selectedLyrics by remember { mutableStateOf<DeviceLyricsCandidate?>(null) }
     var selectedArtwork by remember { mutableStateOf<DeviceArtworkCandidate?>(null) }
+    var pendingFolderArtwork by remember { mutableStateOf<DeviceArtworkCandidate?>(null) }
+    val folderLauncher = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocumentTree()) { uri ->
+        val candidate = pendingFolderArtwork
+        pendingFolderArtwork = null
+        if (uri != null && candidate != null && song != null) {
+            onApplyArtwork(song.id, candidate, DeviceArtworkSaveTarget.MUSIC_FOLDER, uri)
+        }
+    }
     val miniPlayerBottomPadding = LocalMiniPlayerPadding.current.calculateBottomPadding()
     val durationSeconds = parseDurationSeconds(duration)
     val durationValid = duration.isBlank() || durationSeconds != null
@@ -474,24 +486,50 @@ fun DeviceManualMetadataScreen(
             onDismissRequest = { selectedArtwork = null },
             title = { Text(candidate.album.ifBlank { candidate.title }) },
             text = {
-                AsyncImage(
-                    model = ImageRequest.Builder(LocalContext.current).data(candidate.imageUrl).build(),
-                    contentDescription = stringResource(R.string.device_manual_metadata_artwork_preview),
-                    contentScale = ContentScale.Fit,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(320.dp),
-                )
+                Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                    AsyncImage(
+                        model = ImageRequest.Builder(LocalContext.current).data(candidate.imageUrl).build(),
+                        contentDescription = stringResource(R.string.device_manual_metadata_artwork_preview),
+                        contentScale = ContentScale.Fit,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(320.dp),
+                    )
+                    Text(
+                        text = stringResource(R.string.device_manual_metadata_artwork_save_desc),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
             },
             confirmButton = {
-                TextButton(
-                    onClick = {
-                        selectedArtwork = null
-                        song?.let { onApplyArtwork(it.id, candidate) }
-                    },
-                    enabled = !state.isApplying,
-                ) {
-                    Text(stringResource(R.string.device_manual_metadata_use_artwork))
+                Column(horizontalAlignment = Alignment.End) {
+                    TextButton(
+                        onClick = {
+                            selectedArtwork = null
+                            song?.let {
+                                onApplyArtwork(
+                                    it.id,
+                                    candidate,
+                                    DeviceArtworkSaveTarget.APP_ONLY,
+                                    null,
+                                )
+                            }
+                        },
+                        enabled = !state.isApplying,
+                    ) {
+                        Text(stringResource(R.string.device_manual_metadata_artwork_app_only))
+                    }
+                    TextButton(
+                        onClick = {
+                            selectedArtwork = null
+                            pendingFolderArtwork = candidate
+                            folderLauncher.launch(null)
+                        },
+                        enabled = !state.isApplying,
+                    ) {
+                        Text(stringResource(R.string.device_manual_metadata_artwork_music_folder))
+                    }
                 }
             },
             dismissButton = {
