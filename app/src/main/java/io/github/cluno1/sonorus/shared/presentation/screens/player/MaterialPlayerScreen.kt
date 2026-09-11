@@ -218,6 +218,7 @@ import io.github.cluno1.sonorus.shared.data.model.Album
 import io.github.cluno1.sonorus.shared.data.model.Artist
 import io.github.cluno1.sonorus.shared.data.model.findAlbumForSong
 import io.github.cluno1.sonorus.features.local.presentation.navigation.Screen
+import io.github.cluno1.sonorus.features.local.presentation.navigation.navigateToDeviceManualMetadata
 import io.github.cluno1.sonorus.features.local.presentation.viewmodel.MusicViewModel
 import io.github.cluno1.sonorus.shared.presentation.components.lyrics.WordByWordLyricsView
 import io.github.cluno1.sonorus.shared.presentation.components.bottomsheets.ExtraControlBottomSheet
@@ -1197,11 +1198,9 @@ fun MaterialPlayerScreen(
                 DeviceMetadataPolicy.isEligible(it.id, it.uri.scheme)
             }?.let { targetSong ->
                 {
-                    navController.navigate(
-                        Screen.DeviceManualMetadata.createRoute(
-                            targetSong.id,
-                            DeviceManualMetadataKind.LYRICS,
-                        ),
+                    navController.navigateToDeviceManualMetadata(
+                        targetSong.id,
+                        DeviceManualMetadataKind.LYRICS,
                     )
                 }
             },
@@ -2142,6 +2141,33 @@ fun MaterialPlayerScreen(
                                                             // Show action buttons when not loading
                                                             if (!isLoadingLyrics) {
                                                                 Spacer(modifier = Modifier.height(16.dp))
+
+                                                                song?.takeIf {
+                                                                    DeviceMetadataPolicy.isEligible(it.id, it.uri.scheme)
+                                                                }?.let { targetSong ->
+                                                                    FilledTonalButton(
+                                                                        onClick = {
+                                                                            HapticUtils.performHapticFeedback(
+                                                                                context,
+                                                                                haptic,
+                                                                                HapticType.HEAVY,
+                                                                            )
+                                                                            navController.navigateToDeviceManualMetadata(
+                                                                                targetSong.id,
+                                                                                DeviceManualMetadataKind.LYRICS,
+                                                                            )
+                                                                        },
+                                                                    ) {
+                                                                        Icon(
+                                                                            imageVector = RhythmIcons.Search,
+                                                                            contentDescription = null,
+                                                                            modifier = Modifier.size(18.dp),
+                                                                        )
+                                                                        Spacer(modifier = Modifier.width(8.dp))
+                                                                        Text(stringResource(R.string.device_manual_metadata_find_lyrics))
+                                                                    }
+                                                                    Spacer(modifier = Modifier.height(12.dp))
+                                                                }
 
                                                                 // Action buttons with expressive button group
                                                                 ExpressiveButtonGroup(

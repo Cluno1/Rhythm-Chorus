@@ -115,6 +115,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import io.github.cluno1.sonorus.R
 import io.github.cluno1.sonorus.util.DevicePosture
 import io.github.cluno1.sonorus.util.rememberDevicePosture
+import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -310,6 +311,30 @@ sealed class Screen(val route: String) {
     // Stats Screen
     object RhythmStats : Screen("rhythm_stats")
     object Equalizer : Screen("equalizer")
+}
+
+/** Opens one manual-metadata destination for a song, even if taps arrive repeatedly. */
+fun NavController.navigateToDeviceManualMetadata(
+    songId: String,
+    kind: io.github.cluno1.sonorus.features.local.data.device.DeviceManualMetadataKind,
+) {
+    val currentEntry = currentBackStackEntry
+    val currentSongId = currentEntry?.arguments?.getString("songId")?.let(Uri::decode)
+    val currentKind = currentEntry?.arguments?.getString("kind")
+    if (isSameDeviceManualMetadataDestination(
+            currentRoute = currentEntry?.destination?.route,
+            routePattern = Screen.DeviceManualMetadata.route,
+            currentSongId = currentSongId,
+            currentKind = currentKind,
+            targetSongId = songId,
+            targetKind = kind,
+        )
+    ) {
+        return
+    }
+    navigate(Screen.DeviceManualMetadata.createRoute(songId, kind)) {
+        launchSingleTop = true
+    }
 }
 
 // Streaming detail/service routes hosted inside the unified navigation shell.
@@ -2258,12 +2283,10 @@ private fun LocalNavigationContent(
                                 navController.navigate(Screen.ArtistDetail.createRoute(artist.name))
                             },
                             onOpenManualMetadata = { song ->
-                                navController.navigate(
-                                    Screen.DeviceManualMetadata.createRoute(
-                                        song.id,
-                                        io.github.cluno1.sonorus.features.local.data.device
-                                            .DeviceManualMetadataKind.LYRICS,
-                                    )
+                                navController.navigateToDeviceManualMetadata(
+                                    song.id,
+                                    io.github.cluno1.sonorus.features.local.data.device
+                                        .DeviceManualMetadataKind.LYRICS,
                                 )
                             },
                             isStreamingMode = isStreamingMode,
@@ -2472,12 +2495,10 @@ private fun LocalNavigationContent(
                                 }
                             },
                             onOpenManualMetadata = { song ->
-                                navController.navigate(
-                                    Screen.DeviceManualMetadata.createRoute(
-                                        song.id,
-                                        io.github.cluno1.sonorus.features.local.data.device
-                                            .DeviceManualMetadataKind.LYRICS,
-                                    )
+                                navController.navigateToDeviceManualMetadata(
+                                    song.id,
+                                    io.github.cluno1.sonorus.features.local.data.device
+                                        .DeviceManualMetadataKind.LYRICS,
                                 )
                             },
                             onBack = { navigateToLanding() }
@@ -3741,12 +3762,10 @@ private fun LocalNavigationContent(
                                 }
                             },
                         onOpenManualMetadata = { song ->
-                            navController.navigate(
-                                Screen.DeviceManualMetadata.createRoute(
-                                    song.id,
-                                    io.github.cluno1.sonorus.features.local.data.device
-                                        .DeviceManualMetadataKind.LYRICS,
-                                )
+                            navController.navigateToDeviceManualMetadata(
+                                song.id,
+                                io.github.cluno1.sonorus.features.local.data.device
+                                    .DeviceManualMetadataKind.LYRICS,
                             )
                         },
                         isStreamingMode = isStreamingMode,
@@ -3988,12 +4007,10 @@ private fun LocalNavigationContent(
                                 }
                             },
                             onOpenManualMetadata = { song ->
-                                navController.navigate(
-                                    Screen.DeviceManualMetadata.createRoute(
-                                        song.id,
-                                        io.github.cluno1.sonorus.features.local.data.device
-                                            .DeviceManualMetadataKind.LYRICS,
-                                    )
+                                navController.navigateToDeviceManualMetadata(
+                                    song.id,
+                                    io.github.cluno1.sonorus.features.local.data.device
+                                        .DeviceManualMetadataKind.LYRICS,
                                 )
                             },
                         )
@@ -4239,12 +4256,10 @@ private fun LocalNavigationContent(
                                     .isEligible(infoSong.id, infoSong.uri.scheme)
                             ) {
                                 {
-                                    navController.navigate(
-                                        Screen.DeviceManualMetadata.createRoute(
-                                            infoSong.id,
-                                            io.github.cluno1.sonorus.features.local.data.device
-                                                .DeviceManualMetadataKind.LYRICS,
-                                        ),
+                                    navController.navigateToDeviceManualMetadata(
+                                        infoSong.id,
+                                        io.github.cluno1.sonorus.features.local.data.device
+                                            .DeviceManualMetadataKind.LYRICS,
                                     )
                                 }
                             } else null,
@@ -4555,12 +4570,10 @@ private fun LocalNavigationContent(
                                     .isEligible(infoSong.id, infoSong.uri.scheme)
                             ) {
                                 {
-                                    navController.navigate(
-                                        Screen.DeviceManualMetadata.createRoute(
-                                            infoSong.id,
-                                            io.github.cluno1.sonorus.features.local.data.device
-                                                .DeviceManualMetadataKind.LYRICS,
-                                        ),
+                                    navController.navigateToDeviceManualMetadata(
+                                        infoSong.id,
+                                        io.github.cluno1.sonorus.features.local.data.device
+                                            .DeviceManualMetadataKind.LYRICS,
                                     )
                                 }
                             } else null,
