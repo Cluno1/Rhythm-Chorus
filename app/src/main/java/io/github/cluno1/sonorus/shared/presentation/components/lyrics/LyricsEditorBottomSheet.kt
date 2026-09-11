@@ -55,12 +55,12 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Button
-import androidx.compose.material3.BottomSheetDefaults
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilledTonalButton
+import androidx.compose.material3.FilledTonalIconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.ModalBottomSheetProperties
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
@@ -695,13 +695,15 @@ fun LyricsEditorBottomSheet(
     RhythmAdaptiveModalSheet(
         adaptiveType = SheetAdaptiveType.TWO_PANE_DIALOG,
         modifier = Modifier.widthIn(max = 640.dp).fillMaxWidth(),
-        onDismissRequest = onDismiss,
+        onDismissRequest = {},
         sheetState = sheetState,
-        dragHandle = {
-            BottomSheetDefaults.DragHandle(
-                color = MaterialTheme.colorScheme.primary
-            )
-        },
+        showCloseButton = false,
+        sheetGesturesEnabled = false,
+        dragHandle = null,
+        properties = ModalBottomSheetProperties(
+            shouldDismissOnBackPress = false,
+            shouldDismissOnClickOutside = false,
+        ),
         shape = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp),
         containerColor = MaterialTheme.colorScheme.surfaceContainer,
         contentColor = MaterialTheme.colorScheme.onBackground,
@@ -713,6 +715,20 @@ fun LyricsEditorBottomSheet(
                 .fillMaxHeight()
                 .padding(bottom = 24.dp)
         ) {
+            // Header with animation
+            AnimatedVisibility(
+                visible = showContent,
+                enter = fadeIn() + slideInVertically { it },
+                exit = fadeOut() + slideOutVertically { it }
+            ) {
+                LyricsEditorHeader(
+                    songTitle = songTitle,
+                    formatLabel = detectedFormatLabel,
+                    compact = isImeVisible,
+                    onBack = onDismiss,
+                )
+            }
+
             if (!isImeVisible) {
                 Column(
                     modifier = Modifier
@@ -720,20 +736,7 @@ fun LyricsEditorBottomSheet(
                         .weight(0.45f)
                         .verticalScroll(toolsScrollState),
                 ) {
-            // Header with animation
-            AnimatedVisibility(
-                visible = showContent && !isImeVisible,
-                enter = fadeIn() + slideInVertically { it },
-                exit = fadeOut() + slideOutVertically { it }
-            ) {
-                LyricsEditorHeader(
-                    songTitle = songTitle,
-                    hasLyrics = editedLyrics.isNotBlank(),
-                    formatLabel = detectedFormatLabel
-                )
-            }
-
-            Spacer(modifier = Modifier.height(if (isImeVisible) 8.dp else 16.dp))
+            Spacer(modifier = Modifier.height(16.dp))
 
             if (song != null && !isImeVisible && !canSyncCatalog) {
                 val songId = song.id
@@ -1767,63 +1770,78 @@ fun LyricsEditorBottomSheet(
 @Composable
 private fun LyricsEditorHeader(
     songTitle: String,
-    hasLyrics: Boolean,
     formatLabel: String? = null,
+    compact: Boolean,
+    onBack: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
     Row(
         modifier = modifier
             .fillMaxWidth()
-            .padding(horizontal = 20.dp, vertical = 16.dp),
+            .padding(horizontal = 20.dp, vertical = if (compact) 8.dp else 16.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.Start
     ) {
-        Column(modifier = Modifier.weight(1f)) {
-            Text(
-                text = context.getString(R.string.lyrics_editor_title),
-                style = MaterialTheme.typography.displayMedium,
-                fontWeight = FontWeight.Medium,
-                color = MaterialTheme.colorScheme.onSurface
+        FilledTonalIconButton(
+            onClick = onBack,
+            modifier = Modifier.size(44.dp),
+        ) {
+            Icon(
+                imageVector = RhythmIcons.Back,
+                contentDescription = stringResource(R.string.library_go_back),
+                modifier = Modifier.size(22.dp),
             )
-            Row(
-                modifier = Modifier.padding(top = 6.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                Box(
-                    modifier = Modifier
-                        .weight(1f, fill = false)
-                        .background(
-                            color = MaterialTheme.colorScheme.surfaceContainerHigh,
-                            shape = CircleShape
-                        )
-                ) {
-                    Text(
-                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
-                        style = MaterialTheme.typography.labelLarge,
-                        text = songTitle,
-                        overflow = TextOverflow.Ellipsis,
-                        maxLines = 1,
-                        color = MaterialTheme.colorScheme.onSurface
-                    )
-                }
+        }
 
-                if (!formatLabel.isNullOrBlank()) {
+        if (!compact) {
+            Spacer(modifier = Modifier.width(12.dp))
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = context.getString(R.string.lyrics_editor_title),
+                    style = MaterialTheme.typography.displayMedium,
+                    fontWeight = FontWeight.Medium,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+                Row(
+                    modifier = Modifier.padding(top = 6.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
                     Box(
                         modifier = Modifier
+                            .weight(1f, fill = false)
                             .background(
-                                color = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.7f),
+                                color = MaterialTheme.colorScheme.surfaceContainerHigh,
                                 shape = CircleShape
                             )
                     ) {
                         Text(
-                            modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
-                            style = MaterialTheme.typography.labelMedium,
-                            fontWeight = FontWeight.SemiBold,
-                            text = formatLabel,
-                            color = MaterialTheme.colorScheme.onSecondaryContainer
+                            modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
+                            style = MaterialTheme.typography.labelLarge,
+                            text = songTitle,
+                            overflow = TextOverflow.Ellipsis,
+                            maxLines = 1,
+                            color = MaterialTheme.colorScheme.onSurface
                         )
+                    }
+
+                    if (!formatLabel.isNullOrBlank()) {
+                        Box(
+                            modifier = Modifier
+                                .background(
+                                    color = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.7f),
+                                    shape = CircleShape
+                                )
+                        ) {
+                            Text(
+                                modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
+                                style = MaterialTheme.typography.labelMedium,
+                                fontWeight = FontWeight.SemiBold,
+                                text = formatLabel,
+                                color = MaterialTheme.colorScheme.onSecondaryContainer
+                            )
+                        }
                     }
                 }
             }

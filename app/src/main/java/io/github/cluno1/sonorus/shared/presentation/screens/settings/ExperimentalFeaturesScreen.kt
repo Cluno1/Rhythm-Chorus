@@ -186,6 +186,7 @@ fun LabsSettingsScreen(
     val appMode by appSettings.appMode.collectAsState()
     val hapticFeedbackEnabled by appSettings.hapticFeedbackEnabled.collectAsState()
     val enableAlbumEditing by appSettings.enableAlbumEditing.collectAsState()
+    val lyricsEditorEnabled by appSettings.lyricsEditorEnabled.collectAsState()
     val haptic = LocalHapticFeedback.current
     
     val forcePlayerCompactMode by appSettings.forcePlayerCompactMode.collectAsState()
@@ -212,6 +213,13 @@ fun LabsSettingsScreen(
                             context.getString(R.string.settings_enable_album_editing_desc),
                             toggleState = enableAlbumEditing,
                             onToggleChange = { appSettings.setEnableAlbumEditing(it) }
+                        ),
+                        SettingItem(
+                            MaterialSymbolIcon("lyrics", filled = true),
+                            context.getString(R.string.labs_lyrics_editor),
+                            context.getString(R.string.labs_lyrics_editor_desc),
+                            toggleState = lyricsEditorEnabled,
+                            onToggleChange = { appSettings.setLyricsEditorEnabled(it) }
                         )
                     )
                 )

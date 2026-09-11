@@ -2704,4 +2704,6 @@
         <item quantity="other">%1$d プレイリスト</item>
     </plurals>
     <string name="duration_minutes_format">%1$dメートル</string>
+    <string name="labs_lyrics_editor">歌詞エディター</string>
+    <string name="labs_lyrics_editor_desc">全画面歌詞に編集ボタンを表示します</string>
 </resources>

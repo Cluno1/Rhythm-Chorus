@@ -2804,4 +2804,6 @@
     <string name="settings_rhythm_guard_first_break_dialog_turn_off">Wyłącz funkcję Sonorus Guard</string>
     <string name="settings_rhythm_guard_first_break_dialog_start">Początek przerwy</string>
     <string name="settings_rhythm_guard_locked_during_break">Zablokowane podczas przerwy na słuchanie</string>
+    <string name="labs_lyrics_editor">Edytor tekstów</string>
+    <string name="labs_lyrics_editor_desc">Pokaż przycisk edycji w pełnoekranowym widoku tekstu</string>
 </resources>

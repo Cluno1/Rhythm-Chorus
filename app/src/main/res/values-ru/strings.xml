@@ -2804,4 +2804,6 @@
     <string name="lyrically_sources_title">Источники Lyrically</string>
     <string name="lyrically_sources_desc">Настройте и расставьте приоритеты для источников текста песен в Lyrically. Сначала будут опробованы дословные источники, затем перейдут к синхронизированным/простым.</string>
     <string name="error_no_document_app">Отсутствует системное приложение для выбора папки.</string>
+    <string name="labs_lyrics_editor">Редактор текста</string>
+    <string name="labs_lyrics_editor_desc">Показывать кнопку редактора в полноэкранном режиме текста</string>
 </resources>

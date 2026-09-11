@@ -1,4 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Sonorus</string>
+    <string name="labs_lyrics_editor">Qo‘shiq matni muharriri</string>
+    <string name="labs_lyrics_editor_desc">To‘liq ekranli qo‘shiq matnida tahrirlash tugmasini ko‘rsatish</string>
 </resources>

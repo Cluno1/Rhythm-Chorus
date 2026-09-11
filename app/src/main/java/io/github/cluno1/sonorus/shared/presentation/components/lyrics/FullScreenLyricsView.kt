@@ -118,6 +118,7 @@ fun FullScreenLyricsView(
     val keepScreenOnLyrics by appSettings.keepScreenOnLyrics.collectAsState()
     val playerLyricsAlignment by appSettings.playerLyricsAlignment.collectAsState()
     val showLyricsBackgroundArtwork by appSettings.showLyricsBackgroundArtwork.collectAsState()
+    val lyricsEditorEnabled by appSettings.lyricsEditorEnabled.collectAsState()
 
     var controlsVisible by remember { mutableStateOf(true) }
     var lastInteractionTime by remember { mutableLongStateOf(System.currentTimeMillis()) }
@@ -848,19 +849,21 @@ fun FullScreenLyricsView(
                         Column(
                             verticalArrangement = Arrangement.spacedBy(12.dp)
                         ) {
-                            // Quick Open Lyrics Editor
-                            FilledTonalIconButton(
-                                onClick = {
-                                    HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT)
-                                    onShowLyricsEditor()
-                                },
-                                modifier = Modifier.size(44.dp)
-                            ) {
-                                Icon(
-                                    imageVector = MaterialSymbolIcon("edit"),
-                                    contentDescription = stringResource(R.string.edit_lyrics),
-                                    modifier = Modifier.size(22.dp)
-                                )
+                            if (lyricsEditorEnabled) {
+                                // Quick Open Lyrics Editor
+                                FilledTonalIconButton(
+                                    onClick = {
+                                        HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT)
+                                        onShowLyricsEditor()
+                                    },
+                                    modifier = Modifier.size(44.dp)
+                                ) {
+                                    Icon(
+                                        imageVector = MaterialSymbolIcon("edit"),
+                                        contentDescription = stringResource(R.string.edit_lyrics),
+                                        modifier = Modifier.size(22.dp)
+                                    )
+                                }
                             }
 
                             // Quick Open Lyrics Settings
@@ -1051,17 +1054,19 @@ fun FullScreenLyricsView(
                                             icon = RhythmIcons.Refresh,
                                             text = stringResource(R.string.updates_retry)
                                         )
-                                        RhythmButtonWeighted(
-                                            onClick = {
-                                                HapticUtils.performHapticFeedback(context, haptic, HapticType.HEAVY)
-                                                onShowLyricsEditor()
-                                            },
-                                            weight = 1f,
-                                            isFirst = false,
-                                            isLast = false,
-                                            icon = RhythmIcons.Player.Lyrics,
-                                            text = stringResource(R.string.lyrics_editor_short)
-                                        )
+                                        if (lyricsEditorEnabled) {
+                                            RhythmButtonWeighted(
+                                                onClick = {
+                                                    HapticUtils.performHapticFeedback(context, haptic, HapticType.HEAVY)
+                                                    onShowLyricsEditor()
+                                                },
+                                                weight = 1f,
+                                                isFirst = false,
+                                                isLast = false,
+                                                icon = RhythmIcons.Player.Lyrics,
+                                                text = stringResource(R.string.lyrics_editor_short)
+                                            )
+                                        }
                                         RhythmButtonWeighted(
                                             onClick = {
                                                 HapticUtils.performHapticFeedback(context, haptic, HapticType.HEAVY)
@@ -1208,19 +1213,21 @@ fun FullScreenLyricsView(
                         Column(
                             verticalArrangement = Arrangement.spacedBy(12.dp)
                         ) {
-                            // Quick Open Lyrics Editor
-                            FilledTonalIconButton(
-                                onClick = {
-                                    HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT)
-                                    onShowLyricsEditor()
-                                },
-                                modifier = Modifier.size(44.dp)
-                            ) {
-                                Icon(
-                                    imageVector = MaterialSymbolIcon("edit"),
-                                    contentDescription = stringResource(R.string.edit_lyrics),
-                                    modifier = Modifier.size(22.dp)
-                                )
+                            if (lyricsEditorEnabled) {
+                                // Quick Open Lyrics Editor
+                                FilledTonalIconButton(
+                                    onClick = {
+                                        HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT)
+                                        onShowLyricsEditor()
+                                    },
+                                    modifier = Modifier.size(44.dp)
+                                ) {
+                                    Icon(
+                                        imageVector = MaterialSymbolIcon("edit"),
+                                        contentDescription = stringResource(R.string.edit_lyrics),
+                                        modifier = Modifier.size(22.dp)
+                                    )
+                                }
                             }
 
                             // Quick Open Lyrics Settings

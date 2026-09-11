@@ -2762,4 +2762,6 @@
         <item quantity="other">%1$d listas de reprodução</item>
     </plurals>
     <string name="duration_minutes_format">%1$dm</string>
+    <string name="labs_lyrics_editor">Editor de letras</string>
+    <string name="labs_lyrics_editor_desc">Mostrar o botão de edição na tela de letras em tela cheia</string>
 </resources>

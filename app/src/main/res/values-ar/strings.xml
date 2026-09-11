@@ -2853,4 +2853,6 @@
     <string name="updates_channel_beta_desc">الحصول على تحديثات النسخ الغير رسمية</string>
     <string name="updates_channel_nightly_desc">الحصول على تحديثات النسخ الليلية من المصدر الرئيسي.</string>
     <string name="settings_rhythm_guard_first_break_dialog_title">معلومات عن اوقات الاستراحة</string>
+    <string name="labs_lyrics_editor">محرر كلمات الأغاني</string>
+    <string name="labs_lyrics_editor_desc">إظهار زر محرر كلمات الأغاني في شاشة الكلمات بملء الشاشة</string>
 </resources>

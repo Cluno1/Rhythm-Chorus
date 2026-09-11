@@ -2762,4 +2762,6 @@
         <item quantity="other">%1$d playlist</item>
     </plurals>
     <string name="duration_minutes_format">%1$d m</string>
+    <string name="labs_lyrics_editor">Editor testi</string>
+    <string name="labs_lyrics_editor_desc">Mostra il pulsante di modifica nella vista testi a schermo intero</string>
 </resources>

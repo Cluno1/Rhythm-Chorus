@@ -2733,4 +2733,6 @@
         <item quantity="other">%1$d प्लेलिस्ट</item>
     </plurals>
     <string name="duration_minutes_format">%1$dमी</string>
+    <string name="labs_lyrics_editor">गीत संपादक</string>
+    <string name="labs_lyrics_editor_desc">पूर्ण-स्क्रीन गीत दृश्य में संपादन बटन दिखाएँ</string>
 </resources>

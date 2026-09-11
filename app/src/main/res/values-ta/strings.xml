@@ -2733,4 +2733,6 @@
         <item quantity="other">%1$d பிளேலிஸ்ட்கள்</item>
     </plurals>
     <string name="duration_minutes_format">%1$dமீ</string>
+    <string name="labs_lyrics_editor">பாடல் வரி திருத்தி</string>
+    <string name="labs_lyrics_editor_desc">முழுத்திரை பாடல் வரிகளில் திருத்து பொத்தானைக் காட்டு</string>
 </resources>

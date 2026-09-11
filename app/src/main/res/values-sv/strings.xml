@@ -2739,4 +2739,6 @@
     <string name="lyrically_sources_title">Lyrically källor</string>
     <string name="lyrically_sources_desc">Konfigurera och prioritera textkällor inuti Lyrically. Ord-för-ord-källor kommer att testas först, och återgå till synkroniserade/enkla källor.</string>
     <string name="error_no_document_app">Ingen systemdokumentväljare hittades för att välja en mapp.</string>
+    <string name="labs_lyrics_editor">Låttextredigerare</string>
+    <string name="labs_lyrics_editor_desc">Visa redigeringsknappen i helskärmsvyn för låttext</string>
 </resources>

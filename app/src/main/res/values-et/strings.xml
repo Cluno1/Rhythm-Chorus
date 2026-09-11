@@ -201,4 +201,6 @@
     <string name="settings_clear_all_folders">Eemalda kõik kaustad</string>
     <string name="settings_clear_all_folders_desc">Eemalda kõik %1$s kausta</string>
     <string name="settings_quick_tips">Kiirsoovitused</string>
+    <string name="labs_lyrics_editor">Laulusõnade redaktor</string>
+    <string name="labs_lyrics_editor_desc">Kuva täisekraanil laulusõnade redigeerimise nupp</string>
 </resources>

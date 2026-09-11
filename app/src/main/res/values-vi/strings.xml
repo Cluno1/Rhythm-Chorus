@@ -2704,4 +2704,6 @@
         <item quantity="other">%1$d danh sách phát</item>
     </plurals>
     <string name="duration_minutes_format">%1$d phút</string>
+    <string name="labs_lyrics_editor">Trình sửa lời bài hát</string>
+    <string name="labs_lyrics_editor_desc">Hiện nút chỉnh sửa trong giao diện lời bài hát toàn màn hình</string>
 </resources>

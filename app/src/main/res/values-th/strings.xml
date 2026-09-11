@@ -2708,4 +2708,6 @@
     <string name="settings_notifications_system_group">การควบคุมระบบ</string>
     <string name="settings_library_operations_notifications">การดำเนินงานและการสำรองข้อมูล</string>
     <string name="settings_library_operations_notifications_desc">แสดงการแจ้งเตือนความคืบหน้าสำหรับการจัดทำดัชนีสื่อและการส่งออก/นำเข้าเพลย์ลิสต์</string>
+    <string name="labs_lyrics_editor">เครื่องมือแก้ไขเนื้อเพลง</string>
+    <string name="labs_lyrics_editor_desc">แสดงปุ่มแก้ไขในมุมมองเนื้อเพลงแบบเต็มหน้าจอ</string>
 </resources>
