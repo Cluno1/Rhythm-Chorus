@@ -18,6 +18,7 @@ import io.github.cluno1.sonorus.network.DeezerTrack
 import io.github.cluno1.sonorus.network.MusicBrainzRecording
 import io.github.cluno1.sonorus.network.MusicBrainzRelease
 import io.github.cluno1.sonorus.network.NetworkClient
+import io.github.cluno1.sonorus.network.WikipediaProvider
 import io.github.cluno1.sonorus.shared.data.model.LyricsData
 import io.github.cluno1.sonorus.shared.data.model.Song
 import io.github.cluno1.sonorus.util.MediaUtils
@@ -50,6 +51,7 @@ private data class MusicBrainzArtworkMatch(
     val artist: String,
     val artistAliases: List<String>,
     val durationSeconds: Double?,
+    val firstReleaseDate: String?,
     val release: MusicBrainzRelease,
     val confidence: Double,
     val relatedReleaseIds: List<String>
@@ -248,7 +250,48 @@ class DeviceMetadataRepository(private val context: Context) {
                             )
                         }
                     }
-                DevicePublicMetadataProvider.LRCLIB -> emptyList()
+                DevicePublicMetadataProvider.ITUNES -> {
+                    val service = NetworkClient.itunesSearchApiService
+                        ?: error("iTunes Search service unavailable")
+                    val input = DeviceMatchInput(
+                        querySong.title,
+                        querySong.artist,
+                        querySong.album,
+                        querySong.duration,
+                    )
+                    service.searchSongs(
+                        "${querySong.artist} ${querySong.title}".trim(),
+                        limit = MAX_MANUAL_RESULTS * 2,
+                    ).results.asSequence().mapNotNull { track ->
+                        val rawUrl = track.artworkUrl100?.replace(
+                            Regex("/\\d+x\\d+bb\\."),
+                            "/600x600bb.",
+                        ) ?: return@mapNotNull null
+                        val safeUrl = DeviceMetadataPolicy.safeItunesArtworkUrl(rawUrl)
+                            ?: return@mapNotNull null
+                        DeviceArtworkCandidate(
+                            provider = DevicePublicMetadataProvider.ITUNES,
+                            externalId = track.trackId.toString(),
+                            title = track.trackName.orEmpty(),
+                            artist = track.artistName.orEmpty(),
+                            album = track.collectionName.orEmpty(),
+                            durationSeconds = track.trackTimeMillis?.div(1000.0),
+                            confidence = DeviceMetadataMatcher.score(
+                                input,
+                                track.trackName,
+                                track.artistName,
+                                track.collectionName,
+                                track.trackTimeMillis?.div(1000.0),
+                            ),
+                            imageUrl = safeUrl,
+                        )
+                    }.sortedByDescending(DeviceArtworkCandidate::confidence)
+                        .distinctBy(DeviceArtworkCandidate::externalId)
+                        .take(MAX_MANUAL_RESULTS)
+                        .toList()
+                }
+                DevicePublicMetadataProvider.LRCLIB,
+                DevicePublicMetadataProvider.WIKIPEDIA -> emptyList()
             }
         }.throwIfCancelled().fold(
             onSuccess = { result(it) },
@@ -302,6 +345,270 @@ class DeviceMetadataRepository(private val context: Context) {
         )
     }
 
+    suspend fun searchDetailsResult(
+        song: Song,
+        query: DeviceMetadataRequest,
+        provider: DevicePublicMetadataProvider,
+    ): DeviceProviderSearchResult<DeviceDetailsCandidate> = withContext(Dispatchers.IO) {
+        fun result(candidates: List<DeviceDetailsCandidate> = emptyList(), failed: Boolean = false) =
+            DeviceProviderSearchResult(provider, candidates, failed)
+        if (!song.isDeviceSong()) return@withContext result()
+        if (!NetworkClient.isDevicePublicMetadataEnabled()) return@withContext result()
+        val request = query.normalized()
+        if (request.title.isBlank()) return@withContext result()
+        val querySong = song.withMetadataRequest(request)
+
+        runCatching {
+            when (provider) {
+                DevicePublicMetadataProvider.MUSICBRAINZ_CAA ->
+                    searchMusicBrainzCandidates(querySong, throwOnFailure = true)
+                        .take(MAX_MANUAL_RESULTS)
+                        .map { match ->
+                            val release = match.release
+                            DeviceDetailsCandidate(
+                                provider = provider,
+                                externalId = match.recordingId,
+                                title = match.title,
+                                artist = match.artist,
+                                album = release.title,
+                                albumArtist = match.artist,
+                                durationSeconds = match.durationSeconds,
+                                releaseDate = release.date ?: match.firstReleaseDate,
+                                trackCount = release.trackCount,
+                                albumType = buildList {
+                                    release.releaseGroup?.primaryType?.let(::add)
+                                    addAll(release.releaseGroup?.secondaryTypes.orEmpty())
+                                }.distinct().joinToString(" · ").takeIf(String::isNotBlank),
+                                country = release.country,
+                                label = release.labelInfo.firstNotNullOfOrNull { it.label?.name },
+                                confidence = match.confidence,
+                            )
+                        }
+                DevicePublicMetadataProvider.DEEZER -> {
+                    val service = NetworkClient.deezerApiService
+                        ?: error("Deezer service unavailable")
+                    val ranked = rankDeezerArtwork(querySong, null, throwOnAllFailure = true)
+                        .take(MAX_MANUAL_RESULTS)
+                    val albumRows = runCatching {
+                        service.searchAlbums(
+                            "${request.album.orEmpty()} ${request.artist.orEmpty()}".trim(),
+                            MAX_MANUAL_RESULTS * 2,
+                        ).data
+                    }.throwIfCancelled().getOrDefault(emptyList())
+                    val artistRows = request.artist?.let { artist ->
+                        runCatching { service.searchArtists(artist, MAX_MANUAL_RESULTS * 2).data }
+                            .throwIfCancelled().getOrDefault(emptyList())
+                    }.orEmpty()
+                    ranked.map { (track, confidence) ->
+                        val album = albumRows.firstOrNull { it.id == track.album?.id }
+                            ?: albumRows.firstOrNull {
+                                it.title.equals(track.album?.title, ignoreCase = true)
+                            }
+                        val artist = artistRows.firstOrNull { it.id == track.artist?.id }
+                            ?: artistRows.firstOrNull {
+                                it.name.equals(track.artist?.name, ignoreCase = true)
+                            }
+                        val artwork = track.album?.let { item ->
+                            item.coverXl ?: item.coverBig ?: item.coverMedium ?: item.cover
+                        }?.let(DeviceMetadataPolicy::safeDeezerArtworkUrl)
+                        DeviceDetailsCandidate(
+                            provider = provider,
+                            externalId = track.id.toString(),
+                            title = track.title,
+                            artist = track.artist?.name.orEmpty(),
+                            album = track.album?.title.orEmpty(),
+                            albumArtist = track.artist?.name,
+                            durationSeconds = track.duration?.toDouble(),
+                            releaseDate = album?.releaseDate,
+                            trackCount = album?.nbTracks?.takeIf { it > 0 },
+                            artistAlbumCount = artist?.nbAlbum?.takeIf { it > 0 },
+                            artistFanCount = artist?.nbFan?.takeIf { it > 0 },
+                            artworkUrl = artwork,
+                            confidence = confidence,
+                        )
+                    }
+                }
+                DevicePublicMetadataProvider.ITUNES -> {
+                    val service = NetworkClient.itunesSearchApiService
+                        ?: error("iTunes Search service unavailable")
+                    val input = DeviceMatchInput(
+                        request.title,
+                        request.artist.orEmpty(),
+                        request.album.orEmpty(),
+                        request.durationSeconds?.times(1000L) ?: 0L,
+                    )
+                    service.searchSongs(
+                        "${request.artist.orEmpty()} ${request.title}".trim(),
+                        limit = MAX_MANUAL_RESULTS * 2,
+                    ).results.asSequence().map { track ->
+                        val artwork = track.artworkUrl100?.replace(
+                            Regex("/\\d+x\\d+bb\\."),
+                            "/600x600bb.",
+                        )?.let(DeviceMetadataPolicy::safeItunesArtworkUrl)
+                        DeviceDetailsCandidate(
+                            provider = provider,
+                            externalId = track.trackId.toString(),
+                            title = track.trackName.orEmpty(),
+                            artist = track.artistName.orEmpty(),
+                            album = track.collectionName.orEmpty(),
+                            albumArtist = track.artistName,
+                            durationSeconds = track.trackTimeMillis?.div(1000.0),
+                            releaseDate = track.releaseDate,
+                            trackNumber = track.trackNumber,
+                            discNumber = track.discNumber,
+                            trackCount = track.trackCount,
+                            genre = track.primaryGenreName,
+                            country = track.country,
+                            artworkUrl = artwork,
+                            confidence = DeviceMetadataMatcher.score(
+                                input,
+                                track.trackName,
+                                track.artistName,
+                                track.collectionName,
+                                track.trackTimeMillis?.div(1000.0),
+                            ),
+                        )
+                    }.sortedByDescending(DeviceDetailsCandidate::confidence)
+                        .distinctBy(DeviceDetailsCandidate::externalId)
+                        .take(MAX_MANUAL_RESULTS)
+                        .toList()
+                }
+                DevicePublicMetadataProvider.LRCLIB,
+                DevicePublicMetadataProvider.WIKIPEDIA -> emptyList()
+            }
+        }.throwIfCancelled().fold(
+            onSuccess = { result(it) },
+            onFailure = { result(failed = true) },
+        )
+    }
+
+    suspend fun searchEditorialResult(
+        query: DeviceMetadataRequest,
+    ): DeviceProviderSearchResult<DeviceEditorialCandidate> = withContext(Dispatchers.IO) {
+        fun result(candidates: List<DeviceEditorialCandidate> = emptyList(), failed: Boolean = false) =
+            DeviceProviderSearchResult(DevicePublicMetadataProvider.WIKIPEDIA, candidates, failed)
+        if (!NetworkClient.isDevicePublicMetadataEnabled()) return@withContext result()
+        val request = query.normalized()
+        runCatching {
+            buildList {
+                request.album?.let { album ->
+                    WikipediaProvider.getAlbumDescription(album, request.artist)?.let { description ->
+                        add(
+                            DeviceEditorialCandidate(
+                                provider = DevicePublicMetadataProvider.WIKIPEDIA,
+                                externalId = "album:${album.lowercase(Locale.ROOT)}",
+                                subject = DeviceEditorialSubject.ALBUM,
+                                title = album,
+                                description = description.take(MAX_EDITORIAL_CHARS),
+                            )
+                        )
+                    }
+                }
+                request.artist?.let { artist ->
+                    WikipediaProvider.getArtistDescription(artist)?.let { description ->
+                        add(
+                            DeviceEditorialCandidate(
+                                provider = DevicePublicMetadataProvider.WIKIPEDIA,
+                                externalId = "artist:${artist.lowercase(Locale.ROOT)}",
+                                subject = DeviceEditorialSubject.ARTIST,
+                                title = artist,
+                                description = description.take(MAX_EDITORIAL_CHARS),
+                            )
+                        )
+                    }
+                }
+            }
+        }.throwIfCancelled().fold(
+            onSuccess = { result(it) },
+            onFailure = { result(failed = true) },
+        )
+    }
+
+    suspend fun applyDetails(
+        song: Song,
+        candidate: DeviceDetailsCandidate,
+        fields: Set<DeviceDetailsField>,
+    ): Song =
+        withContext(Dispatchers.IO) {
+            require(song.isDeviceSong()) { "Only DEVICE songs can own public metadata overrides" }
+            require(fields.isNotEmpty()) { "At least one detail field must be selected" }
+            DeviceAlbumIdentity.key(song)?.let { ensureAlbumLink(song, it) }
+            val old = dao.getBySongId(song.id)
+            val updated = song.copy(
+                title = candidate.title.trim().takeIf {
+                    DeviceDetailsField.TITLE in fields && it.isNotEmpty()
+                } ?: song.title,
+                artist = candidate.artist.trim().takeIf {
+                    DeviceDetailsField.ARTIST in fields && it.isNotEmpty()
+                } ?: song.artist,
+                album = candidate.album.trim().takeIf {
+                    DeviceDetailsField.ALBUM in fields && it.isNotEmpty()
+                } ?: song.album,
+                albumArtist = candidate.albumArtist?.trim()?.takeIf {
+                    DeviceDetailsField.ALBUM_ARTIST in fields && it.isNotEmpty()
+                } ?: song.albumArtist,
+                year = candidate.year?.takeIf { DeviceDetailsField.YEAR in fields } ?: song.year,
+                trackNumber = candidate.trackNumber?.takeIf {
+                    DeviceDetailsField.TRACK_NUMBER in fields && it > 0
+                } ?: song.trackNumber,
+                discNumber = candidate.discNumber?.takeIf {
+                    DeviceDetailsField.DISC_NUMBER in fields && it > 0
+                } ?: song.discNumber,
+                genre = candidate.genre?.trim()?.takeIf {
+                    DeviceDetailsField.GENRE in fields && it.isNotEmpty()
+                } ?: song.genre,
+            )
+            dao.upsert(
+                base(song, old).copy(
+                    detailsProvider = candidate.provider.name,
+                    detailsExternalId = candidate.externalId,
+                    detailsConfidence = candidate.confidence,
+                    detailsPinned = true,
+                    titleOverride = updated.title.takeIf { DeviceDetailsField.TITLE in fields }
+                        ?: old?.titleOverride,
+                    artistOverride = updated.artist.takeIf { DeviceDetailsField.ARTIST in fields }
+                        ?: old?.artistOverride,
+                    albumOverride = updated.album.takeIf { DeviceDetailsField.ALBUM in fields }
+                        ?: old?.albumOverride,
+                    albumArtistOverride = updated.albumArtist.takeIf {
+                        DeviceDetailsField.ALBUM_ARTIST in fields
+                    } ?: old?.albumArtistOverride,
+                    yearOverride = updated.year.takeIf {
+                        DeviceDetailsField.YEAR in fields && it > 0
+                    } ?: old?.yearOverride,
+                    trackNumberOverride = updated.trackNumber.takeIf {
+                        DeviceDetailsField.TRACK_NUMBER in fields && it > 0
+                    } ?: old?.trackNumberOverride,
+                    discNumberOverride = updated.discNumber.takeIf {
+                        DeviceDetailsField.DISC_NUMBER in fields && it > 0
+                    } ?: old?.discNumberOverride,
+                    genreOverride = updated.genre.takeIf { DeviceDetailsField.GENRE in fields }
+                        ?: old?.genreOverride,
+                    updatedAt = System.currentTimeMillis(),
+                )
+            )
+            updated
+        }
+
+    suspend fun projectDetails(songs: List<Song>): List<Song> = withContext(Dispatchers.IO) {
+        if (songs.isEmpty()) return@withContext songs
+        val overrides = dao.getAll().filter(DeviceMetadataEntity::detailsPinned)
+            .associateBy(DeviceMetadataEntity::songId)
+        songs.map { song ->
+            val row = overrides[song.id] ?: return@map song
+            song.copy(
+                title = row.titleOverride?.takeIf(String::isNotBlank) ?: song.title,
+                artist = row.artistOverride?.takeIf(String::isNotBlank) ?: song.artist,
+                album = row.albumOverride?.takeIf(String::isNotBlank) ?: song.album,
+                albumArtist = row.albumArtistOverride?.takeIf(String::isNotBlank) ?: song.albumArtist,
+                year = row.yearOverride?.takeIf { it > 0 } ?: song.year,
+                trackNumber = row.trackNumberOverride?.takeIf { it > 0 } ?: song.trackNumber,
+                discNumber = row.discNumberOverride?.takeIf { it > 0 } ?: song.discNumber,
+                genre = row.genreOverride?.takeIf(String::isNotBlank) ?: song.genre,
+            )
+        }
+    }
+
     suspend fun applyArtwork(
         song: Song,
         candidate: DeviceArtworkCandidate,
@@ -309,11 +616,13 @@ class DeviceMetadataRepository(private val context: Context) {
         destinationTreeUri: Uri? = null,
     ): Uri? = withContext(Dispatchers.IO) {
         if (!song.isDeviceSong()) return@withContext null
-        val albumKey = DeviceAlbumIdentity.key(song) ?: return@withContext null
+        val albumKey = albumKeyFor(song) ?: return@withContext null
         val downloadProvider = when (candidate.provider) {
             DevicePublicMetadataProvider.MUSICBRAINZ_CAA -> ArtworkProvider.COVER_ART_ARCHIVE
             DevicePublicMetadataProvider.DEEZER -> ArtworkProvider.DEEZER
-            DevicePublicMetadataProvider.LRCLIB -> return@withContext null
+            DevicePublicMetadataProvider.ITUNES -> ArtworkProvider.ITUNES
+            DevicePublicMetadataProvider.LRCLIB,
+            DevicePublicMetadataProvider.WIKIPEDIA -> return@withContext null
         }
         albumLocks.computeIfAbsent(albumKey) { Mutex() }.withLock {
             val cached = downloadArtwork(
@@ -356,7 +665,7 @@ class DeviceMetadataRepository(private val context: Context) {
     }
 
     private suspend fun artworkCandidates(song: Song): ArtworkCandidates {
-        val albumKey = DeviceAlbumIdentity.key(song)
+        val albumKey = albumKeyFor(song)
         if (albumKey != null) ensureAlbumLink(song, albumKey)
         val album = albumKey?.let { albumDao.getAlbum(it) }
         val albumFile = album?.let(::validAlbumArtwork)?.toUri()
@@ -400,7 +709,7 @@ class DeviceMetadataRepository(private val context: Context) {
             if (path.startsWith(metadataDir().absolutePath)) runCatching { File(path).delete() }
         }
         dao.clearArtwork(song.id)
-        DeviceAlbumIdentity.key(song)?.let { albumKey ->
+        albumKeyFor(song)?.let { albumKey ->
             albumDao.getAlbum(albumKey)?.artworkCachePath?.let { path ->
                 if (path.startsWith(metadataDir().absolutePath)) runCatching { File(path).delete() }
             }
@@ -442,7 +751,7 @@ class DeviceMetadataRepository(private val context: Context) {
         }
         if (!NetworkClient.isDevicePublicMetadataEnabled()) return@withContext null
 
-        val albumKey = DeviceAlbumIdentity.key(song) ?: return@withContext null
+        val albumKey = albumKeyFor(song) ?: return@withContext null
         albumLocks.computeIfAbsent(albumKey) { Mutex() }.withLock {
             ensureAlbumLink(song, albumKey)
             val previous = albumDao.getAlbum(albumKey)
@@ -484,7 +793,42 @@ class DeviceMetadataRepository(private val context: Context) {
                 }
             }
 
-            albumDao.upsertAlbum(albumBase(song, previous).copy(
+            val itunesCandidates = searchArtworkResult(
+                song,
+                requestFor(song),
+                DevicePublicMetadataProvider.ITUNES,
+            ).candidates
+            val itunes = itunesCandidates.firstOrNull()?.takeIf { best ->
+                DeviceMetadataMatcher.isAutomaticMatch(
+                    best.confidence,
+                    itunesCandidates.getOrNull(1)?.confidence,
+                    MUSICBRAINZ_AUTO_CONFIDENCE,
+                    MUSICBRAINZ_AUTO_MARGIN,
+                    unconditionalThreshold = EXACT_AUTO_CONFIDENCE,
+                )
+            }
+            if (itunes != null) {
+                val cached = downloadArtwork(
+                    itunes.imageUrl,
+                    "album-${sha256(albumKey)}.jpg",
+                    ArtworkProvider.ITUNES,
+                )
+                if (cached != null) {
+                    saveAlbumArtwork(
+                        song,
+                        cached.file,
+                        "PUBLIC_API",
+                        "ITUNES",
+                        itunes.externalId,
+                        null,
+                        itunes.confidence,
+                        cached,
+                    )
+                    return@withLock cached.file.toUri()
+                }
+            }
+
+            albumDao.upsertAlbum(albumBase(song, previous, albumKey).copy(
                 negativeUntil = System.currentTimeMillis() + NEGATIVE_CACHE_MS,
                 updatedAt = System.currentTimeMillis()
             ))
@@ -515,7 +859,7 @@ class DeviceMetadataRepository(private val context: Context) {
         cached: CachedArtworkFile? = null,
         pinned: Boolean = false
     ) {
-        val albumKey = DeviceAlbumIdentity.key(song) ?: return
+        val albumKey = albumKeyFor(song) ?: return
         ensureAlbumLink(song, albumKey)
         val old = albumDao.getAlbum(albumKey)
         if (
@@ -525,7 +869,7 @@ class DeviceMetadataRepository(private val context: Context) {
             return
         }
         val materialized = cached ?: cachedFile(file)
-        albumDao.upsertAlbum(albumBase(song, old).copy(
+        albumDao.upsertAlbum(albumBase(song, old, albumKey).copy(
             provider = provider,
             externalReleaseId = externalReleaseId,
             externalReleaseGroupId = externalReleaseGroupId,
@@ -542,8 +886,11 @@ class DeviceMetadataRepository(private val context: Context) {
         ))
     }
 
-    private fun albumBase(song: Song, old: DeviceAlbumMetadataEntity?): DeviceAlbumMetadataEntity {
-        val albumKey = DeviceAlbumIdentity.key(song) ?: error("Non-DEVICE song cannot own DEVICE album metadata")
+    private fun albumBase(
+        song: Song,
+        old: DeviceAlbumMetadataEntity?,
+        albumKey: String,
+    ): DeviceAlbumMetadataEntity {
         return (old ?: DeviceAlbumMetadataEntity(
             albumKey = albumKey,
             localTitle = song.album,
@@ -553,6 +900,17 @@ class DeviceMetadataRepository(private val context: Context) {
 
     private suspend fun ensureAlbumLink(song: Song, albumKey: String) {
         albumDao.upsertSongAlbum(DeviceSongAlbumEntity(stableId(song), albumKey))
+    }
+
+    /** A pinned app-only tag override must not detach the song from its existing artwork album. */
+    private suspend fun albumKeyFor(song: Song): String? {
+        val computed = DeviceAlbumIdentity.key(song) ?: return null
+        val detailsPinned = dao.getBySongId(song.id)?.detailsPinned == true
+        return if (detailsPinned) {
+            albumDao.getAlbumKeyForSong(stableId(song)) ?: computed
+        } else {
+            computed
+        }
     }
 
     private suspend fun searchMusicBrainz(song: Song): MusicBrainzArtworkMatch? {
@@ -567,6 +925,7 @@ class DeviceMetadataRepository(private val context: Context) {
                 runnerUp,
                 MUSICBRAINZ_AUTO_CONFIDENCE,
                 MUSICBRAINZ_AUTO_MARGIN,
+                unconditionalThreshold = EXACT_AUTO_CONFIDENCE,
             )
         ) {
             return null
@@ -634,6 +993,7 @@ class DeviceMetadataRepository(private val context: Context) {
                 artist = recording.artistCredit.joinToString("") { it.name ?: it.artist?.name.orEmpty() },
                 artistAliases = ranked.second,
                 durationSeconds = recording.length?.div(1000.0),
+                firstReleaseDate = recording.firstReleaseDate,
                 release = release,
                 confidence = ranked.first.third,
                 relatedReleaseIds = related,
@@ -652,6 +1012,7 @@ class DeviceMetadataRepository(private val context: Context) {
                 ranked.getOrNull(1)?.second,
                 MUSICBRAINZ_AUTO_CONFIDENCE,
                 MUSICBRAINZ_AUTO_MARGIN,
+                unconditionalThreshold = EXACT_AUTO_CONFIDENCE,
             )
         ) {
             return null
@@ -707,7 +1068,13 @@ class DeviceMetadataRepository(private val context: Context) {
             }
             val ranked = candidates.values.sortedByDescending { it.second }
             if (ranked.firstOrNull()?.let {
-                    DeviceMetadataMatcher.isAutomaticMatch(it.second, ranked.getOrNull(1)?.second, MUSICBRAINZ_AUTO_CONFIDENCE, MUSICBRAINZ_AUTO_MARGIN)
+                    DeviceMetadataMatcher.isAutomaticMatch(
+                        it.second,
+                        ranked.getOrNull(1)?.second,
+                        MUSICBRAINZ_AUTO_CONFIDENCE,
+                        MUSICBRAINZ_AUTO_MARGIN,
+                        unconditionalThreshold = EXACT_AUTO_CONFIDENCE,
+                    )
                 } == true
             ) break
         }
@@ -754,12 +1121,13 @@ class DeviceMetadataRepository(private val context: Context) {
         }
     }.getOrNull()
 
-    private enum class ArtworkProvider { DEEZER, COVER_ART_ARCHIVE }
+    private enum class ArtworkProvider { DEEZER, COVER_ART_ARCHIVE, ITUNES }
 
     private fun downloadArtwork(url: String, name: String, provider: ArtworkProvider): CachedArtworkFile? = runCatching {
         val safe = when (provider) {
             ArtworkProvider.DEEZER -> DeviceMetadataPolicy.safeDeezerArtworkUrl(url)
             ArtworkProvider.COVER_ART_ARCHIVE -> DeviceMetadataPolicy.safeCoverArtUrl(url)
+            ArtworkProvider.ITUNES -> DeviceMetadataPolicy.safeItunesArtworkUrl(url)
         } ?: return null
         val client = if (provider == ArtworkProvider.DEEZER) NetworkClient.genericHttpClient else NetworkClient.coverArtHttpClient
         client.newCall(Request.Builder().url(safe).get().build()).execute().use { response ->
@@ -768,6 +1136,7 @@ class DeviceMetadataRepository(private val context: Context) {
             val trustedFinal = when (provider) {
                 ArtworkProvider.DEEZER -> DeviceMetadataPolicy.safeDeezerArtworkUrl(finalUrl.toString())
                 ArtworkProvider.COVER_ART_ARCHIVE -> DeviceMetadataPolicy.safeCoverArtUrl(finalUrl.toString())
+                ArtworkProvider.ITUNES -> DeviceMetadataPolicy.safeItunesArtworkUrl(finalUrl.toString())
             }
             if (trustedFinal == null) return null
             if (!DeviceMetadataPolicy.isImageContentType(response.header("Content-Type"))) return null
@@ -906,6 +1275,7 @@ class DeviceMetadataRepository(private val context: Context) {
         private const val NEGATIVE_CACHE_MS = 24L * 60L * 60L * 1_000L
         private const val MAX_CAA_RELEASE_ATTEMPTS = 3
         private const val MAX_MANUAL_RESULTS = 12
+        private const val MAX_EDITORIAL_CHARS = 4_000
         private val albumLocks = ConcurrentHashMap<String, Mutex>()
         private val albumFileValidationCache = ConcurrentHashMap<String, Boolean>()
         private val musicBrainzRateMutex = Mutex()

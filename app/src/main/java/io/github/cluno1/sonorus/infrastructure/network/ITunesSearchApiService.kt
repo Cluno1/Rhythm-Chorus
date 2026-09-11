@@ -30,5 +30,11 @@ data class ITunesTrackResult(
     @SerializedName("artistName") val artistName: String?,
     @SerializedName("collectionName") val collectionName: String?,
     @SerializedName("trackTimeMillis") val trackTimeMillis: Long?,
-    @SerializedName("artworkUrl100") val artworkUrl100: String?
+    @SerializedName("artworkUrl100") val artworkUrl100: String?,
+    @SerializedName("releaseDate") val releaseDate: String? = null,
+    @SerializedName("discNumber") val discNumber: Int? = null,
+    @SerializedName("trackNumber") val trackNumber: Int? = null,
+    @SerializedName("trackCount") val trackCount: Int? = null,
+    @SerializedName("primaryGenreName") val primaryGenreName: String? = null,
+    @SerializedName("country") val country: String? = null,
 )

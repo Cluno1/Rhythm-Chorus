@@ -52,5 +52,14 @@ object DeviceMetadataPolicy {
         }
     }.getOrNull()
 
+    fun safeItunesArtworkUrl(raw: String): String? = runCatching {
+        val uri = URI(raw)
+        val host = uri.host?.lowercase() ?: return null
+        raw.takeIf {
+            uri.scheme == "https" && uri.userInfo == null &&
+                (host == "mzstatic.com" || host.endsWith(".mzstatic.com"))
+        }
+    }.getOrNull()
+
     fun isImageContentType(value: String?): Boolean = value.orEmpty().substringBefore(';').trim().lowercase().startsWith("image/")
 }

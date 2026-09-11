@@ -23,6 +23,8 @@ data class MusicBrainzRecording(
     val title: String,
     val length: Long? = null,
     val score: Int? = null,
+    @SerializedName("first-release-date") val firstReleaseDate: String? = null,
+    val isrcs: List<String> = emptyList(),
     @SerializedName("artist-credit") val artistCredit: List<MusicBrainzArtistCredit> = emptyList(),
     val releases: List<MusicBrainzRelease> = emptyList()
 )
@@ -48,11 +50,25 @@ data class MusicBrainzRelease(
     val id: String,
     val title: String,
     val status: String? = null,
+    val date: String? = null,
+    val country: String? = null,
+    @SerializedName("track-count") val trackCount: Int? = null,
+    @SerializedName("label-info") val labelInfo: List<MusicBrainzLabelInfo> = emptyList(),
     @SerializedName("release-group") val releaseGroup: MusicBrainzReleaseGroup? = null
 )
 
 data class MusicBrainzReleaseGroup(
     val id: String,
     val title: String? = null,
-    @SerializedName("primary-type") val primaryType: String? = null
+    @SerializedName("primary-type") val primaryType: String? = null,
+    @SerializedName("secondary-types") val secondaryTypes: List<String> = emptyList(),
+)
+
+data class MusicBrainzLabelInfo(
+    val label: MusicBrainzLabel? = null,
+)
+
+data class MusicBrainzLabel(
+    val id: String? = null,
+    val name: String? = null,
 )

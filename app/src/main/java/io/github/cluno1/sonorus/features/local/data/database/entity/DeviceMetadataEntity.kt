@@ -33,5 +33,17 @@ data class DeviceMetadataEntity(
     val artworkExternalId: String? = null,
     val artworkConfidence: Double? = null,
     val artworkCachePath: String? = null,
+    val detailsProvider: String? = null,
+    val detailsExternalId: String? = null,
+    val detailsConfidence: Double? = null,
+    val detailsPinned: Boolean = false,
+    val titleOverride: String? = null,
+    val artistOverride: String? = null,
+    val albumOverride: String? = null,
+    val albumArtistOverride: String? = null,
+    val yearOverride: Int? = null,
+    val trackNumberOverride: Int? = null,
+    val discNumberOverride: Int? = null,
+    val genreOverride: String? = null,
     val updatedAt: Long = System.currentTimeMillis()
 )

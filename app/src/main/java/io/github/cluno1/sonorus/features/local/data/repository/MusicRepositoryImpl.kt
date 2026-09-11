@@ -106,11 +106,16 @@ import io.github.cluno1.sonorus.features.local.data.database.entity.SongArtistEn
 import io.github.cluno1.sonorus.features.local.data.device.DeviceLyricsCandidate
 import io.github.cluno1.sonorus.features.local.data.device.DeviceArtworkCandidate
 import io.github.cluno1.sonorus.features.local.data.device.DeviceArtistArtworkCandidate
+import io.github.cluno1.sonorus.features.local.data.device.DeviceDetailsCandidate
+import io.github.cluno1.sonorus.features.local.data.device.DeviceDetailsField
 import io.github.cluno1.sonorus.features.local.data.device.DeviceArtworkSaveTarget
 import io.github.cluno1.sonorus.features.local.data.device.DeviceMetadataRequest
 import io.github.cluno1.sonorus.features.local.data.device.DevicePublicMetadataProvider
 import io.github.cluno1.sonorus.features.local.data.device.DeviceScanFolderAccess
 import io.github.cluno1.sonorus.features.local.data.device.DeviceMetadataRepository
+import io.github.cluno1.sonorus.features.local.data.device.DeviceArtistFolderArtworkPolicy
+import io.github.cluno1.sonorus.features.local.data.device.DeviceArtistMatchPolicy
+import io.github.cluno1.sonorus.features.local.data.device.DevicePrivateMetadataFileNames
 import io.github.cluno1.sonorus.features.local.data.device.DeviceMetadataMatcher
 import io.github.cluno1.sonorus.features.local.data.device.DeviceMetadataPolicy
 import io.github.cluno1.sonorus.features.local.data.device.ArtworkUriValidator
@@ -930,7 +935,9 @@ class MusicRepository(context: Context) {
             minimumDuration = minimumDuration,
             includeMediaStore = hasPermission,
         )
-        val projected = deviceMetadataRepository.projectArtwork(scanned)
+        val projected = deviceMetadataRepository.projectArtwork(
+            deviceMetadataRepository.projectDetails(scanned),
+        )
         cachedSongs = projected
         cacheTimestamp = System.currentTimeMillis()
         return@withContext projected
@@ -953,7 +960,9 @@ class MusicRepository(context: Context) {
             minimumBitrate = minimumBitrate,
             minimumDuration = minimumDuration,
         )
-        val projected = deviceMetadataRepository.projectArtwork(songs)
+        val projected = deviceMetadataRepository.projectArtwork(
+            deviceMetadataRepository.projectDetails(songs),
+        )
         cachedSongs = projected
         cacheTimestamp = System.currentTimeMillis()
         return@withContext projected
@@ -2251,7 +2260,9 @@ class MusicRepository(context: Context) {
                 Artist(
                     id = entity.id,
                     name = entity.name,
-                    artworkUri = entity.artworkUri?.let { it.toUri() },
+                    artworkUri = entity.artworkUri?.let { value ->
+                        trustedStoredArtistArtwork(entity.name, value.toUri())
+                    },
                     numberOfAlbums = entity.numberOfAlbums,
                     numberOfTracks = entity.numberOfTracks
                 )
@@ -2269,7 +2280,12 @@ class MusicRepository(context: Context) {
         try {
             val artistEntities = artists.map { artist ->
                 val placeholderUri = artist.artworkUri?.takeIf { it.scheme == "file" && it.lastPathSegment?.startsWith("placeholder_") == true }
-                val resolvedUri = if (placeholderUri != null) findLocalArtistImage(artist.name) else artist.artworkUri ?: findLocalArtistImage(artist.name)
+                val trustedArtwork = artist.artworkUri?.let { trustedStoredArtistArtwork(artist.name, it) }
+                val resolvedUri = if (placeholderUri != null) {
+                    findLocalArtistImage(artist.name)
+                } else {
+                    trustedArtwork ?: findLocalArtistImage(artist.name)
+                }
                 ArtistEntity(
                     id = artist.id,
                     name = artist.name,
@@ -4631,7 +4647,7 @@ class MusicRepository(context: Context) {
                     lyricsCache[cacheKey] = lyricsWithSource
                     if (sourceName == "API") {
                         // Only save API-fetched lyrics to local cache
-                        saveLocalLyrics(artist, title, lyricsWithSource)
+                        saveLocalLyrics(songId, artist, title, lyricsWithSource)
                     }
                     return@withContext lyricsWithSource
                 }
@@ -4739,6 +4755,16 @@ class MusicRepository(context: Context) {
         artistName: String,
     ) = deviceMetadataRepository.searchArtistArtworkResult(artistName)
 
+    suspend fun searchDeviceDetailsCandidatesWithStatus(
+        song: Song,
+        query: DeviceMetadataRequest,
+        provider: DevicePublicMetadataProvider,
+    ) = deviceMetadataRepository.searchDetailsResult(song, query, provider)
+
+    suspend fun searchDeviceEditorialCandidatesWithStatus(
+        query: DeviceMetadataRequest,
+    ) = deviceMetadataRepository.searchEditorialResult(query)
+
     suspend fun applyDeviceLyricsCandidate(song: Song, candidate: DeviceLyricsCandidate): LyricsData {
         val result = deviceMetadataRepository.applyLyrics(song, candidate, userSelected = true)
         clearLyricsMemoryCacheForSong(song)
@@ -4762,11 +4788,22 @@ class MusicRepository(context: Context) {
         return saveDeezerArtistImage(targetArtistName, candidate.imageUrl)
     }
 
+    suspend fun applyDeviceDetailsCandidate(
+        song: Song,
+        candidate: DeviceDetailsCandidate,
+        fields: Set<DeviceDetailsField>,
+    ): Song = deviceMetadataRepository.applyDetails(song, candidate, fields)
+
     suspend fun clearLyricsCacheForSong(song: Song) {
         clearLyricsMemoryCacheForSong(song)
         deviceMetadataRepository.clearLyrics(song)
+        val lyricsDir = File(context.filesDir, "lyrics")
+        File(
+            lyricsDir,
+            DevicePrivateMetadataFileNames.lyrics(song.id, song.artist, song.title),
+        ).delete()
         val legacyName = "${song.artist}_${song.title}.json".replace(Regex("[^a-zA-Z0-9._-]"), "_")
-        File(context.filesDir, "lyrics/$legacyName").delete()
+        File(lyricsDir, legacyName).delete()
     }
 
     private fun clearLyricsMemoryCacheForSong(song: Song) {
@@ -5313,7 +5350,7 @@ class MusicRepository(context: Context) {
         }
         
         // Second, check for cached JSON lyrics in app's files directory
-        val fileName = "${artist}_${title}.json".replace(Regex("[^a-zA-Z0-9._-]"), "_")
+        val fileName = DevicePrivateMetadataFileNames.lyrics(songId, artist, title)
         val file = File(context.filesDir, "lyrics/$fileName")
         Log.d(TAG, "===== Checking for saved JSON file: $fileName (exists=${file.exists()}) =====")
         return try {
@@ -5360,7 +5397,7 @@ class MusicRepository(context: Context) {
                         )
                         
                         // Save the corrected version back to cache
-                        saveLocalLyrics(artist, title, data)
+                        saveLocalLyrics(songId, artist, title, data)
                         Log.d(TAG, "===== SUCCESSFULLY CORRECTED AND RESAVED CACHED LYRICS =====")
                     } catch (e: Exception) {
                         Log.e(TAG, "Failed to correct cached Lyrically lyrics", e)
@@ -5697,9 +5734,14 @@ class MusicRepository(context: Context) {
 
      * Saves lyrics to a local file
      */
-    private fun saveLocalLyrics(artist: String, title: String, lyricsData: LyricsData) {
+    private fun saveLocalLyrics(
+        songId: String?,
+        artist: String,
+        title: String,
+        lyricsData: LyricsData,
+    ) {
         try {
-            val fileName = "${artist}_${title}.json".replace(Regex("[^a-zA-Z0-9._-]"), "_")
+            val fileName = DevicePrivateMetadataFileNames.lyrics(songId, artist, title)
             val lyricsDir = File(context.filesDir, "lyrics")
             lyricsDir.mkdirs()
 
@@ -6143,13 +6185,45 @@ class MusicRepository(context: Context) {
      * Finds locally stored artist image
      */
     private fun findLocalArtistImage(artistName: String): Uri? {
-        val fileName = "${artistName}.jpg".replace(Regex("[^a-zA-Z0-9._-]"), "_")
+        val fileName = DevicePrivateMetadataFileNames.artistArtwork(artistName)
         val file = File(context.filesDir, "artist_images/$fileName")
-        return if (file.exists()) {
-            Uri.fromFile(file).buildUpon().appendQueryParameter("t", file.lastModified().toString()).build()
-        } else {
-            null
+        if (file.isFile && artworkUriValidator.isReadable(Uri.fromFile(file))) {
+            return Uri.fromFile(file).buildUpon()
+                .appendQueryParameter("t", file.lastModified().toString())
+                .build()
         }
+
+        // Keep legacy ASCII-only images when their old filename was not lossy. Unicode and
+        // whitespace-based legacy names stay quarantined because several artists could own them.
+        val legacyName = DevicePrivateMetadataFileNames.unambiguousLegacyArtistArtwork(artistName)
+            ?: return null
+        val legacy = File(file.parentFile, legacyName)
+            .takeIf { it.isFile && artworkUriValidator.isReadable(Uri.fromFile(it)) }
+            ?: return null
+        val migrated = runCatching {
+            legacy.copyTo(file, overwrite = false)
+            file
+        }.getOrNull() ?: return null
+        return Uri.fromFile(migrated).buildUpon()
+            .appendQueryParameter("t", migrated.lastModified().toString())
+            .build()
+    }
+
+    /** Legacy sanitized filenames could collapse different Unicode names to the same file. */
+    private fun trustedStoredArtistArtwork(artistName: String, uri: Uri): Uri? {
+        if (uri.scheme != "file") return uri
+        val file = uri.path?.let(::File) ?: return null
+        val artistImageDir = File(context.filesDir, "artist_images")
+        val isManaged = runCatching {
+            file.parentFile?.canonicalPath == artistImageDir.canonicalPath
+        }.getOrDefault(file.parentFile?.absolutePath == artistImageDir.absolutePath)
+        if (!isManaged) return uri
+        if (
+            file.name == DevicePrivateMetadataFileNames.artistArtwork(artistName) &&
+            file.isFile && artworkUriValidator.isReadable(Uri.fromFile(file))
+        ) return uri
+        val expectedLegacy = DevicePrivateMetadataFileNames.unambiguousLegacyArtistArtwork(artistName)
+        return if (file.name == expectedLegacy) findLocalArtistImage(artistName) else null
     }
 
     /**
@@ -6195,28 +6269,45 @@ class MusicRepository(context: Context) {
 
         if (candidateDirs.isEmpty()) return null
 
-        val preferredNames = listOf(
-            "artist.jpg",
-            "artist.jpeg",
-            "artist.png",
-            "artist.webp",
-            "band.jpg",
-            "band.jpeg",
-            "band.png",
-            "band.webp"
-        )
-
+        // An explicitly artist-named image is safe even when the folder contains mixed artists.
         for (dir in candidateDirs) {
             val files = dir.listFiles() ?: continue
-            if (files.isEmpty()) continue
+            files.firstOrNull { file ->
+                file.isFile && DeviceArtistFolderArtworkPolicy.isArtistSpecific(
+                    file.name,
+                    normalizedArtistName,
+                )
+            }?.let { return Uri.fromFile(it) }
+        }
 
-            val byLowerName = files
-                .filter { it.isFile }
-                .associateBy { it.name.lowercase() }
-
-            for (preferred in preferredNames) {
-                val match = byLowerName[preferred] ?: continue
-                return Uri.fromFile(match)
+        // artist.* and band.* are directory-wide fallbacks. Only accept them when every
+        // identifiable song below that directory resolves to this one artist.
+        for (dir in candidateDirs) {
+            val files = dir.listFiles() ?: continue
+            val generic = files.firstOrNull { file ->
+                file.isFile && DeviceArtistFolderArtworkPolicy.isGeneric(file.name)
+            } ?: continue
+            val directoryPath = runCatching { dir.canonicalPath }.getOrDefault(dir.absolutePath)
+                .trimEnd(File.separatorChar) + File.separator
+            val artistsUnderDirectory = songs.asSequence().mapNotNull { song ->
+                val path = getFilePathFromUri(song.uri) ?: return@mapNotNull null
+                val canonicalPath = runCatching { File(path).canonicalPath }.getOrDefault(path)
+                if (!canonicalPath.startsWith(directoryPath)) return@mapNotNull null
+                val explicitAlbumArtist = song.albumArtist?.trim().orEmpty()
+                if (
+                    groupByAlbumArtist && explicitAlbumArtist.isNotBlank() &&
+                    !explicitAlbumArtist.equals("<unknown>", ignoreCase = true)
+                ) {
+                    explicitAlbumArtist
+                } else {
+                    song.artist
+                }
+            }.flatMap { value -> splitArtistNames(value, preloadedCharDelimiters).asSequence() }
+                .map(String::trim)
+                .filter(String::isNotEmpty)
+                .toSet()
+            if (DeviceArtistFolderArtworkPolicy.allowsGeneric(normalizedArtistName, artistsUnderDirectory)) {
+                return Uri.fromFile(generic)
             }
         }
 
@@ -6230,7 +6321,7 @@ class MusicRepository(context: Context) {
     private suspend fun saveDeezerArtistImage(artistName: String, imageUrl: String): Uri? =
         withContext(Dispatchers.IO) {
             val safeUrl = DeviceMetadataPolicy.safeDeezerArtworkUrl(imageUrl) ?: return@withContext null
-            val fileName = "${artistName}.jpg".replace(Regex("[^a-zA-Z0-9._-]"), "_")
+            val fileName = DevicePrivateMetadataFileNames.artistArtwork(artistName)
             val imageDir = File(context.filesDir, "artist_images").apply { mkdirs() }
             val target = File(imageDir, fileName)
             val temporary = File(imageDir, ".$fileName.${System.nanoTime()}.tmp")
@@ -6299,7 +6390,7 @@ class MusicRepository(context: Context) {
      */
     private fun saveLocalArtistImage(artistName: String, imageUrl: String) {
         try {
-            val fileName = "${artistName}.jpg".replace(Regex("[^a-zA-Z0-9._-]"), "_")
+            val fileName = DevicePrivateMetadataFileNames.artistArtwork(artistName)
             val imageDir = File(context.filesDir, "artist_images")
             imageDir.mkdirs()
 
@@ -6321,7 +6412,7 @@ class MusicRepository(context: Context) {
      */
     suspend fun saveArtistArtwork(artistName: String, artworkUri: Uri?): Uri? = withContext(Dispatchers.IO) {
         try {
-            val fileName = "${artistName}.jpg".replace(Regex("[^a-zA-Z0-9._-]"), "_")
+            val fileName = DevicePrivateMetadataFileNames.artistArtwork(artistName)
             val imageDir = File(context.filesDir, "artist_images")
             if (!imageDir.exists()) {
                 imageDir.mkdirs()
@@ -6651,39 +6742,11 @@ class MusicRepository(context: Context) {
      * Finds the best matching Deezer artist from search results using fuzzy matching
      */
     private fun findBestMatch(artists: List<DeezerArtist>, originalName: String): DeezerArtist? {
-        if (artists.isEmpty()) return null
-        
-        val lowerOriginal = originalName.lowercase().trim()
-        
-        // First, try exact match (case insensitive)
-        artists.find { it.name.lowercase().trim() == lowerOriginal }?.let { return it }
-        
-        // Second, try starts with match
-        artists.find { it.name.lowercase().trim().startsWith(lowerOriginal) }?.let { return it }
-        
-        // Third, try contains match
-        artists.find { it.name.lowercase().contains(lowerOriginal) }?.let { return it }
-        
-        // Fourth, try reversed contains (original contains artist name)
-        artists.find { lowerOriginal.contains(it.name.lowercase().trim()) }?.let { return it }
-        
-        // Fifth, try word-by-word matching
-        val originalWords = lowerOriginal.split(Regex("\\s+")).filter { it.isNotEmpty() }
-        if (originalWords.isNotEmpty()) {
-            artists.find { artist ->
-                val artistWords = artist.name.lowercase().split(Regex("\\s+"))
-                originalWords.any { originalWord ->
-                    artistWords.any { artistWord ->
-                        originalWord == artistWord || 
-                        originalWord.startsWith(artistWord) || 
-                        artistWord.startsWith(originalWord)
-                    }
-                }
-            }?.let { return it }
-        }
-        
-        // Finally, return the first result with the most fans (most popular)
-        return artists.maxByOrNull { it.nbFan }
+        val index = DeviceArtistMatchPolicy.bestAutomaticIndex(
+            query = originalName,
+            candidateNames = artists.map(DeezerArtist::name),
+        ) ?: return null
+        return artists[index]
     }
     
     /**

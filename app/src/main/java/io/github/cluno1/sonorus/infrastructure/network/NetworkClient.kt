@@ -153,6 +153,14 @@ object NetworkClient {
         chain.proceed(request)
     }
 
+    private fun publicMetadataHeadersInterceptor() = Interceptor { chain ->
+        val request = chain.request().newBuilder()
+            .header("User-Agent", "Sonorus/${BuildConfig.VERSION_NAME} (https://github.com/Cluno1/Sonorus)")
+            .header("Accept", "application/json")
+            .build()
+        chain.proceed(request)
+    }
+
     internal fun lrclibHeadersInterceptor(
         versionName: String = BuildConfig.VERSION_NAME,
     ) = Interceptor { chain ->
@@ -327,6 +335,7 @@ object NetworkClient {
 
     private val itunesHttpClient: OkHttpClient by lazy {
         OkHttpClient.Builder()
+            .addInterceptor(publicMetadataHeadersInterceptor())
             .addInterceptor(loggingInterceptor)
             .addInterceptor(retryInterceptor)
             .connectTimeout(CONNECT_TIMEOUT, TimeUnit.SECONDS)
@@ -391,7 +400,11 @@ object NetworkClient {
     }
 
     val itunesSearchApiService: ITunesSearchApiService? by lazy {
-        if (BuildConfig.ENABLE_LYRICALLY_API) itunesRetrofit.create(ITunesSearchApiService::class.java) else null
+        if (BuildConfig.ENABLE_LYRICALLY_API || BuildConfig.DEVICE_PUBLIC_METADATA) {
+            itunesRetrofit.create(ITunesSearchApiService::class.java)
+        } else {
+            null
+        }
     }
     
     val genericHttpClient: OkHttpClient by lazy {
@@ -411,7 +424,9 @@ object NetworkClient {
     fun isYTMusicApiEnabled(): Boolean = BuildConfig.ENABLE_YOUTUBE_MUSIC && (appSettings?.ytMusicApiEnabled?.value ?: false)
     fun isSpotifyApiEnabled(): Boolean = BuildConfig.ENABLE_SPOTIFY_SEARCH && (appSettings?.spotifyApiEnabled?.value ?: false)
     fun isLyricallyApiEnabled(): Boolean = BuildConfig.ENABLE_LYRICALLY_API && (appSettings?.lyricallyApiEnabled?.value ?: false)
-    fun isWikipediaApiEnabled(): Boolean = BuildConfig.ENABLE_WIKIPEDIA && (appSettings?.wikipediaApiEnabled?.value ?: false)
+    fun isWikipediaApiEnabled(): Boolean =
+        (BuildConfig.ENABLE_WIKIPEDIA && (appSettings?.wikipediaApiEnabled?.value ?: false)) ||
+            (BuildConfig.DEVICE_PUBLIC_METADATA && (appSettings?.devicePublicMetadataEnabled?.value ?: false))
     
     // Get Spotify API credentials
     fun getSpotifyClientId(): String = appSettings?.spotifyClientId?.value ?: ""

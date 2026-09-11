@@ -14,6 +14,9 @@ interface DeviceMetadataDao {
     @Query("SELECT * FROM device_metadata WHERE songId = :songId LIMIT 1")
     suspend fun getBySongId(songId: String): DeviceMetadataEntity?
 
+    @Query("SELECT * FROM device_metadata")
+    suspend fun getAll(): List<DeviceMetadataEntity>
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun upsert(entity: DeviceMetadataEntity)
 

@@ -51,11 +51,15 @@ import io.github.cluno1.sonorus.features.local.data.repository.MusicRepository
 import io.github.cluno1.sonorus.features.local.data.device.DeviceLyricsCandidate
 import io.github.cluno1.sonorus.features.local.data.device.DeviceArtworkCandidate
 import io.github.cluno1.sonorus.features.local.data.device.DeviceArtistArtworkCandidate
+import io.github.cluno1.sonorus.features.local.data.device.DeviceDetailsCandidate
+import io.github.cluno1.sonorus.features.local.data.device.DeviceDetailsField
+import io.github.cluno1.sonorus.features.local.data.device.DeviceEditorialCandidate
 import io.github.cluno1.sonorus.features.local.data.device.DeviceArtworkSaveTarget
 import io.github.cluno1.sonorus.features.local.data.device.DeviceDocumentPolicy
 import io.github.cluno1.sonorus.features.local.data.device.DeviceManualMetadataKind
 import io.github.cluno1.sonorus.features.local.data.device.DeviceMetadataRequest
 import io.github.cluno1.sonorus.features.local.data.device.DeviceMetadataPolicy
+import io.github.cluno1.sonorus.features.local.data.device.DevicePrivateMetadataFileNames
 import io.github.cluno1.sonorus.features.local.data.device.DevicePublicMetadataProvider
 import io.github.cluno1.sonorus.network.NetworkClient
 import io.github.cluno1.sonorus.features.catalog.domain.CATALOG_SONG_ID_PREFIX
@@ -174,6 +178,8 @@ data class DeviceManualMetadataUiState(
     val lyricsCandidates: List<DeviceLyricsCandidate> = emptyList(),
     val artworkCandidates: List<DeviceArtworkCandidate> = emptyList(),
     val artistArtworkCandidates: List<DeviceArtistArtworkCandidate> = emptyList(),
+    val detailsCandidates: List<DeviceDetailsCandidate> = emptyList(),
+    val editorialCandidates: List<DeviceEditorialCandidate> = emptyList(),
     val providerStatuses: Map<DevicePublicMetadataProvider, DeviceManualProviderStatus> = emptyMap(),
     val error: DeviceManualMetadataError? = null,
     val applied: Boolean = false,
@@ -8507,10 +8513,19 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
                 setOf(
                     DevicePublicMetadataProvider.MUSICBRAINZ_CAA,
                     DevicePublicMetadataProvider.DEEZER,
+                    DevicePublicMetadataProvider.ITUNES,
                 ),
             )
             DeviceManualMetadataKind.ARTIST_ARTWORK -> providers.intersect(
                 setOf(DevicePublicMetadataProvider.DEEZER),
+            )
+            DeviceManualMetadataKind.DETAILS -> providers.intersect(
+                setOf(
+                    DevicePublicMetadataProvider.MUSICBRAINZ_CAA,
+                    DevicePublicMetadataProvider.DEEZER,
+                    DevicePublicMetadataProvider.ITUNES,
+                    DevicePublicMetadataProvider.WIKIPEDIA,
+                ),
             )
         }
         if (supportedProviders.isEmpty()) {
@@ -8546,6 +8561,8 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
                 var lyricsCandidates = emptyList<DeviceLyricsCandidate>()
                 var artworkCandidates = emptyList<DeviceArtworkCandidate>()
                 var artistArtworkCandidates = emptyList<DeviceArtistArtworkCandidate>()
+                var detailsCandidates = emptyList<DeviceDetailsCandidate>()
+                var editorialCandidates = emptyList<DeviceEditorialCandidate>()
                 val providerStatuses = when (kind) {
                     DeviceManualMetadataKind.LYRICS -> {
                         val result = repository.searchDeviceLyricsCandidatesWithStatus(song, query)
@@ -8600,6 +8617,36 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
                         }
                         mapOf(result.provider to status)
                     }
+                    DeviceManualMetadataKind.DETAILS -> {
+                        val detailSearches = supportedProviders
+                            .filterNot { it == DevicePublicMetadataProvider.WIKIPEDIA }
+                            .map { provider ->
+                                async {
+                                    repository.searchDeviceDetailsCandidatesWithStatus(
+                                        song,
+                                        query,
+                                        provider,
+                                    )
+                                }
+                            }
+                        val editorialSearch = if (
+                            DevicePublicMetadataProvider.WIKIPEDIA in supportedProviders
+                        ) {
+                            async { repository.searchDeviceEditorialCandidatesWithStatus(query) }
+                        } else {
+                            null
+                        }
+                        val detailResults = detailSearches.map { it.await() }
+                        val editorialResult = editorialSearch?.await()
+                        detailsCandidates = detailResults.flatMap { it.candidates }
+                            .distinctBy { it.provider to it.externalId }
+                            .sortedByDescending(DeviceDetailsCandidate::confidence)
+                        editorialCandidates = editorialResult?.candidates.orEmpty()
+                        detailResults.associate { it.provider to it.toManualStatus() } +
+                            listOfNotNull(editorialResult).associate {
+                                it.provider to it.toManualStatus()
+                            }
+                    }
                 }
                 if (requestId != deviceManualMetadataRequestId) return@launch
                 _deviceManualMetadataState.value = DeviceManualMetadataUiState(
@@ -8610,6 +8657,8 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
                     lyricsCandidates = lyricsCandidates,
                     artworkCandidates = artworkCandidates,
                     artistArtworkCandidates = artistArtworkCandidates,
+                    detailsCandidates = detailsCandidates,
+                    editorialCandidates = editorialCandidates,
                     providerStatuses = providerStatuses,
                     error = DeviceManualMetadataError.REQUEST_FAILED.takeIf {
                         providerStatuses.isNotEmpty() &&
@@ -8762,6 +8811,41 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
                 throw error
             } catch (error: Exception) {
                 Log.w(TAG, "Could not apply manual DEVICE artist artwork", error)
+                if (requestId == deviceManualMetadataRequestId) {
+                    _deviceManualMetadataState.value = state.copy(
+                        error = DeviceManualMetadataError.APPLY_FAILED,
+                    )
+                }
+            }
+        }
+    }
+
+    fun applyDeviceManualDetails(
+        songId: String,
+        candidate: DeviceDetailsCandidate,
+        fields: Set<DeviceDetailsField>,
+    ) {
+        val state = _deviceManualMetadataState.value
+        val song = findDeviceSong(songId)
+        if (
+            song == null || state.songId != songId ||
+            state.kind != DeviceManualMetadataKind.DETAILS ||
+            candidate !in state.detailsCandidates || fields.isEmpty()
+        ) return
+
+        deviceManualMetadataJob?.cancel()
+        val requestId = ++deviceManualMetadataRequestId
+        deviceManualMetadataJob = viewModelScope.launch {
+            _deviceManualMetadataState.value = state.copy(isApplying = true, error = null)
+            try {
+                val updated = repository.applyDeviceDetailsCandidate(song, candidate, fields)
+                if (requestId != deviceManualMetadataRequestId) return@launch
+                updateCurrentSongMetadata(updated)
+                _deviceManualMetadataState.value = state.copy(applied = true)
+            } catch (error: CancellationException) {
+                throw error
+            } catch (error: Exception) {
+                Log.w(TAG, "Could not apply manual DEVICE details", error)
                 if (requestId == deviceManualMetadataRequestId) {
                     _deviceManualMetadataState.value = state.copy(
                         error = DeviceManualMetadataError.APPLY_FAILED,
@@ -8995,7 +9079,7 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
                     val isSynced = !isWordByWord && !isTtml && hasLineTimestamp
                     
                     // Load existing cache if exists to preserve other formats
-                    val fileName = "${artist}_${title}.json".replace(Regex("[^a-zA-Z0-9._-]"), "_")
+                    val fileName = DevicePrivateMetadataFileNames.lyrics(song.id, artist, title)
                     val lyricsDir = File(getApplication<Application>().filesDir, "lyrics")
                     if (!lyricsDir.exists()) {
                         lyricsDir.mkdirs()
