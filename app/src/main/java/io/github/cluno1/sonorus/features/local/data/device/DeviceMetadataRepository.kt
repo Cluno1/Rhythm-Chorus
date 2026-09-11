@@ -323,7 +323,10 @@ class DeviceMetadataRepository(private val context: Context) {
             ) ?: return@withLock null
             if (saveTarget == DeviceArtworkSaveTarget.MUSIC_FOLDER) {
                 val destination = destinationTreeUri ?: return@withLock null
-                folders.writeArtwork(destination, cached.file, cached.mediaType)
+                val audioFileName = song.path?.let(::File)?.name
+                    ?: contentDisplayName(song.uri)
+                    ?: song.title
+                folders.writeArtwork(destination, cached.file, cached.mediaType, audioFileName)
                     ?: return@withLock null
             }
             saveAlbumArtwork(

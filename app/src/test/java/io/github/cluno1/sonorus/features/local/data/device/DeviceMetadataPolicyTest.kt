@@ -19,11 +19,16 @@ class DeviceMetadataPolicyTest {
         assertFalse(DeviceMetadataPolicy.shouldPreservePinnedSelection(existingPinned = true, incomingPinned = true))
     }
 
-    @Test fun `folder artwork uses conventional names matching its media type`() {
-        assertEquals("cover.jpg", DeviceArtworkFolderPolicy.fileName("image/jpeg"))
-        assertEquals("cover.png", DeviceArtworkFolderPolicy.fileName("image/png; charset=binary"))
-        assertEquals("cover.webp", DeviceArtworkFolderPolicy.fileName("image/webp"))
-        assertEquals("cover.jpg", DeviceArtworkFolderPolicy.fileName("application/octet-stream"))
+    @Test fun `folder artwork uses the audio stem and matching image type`() {
+        assertEquals("Track 01.jpg", DeviceArtworkFolderPolicy.fileName("Track 01.flac", "image/jpeg"))
+        assertEquals("Track 01.png", DeviceArtworkFolderPolicy.fileName("Track 01.mp3", "image/png; charset=binary"))
+        assertEquals("歌曲.webp", DeviceArtworkFolderPolicy.fileName("歌曲.m4a", "image/webp"))
+        assertEquals("Track 01.jpg", DeviceArtworkFolderPolicy.fileName("Track 01.ogg", "application/octet-stream"))
+    }
+
+    @Test fun `folder artwork never falls back to a shared cover name`() {
+        assertEquals("sonorus-artwork.jpg", DeviceArtworkFolderPolicy.fileName(".mp3", "image/jpeg"))
+        assertFalse(DeviceArtworkFolderPolicy.fileName("Song.flac", "image/jpeg").startsWith("cover."))
     }
 
     @Test fun `catalog and arbitrary network songs never enter device enrichment`() {
