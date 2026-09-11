@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="lyrics_timing_help_open">タイミングヘルプを開く</string>
+    <string name="lyrics_timing_help_title">歌詞タイミングガイド</string>
+    <string name="lyrics_timing_help_subtitle">4ステップで1曲を完成</string>
+    <string name="lyrics_timing_help_close">タイミングヘルプを閉じる</string>
+    <string name="lyrics_timing_help_overview">歌詞を1フレーズずつ改行します。曲を再生し、ハイライト行の最初の音が鳴った瞬間に記録を押します。次の行へ自動で進みます。</string>
+    <string name="lyrics_timing_help_quick_start">4ステップで曲をタイミング</string>
+    <string name="lyrics_timing_help_step_prepare_title">歌詞を整える</string>
+    <string name="lyrics_timing_help_step_prepare_body">各フレーズを別の行にします。詳細ツールのタイムラインを推定で下書きを作るか、手動タイミングで古い時刻を消して最初から記録します。</string>
+    <string name="lyrics_timing_help_step_practice_title">難しい部分を練習する</string>
+    <string name="lyrics_timing_help_step_practice_body">目的の部分へ移動し、開始でA、終了でBを設定します。必要なら0.75×にします。A-Bと曲全体のリピートは同時に使えません。</string>
+    <string name="lyrics_timing_help_step_stamp_title">再生しながら各行を記録</string>
+    <string name="lyrics_timing_help_step_stamp_body">連続を選んで再生し、各ハイライト行の最初の音で記録を押します。1行ずつ準備する場合は記録後に一時停止を使います。</string>
+    <string name="lyrics_timing_help_step_finish_title">確認して保存</string>
+    <string name="lyrics_timing_help_step_finish_body">前の行、元に戻す、シークバー、3秒戻るで修正します。曲全体を確認してから、端末へ保存またはサーバーへ同期します。</string>
+    <string name="lyrics_timing_help_playback_controls">再生コントロール</string>
+    <string name="lyrics_timing_help_rewind_body">正確に3秒戻り、歌い出し前をもう一度確認できます。</string>
+    <string name="lyrics_timing_help_play_pause_body">同じ曲をエディター内で再生または一時停止します。</string>
+    <string name="lyrics_timing_help_repeat_body">作業中に現在の曲全体をリピートします。A-Bを有効にすると解除されます。</string>
+    <string name="lyrics_timing_help_ab_title">A-B区間リピート</string>
+    <string name="lyrics_timing_help_ab_body">1回目でA、2回目でB、3回目で両方を消去します。Bに達するとAへ戻ります。BはAより0.5秒以上後に設定します。</string>
+    <string name="lyrics_timing_help_speed_title">練習速度</string>
+    <string name="lyrics_timing_help_speed_body">0.75×と1.00×を切り替えます。エディターを閉じると元の速度とリピート状態に戻ります。</string>
+    <string name="lyrics_timing_help_timing_controls">タイミングコントロール</string>
+    <string name="lyrics_timing_help_continuous_body">現在時刻を記録して次の行へ進み、再生は続きます。</string>
+    <string name="lyrics_timing_help_step_mode_body">現在時刻を記録して次の行へ進み、再生を一時停止します。</string>
+    <string name="lyrics_timing_help_previous_body">時刻を変えずに対象とカーソルを前の空でない行へ戻します。</string>
+    <string name="lyrics_timing_help_stamp_title">現在時刻を記録</string>
+    <string name="lyrics_timing_help_stamp_body">表示中の再生時刻をハイライト行へ書き込み、次の空でない行を選びます。</string>
+    <string name="lyrics_timing_help_undo_body">直前のタイミング編集と前の状態を入れ替えます。もう一度押すと入れ替えを戻せます。</string>
+    <string name="lyrics_timing_help_formats_title">どの形式を使いますか？</string>
+    <string name="lyrics_timing_help_formats_body">ソースは元のテキストを保持し、行ごとはLRCタイミング作業用です。単語ごとは構造化カラオケデータのため、この作業パネルは非表示です。</string>
+    <string name="lyrics_timing_help_tips_title">より正確に合わせるには</string>
+    <string name="lyrics_timing_help_tips_body">前の行の終わりではなく、現在行の最初の音で記録します。全体が遅い場合は0.75×でやり直すか、完了後に少量の全体オフセットを適用します。未完成の手動タイミングは同期前に確認してください。</string>
+</resources>

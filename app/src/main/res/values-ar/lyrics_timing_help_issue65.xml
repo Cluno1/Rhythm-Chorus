@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="lyrics_timing_help_open">فتح مساعدة التوقيت</string>
+    <string name="lyrics_timing_help_title">دليل توقيت كلمات الأغاني</string>
+    <string name="lyrics_timing_help_subtitle">أكمل توقيت أغنية كاملة في أربع خطوات</string>
+    <string name="lyrics_timing_help_close">إغلاق مساعدة التوقيت</string>
+    <string name="lyrics_timing_help_overview">ضع كل عبارة من كلمات الأغنية في سطر مستقل. شغّل الأغنية واضغط وضع علامة عند بدء المقطع الأول من السطر المميز. سينتقل المحرر تلقائياً إلى السطر التالي.</string>
+    <string name="lyrics_timing_help_quick_start">توقيت أغنية في أربع خطوات</string>
+    <string name="lyrics_timing_help_step_prepare_title">تحضير النص</string>
+    <string name="lyrics_timing_help_step_prepare_body">ضع كل عبارة في سطر مستقل. اختر تقدير الخط الزمني كنقطة بداية، أو التوقيت اليدوي لمسح الأوقات القديمة وتسجيل كل سطر بنفسك.</string>
+    <string name="lyrics_timing_help_step_practice_title">التدرب على مقطع صعب</string>
+    <string name="lyrics_timing_help_step_practice_body">انتقل إلى المقطع، واضبط A في بدايته وB في نهايته، واستخدم 0.75× عند الحاجة. لا يمكن تشغيل A-B وتكرار الأغنية كاملة معاً.</string>
+    <string name="lyrics_timing_help_step_stamp_title">التشغيل ووضع علامة لكل سطر</string>
+    <string name="lyrics_timing_help_step_stamp_body">اختر مستمر ثم ابدأ التشغيل واضغط وضع علامة عند المقطع الأول من كل سطر مميز. استخدم إيقاف مؤقت بعد العلامة للتحضير لكل سطر على حدة.</string>
+    <string name="lyrics_timing_help_step_finish_title">المراجعة والحفظ</string>
+    <string name="lyrics_timing_help_step_finish_body">صحح الأخطاء باستخدام السطر السابق أو تراجع أو شريط التقدم أو رجوع 3 ثوانٍ. راجع الأغنية كاملة ثم احفظها أو زامنها مع الخادم.</string>
+    <string name="lyrics_timing_help_playback_controls">عناصر التحكم في التشغيل</string>
+    <string name="lyrics_timing_help_rewind_body">يرجع ثلاث ثوانٍ بالضبط لتسمع بداية المقطع مرة أخرى.</string>
+    <string name="lyrics_timing_help_play_pause_body">يشغّل الأغنية نفسها أو يوقفها مؤقتاً من دون مغادرة المحرر.</string>
+    <string name="lyrics_timing_help_repeat_body">يكرر الأغنية الحالية كاملة أثناء العمل. يؤدي تشغيل A-B إلى إيقاف هذا الوضع.</string>
+    <string name="lyrics_timing_help_ab_title">تكرار المقطع A-B</string>
+    <string name="lyrics_timing_help_ab_body">الضغطة الأولى تضبط A والثانية B والثالثة تمسحهما. عند B يعود التشغيل إلى A؛ يجب أن تكون B بعد A بما لا يقل عن 0.5 ثانية.</string>
+    <string name="lyrics_timing_help_speed_title">سرعة التدريب</string>
+    <string name="lyrics_timing_help_speed_body">يبدّل بين 0.75× و1.00×. عند مغادرة المحرر تتم استعادة السرعة والتكرار الأصليين.</string>
+    <string name="lyrics_timing_help_timing_controls">عناصر التحكم في التوقيت</string>
+    <string name="lyrics_timing_help_continuous_body">يكتب الوقت الحالي وينتقل إلى السطر التالي مع استمرار التشغيل.</string>
+    <string name="lyrics_timing_help_step_mode_body">يكتب الوقت الحالي وينتقل إلى السطر التالي ثم يوقف التشغيل مؤقتاً.</string>
+    <string name="lyrics_timing_help_previous_body">ينقل الهدف والمؤشر إلى السطر السابق غير الفارغ من دون تغيير وقته.</string>
+    <string name="lyrics_timing_help_stamp_title">وضع علامة للوقت الحالي</string>
+    <string name="lyrics_timing_help_stamp_body">يكتب وقت التشغيل المعروض في السطر المميز ويختار السطر التالي غير الفارغ.</string>
+    <string name="lyrics_timing_help_undo_body">يبدّل آخر تعديل توقيت مع النسخة السابقة. اضغط مرة أخرى لعكس التبديل.</string>
+    <string name="lyrics_timing_help_formats_title">أي تنسيق أستخدم؟</string>
+    <string name="lyrics_timing_help_formats_body">يحافظ المصدر على النص الأصلي، وسطر بسطر هو مساحة عمل LRC. كلمة بكلمة بيانات كاريوكي منظمة، لذلك تُخفى أدوات توقيت السطور في هذا الوضع.</string>
+    <string name="lyrics_timing_help_tips_title">لتوقيت أكثر دقة</string>
+    <string name="lyrics_timing_help_tips_body">ضع العلامة عند سماع المقطع الأول، لا عند نهاية السطر السابق. إذا كانت كل السطور متأخرة فاستخدم 0.75× أو طبّق إزاحة عامة صغيرة بعد الانتهاء. راجع التوقيت اليدوي غير المكتمل قبل المزامنة.</string>
+</resources>

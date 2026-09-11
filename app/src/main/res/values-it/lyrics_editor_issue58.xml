@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="lyrics_generate_timing_template">Stima sequenza temporale</string>
-    <string name="lyrics_generate_zero_template">Modello a tempo zero</string>
+    <string name="lyrics_generate_zero_template">Temporizzazione manuale</string>
     <string name="lyrics_previous_timing_line">Riga precedente</string>
     <string name="lyrics_stamp_current_time">Segna %1$s</string>
     <string name="lyrics_sync_clean">Uguale al server</string>

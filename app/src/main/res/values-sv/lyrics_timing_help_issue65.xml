@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="lyrics_timing_help_open">Öppna timinghjälp</string>
+    <string name="lyrics_timing_help_title">Guide för sångtexttiming</string>
+    <string name="lyrics_timing_help_subtitle">Tidsätt en hel låt i fyra steg</string>
+    <string name="lyrics_timing_help_close">Stäng timinghjälp</string>
+    <string name="lyrics_timing_help_overview">Lägg varje textrad på en egen rad. Spela låten och tryck på Markera när den första stavelsen i den markerade raden börjar. Redigeraren går vidare automatiskt.</string>
+    <string name="lyrics_timing_help_quick_start">Tidsätt en låt i fyra steg</string>
+    <string name="lyrics_timing_help_step_prepare_title">Förbered texten</string>
+    <string name="lyrics_timing_help_step_prepare_body">Lägg varje fras på en egen rad. Välj Uppskatta tidslinje som startpunkt eller Manuell tidssättning för att rensa gamla tidsmärken och göra allt själv.</string>
+    <string name="lyrics_timing_help_step_practice_title">Öva ett svårt avsnitt</string>
+    <string name="lyrics_timing_help_step_practice_body">Gå till avsnittet, sätt A i början och B i slutet och använd 0,75× vid behov. A-B och upprepning av hela låten kan inte vara aktiva samtidigt.</string>
+    <string name="lyrics_timing_help_step_stamp_title">Spela och markera varje rad</string>
+    <string name="lyrics_timing_help_step_stamp_body">Välj Kontinuerligt, starta uppspelningen och tryck på Markera vid första stavelsen i varje markerad rad. Pausa efter markering låter dig förbereda en rad i taget.</string>
+    <string name="lyrics_timing_help_step_finish_title">Granska och spara</string>
+    <string name="lyrics_timing_help_step_finish_body">Rätta med Föregående rad, Ångra, förloppsreglaget eller Bakåt 3 sekunder. Granska hela låten och spara eller synkronisera med servern.</string>
+    <string name="lyrics_timing_help_playback_controls">Uppspelningskontroller</string>
+    <string name="lyrics_timing_help_rewind_body">Går tillbaka exakt tre sekunder så att du kan höra ingången igen.</string>
+    <string name="lyrics_timing_help_play_pause_body">Startar eller pausar samma låt utan att lämna redigeraren.</string>
+    <string name="lyrics_timing_help_repeat_body">Upprepar hela den aktuella låten medan du arbetar. A-B stänger av detta läge.</string>
+    <string name="lyrics_timing_help_ab_title">A-B-avsnittsloop</string>
+    <string name="lyrics_timing_help_ab_body">Första trycket sätter A, det andra B och det tredje rensar båda. Vid B hoppar uppspelningen tillbaka till A; B måste vara minst 0,5 sekunder efter A.</string>
+    <string name="lyrics_timing_help_speed_title">Övningshastighet</string>
+    <string name="lyrics_timing_help_speed_body">Växlar mellan 0,75× och 1,00×. När du lämnar återställs ursprunglig hastighet och loop.</string>
+    <string name="lyrics_timing_help_timing_controls">Timingkontroller</string>
+    <string name="lyrics_timing_help_continuous_body">Skriver aktuell tid och går till nästa rad medan uppspelningen fortsätter.</string>
+    <string name="lyrics_timing_help_step_mode_body">Skriver aktuell tid, går till nästa rad och pausar uppspelningen.</string>
+    <string name="lyrics_timing_help_previous_body">Flyttar mål och markör till föregående icke-tomma rad utan att ändra tiden.</string>
+    <string name="lyrics_timing_help_stamp_title">Markera aktuell tid</string>
+    <string name="lyrics_timing_help_stamp_body">Skriver den visade tiden i den markerade raden och väljer nästa icke-tomma rad.</string>
+    <string name="lyrics_timing_help_undo_body">Växlar den senaste timingändringen med föregående version. Tryck igen för att vända växlingen.</string>
+    <string name="lyrics_timing_help_formats_title">Vilket format ska jag använda?</string>
+    <string name="lyrics_timing_help_formats_body">Källa behåller originaltexten; Rad för rad är LRC-arbetsytan. Ord för ord innehåller strukturerad karaokedata och döljer dessa verktyg.</string>
+    <string name="lyrics_timing_help_tips_title">För noggrannare timing</string>
+    <string name="lyrics_timing_help_tips_body">Markera när första stavelsen hörs, inte när föregående rad slutar. Om allt blir sent, använd 0,75× eller lägg på en liten global förskjutning efteråt. Granska ofärdig manuell timing före synkronisering.</string>
+</resources>

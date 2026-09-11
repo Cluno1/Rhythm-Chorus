@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="lyrics_timing_help_open">Ouvrir l’aide au minutage</string>
+    <string name="lyrics_timing_help_title">Guide de minutage des paroles</string>
+    <string name="lyrics_timing_help_subtitle">Suivez quatre étapes pour minuter un morceau</string>
+    <string name="lyrics_timing_help_close">Fermer l’aide au minutage</string>
+    <string name="lyrics_timing_help_overview">Placez chaque phrase sur une ligne. Lancez le morceau et touchez Marquer au début de la première syllabe de la ligne surlignée. L’éditeur passera automatiquement à la suivante.</string>
+    <string name="lyrics_timing_help_quick_start">Minuter un morceau en quatre étapes</string>
+    <string name="lyrics_timing_help_step_prepare_title">Préparer le texte</string>
+    <string name="lyrics_timing_help_step_prepare_body">Placez chaque phrase sur sa propre ligne. Dans les outils avancés, choisissez Estimer la chronologie comme point de départ, ou Minutage manuel pour effacer les anciens repères et tout minuter vous-même.</string>
+    <string name="lyrics_timing_help_step_practice_title">Répéter un passage difficile</string>
+    <string name="lyrics_timing_help_step_practice_body">Accédez au passage, placez A au début et B à la fin, puis passez à 0,75× si besoin. A-B et la répétition du morceau ne peuvent pas être actifs ensemble.</string>
+    <string name="lyrics_timing_help_step_stamp_title">Lire et marquer chaque ligne</string>
+    <string name="lyrics_timing_help_step_stamp_body">Choisissez Continu, lancez la lecture et touchez Marquer à la première syllabe de chaque ligne surlignée. Utilisez Pause après le marquage pour préparer chaque ligne séparément.</string>
+    <string name="lyrics_timing_help_step_finish_title">Vérifier et enregistrer</string>
+    <string name="lyrics_timing_help_step_finish_body">Corrigez avec Ligne précédente, Annuler, la barre de progression ou Reculer de 3 secondes. Vérifiez tout le morceau, puis enregistrez ou synchronisez avec le serveur.</string>
+    <string name="lyrics_timing_help_playback_controls">Commandes de lecture</string>
+    <string name="lyrics_timing_help_rewind_body">Recule exactement de trois secondes pour réécouter l’entrée.</string>
+    <string name="lyrics_timing_help_play_pause_body">Lance ou met en pause le même morceau sans quitter l’éditeur.</string>
+    <string name="lyrics_timing_help_repeat_body">Répète tout le morceau pendant le travail. Activer A-B désactive ce mode.</string>
+    <string name="lyrics_timing_help_ab_title">Boucle de passage A-B</string>
+    <string name="lyrics_timing_help_ab_body">Le premier toucher place A, le deuxième B et le troisième efface les deux. À B, la lecture revient à A ; B doit suivre A d’au moins 0,5 seconde.</string>
+    <string name="lyrics_timing_help_speed_title">Vitesse d’entraînement</string>
+    <string name="lyrics_timing_help_speed_body">Bascule entre 0,75× et 1,00×. La vitesse et la boucle d’origine sont rétablies en quittant l’éditeur.</string>
+    <string name="lyrics_timing_help_timing_controls">Commandes de minutage</string>
+    <string name="lyrics_timing_help_continuous_body">Inscrit l’heure actuelle et passe à la ligne suivante sans arrêter la lecture.</string>
+    <string name="lyrics_timing_help_step_mode_body">Inscrit l’heure actuelle, passe à la ligne suivante et met la lecture en pause.</string>
+    <string name="lyrics_timing_help_previous_body">Ramène la cible et le curseur à la ligne non vide précédente sans modifier son heure.</string>
+    <string name="lyrics_timing_help_stamp_title">Marquer l’heure actuelle</string>
+    <string name="lyrics_timing_help_stamp_body">Inscrit l’heure affichée dans la ligne surlignée et sélectionne la prochaine ligne non vide.</string>
+    <string name="lyrics_timing_help_undo_body">Bascule entre la dernière modification et sa version précédente. Touchez encore pour rétablir l’échange.</string>
+    <string name="lyrics_timing_help_formats_title">Quel format utiliser ?</string>
+    <string name="lyrics_timing_help_formats_body">Source conserve le texte original ; Ligne par ligne est l’espace de minutage LRC. Mot par mot contient des données karaoké structurées et masque ces outils.</string>
+    <string name="lyrics_timing_help_tips_title">Pour un minutage plus précis</string>
+    <string name="lyrics_timing_help_tips_body">Marquez au début de la première syllabe, pas à la fin de la ligne précédente. Si tout est en retard, utilisez 0,75× ou appliquez ensuite un léger décalage global. Vérifiez le minutage manuel inachevé avant la synchronisation.</string>
+</resources>

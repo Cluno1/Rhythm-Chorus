@@ -8207,7 +8207,8 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
         format == "WORD_BY_WORD" -> "word_by_word_json"
         RhythmLyricsParser.isTtmlContent(lyrics) -> "ttml"
         format == "LINE_BY_LINE" && LyricsParser.hasWordTimestamps(lyrics) -> "enhanced_lrc"
-        format == "LINE_BY_LINE" -> "lrc"
+        format == "LINE_BY_LINE" &&
+            io.github.cluno1.sonorus.util.LrcTimingEditor.hasLineTimestamp(lyrics) -> "lrc"
         else -> "plain"
     }
 
@@ -8610,8 +8611,9 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
                         (sanitizedLyrics.trim().startsWith("[") && 
                          (sanitizedLyrics.contains("\"timestamp\"") || sanitizedLyrics.contains("\"words\"")))
                     
-                    val isSynced = format == "LINE_BY_LINE" || 
-                        (!isWordByWord && !isTtml && sanitizedLyrics.contains(Regex("\\[\\d{2}:\\d{2}\\.\\d{2,3}]")))
+                    val hasLineTimestamp =
+                        io.github.cluno1.sonorus.util.LrcTimingEditor.hasLineTimestamp(sanitizedLyrics)
+                    val isSynced = !isWordByWord && !isTtml && hasLineTimestamp
                     
                     // Load existing cache if exists to preserve other formats
                     val fileName = "${artist}_${title}.json".replace(Regex("[^a-zA-Z0-9._-]"), "_")
@@ -8739,7 +8741,11 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
                     } else {
                         LyricsData(
                             plainLyrics = sanitizedLyrics,
-                            syncedLyrics = existingLyricsData?.syncedLyrics,
+                            syncedLyrics = if (format == "LINE_BY_LINE") {
+                                null
+                            } else {
+                                existingLyricsData?.syncedLyrics
+                            },
                             wordByWordLyrics = existingLyricsData?.wordByWordLyrics
                         )
                     }

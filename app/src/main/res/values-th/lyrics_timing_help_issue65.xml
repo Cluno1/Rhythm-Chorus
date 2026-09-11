@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="lyrics_timing_help_open">เปิดวิธีใช้การกำหนดเวลา</string>
+    <string name="lyrics_timing_help_title">คู่มือกำหนดเวลาเนื้อเพลง</string>
+    <string name="lyrics_timing_help_subtitle">ทำเพลงทั้งเพลงให้เสร็จในสี่ขั้นตอน</string>
+    <string name="lyrics_timing_help_close">ปิดวิธีใช้การกำหนดเวลา</string>
+    <string name="lyrics_timing_help_overview">วางเนื้อเพลงแต่ละวลีไว้คนละบรรทัด เล่นเพลงแล้วแตะประทับเวลาเมื่อพยางค์แรกของบรรทัดที่ไฮไลต์เริ่มขึ้น ตัวแก้ไขจะไปบรรทัดถัดไปอัตโนมัติ</string>
+    <string name="lyrics_timing_help_quick_start">กำหนดเวลาเพลงในสี่ขั้นตอน</string>
+    <string name="lyrics_timing_help_step_prepare_title">เตรียมข้อความ</string>
+    <string name="lyrics_timing_help_step_prepare_body">วางแต่ละวลีไว้คนละบรรทัด ในเครื่องมือขั้นสูงเลือกประมาณไทม์ไลน์เป็นจุดเริ่ม หรือกำหนดเวลาด้วยตนเองเพื่อล้างเวลาเก่าและเริ่มใหม่</string>
+    <string name="lyrics_timing_help_step_practice_title">ฝึกช่วงที่ยาก</string>
+    <string name="lyrics_timing_help_step_practice_body">เลื่อนไปยังช่วงนั้น ตั้ง A ที่จุดเริ่มและ B ที่จุดจบ แล้วใช้ 0.75× หากจำเป็น A-B และการเล่นซ้ำทั้งเพลงเปิดพร้อมกันไม่ได้</string>
+    <string name="lyrics_timing_help_step_stamp_title">เล่นและประทับเวลาทีละบรรทัด</string>
+    <string name="lyrics_timing_help_step_stamp_body">เลือกต่อเนื่อง เริ่มเล่น แล้วแตะประทับเวลาที่พยางค์แรกของแต่ละบรรทัดที่ไฮไลต์ ใช้หยุดหลังประทับเวลาเมื่อต้องการเตรียมทีละบรรทัด</string>
+    <string name="lyrics_timing_help_step_finish_title">ตรวจสอบและบันทึก</string>
+    <string name="lyrics_timing_help_step_finish_body">แก้ด้วยบรรทัดก่อนหน้า เลิกทำ แถบความคืบหน้า หรือย้อนกลับ 3 วินาที ตรวจสอบทั้งเพลงแล้วบันทึกหรือซิงค์กับเซิร์ฟเวอร์</string>
+    <string name="lyrics_timing_help_playback_controls">การควบคุมการเล่น</string>
+    <string name="lyrics_timing_help_rewind_body">ย้อนกลับสามวินาทีพอดีเพื่อฟังจังหวะเข้าซ้ำ</string>
+    <string name="lyrics_timing_help_play_pause_body">เล่นหรือหยุดเพลงเดียวกันชั่วคราวโดยไม่ออกจากตัวแก้ไข</string>
+    <string name="lyrics_timing_help_repeat_body">เล่นเพลงปัจจุบันทั้งเพลงซ้ำขณะทำงาน การเปิด A-B จะปิดโหมดนี้</string>
+    <string name="lyrics_timing_help_ab_title">วนซ้ำช่วง A-B</string>
+    <string name="lyrics_timing_help_ab_body">แตะครั้งแรกเพื่อตั้ง A ครั้งที่สองตั้ง B และครั้งที่สามล้างทั้งคู่ เมื่อถึง B จะย้อนกลับ A; B ต้องช้ากว่า A อย่างน้อย 0.5 วินาที</string>
+    <string name="lyrics_timing_help_speed_title">ความเร็วฝึก</string>
+    <string name="lyrics_timing_help_speed_body">สลับระหว่าง 0.75× และ 1.00× เมื่อออก ความเร็วและการวนซ้ำเดิมจะถูกคืนค่า</string>
+    <string name="lyrics_timing_help_timing_controls">การควบคุมเวลา</string>
+    <string name="lyrics_timing_help_continuous_body">เขียนเวลาปัจจุบันแล้วไปบรรทัดถัดไปโดยเพลงยังเล่นต่อ</string>
+    <string name="lyrics_timing_help_step_mode_body">เขียนเวลาปัจจุบัน ไปบรรทัดถัดไป แล้วหยุดเพลงชั่วคราว</string>
+    <string name="lyrics_timing_help_previous_body">ย้ายเป้าหมายและเคอร์เซอร์ไปยังบรรทัดก่อนหน้าที่ไม่ว่างโดยไม่เปลี่ยนเวลา</string>
+    <string name="lyrics_timing_help_stamp_title">ประทับเวลาปัจจุบัน</string>
+    <string name="lyrics_timing_help_stamp_body">เขียนเวลาที่แสดงลงในบรรทัดไฮไลต์และเลือกบรรทัดถัดไปที่ไม่ว่าง</string>
+    <string name="lyrics_timing_help_undo_body">สลับการแก้เวลาใหม่ล่าสุดกับเวอร์ชันก่อนหน้า แตะอีกครั้งเพื่อสลับกลับ</string>
+    <string name="lyrics_timing_help_formats_title">ควรใช้รูปแบบใด?</string>
+    <string name="lyrics_timing_help_formats_body">แหล่งที่มารักษาข้อความต้นฉบับ; ทีละบรรทัดคือพื้นที่ LRC ส่วนทีละคำเป็นข้อมูลคาราโอเกะแบบมีโครงสร้าง จึงซ่อนเครื่องมือเหล่านี้</string>
+    <string name="lyrics_timing_help_tips_title">เพื่อเวลาแม่นยำขึ้น</string>
+    <string name="lyrics_timing_help_tips_body">ประทับเมื่อพยางค์แรกดังขึ้น ไม่ใช่เมื่อบรรทัดก่อนหน้าจบ หากทุกบรรทัดช้า ให้ใช้ 0.75× หรือเพิ่มออฟเซ็ตส่วนรวมเล็กน้อยหลังทำเสร็จ ตรวจสอบการกำหนดเวลาด้วยตนเองที่ยังไม่เสร็จก่อนซิงค์</string>
+</resources>

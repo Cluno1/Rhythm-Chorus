@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="lyrics_timing_help_open">Apri guida alla temporizzazione</string>
+    <string name="lyrics_timing_help_title">Guida alla temporizzazione dei testi</string>
+    <string name="lyrics_timing_help_subtitle">Segui quattro passaggi per completare un brano</string>
+    <string name="lyrics_timing_help_close">Chiudi guida alla temporizzazione</string>
+    <string name="lyrics_timing_help_overview">Metti ogni frase del testo su una riga. Riproduci il brano e premi Segna quando inizia la prima sillaba della riga evidenziata. L’editor passerà automaticamente alla riga successiva.</string>
+    <string name="lyrics_timing_help_quick_start">Temporizza un brano in quattro passaggi</string>
+    <string name="lyrics_timing_help_step_prepare_title">Prepara il testo</string>
+    <string name="lyrics_timing_help_step_prepare_body">Metti ogni frase su una riga. Negli strumenti avanzati scegli Stima sequenza temporale come punto di partenza, oppure Temporizzazione manuale per cancellare i vecchi tempi e segnare tutto da zero.</string>
+    <string name="lyrics_timing_help_step_practice_title">Esercitati su una sezione difficile</string>
+    <string name="lyrics_timing_help_step_practice_body">Vai alla sezione, imposta A all’inizio e B alla fine, poi usa 0,75× se serve. A-B e la ripetizione del brano non possono essere attivi insieme.</string>
+    <string name="lyrics_timing_help_step_stamp_title">Riproduci e segna ogni riga</string>
+    <string name="lyrics_timing_help_step_stamp_body">Scegli Continuo, avvia la riproduzione e premi Segna alla prima sillaba di ogni riga evidenziata. Usa Pausa dopo il contrassegno per preparare ogni riga separatamente.</string>
+    <string name="lyrics_timing_help_step_finish_title">Controlla e salva</string>
+    <string name="lyrics_timing_help_step_finish_body">Correggi con Riga precedente, Annulla, la barra di avanzamento o Indietro di 3 secondi. Controlla tutto il brano, poi salva o sincronizza con il server.</string>
+    <string name="lyrics_timing_help_playback_controls">Controlli di riproduzione</string>
+    <string name="lyrics_timing_help_rewind_body">Torna indietro di tre secondi esatti per riascoltare l’attacco.</string>
+    <string name="lyrics_timing_help_play_pause_body">Riproduce o mette in pausa lo stesso brano senza uscire dall’editor.</string>
+    <string name="lyrics_timing_help_repeat_body">Ripete tutto il brano corrente mentre lavori. Attivare A-B disattiva questa modalità.</string>
+    <string name="lyrics_timing_help_ab_title">Ciclo della sezione A-B</string>
+    <string name="lyrics_timing_help_ab_body">Il primo tocco imposta A, il secondo B e il terzo cancella entrambi. A B la riproduzione torna ad A; B deve seguire A di almeno 0,5 secondi.</string>
+    <string name="lyrics_timing_help_speed_title">Velocità di esercizio</string>
+    <string name="lyrics_timing_help_speed_body">Passa tra 0,75× e 1,00×. Uscendo dall’editor vengono ripristinati velocità e ciclo originali.</string>
+    <string name="lyrics_timing_help_timing_controls">Controlli di temporizzazione</string>
+    <string name="lyrics_timing_help_continuous_body">Scrive il tempo corrente e passa alla riga successiva mentre la riproduzione continua.</string>
+    <string name="lyrics_timing_help_step_mode_body">Scrive il tempo corrente, passa alla riga successiva e mette in pausa.</string>
+    <string name="lyrics_timing_help_previous_body">Sposta obiettivo e cursore alla riga non vuota precedente senza cambiarne il tempo.</string>
+    <string name="lyrics_timing_help_stamp_title">Segna il tempo corrente</string>
+    <string name="lyrics_timing_help_stamp_body">Scrive il tempo mostrato nella riga evidenziata e seleziona la successiva riga non vuota.</string>
+    <string name="lyrics_timing_help_undo_body">Scambia l’ultima modifica con la versione precedente. Tocca ancora per ripetere lo scambio.</string>
+    <string name="lyrics_timing_help_formats_title">Quale formato devo usare?</string>
+    <string name="lyrics_timing_help_formats_body">Origine conserva il testo originale; Riga per riga è l’area LRC. Parola per parola contiene dati karaoke strutturati e nasconde questi strumenti.</string>
+    <string name="lyrics_timing_help_tips_title">Per una temporizzazione più precisa</string>
+    <string name="lyrics_timing_help_tips_body">Segna quando suona la prima sillaba, non alla fine della riga precedente. Se tutto è in ritardo, usa 0,75× o applica alla fine un piccolo scostamento globale. Controlla il lavoro manuale incompleto prima della sincronizzazione.</string>
+</resources>

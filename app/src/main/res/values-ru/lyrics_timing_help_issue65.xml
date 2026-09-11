@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="lyrics_timing_help_open">Открыть справку по разметке</string>
+    <string name="lyrics_timing_help_title">Руководство по разметке текста</string>
+    <string name="lyrics_timing_help_subtitle">Разметьте всю песню за четыре шага</string>
+    <string name="lyrics_timing_help_close">Закрыть справку по разметке</string>
+    <string name="lyrics_timing_help_overview">Разместите каждую строку текста отдельно. Запустите песню и нажмите Отметить в момент начала первого слога выделенной строки. Редактор автоматически перейдёт дальше.</string>
+    <string name="lyrics_timing_help_quick_start">Разметка песни за четыре шага</string>
+    <string name="lyrics_timing_help_step_prepare_title">Подготовьте текст</string>
+    <string name="lyrics_timing_help_step_prepare_body">Каждая фраза должна быть на отдельной строке. В дополнительных инструментах выберите Оценить временную шкалу для начального варианта или Ручная разметка, чтобы удалить старое время и начать заново.</string>
+    <string name="lyrics_timing_help_step_practice_title">Потренируйте сложный фрагмент</string>
+    <string name="lyrics_timing_help_step_practice_body">Перейдите к фрагменту, поставьте A в начале и B в конце, при необходимости включите 0,75×. A-B и повтор всей песни не работают одновременно.</string>
+    <string name="lyrics_timing_help_step_stamp_title">Воспроизводите и отмечайте строки</string>
+    <string name="lyrics_timing_help_step_stamp_body">Выберите Непрерывно, запустите песню и нажимайте Отметить на первом слоге каждой выделенной строки. Режим Пауза после отметки позволяет готовить строки по одной.</string>
+    <string name="lyrics_timing_help_step_finish_title">Проверьте и сохраните</string>
+    <string name="lyrics_timing_help_step_finish_body">Исправляйте ошибки через Предыдущая строка, Отменить, шкалу или Назад на 3 секунды. Прослушайте всю песню, затем сохраните или синхронизируйте с сервером.</string>
+    <string name="lyrics_timing_help_playback_controls">Управление воспроизведением</string>
+    <string name="lyrics_timing_help_rewind_body">Возвращает воспроизведение ровно на три секунды, чтобы снова услышать вступление.</string>
+    <string name="lyrics_timing_help_play_pause_body">Запускает или приостанавливает ту же песню, не закрывая редактор.</string>
+    <string name="lyrics_timing_help_repeat_body">Повторяет всю текущую песню во время работы. Включение A-B отключает этот режим.</string>
+    <string name="lyrics_timing_help_ab_title">Цикл фрагмента A-B</string>
+    <string name="lyrics_timing_help_ab_body">Первое нажатие задаёт A, второе B, третье очищает обе точки. В точке B воспроизведение возвращается к A; B должна быть минимум на 0,5 секунды позже A.</string>
+    <string name="lyrics_timing_help_speed_title">Скорость для тренировки</string>
+    <string name="lyrics_timing_help_speed_body">Переключает 0,75× и 1,00×. При выходе исходная скорость и режим повтора восстанавливаются.</string>
+    <string name="lyrics_timing_help_timing_controls">Управление разметкой</string>
+    <string name="lyrics_timing_help_continuous_body">Записывает текущее время и переходит к следующей строке без остановки воспроизведения.</string>
+    <string name="lyrics_timing_help_step_mode_body">Записывает текущее время, переходит к следующей строке и ставит воспроизведение на паузу.</string>
+    <string name="lyrics_timing_help_previous_body">Перемещает цель и курсор к предыдущей непустой строке, не меняя её время.</string>
+    <string name="lyrics_timing_help_stamp_title">Отметить текущее время</string>
+    <string name="lyrics_timing_help_stamp_body">Записывает показанное время в выделенную строку и выбирает следующую непустую строку.</string>
+    <string name="lyrics_timing_help_undo_body">Меняет последнюю правку времени на предыдущую версию. Повторное нажатие возвращает обмен.</string>
+    <string name="lyrics_timing_help_formats_title">Какой формат выбрать?</string>
+    <string name="lyrics_timing_help_formats_body">Источник сохраняет исходный текст; Построчно — рабочая область LRC. Пословно содержит структурированные данные караоке, поэтому инструменты построчной разметки скрыты.</string>
+    <string name="lyrics_timing_help_tips_title">Для более точной разметки</string>
+    <string name="lyrics_timing_help_tips_body">Ставьте отметку при первом слоге, а не в конце предыдущей строки. Если всё запаздывает, используйте 0,75× или небольшой общий сдвиг после завершения. Проверьте незавершённую ручную разметку перед синхронизацией.</string>
+</resources>

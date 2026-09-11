@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="lyrics_timing_help_open">Zamanlama yardımını aç</string>
+    <string name="lyrics_timing_help_title">Şarkı sözü zamanlama kılavuzu</string>
+    <string name="lyrics_timing_help_subtitle">Bir şarkıyı dört adımda zamanla</string>
+    <string name="lyrics_timing_help_close">Zamanlama yardımını kapat</string>
+    <string name="lyrics_timing_help_overview">Her şarkı sözü cümlesini ayrı satıra koyun. Şarkıyı çalın ve vurgulanan satırın ilk hecesi başladığında İşaretle düğmesine basın. Düzenleyici otomatik ilerler.</string>
+    <string name="lyrics_timing_help_quick_start">Bir şarkıyı dört adımda zamanla</string>
+    <string name="lyrics_timing_help_step_prepare_title">Metni hazırla</string>
+    <string name="lyrics_timing_help_step_prepare_body">Her cümleyi ayrı satıra koyun. Başlangıç için Zaman çizelgesini tahmin et seçeneğini veya eski zamanları silip kendiniz işaretlemek için Manuel zamanlama seçeneğini kullanın.</string>
+    <string name="lyrics_timing_help_step_practice_title">Zor bir bölümü çalış</string>
+    <string name="lyrics_timing_help_step_practice_body">Bölüme gidin, başına A ve sonuna B koyun; gerekirse 0,75× kullanın. A-B ile tüm şarkıyı tekrarlama aynı anda etkin olamaz.</string>
+    <string name="lyrics_timing_help_step_stamp_title">Çal ve her satırı işaretle</string>
+    <string name="lyrics_timing_help_step_stamp_body">Kesintisiz seçeneğini seçip çalmayı başlatın ve her vurgulanan satırın ilk hecesinde İşaretle düğmesine basın. Satırları tek tek hazırlamak için İşaretlemeden sonra duraklat seçeneğini kullanın.</string>
+    <string name="lyrics_timing_help_step_finish_title">İncele ve kaydet</string>
+    <string name="lyrics_timing_help_step_finish_body">Önceki satır, Geri al, ilerleme çubuğu veya 3 saniye geri ile hataları düzeltin. Tüm şarkıyı inceleyip kaydedin ya da sunucuyla eşitleyin.</string>
+    <string name="lyrics_timing_help_playback_controls">Çalma kontrolleri</string>
+    <string name="lyrics_timing_help_rewind_body">Girişi yeniden duymanız için tam üç saniye geri gider.</string>
+    <string name="lyrics_timing_help_play_pause_body">Düzenleyiciden çıkmadan aynı şarkıyı çalar veya duraklatır.</string>
+    <string name="lyrics_timing_help_repeat_body">Çalışırken geçerli şarkının tamamını tekrarlar. A-B açılınca bu mod kapanır.</string>
+    <string name="lyrics_timing_help_ab_title">A-B bölüm döngüsü</string>
+    <string name="lyrics_timing_help_ab_body">İlk dokunuş A, ikinci B noktasını ayarlar, üçüncü ikisini de temizler. B noktasında A noktasına dönülür; B, A noktasından en az 0,5 saniye sonra olmalıdır.</string>
+    <string name="lyrics_timing_help_speed_title">Çalışma hızı</string>
+    <string name="lyrics_timing_help_speed_body">0,75× ve 1,00× arasında geçiş yapar. Çıkarken özgün hız ve döngü geri yüklenir.</string>
+    <string name="lyrics_timing_help_timing_controls">Zamanlama kontrolleri</string>
+    <string name="lyrics_timing_help_continuous_body">Geçerli zamanı yazar ve çalma sürerken sonraki satıra geçer.</string>
+    <string name="lyrics_timing_help_step_mode_body">Geçerli zamanı yazar, sonraki satıra geçer ve çalmayı duraklatır.</string>
+    <string name="lyrics_timing_help_previous_body">Zamanını değiştirmeden hedefi ve imleci önceki boş olmayan satıra taşır.</string>
+    <string name="lyrics_timing_help_stamp_title">Geçerli zamanı işaretle</string>
+    <string name="lyrics_timing_help_stamp_body">Gösterilen çalma zamanını vurgulanan satıra yazar ve sonraki boş olmayan satırı seçer.</string>
+    <string name="lyrics_timing_help_undo_body">Son zamanlama düzenlemesini önceki sürümle değiştirir. Değişimi geri almak için yeniden dokunun.</string>
+    <string name="lyrics_timing_help_formats_title">Hangi biçimi kullanmalıyım?</string>
+    <string name="lyrics_timing_help_formats_body">Kaynak özgün metni korur; Satır satır LRC çalışma alanıdır. Sözcük sözcük yapılandırılmış karaoke verisidir, bu nedenle bu araçlar gizlenir.</string>
+    <string name="lyrics_timing_help_tips_title">Daha doğru zamanlama için</string>
+    <string name="lyrics_timing_help_tips_body">Önceki satır bittiğinde değil, ilk hece duyulduğunda işaretleyin. Her şey geçse 0,75× kullanın veya sonunda küçük bir genel kaydırma uygulayın. Tamamlanmamış manuel zamanlamayı eşitlemeden önce inceleyin.</string>
+</resources>

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="lyrics_generate_timing_template">সময়রেখা অনুমান করুন</string>
-    <string name="lyrics_generate_zero_template">শূন্য সময়ের টেমপ্লেট</string>
+    <string name="lyrics_generate_zero_template">ম্যানুয়াল টাইমিং</string>
     <string name="lyrics_previous_timing_line">আগের লাইন</string>
     <string name="lyrics_stamp_current_time">%1$s চিহ্নিত করুন</string>
     <string name="lyrics_sync_clean">সার্ভারের সঙ্গে মিলে গেছে</string>

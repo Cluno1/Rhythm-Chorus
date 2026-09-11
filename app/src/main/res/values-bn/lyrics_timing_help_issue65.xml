@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="lyrics_timing_help_open">টাইমিং সহায়তা খুলুন</string>
+    <string name="lyrics_timing_help_title">গানের কথা টাইমিং নির্দেশিকা</string>
+    <string name="lyrics_timing_help_subtitle">চার ধাপে পুরো গান টাইম করুন</string>
+    <string name="lyrics_timing_help_close">টাইমিং সহায়তা বন্ধ করুন</string>
+    <string name="lyrics_timing_help_overview">গানের প্রতিটি বাক্য আলাদা লাইনে রাখুন। গান চালিয়ে হাইলাইট করা লাইনের প্রথম অক্ষর শুরু হলে সময়চিহ্ন দিন। সম্পাদক নিজে থেকে পরের লাইনে যাবে।</string>
+    <string name="lyrics_timing_help_quick_start">চার ধাপে গান টাইম করুন</string>
+    <string name="lyrics_timing_help_step_prepare_title">লেখা প্রস্তুত করুন</string>
+    <string name="lyrics_timing_help_step_prepare_body">প্রতিটি বাক্য আলাদা লাইনে রাখুন। উন্নত টুলে টাইমলাইন অনুমান করুন দিয়ে শুরু করুন, অথবা ম্যানুয়াল টাইমিং দিয়ে পুরোনো সময় মুছে নিজে সব চিহ্ন দিন।</string>
+    <string name="lyrics_timing_help_step_practice_title">কঠিন অংশ অনুশীলন করুন</string>
+    <string name="lyrics_timing_help_step_practice_body">অংশটিতে যান, শুরুতে A ও শেষে B বসান, প্রয়োজনে 0.75× ব্যবহার করুন। A-B এবং পুরো গান পুনরাবৃত্তি একসঙ্গে চালু হতে পারে না।</string>
+    <string name="lyrics_timing_help_step_stamp_title">চালান ও প্রতিটি লাইন চিহ্নিত করুন</string>
+    <string name="lyrics_timing_help_step_stamp_body">একটানা বেছে গান চালান এবং প্রতিটি হাইলাইট লাইনের প্রথম অক্ষরে সময়চিহ্ন দিন। একবারে একটি লাইন প্রস্তুত করতে সময়চিহ্নের পর বিরতি ব্যবহার করুন।</string>
+    <string name="lyrics_timing_help_step_finish_title">পরীক্ষা করে সংরক্ষণ করুন</string>
+    <string name="lyrics_timing_help_step_finish_body">আগের লাইন, পূর্বাবস্থায় ফেরান, অগ্রগতি বার বা ৩ সেকেন্ড পিছনে দিয়ে ভুল ঠিক করুন। পুরো গান যাচাই করে সংরক্ষণ বা সার্ভারে সিঙ্ক করুন।</string>
+    <string name="lyrics_timing_help_playback_controls">প্লেব্যাক নিয়ন্ত্রণ</string>
+    <string name="lyrics_timing_help_rewind_body">প্রবেশ আবার শোনার জন্য ঠিক তিন সেকেন্ড পিছিয়ে দেয়।</string>
+    <string name="lyrics_timing_help_play_pause_body">সম্পাদক না ছেড়ে একই গান চালায় বা বিরতি দেয়।</string>
+    <string name="lyrics_timing_help_repeat_body">কাজের সময় পুরো বর্তমান গান পুনরাবৃত্তি করে। A-B চালু করলে এটি বন্ধ হয়।</string>
+    <string name="lyrics_timing_help_ab_title">A-B অংশ লুপ</string>
+    <string name="lyrics_timing_help_ab_body">প্রথম ট্যাপ A, দ্বিতীয় B এবং তৃতীয়টি দুটোই মুছে দেয়। B-তে পৌঁছে A-তে ফিরে যায়; B অবশ্যই A-এর অন্তত ০.৫ সেকেন্ড পরে হবে।</string>
+    <string name="lyrics_timing_help_speed_title">অনুশীলনের গতি</string>
+    <string name="lyrics_timing_help_speed_body">0.75× ও 1.00×-এর মধ্যে বদলায়। বের হলে আগের গতি ও লুপ ফিরিয়ে দেওয়া হয়।</string>
+    <string name="lyrics_timing_help_timing_controls">টাইমিং নিয়ন্ত্রণ</string>
+    <string name="lyrics_timing_help_continuous_body">বর্তমান সময় লিখে পরের লাইনে যায় এবং গান চলতে থাকে।</string>
+    <string name="lyrics_timing_help_step_mode_body">বর্তমান সময় লিখে পরের লাইনে যায় ও প্লেব্যাক থামায়।</string>
+    <string name="lyrics_timing_help_previous_body">সময় না বদলে লক্ষ্য ও কার্সরকে আগের ফাঁকা নয় এমন লাইনে নেয়।</string>
+    <string name="lyrics_timing_help_stamp_title">বর্তমান সময় চিহ্নিত করুন</string>
+    <string name="lyrics_timing_help_stamp_body">দেখানো সময় হাইলাইট লাইনে লিখে পরের ফাঁকা নয় এমন লাইন বেছে নেয়।</string>
+    <string name="lyrics_timing_help_undo_body">সর্বশেষ টাইমিং পরিবর্তন ও আগের সংস্করণ অদলবদল করে। আবার ট্যাপ করলে অদলবদল ফেরে।</string>
+    <string name="lyrics_timing_help_formats_title">কোন ফরম্যাট ব্যবহার করব?</string>
+    <string name="lyrics_timing_help_formats_body">উৎস মূল লেখা রাখে; লাইন-ধরে LRC কাজের স্থান। শব্দ-ধরে কাঠামোবদ্ধ কারাওকে ডেটা, তাই এই টুলগুলো লুকানো থাকে।</string>
+    <string name="lyrics_timing_help_tips_title">আরও নির্ভুল টাইমিং</string>
+    <string name="lyrics_timing_help_tips_body">আগের লাইন শেষ হলে নয়, প্রথম অক্ষর শোনা গেলে চিহ্ন দিন। সব দেরি হলে 0.75× বা শেষে ছোট সামগ্রিক অফসেট দিন। অসম্পূর্ণ ম্যানুয়াল টাইমিং সিঙ্কের আগে যাচাই করুন।</string>
+</resources>

@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="lyrics_timing_help_open">Abrir ajuda de temporização</string>
+    <string name="lyrics_timing_help_title">Guia de temporização de letras</string>
+    <string name="lyrics_timing_help_subtitle">Siga quatro passos para temporizar uma música</string>
+    <string name="lyrics_timing_help_close">Fechar ajuda de temporização</string>
+    <string name="lyrics_timing_help_overview">Coloque cada frase numa linha. Reproduza a música e toque em Marcar quando começar a primeira sílaba da linha realçada. O editor avançará automaticamente.</string>
+    <string name="lyrics_timing_help_quick_start">Temporizar uma música em quatro passos</string>
+    <string name="lyrics_timing_help_step_prepare_title">Preparar o texto</string>
+    <string name="lyrics_timing_help_step_prepare_body">Coloque cada frase numa linha própria. Nas ferramentas avançadas escolha Estimar linha temporal como ponto de partida, ou Sincronização manual para apagar tempos antigos e marcar tudo manualmente.</string>
+    <string name="lyrics_timing_help_step_practice_title">Praticar uma secção difícil</string>
+    <string name="lyrics_timing_help_step_practice_body">Vá até à secção, defina A no início e B no fim e use 0,75× se necessário. A-B e repetir a música não podem estar ativos ao mesmo tempo.</string>
+    <string name="lyrics_timing_help_step_stamp_title">Reproduzir e marcar cada linha</string>
+    <string name="lyrics_timing_help_step_stamp_body">Escolha Contínuo, inicie a reprodução e toque em Marcar na primeira sílaba de cada linha realçada. Use Pausar após marcar para preparar cada linha separadamente.</string>
+    <string name="lyrics_timing_help_step_finish_title">Rever e guardar</string>
+    <string name="lyrics_timing_help_step_finish_body">Corrija com Linha anterior, Anular, a barra de progresso ou Recuar 3 segundos. Reveja toda a música e guarde ou sincronize com o servidor.</string>
+    <string name="lyrics_timing_help_playback_controls">Controlos de reprodução</string>
+    <string name="lyrics_timing_help_rewind_body">Recua exatamente três segundos para voltar a ouvir a entrada.</string>
+    <string name="lyrics_timing_help_play_pause_body">Reproduz ou pausa a mesma música sem sair do editor.</string>
+    <string name="lyrics_timing_help_repeat_body">Repete toda a música atual enquanto trabalha. Ativar A-B desativa este modo.</string>
+    <string name="lyrics_timing_help_ab_title">Ciclo de secção A-B</string>
+    <string name="lyrics_timing_help_ab_body">O primeiro toque define A, o segundo B e o terceiro limpa ambos. Em B a reprodução volta a A; B deve ficar pelo menos 0,5 segundos depois de A.</string>
+    <string name="lyrics_timing_help_speed_title">Velocidade de prática</string>
+    <string name="lyrics_timing_help_speed_body">Alterna entre 0,75× e 1,00×. Ao sair, a velocidade e o ciclo originais são restaurados.</string>
+    <string name="lyrics_timing_help_timing_controls">Controlos de temporização</string>
+    <string name="lyrics_timing_help_continuous_body">Escreve o tempo atual e avança para a linha seguinte enquanto a reprodução continua.</string>
+    <string name="lyrics_timing_help_step_mode_body">Escreve o tempo atual, avança para a linha seguinte e pausa a reprodução.</string>
+    <string name="lyrics_timing_help_previous_body">Move o alvo e o cursor para a linha anterior não vazia sem alterar o tempo.</string>
+    <string name="lyrics_timing_help_stamp_title">Marcar tempo atual</string>
+    <string name="lyrics_timing_help_stamp_body">Escreve o tempo mostrado na linha realçada e seleciona a próxima linha não vazia.</string>
+    <string name="lyrics_timing_help_undo_body">Alterna a última edição com a versão anterior. Toque novamente para refazer a troca.</string>
+    <string name="lyrics_timing_help_formats_title">Que formato devo usar?</string>
+    <string name="lyrics_timing_help_formats_body">Origem conserva o texto original; Linha a linha é a área LRC. Palavra a palavra contém dados de karaoke estruturados e oculta estas ferramentas.</string>
+    <string name="lyrics_timing_help_tips_title">Para uma temporização mais precisa</string>
+    <string name="lyrics_timing_help_tips_body">Marque quando soar a primeira sílaba, não quando terminar a linha anterior. Se tudo ficar atrasado, use 0,75× ou aplique no fim um pequeno desvio global. Reveja a temporização manual incompleta antes de sincronizar.</string>
+</resources>

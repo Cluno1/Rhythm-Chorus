@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="lyrics_timing_help_open">Otwórz pomoc synchronizacji</string>
+    <string name="lyrics_timing_help_title">Przewodnik synchronizacji tekstu</string>
+    <string name="lyrics_timing_help_subtitle">Ustaw czas całego utworu w czterech krokach</string>
+    <string name="lyrics_timing_help_close">Zamknij pomoc synchronizacji</string>
+    <string name="lyrics_timing_help_overview">Umieść każdą frazę w osobnym wierszu. Odtwórz utwór i naciśnij Oznacz, gdy zacznie się pierwsza sylaba wyróżnionego wiersza. Edytor automatycznie przejdzie dalej.</string>
+    <string name="lyrics_timing_help_quick_start">Ustaw czas utworu w czterech krokach</string>
+    <string name="lyrics_timing_help_step_prepare_title">Przygotuj tekst</string>
+    <string name="lyrics_timing_help_step_prepare_body">Umieść każdą frazę w osobnym wierszu. W narzędziach zaawansowanych wybierz Oszacuj oś czasu jako punkt startowy lub Ręczne ustawianie czasu, aby usunąć stare znaczniki i zacząć od nowa.</string>
+    <string name="lyrics_timing_help_step_practice_title">Przećwicz trudny fragment</string>
+    <string name="lyrics_timing_help_step_practice_body">Przejdź do fragmentu, ustaw A na początku i B na końcu, a w razie potrzeby użyj 0,75×. A-B i powtarzanie całego utworu nie mogą działać razem.</string>
+    <string name="lyrics_timing_help_step_stamp_title">Odtwarzaj i oznaczaj wiersze</string>
+    <string name="lyrics_timing_help_step_stamp_body">Wybierz Ciągły, uruchom utwór i naciskaj Oznacz przy pierwszej sylabie każdego wyróżnionego wiersza. Pauza po oznaczeniu pozwala przygotować każdy wiersz osobno.</string>
+    <string name="lyrics_timing_help_step_finish_title">Sprawdź i zapisz</string>
+    <string name="lyrics_timing_help_step_finish_body">Poprawiaj przez Poprzedni wiersz, Cofnij, pasek postępu lub Cofnij o 3 sekundy. Sprawdź cały utwór, a następnie zapisz lub zsynchronizuj z serwerem.</string>
+    <string name="lyrics_timing_help_playback_controls">Sterowanie odtwarzaniem</string>
+    <string name="lyrics_timing_help_rewind_body">Cofa dokładnie o trzy sekundy, aby ponownie usłyszeć wejście.</string>
+    <string name="lyrics_timing_help_play_pause_body">Uruchamia lub wstrzymuje ten sam utwór bez opuszczania edytora.</string>
+    <string name="lyrics_timing_help_repeat_body">Powtarza cały bieżący utwór podczas pracy. Włączenie A-B wyłącza ten tryb.</string>
+    <string name="lyrics_timing_help_ab_title">Pętla fragmentu A-B</string>
+    <string name="lyrics_timing_help_ab_body">Pierwsze dotknięcie ustawia A, drugie B, trzecie usuwa oba punkty. W B odtwarzanie wraca do A; B musi być co najmniej 0,5 sekundy po A.</string>
+    <string name="lyrics_timing_help_speed_title">Prędkość ćwiczenia</string>
+    <string name="lyrics_timing_help_speed_body">Przełącza 0,75× i 1,00×. Po wyjściu pierwotna prędkość i pętla zostają przywrócone.</string>
+    <string name="lyrics_timing_help_timing_controls">Sterowanie czasem</string>
+    <string name="lyrics_timing_help_continuous_body">Zapisuje bieżący czas i przechodzi do następnego wiersza bez zatrzymania odtwarzania.</string>
+    <string name="lyrics_timing_help_step_mode_body">Zapisuje bieżący czas, przechodzi do następnego wiersza i wstrzymuje odtwarzanie.</string>
+    <string name="lyrics_timing_help_previous_body">Przenosi cel i kursor do poprzedniego niepustego wiersza bez zmiany jego czasu.</string>
+    <string name="lyrics_timing_help_stamp_title">Oznacz bieżący czas</string>
+    <string name="lyrics_timing_help_stamp_body">Zapisuje wyświetlany czas w wyróżnionym wierszu i wybiera następny niepusty wiersz.</string>
+    <string name="lyrics_timing_help_undo_body">Zamienia ostatnią zmianę czasu z poprzednią wersją. Dotknij ponownie, aby odwrócić zamianę.</string>
+    <string name="lyrics_timing_help_formats_title">Jakiego formatu użyć?</string>
+    <string name="lyrics_timing_help_formats_body">Źródło zachowuje oryginalny tekst; Wiersz po wierszu to obszar LRC. Słowo po słowie zawiera strukturalne dane karaoke, więc te narzędzia są ukryte.</string>
+    <string name="lyrics_timing_help_tips_title">Dokładniejsze ustawianie czasu</string>
+    <string name="lyrics_timing_help_tips_body">Oznaczaj przy pierwszej sylabie, nie na końcu poprzedniego wiersza. Jeśli wszystko jest spóźnione, użyj 0,75× lub małego przesunięcia globalnego na końcu. Sprawdź niedokończoną ręczną synchronizację przed wysłaniem.</string>
+</resources>

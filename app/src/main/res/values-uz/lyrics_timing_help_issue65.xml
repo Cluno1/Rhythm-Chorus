@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="lyrics_timing_help_open">Vaqt belgilash yordamini ochish</string>
+    <string name="lyrics_timing_help_title">Qoʻshiq matni vaqtini belgilash qoʻllanmasi</string>
+    <string name="lyrics_timing_help_subtitle">Qoʻshiqni toʻrt qadamda toʻliq belgilash</string>
+    <string name="lyrics_timing_help_close">Vaqt belgilash yordamini yopish</string>
+    <string name="lyrics_timing_help_overview">Har bir qoʻshiq satrini alohida qatorga joylang. Qoʻshiqni ijro eting va ajratilgan satrning birinchi boʻgʻini boshlanganda Belgilash tugmasini bosing. Muharrir keyingi satrga oʻzi oʻtadi.</string>
+    <string name="lyrics_timing_help_quick_start">Qoʻshiqni toʻrt qadamda belgilash</string>
+    <string name="lyrics_timing_help_step_prepare_title">Matnni tayyorlash</string>
+    <string name="lyrics_timing_help_step_prepare_body">Har bir jumlani alohida qatorga qoʻying. Boshlash uchun Vaqt jadvalini taxminlashni yoki eski vaqtlarni tozalab hammasini oʻzingiz belgilash uchun Qoʻlda vaqt belgilashni tanlang.</string>
+    <string name="lyrics_timing_help_step_practice_title">Qiyin qismni mashq qilish</string>
+    <string name="lyrics_timing_help_step_practice_body">Qismga oʻting, boshida A va oxirida B ni belgilang, kerak boʻlsa 0,75× dan foydalaning. A-B va butun qoʻshiq takrori bir vaqtda ishlamaydi.</string>
+    <string name="lyrics_timing_help_step_stamp_title">Ijro etish va har satrni belgilash</string>
+    <string name="lyrics_timing_help_step_stamp_body">Uzluksiz rejimni tanlab ijroni boshlang va har ajratilgan satrning birinchi boʻgʻinida Belgilashni bosing. Har satrga alohida tayyorlanish uchun Belgidan keyin pauzani tanlang.</string>
+    <string name="lyrics_timing_help_step_finish_title">Tekshirish va saqlash</string>
+    <string name="lyrics_timing_help_step_finish_body">Oldingi satr, Bekor qilish, siljitish paneli yoki 3 soniya orqaga bilan xatolarni tuzating. Butun qoʻshiqni tekshirib saqlang yoki server bilan sinxronlang.</string>
+    <string name="lyrics_timing_help_playback_controls">Ijro boshqaruvlari</string>
+    <string name="lyrics_timing_help_rewind_body">Kirishni yana eshitish uchun aniq uch soniya orqaga qaytaradi.</string>
+    <string name="lyrics_timing_help_play_pause_body">Muharrirdan chiqmasdan shu qoʻshiqni ijro etadi yoki pauza qiladi.</string>
+    <string name="lyrics_timing_help_repeat_body">Ish paytida joriy qoʻshiqni toʻliq takrorlaydi. A-B yoqilsa bu rejim oʻchadi.</string>
+    <string name="lyrics_timing_help_ab_title">A-B qism takrori</string>
+    <string name="lyrics_timing_help_ab_body">Birinchi bosish A ni, ikkinchisi B ni belgilaydi, uchinchisi ikkalasini tozalaydi. B ga yetganda A ga qaytadi; B, A dan kamida 0,5 soniya keyin boʻlishi kerak.</string>
+    <string name="lyrics_timing_help_speed_title">Mashq tezligi</string>
+    <string name="lyrics_timing_help_speed_body">0,75× va 1,00× orasida almashtiradi. Chiqishda asl tezlik va takror holati tiklanadi.</string>
+    <string name="lyrics_timing_help_timing_controls">Vaqt boshqaruvlari</string>
+    <string name="lyrics_timing_help_continuous_body">Joriy vaqtni yozib, ijro davom etgan holda keyingi satrga oʻtadi.</string>
+    <string name="lyrics_timing_help_step_mode_body">Joriy vaqtni yozib, keyingi satrga oʻtadi va ijroni pauza qiladi.</string>
+    <string name="lyrics_timing_help_previous_body">Vaqtini oʻzgartirmasdan nishon va kursorni oldingi boʻsh boʻlmagan satrga koʻchiradi.</string>
+    <string name="lyrics_timing_help_stamp_title">Joriy vaqtni belgilash</string>
+    <string name="lyrics_timing_help_stamp_body">Koʻrsatilgan ijro vaqtini ajratilgan satrga yozib, keyingi boʻsh boʻlmagan satrni tanlaydi.</string>
+    <string name="lyrics_timing_help_undo_body">Oxirgi vaqt tahririni oldingi versiya bilan almashtiradi. Almashtirishni qaytarish uchun yana bosing.</string>
+    <string name="lyrics_timing_help_formats_title">Qaysi formatni ishlatish kerak?</string>
+    <string name="lyrics_timing_help_formats_body">Manba asl matnni saqlaydi; Satrma-satr LRC ish maydonidir. Soʻzma-soʻz tuzilgan karaoke maʼlumotidir, shuning uchun bu vositalar yashiriladi.</string>
+    <string name="lyrics_timing_help_tips_title">Vaqtni aniqroq belgilash</string>
+    <string name="lyrics_timing_help_tips_body">Oldingi satr tugaganda emas, birinchi boʻgʻin eshitilganda belgilang. Hammasi kech boʻlsa 0,75× dan foydalaning yoki oxirida kichik umumiy siljish qoʻllang. Tugallanmagan qoʻlda vaqt belgilashni sinxronlashdan oldin tekshiring.</string>
+</resources>
