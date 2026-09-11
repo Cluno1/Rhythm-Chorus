@@ -9,6 +9,13 @@ data class LrcStampResult(
     val nextLineIndex: Int?,
 )
 
+data class LrcTimingTarget(
+    val lineIndex: Int,
+    val ordinal: Int,
+    val total: Int,
+    val text: String,
+)
+
 object LrcTimingEditor {
     private val timestamp = Regex("^\\[(\\d{1,2}):(\\d{2})(?:[.:](\\d{1,3}))?](.*)$")
 
@@ -59,6 +66,31 @@ object LrcTimingEditor {
 
     fun previousEditableLine(text: String, lineIndex: Int): Int? =
         text.lines().indices.lastOrNull { it < lineIndex && stripTimestamp(text.lines()[it]).isNotBlank() }
+
+    fun timingTarget(text: String, requestedLineIndex: Int): LrcTimingTarget? {
+        val lines = text.replace("\r\n", "\n").replace('\r', '\n').split('\n')
+        val editable = lines.indices.filter { stripTimestamp(lines[it]).isNotBlank() }
+        if (editable.isEmpty()) return null
+        val lineIndex = editable.firstOrNull { it >= requestedLineIndex } ?: editable.last()
+        return LrcTimingTarget(
+            lineIndex = lineIndex,
+            ordinal = editable.indexOf(lineIndex) + 1,
+            total = editable.size,
+            text = stripTimestamp(lines[lineIndex]),
+        )
+    }
+
+    fun loopEnd(
+        startMs: Long,
+        requestedEndMs: Long,
+        durationMs: Long?,
+        minimumDurationMs: Long = 500L,
+    ): Long? {
+        val maximum = durationMs?.takeIf { it > 0L } ?: Long.MAX_VALUE
+        val minimumEnd = startMs.coerceAtLeast(0L) + minimumDurationMs.coerceAtLeast(1L)
+        if (minimumEnd > maximum) return null
+        return requestedEndMs.coerceAtLeast(minimumEnd).coerceAtMost(maximum)
+    }
 
     fun lineStartOffset(text: String, lineIndex: Int): Int = text.lineSequence()
         .take(lineIndex.coerceAtLeast(0))

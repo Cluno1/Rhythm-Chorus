@@ -19,6 +19,7 @@ import android.provider.DocumentsContract
 import android.provider.OpenableColumns
 import android.util.Log
 import android.widget.Toast
+import androidx.media3.common.Player
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContract
 import androidx.activity.result.contract.ActivityResultContracts
@@ -56,29 +57,35 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.FilledTonalIconButton
+import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheetProperties
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
+import androidx.compose.material3.Slider
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberBottomSheetState
 import androidx.compose.material3.SheetValue
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.font.FontWeight
@@ -100,6 +107,7 @@ import io.github.cluno1.sonorus.util.HapticUtils
 import io.github.cluno1.sonorus.util.HapticType
 import io.github.cluno1.sonorus.util.LyricsFileUtils
 import io.github.cluno1.sonorus.util.LrcTimingEditor
+import io.github.cluno1.sonorus.util.LrcTimingTarget
 import io.github.cluno1.sonorus.util.RhythmLyricsParser
 import io.github.cluno1.sonorus.shared.data.model.LyricsData
 import io.github.cluno1.sonorus.shared.data.model.Song
@@ -117,6 +125,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import androidx.compose.ui.res.stringResource
 import com.google.gson.Gson
+import kotlin.math.abs
 
 enum class LyricFormat {
     SOURCE,
@@ -192,6 +201,9 @@ fun LyricsEditorBottomSheet(
     isStreamingMode: Boolean = false,
     currentPlaybackPositionMs: Long = 0L,
     playbackDurationMs: Long = 0L,
+    isPlaying: Boolean = false,
+    playbackSpeed: Float = 1f,
+    repeatMode: Int = Player.REPEAT_MODE_OFF,
     canSyncCatalog: Boolean = false,
     catalogSyncState: CatalogLyricsSyncState = CatalogLyricsSyncState(),
     onDismiss: () -> Unit,
@@ -202,6 +214,10 @@ fun LyricsEditorBottomSheet(
     deviceLyricsCandidates: List<DeviceLyricsCandidate> = emptyList(),
     onSelectDeviceLyricsCandidate: (DeviceLyricsCandidate) -> Unit = {},
     onRestoreLocal: () -> Unit = {},
+    onPlayPause: () -> Unit = {},
+    onSeekTo: (Long) -> Unit = {},
+    onSetRepeatMode: (Int) -> Unit = {},
+    onSetPlaybackSpeed: (Float) -> Unit = {},
     onSyncCatalog: (String, String, Boolean) -> Unit = { _, _, _ -> },
     onLoadServerLyrics: () -> Unit = {},
     onEmbedInFile: (String) -> Unit = {}
@@ -214,6 +230,38 @@ fun LyricsEditorBottomSheet(
     val toolsScrollState = rememberScrollState()
     var toolsExpanded by remember { mutableStateOf(false) }
     var showCandidateDialog by remember { mutableStateOf(false) }
+    val initialRepeatMode = remember { repeatMode }
+    val initialPlaybackSpeed = remember { playbackSpeed }
+    var repeatChangedByEditor by remember { mutableStateOf(false) }
+    var speedChangedByEditor by remember { mutableStateOf(false) }
+    var loopStartMs by remember { mutableStateOf<Long?>(null) }
+    var loopEndMs by remember { mutableStateOf<Long?>(null) }
+    var pauseAfterStamp by remember { mutableStateOf(false) }
+    var editorPlaybackSpeed by remember { mutableStateOf(playbackSpeed) }
+    val latestRepeatMode by rememberUpdatedState(repeatMode)
+    val latestRepeatChangedByEditor by rememberUpdatedState(repeatChangedByEditor)
+    val latestSpeedChangedByEditor by rememberUpdatedState(speedChangedByEditor)
+    val latestOnSetRepeatMode by rememberUpdatedState(onSetRepeatMode)
+    val latestOnSetPlaybackSpeed by rememberUpdatedState(onSetPlaybackSpeed)
+
+    DisposableEffect(Unit) {
+        onDispose {
+            if (latestRepeatChangedByEditor && latestRepeatMode != initialRepeatMode) {
+                latestOnSetRepeatMode(initialRepeatMode)
+            }
+            if (latestSpeedChangedByEditor) {
+                latestOnSetPlaybackSpeed(initialPlaybackSpeed)
+            }
+        }
+    }
+
+    LaunchedEffect(currentPlaybackPositionMs, isPlaying, loopStartMs, loopEndMs) {
+        val start = loopStartMs
+        val end = loopEndMs
+        if (isPlaying && start != null && end != null && currentPlaybackPositionMs >= end) {
+            onSeekTo(start)
+        }
+    }
     
     var selectedFormat by remember(lyricsData) {
         mutableStateOf(
@@ -699,6 +747,35 @@ fun LyricsEditorBottomSheet(
     var timingLineIndex by remember(lyricsData) { mutableIntStateOf(0) }
     var previousTimingText by remember(lyricsData) { mutableStateOf<String?>(null) }
     var catalogEditDirty by remember(lyricsData) { mutableStateOf(false) }
+    val timingTarget = remember(editedLyrics, timingLineIndex, selectedFormat) {
+        if (selectedFormat == LyricFormat.WORD_BY_WORD) {
+            null
+        } else {
+            LrcTimingEditor.timingTarget(editedLyrics, timingLineIndex)
+        }
+    }
+
+    fun stampCurrentLine() {
+        LrcTimingEditor.stampLine(
+            editedLyrics,
+            timingLineIndex,
+            currentPlaybackPositionMs,
+            playbackDurationMs.takeIf { it > 0L },
+        )?.let { result ->
+            previousTimingText = editedLyrics
+            editedLineByLine = result.text
+            selectedFormat = LyricFormat.LINE_BY_LINE
+            timingLineIndex = result.nextLineIndex ?: result.stampedLineIndex
+            val cursor = LrcTimingEditor.lineStartOffset(result.text, timingLineIndex)
+            editorValue = TextFieldValue(result.text, TextRange(cursor))
+            catalogEditDirty = true
+            HapticUtils.performHapticFeedback(context, haptic, HapticType.HEAVY)
+            if (pauseAfterStamp && isPlaying) {
+                onPlayPause()
+            }
+        }
+    }
+
     LaunchedEffect(editedLyrics, selectedFormat) {
         if (editorValue.text != editedLyrics) {
             val cursor = editorValue.selection.end.coerceIn(0, editedLyrics.length)
@@ -1104,78 +1181,6 @@ fun LyricsEditorBottomSheet(
                         }
                     }
 
-                    Spacer(modifier = Modifier.height(8.dp))
-
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    ) {
-                        OutlinedButton(
-                            onClick = {
-                                LrcTimingEditor.previousEditableLine(editedLyrics, timingLineIndex)
-                                    ?.let { previous ->
-                                        timingLineIndex = previous
-                                        val cursor = LrcTimingEditor.lineStartOffset(editedLyrics, previous)
-                                        editorValue = editorValue.copy(selection = TextRange(cursor))
-                                    }
-                            },
-                            modifier = Modifier.weight(1f),
-                            enabled = selectedFormat != LyricFormat.WORD_BY_WORD,
-                        ) {
-                            Text(stringResource(R.string.lyrics_previous_timing_line))
-                        }
-                        FilledTonalButton(
-                            onClick = {
-                                LrcTimingEditor.stampLine(
-                                    editedLyrics,
-                                    timingLineIndex,
-                                    currentPlaybackPositionMs,
-                                    playbackDurationMs.takeIf { it > 0L },
-                                )?.let { result ->
-                                    previousTimingText = editedLyrics
-                                    editedLineByLine = result.text
-                                    selectedFormat = LyricFormat.LINE_BY_LINE
-                                    timingLineIndex = result.nextLineIndex ?: result.stampedLineIndex
-                                    val cursor = LrcTimingEditor.lineStartOffset(
-                                        result.text,
-                                        timingLineIndex,
-                                    )
-                                    editorValue = TextFieldValue(result.text, TextRange(cursor))
-                                    catalogEditDirty = true
-                                }
-                            },
-                            modifier = Modifier.weight(1.4f),
-                            enabled = selectedFormat != LyricFormat.WORD_BY_WORD && editedLyrics.isNotBlank(),
-                        ) {
-                            Text(
-                                stringResource(
-                                    R.string.lyrics_stamp_current_time,
-                                    LrcTimingEditor.formatTimestamp(currentPlaybackPositionMs),
-                                ),
-                            )
-                        }
-                        OutlinedButton(
-                            onClick = {
-                                previousTimingText?.let { previous ->
-                                    val current = editedLyrics
-                                    editedLineByLine = previous
-                                    selectedFormat = LyricFormat.LINE_BY_LINE
-                                    previousTimingText = current
-                                    val cursor = LrcTimingEditor.lineStartOffset(previous, timingLineIndex)
-                                    editorValue = TextFieldValue(previous, TextRange(cursor))
-                                    catalogEditDirty = true
-                                }
-                            },
-                            modifier = Modifier.weight(1f),
-                            enabled = previousTimingText != null,
-                        ) {
-                            Icon(
-                                imageVector = MaterialSymbolIcon("undo", filled = true),
-                                contentDescription = stringResource(R.string.bottomsheet_reset),
-                            )
-                        }
-                    }
-
                     if (hasSyncedLyrics) {
                     Spacer(modifier = Modifier.height(12.dp))
 
@@ -1369,6 +1374,111 @@ fun LyricsEditorBottomSheet(
                 }
             }
 
+            if (timingTarget != null) {
+                LyricsTimingWorkbench(
+                    target = timingTarget,
+                    currentPositionMs = currentPlaybackPositionMs,
+                    durationMs = playbackDurationMs,
+                    isPlaying = isPlaying,
+                    playbackSpeed = editorPlaybackSpeed,
+                    isTrackLoopEnabled = repeatMode == Player.REPEAT_MODE_ONE,
+                    loopStartMs = loopStartMs,
+                    loopEndMs = loopEndMs,
+                    pauseAfterStamp = pauseAfterStamp,
+                    canUndo = previousTimingText != null,
+                    onSeekTo = onSeekTo,
+                    onRewind = {
+                        onSeekTo((currentPlaybackPositionMs - 3_000L).coerceAtLeast(0L))
+                    },
+                    onPlayPause = onPlayPause,
+                    onToggleTrackLoop = {
+                        loopStartMs = null
+                        loopEndMs = null
+                        val nextMode = if (repeatMode == Player.REPEAT_MODE_ONE) {
+                            if (initialRepeatMode == Player.REPEAT_MODE_ONE) {
+                                Player.REPEAT_MODE_OFF
+                            } else {
+                                initialRepeatMode
+                            }
+                        } else {
+                            Player.REPEAT_MODE_ONE
+                        }
+                        repeatChangedByEditor = true
+                        onSetRepeatMode(nextMode)
+                    },
+                    onAdvanceAbLoop = {
+                        when {
+                            loopStartMs == null -> {
+                                if (repeatMode == Player.REPEAT_MODE_ONE) {
+                                    repeatChangedByEditor = true
+                                    onSetRepeatMode(
+                                        if (initialRepeatMode == Player.REPEAT_MODE_ONE) {
+                                            Player.REPEAT_MODE_OFF
+                                        } else {
+                                            initialRepeatMode
+                                        }
+                                    )
+                                }
+                                loopStartMs = currentPlaybackPositionMs
+                                    .coerceAtLeast(0L)
+                                    .let { position ->
+                                        if (playbackDurationMs >= 500L) {
+                                            position.coerceAtMost(playbackDurationMs - 500L)
+                                        } else {
+                                            position
+                                        }
+                                    }
+                                loopEndMs = null
+                            }
+                            loopEndMs == null -> {
+                                loopEndMs = LrcTimingEditor.loopEnd(
+                                    startMs = loopStartMs ?: 0L,
+                                    requestedEndMs = currentPlaybackPositionMs,
+                                    durationMs = playbackDurationMs.takeIf { it > 0L },
+                                )
+                            }
+                            else -> {
+                                loopStartMs = null
+                                loopEndMs = null
+                            }
+                        }
+                    },
+                    onToggleSpeed = {
+                        val nextSpeed = if (abs(editorPlaybackSpeed - 0.75f) < 0.01f) {
+                            1f
+                        } else {
+                            0.75f
+                        }
+                        speedChangedByEditor = true
+                        editorPlaybackSpeed = nextSpeed
+                        onSetPlaybackSpeed(nextSpeed)
+                    },
+                    onTogglePauseAfterStamp = {
+                        pauseAfterStamp = !pauseAfterStamp
+                    },
+                    onPreviousLine = {
+                        LrcTimingEditor.previousEditableLine(editedLyrics, timingLineIndex)
+                            ?.let { previous ->
+                                timingLineIndex = previous
+                                val cursor = LrcTimingEditor.lineStartOffset(editedLyrics, previous)
+                                editorValue = editorValue.copy(selection = TextRange(cursor))
+                            }
+                    },
+                    onStamp = ::stampCurrentLine,
+                    onUndo = {
+                        previousTimingText?.let { previous ->
+                            val current = editedLyrics
+                            editedLineByLine = previous
+                            selectedFormat = LyricFormat.LINE_BY_LINE
+                            previousTimingText = current
+                            val cursor = LrcTimingEditor.lineStartOffset(previous, timingLineIndex)
+                            editorValue = TextFieldValue(previous, TextRange(cursor))
+                            catalogEditDirty = true
+                        }
+                    },
+                )
+            }
+
             // Sticky Footer with action buttons
             Surface(
                 modifier = Modifier.fillMaxWidth(),
@@ -1453,7 +1563,7 @@ fun LyricsEditorBottomSheet(
                         Spacer(modifier = Modifier.height(8.dp))
                     }
 
-                    if (!isImeVisible || !canSyncCatalog) {
+                    if (!isImeVisible) {
                         RhythmGroupedButton(
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -1697,6 +1807,299 @@ fun LyricsEditorBottomSheet(
         )
     }
 }
+}
+
+@Composable
+private fun LyricsTimingWorkbench(
+    target: LrcTimingTarget,
+    currentPositionMs: Long,
+    durationMs: Long,
+    isPlaying: Boolean,
+    playbackSpeed: Float,
+    isTrackLoopEnabled: Boolean,
+    loopStartMs: Long?,
+    loopEndMs: Long?,
+    pauseAfterStamp: Boolean,
+    canUndo: Boolean,
+    onSeekTo: (Long) -> Unit,
+    onRewind: () -> Unit,
+    onPlayPause: () -> Unit,
+    onToggleTrackLoop: () -> Unit,
+    onAdvanceAbLoop: () -> Unit,
+    onToggleSpeed: () -> Unit,
+    onTogglePauseAfterStamp: () -> Unit,
+    onPreviousLine: () -> Unit,
+    onStamp: () -> Unit,
+    onUndo: () -> Unit,
+) {
+    var isScrubbing by remember { mutableStateOf(false) }
+    var scrubPositionMs by remember { mutableStateOf(currentPositionMs) }
+    val safeDuration = durationMs.coerceAtLeast(0L)
+    val shownPosition = if (isScrubbing) scrubPositionMs else currentPositionMs
+
+    LaunchedEffect(currentPositionMs, safeDuration, isScrubbing) {
+        if (!isScrubbing) {
+            scrubPositionMs = currentPositionMs.coerceIn(0L, safeDuration.coerceAtLeast(0L))
+        }
+    }
+
+    val loopActionLabel = when {
+        loopStartMs == null -> "A"
+        loopEndMs == null -> "B"
+        else -> "A–B"
+    }
+    val loopActionDescription = when {
+        loopStartMs == null -> stringResource(R.string.lyrics_timing_set_loop_start)
+        loopEndMs == null -> stringResource(R.string.lyrics_timing_set_loop_end)
+        else -> stringResource(R.string.lyrics_timing_clear_loop)
+    }
+
+    Surface(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 6.dp),
+        shape = RoundedCornerShape(20.dp),
+        color = MaterialTheme.colorScheme.surfaceContainerHigh,
+        tonalElevation = 2.dp,
+    ) {
+        Column(
+            modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
+            verticalArrangement = Arrangement.spacedBy(6.dp),
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
+                Text(
+                    text = formatEditorClock(shownPosition),
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.primary,
+                )
+                Slider(
+                    value = if (safeDuration > 0L) {
+                        shownPosition.coerceIn(0L, safeDuration).toFloat()
+                    } else {
+                        0f
+                    },
+                    onValueChange = { value ->
+                        isScrubbing = true
+                        scrubPositionMs = value.toLong()
+                    },
+                    onValueChangeFinished = {
+                        onSeekTo(scrubPositionMs.coerceIn(0L, safeDuration))
+                        isScrubbing = false
+                    },
+                    valueRange = 0f..safeDuration.coerceAtLeast(1L).toFloat(),
+                    enabled = safeDuration > 0L,
+                    modifier = Modifier
+                        .weight(1f)
+                        .height(28.dp),
+                )
+                Text(
+                    text = formatEditorClock(safeDuration),
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(6.dp),
+            ) {
+                FilledTonalIconButton(
+                    onClick = onRewind,
+                    modifier = Modifier.size(40.dp),
+                ) {
+                    Icon(
+                        imageVector = MaterialSymbolIcon("replay", filled = true),
+                        contentDescription = stringResource(R.string.lyrics_timing_rewind_three_seconds),
+                        modifier = Modifier.size(20.dp),
+                    )
+                }
+                FilledTonalIconButton(
+                    onClick = onPlayPause,
+                    modifier = Modifier.size(40.dp),
+                ) {
+                    Icon(
+                        imageVector = MaterialSymbolIcon(
+                            if (isPlaying) "pause" else "play_arrow",
+                            filled = true,
+                        ),
+                        contentDescription = stringResource(R.string.play_pause),
+                        modifier = Modifier.size(22.dp),
+                    )
+                }
+                FilledTonalIconButton(
+                    onClick = onToggleTrackLoop,
+                    modifier = Modifier.size(40.dp),
+                    colors = IconButtonDefaults.filledTonalIconButtonColors(
+                        containerColor = if (isTrackLoopEnabled) {
+                            MaterialTheme.colorScheme.primaryContainer
+                        } else {
+                            MaterialTheme.colorScheme.surfaceContainerHighest
+                        },
+                    ),
+                ) {
+                    Icon(
+                        imageVector = MaterialSymbolIcon("repeat_one", filled = isTrackLoopEnabled),
+                        contentDescription = stringResource(R.string.lyrics_timing_repeat_track),
+                        tint = if (isTrackLoopEnabled) {
+                            MaterialTheme.colorScheme.onPrimaryContainer
+                        } else {
+                            MaterialTheme.colorScheme.onSurfaceVariant
+                        },
+                        modifier = Modifier.size(20.dp),
+                    )
+                }
+                OutlinedButton(
+                    onClick = onAdvanceAbLoop,
+                    modifier = Modifier
+                        .height(40.dp)
+                        .semantics { contentDescription = loopActionDescription },
+                    contentPadding = PaddingValues(horizontal = 12.dp),
+                    colors = ButtonDefaults.outlinedButtonColors(
+                        containerColor = if (loopEndMs != null) {
+                            MaterialTheme.colorScheme.secondaryContainer
+                        } else {
+                            MaterialTheme.colorScheme.surfaceContainerHigh
+                        },
+                    ),
+                ) {
+                    Text(loopActionLabel, maxLines = 1)
+                }
+                OutlinedButton(
+                    onClick = onToggleSpeed,
+                    modifier = Modifier.height(40.dp),
+                    contentPadding = PaddingValues(horizontal = 10.dp),
+                ) {
+                    Text(
+                        text = String.format(java.util.Locale.ROOT, "%.2f×", playbackSpeed),
+                        maxLines = 1,
+                    )
+                }
+            }
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = stringResource(
+                            R.string.lyrics_timing_target_line,
+                            target.ordinal,
+                            target.total,
+                            target.text,
+                        ),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurface,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+                    if (loopStartMs != null) {
+                        Text(
+                            text = buildString {
+                                append("A ")
+                                append(formatEditorClock(loopStartMs))
+                                loopEndMs?.let { end ->
+                                    append("  ·  B ")
+                                    append(formatEditorClock(end))
+                                }
+                            },
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.secondary,
+                        )
+                    }
+                }
+                TextButton(
+                    onClick = onTogglePauseAfterStamp,
+                    contentPadding = PaddingValues(horizontal = 8.dp),
+                ) {
+                    Icon(
+                        imageVector = MaterialSymbolIcon(
+                            if (pauseAfterStamp) "pause_circle" else "fast_forward",
+                            filled = pauseAfterStamp,
+                        ),
+                        contentDescription = null,
+                        modifier = Modifier.size(18.dp),
+                    )
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text(
+                        text = stringResource(
+                            if (pauseAfterStamp) {
+                                R.string.lyrics_timing_step_mode
+                            } else {
+                                R.string.lyrics_timing_continuous_mode
+                            }
+                        ),
+                        maxLines = 1,
+                    )
+                }
+            }
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
+                FilledTonalIconButton(
+                    onClick = onPreviousLine,
+                    enabled = target.ordinal > 1,
+                    modifier = Modifier.size(42.dp),
+                ) {
+                    Icon(
+                        imageVector = MaterialSymbolIcon("arrow_upward", filled = true),
+                        contentDescription = stringResource(R.string.lyrics_previous_timing_line),
+                        modifier = Modifier.size(20.dp),
+                    )
+                }
+                Button(
+                    onClick = onStamp,
+                    modifier = Modifier
+                        .weight(1f)
+                        .height(44.dp),
+                    contentPadding = PaddingValues(horizontal = 12.dp),
+                ) {
+                    Icon(
+                        imageVector = MaterialSymbolIcon("timer", filled = true),
+                        contentDescription = null,
+                        modifier = Modifier.size(18.dp),
+                    )
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Text(
+                        text = stringResource(
+                            R.string.lyrics_stamp_current_time,
+                            LrcTimingEditor.formatTimestamp(currentPositionMs),
+                        ),
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+                }
+                FilledTonalIconButton(
+                    onClick = onUndo,
+                    enabled = canUndo,
+                    modifier = Modifier.size(42.dp),
+                ) {
+                    Icon(
+                        imageVector = MaterialSymbolIcon("undo", filled = true),
+                        contentDescription = stringResource(R.string.action_undo),
+                        modifier = Modifier.size(20.dp),
+                    )
+                }
+            }
+        }
+    }
+}
+
+private fun formatEditorClock(positionMs: Long): String {
+    val safe = positionMs.coerceAtLeast(0L)
+    val minutes = safe / 60_000L
+    val seconds = (safe % 60_000L) / 1_000L
+    val tenths = (safe % 1_000L) / 100L
+    return String.format(java.util.Locale.ROOT, "%d:%02d.%d", minutes, seconds, tenths)
 }
 
 @Composable

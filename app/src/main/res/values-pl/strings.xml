@@ -2806,4 +2806,12 @@
     <string name="settings_rhythm_guard_locked_during_break">Zablokowane podczas przerwy na słuchanie</string>
     <string name="labs_lyrics_editor">Edytor tekstów</string>
     <string name="labs_lyrics_editor_desc">Pokaż przycisk edycji w pełnoekranowym widoku tekstu</string>
+    <string name="lyrics_timing_rewind_three_seconds">Cofnij o 3 sekundy</string>
+    <string name="lyrics_timing_repeat_track">Powtarzaj bieżący utwór</string>
+    <string name="lyrics_timing_set_loop_start">Ustaw początek pętli</string>
+    <string name="lyrics_timing_set_loop_end">Ustaw koniec pętli</string>
+    <string name="lyrics_timing_clear_loop">Wyczyść pętlę A-B</string>
+    <string name="lyrics_timing_target_line">%1$d/%2$d · %3$s</string>
+    <string name="lyrics_timing_continuous_mode">Ciągły</string>
+    <string name="lyrics_timing_step_mode">Wstrzymaj po oznaczeniu</string>
 </resources>

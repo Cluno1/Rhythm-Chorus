@@ -2985,4 +2985,12 @@
     <string name="onboarding_replaygain_desc">Ajuste automatiquement le volume audio entre les chansons</string>
     <string name="labs_lyrics_editor">Éditeur de paroles</string>
     <string name="labs_lyrics_editor_desc">Afficher l’action de modification dans les paroles en plein écran</string>
+    <string name="lyrics_timing_rewind_three_seconds">Reculer de 3 secondes</string>
+    <string name="lyrics_timing_repeat_track">Répéter le morceau actuel</string>
+    <string name="lyrics_timing_set_loop_start">Définir le début de boucle</string>
+    <string name="lyrics_timing_set_loop_end">Définir la fin de boucle</string>
+    <string name="lyrics_timing_clear_loop">Effacer la boucle A-B</string>
+    <string name="lyrics_timing_target_line">%1$d/%2$d · %3$s</string>
+    <string name="lyrics_timing_continuous_mode">Continu</string>
+    <string name="lyrics_timing_step_mode">Pause après le marquage</string>
 </resources>

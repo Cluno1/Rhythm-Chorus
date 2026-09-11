@@ -2706,4 +2706,12 @@
     <string name="duration_minutes_format">%1$d phút</string>
     <string name="labs_lyrics_editor">Trình sửa lời bài hát</string>
     <string name="labs_lyrics_editor_desc">Hiện nút chỉnh sửa trong giao diện lời bài hát toàn màn hình</string>
+    <string name="lyrics_timing_rewind_three_seconds">Lùi 3 giây</string>
+    <string name="lyrics_timing_repeat_track">Lặp lại bài hát hiện tại</string>
+    <string name="lyrics_timing_set_loop_start">Đặt điểm bắt đầu lặp</string>
+    <string name="lyrics_timing_set_loop_end">Đặt điểm kết thúc lặp</string>
+    <string name="lyrics_timing_clear_loop">Xóa vòng lặp A-B</string>
+    <string name="lyrics_timing_target_line">%1$d/%2$d · %3$s</string>
+    <string name="lyrics_timing_continuous_mode">Liên tục</string>
+    <string name="lyrics_timing_step_mode">Tạm dừng sau khi đánh dấu</string>
 </resources>

@@ -2771,4 +2771,12 @@
     <string name="lyrically_sources_desc">Konfiguriere und priorisiere Songtextquellen innerhalb von Lyrically. Wort-für-Wort-Quellen werden zuerst versucht, dann synchronisierte/Standardquellen.</string>
     <string name="labs_lyrics_editor">Liedtexteditor</string>
     <string name="labs_lyrics_editor_desc">Editor-Schaltfläche in der Vollbild-Liedtextansicht anzeigen</string>
+    <string name="lyrics_timing_rewind_three_seconds">3 Sekunden zurück</string>
+    <string name="lyrics_timing_repeat_track">Aktuellen Titel wiederholen</string>
+    <string name="lyrics_timing_set_loop_start">Schleifenanfang setzen</string>
+    <string name="lyrics_timing_set_loop_end">Schleifenende setzen</string>
+    <string name="lyrics_timing_clear_loop">A-B-Schleife löschen</string>
+    <string name="lyrics_timing_target_line">%1$d/%2$d · %3$s</string>
+    <string name="lyrics_timing_continuous_mode">Fortlaufend</string>
+    <string name="lyrics_timing_step_mode">Nach Markierung pausieren</string>
 </resources>

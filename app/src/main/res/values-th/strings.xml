@@ -2710,4 +2710,12 @@
     <string name="settings_library_operations_notifications_desc">แสดงการแจ้งเตือนความคืบหน้าสำหรับการจัดทำดัชนีสื่อและการส่งออก/นำเข้าเพลย์ลิสต์</string>
     <string name="labs_lyrics_editor">เครื่องมือแก้ไขเนื้อเพลง</string>
     <string name="labs_lyrics_editor_desc">แสดงปุ่มแก้ไขในมุมมองเนื้อเพลงแบบเต็มหน้าจอ</string>
+    <string name="lyrics_timing_rewind_three_seconds">ย้อนกลับ 3 วินาที</string>
+    <string name="lyrics_timing_repeat_track">เล่นเพลงปัจจุบันซ้ำ</string>
+    <string name="lyrics_timing_set_loop_start">ตั้งจุดเริ่มวนซ้ำ</string>
+    <string name="lyrics_timing_set_loop_end">ตั้งจุดสิ้นสุดวนซ้ำ</string>
+    <string name="lyrics_timing_clear_loop">ล้างการวนซ้ำ A-B</string>
+    <string name="lyrics_timing_target_line">%1$d/%2$d · %3$s</string>
+    <string name="lyrics_timing_continuous_mode">ต่อเนื่อง</string>
+    <string name="lyrics_timing_step_mode">หยุดหลังประทับเวลา</string>
 </resources>

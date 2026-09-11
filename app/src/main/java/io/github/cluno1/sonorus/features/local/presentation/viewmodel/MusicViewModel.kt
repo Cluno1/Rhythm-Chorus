@@ -6904,25 +6904,24 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
                 else -> Player.REPEAT_MODE_OFF
             }
             Log.d(TAG, "Toggle repeat mode from $currentMode to $newMode")
-            
-            // Update the player's repeat mode
-            controller.repeatMode = newMode
-            
-            // Update our state to match
-            _repeatMode.value = newMode
-            
-            // Save repeat mode to preferences if persistence is enabled
-            if (appSettings.repeatModePersistence.value) {
-                appSettings.setSavedRepeatMode(newMode)
+            setRepeatMode(newMode)
+        }
+    }
+
+    fun setRepeatMode(mode: Int, persist: Boolean = true) {
+        val normalizedMode = when (mode) {
+            Player.REPEAT_MODE_OFF,
+            Player.REPEAT_MODE_ONE,
+            Player.REPEAT_MODE_ALL -> mode
+            else -> Player.REPEAT_MODE_OFF
+        }
+        mediaController?.let { controller ->
+            controller.repeatMode = normalizedMode
+            _repeatMode.value = normalizedMode
+            if (persist && appSettings.repeatModePersistence.value) {
+                appSettings.setSavedRepeatMode(normalizedMode)
             }
-            
-            // Log the new state for debugging
-            Log.d(TAG, "Repeat mode is now: ${when(newMode) {
-                Player.REPEAT_MODE_OFF -> "OFF"
-                Player.REPEAT_MODE_ONE -> "ONE"
-                Player.REPEAT_MODE_ALL -> "ALL"
-                else -> "UNKNOWN"
-            }}")
+            Log.d(TAG, "Repeat mode set to $normalizedMode (persist=$persist)")
         }
     }
     
@@ -9881,9 +9880,11 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
     }
     
     // Playback Speed Control
-    fun setPlaybackSpeed(speed: Float) {
-        Log.d(TAG, "Setting playback speed to $speed")
-        appSettings.setPlaybackSpeed(speed)
+    fun setPlaybackSpeed(speed: Float, persist: Boolean = true) {
+        Log.d(TAG, "Setting playback speed to $speed (persist=$persist)")
+        if (persist) {
+            appSettings.setPlaybackSpeed(speed)
+        }
         val currentPitch = appSettings.playbackPitch.value
         mediaController?.playbackParameters = androidx.media3.common.PlaybackParameters(speed, currentPitch)
     }

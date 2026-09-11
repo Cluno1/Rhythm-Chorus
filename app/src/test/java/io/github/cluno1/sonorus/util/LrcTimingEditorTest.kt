@@ -44,4 +44,25 @@ class LrcTimingEditorTest {
         assertEquals(5, LrcTimingEditor.lineStartOffset(text, 2))
         assertEquals(0, LrcTimingEditor.previousEditableLine(text, 2))
     }
+
+    @Test
+    fun timingTargetSkipsBlankLinesAndStripsExistingTimestamp() {
+        val text = "[00:01.000]One\n\n[00:02.000]Three"
+        assertEquals(
+            LrcTimingTarget(lineIndex = 2, ordinal = 2, total = 2, text = "Three"),
+            LrcTimingEditor.timingTarget(text, 1),
+        )
+        assertEquals(
+            LrcTimingTarget(lineIndex = 2, ordinal = 2, total = 2, text = "Three"),
+            LrcTimingEditor.timingTarget(text, 99),
+        )
+        assertNull(LrcTimingEditor.timingTarget("\n\n", 0))
+    }
+
+    @Test
+    fun loopEndEnforcesMinimumWindowAndTrackDuration() {
+        assertEquals(1_500L, LrcTimingEditor.loopEnd(1_000L, 1_100L, 10_000L))
+        assertEquals(10_000L, LrcTimingEditor.loopEnd(9_000L, 12_000L, 10_000L))
+        assertNull(LrcTimingEditor.loopEnd(9_750L, 9_900L, 10_000L))
+    }
 }

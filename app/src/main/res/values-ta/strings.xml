@@ -2735,4 +2735,12 @@
     <string name="duration_minutes_format">%1$dமீ</string>
     <string name="labs_lyrics_editor">பாடல் வரி திருத்தி</string>
     <string name="labs_lyrics_editor_desc">முழுத்திரை பாடல் வரிகளில் திருத்து பொத்தானைக் காட்டு</string>
+    <string name="lyrics_timing_rewind_three_seconds">3 வினாடிகள் பின்செல்</string>
+    <string name="lyrics_timing_repeat_track">தற்போதைய பாடலை மீண்டும் இயக்கு</string>
+    <string name="lyrics_timing_set_loop_start">சுழற்சி தொடக்கத்தை அமை</string>
+    <string name="lyrics_timing_set_loop_end">சுழற்சி முடிவை அமை</string>
+    <string name="lyrics_timing_clear_loop">A-B சுழற்சியை அழி</string>
+    <string name="lyrics_timing_target_line">%1$d/%2$d · %3$s</string>
+    <string name="lyrics_timing_continuous_mode">தொடர்ச்சி</string>
+    <string name="lyrics_timing_step_mode">குறித்த பின் இடைநிறுத்து</string>
 </resources>

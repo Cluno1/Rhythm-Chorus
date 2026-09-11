@@ -2976,6 +2976,14 @@
     <string name="lyrics_generate_zero_template">Zero template</string>
     <string name="lyrics_previous_timing_line">Previous line</string>
     <string name="lyrics_stamp_current_time">Stamp %1$s</string>
+    <string name="lyrics_timing_rewind_three_seconds">Back 3 seconds</string>
+    <string name="lyrics_timing_repeat_track">Repeat current song</string>
+    <string name="lyrics_timing_set_loop_start">Set loop start</string>
+    <string name="lyrics_timing_set_loop_end">Set loop end</string>
+    <string name="lyrics_timing_clear_loop">Clear A-B loop</string>
+    <string name="lyrics_timing_target_line">%1$d/%2$d · %3$s</string>
+    <string name="lyrics_timing_continuous_mode">Continuous</string>
+    <string name="lyrics_timing_step_mode">Pause after stamp</string>
     <string name="lyrics_sync_clean">Matches the server</string>
     <string name="lyrics_sync_pending">Local draft not synced</string>
     <string name="lyrics_sync_in_progress">Syncing…</string>

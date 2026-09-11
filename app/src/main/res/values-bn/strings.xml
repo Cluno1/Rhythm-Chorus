@@ -2735,4 +2735,12 @@
     <string name="duration_minutes_format">%1$dমি</string>
     <string name="labs_lyrics_editor">গানের কথা সম্পাদক</string>
     <string name="labs_lyrics_editor_desc">পূর্ণ-স্ক্রিন গানের কথায় সম্পাদক বোতাম দেখান</string>
+    <string name="lyrics_timing_rewind_three_seconds">৩ সেকেন্ড পিছনে</string>
+    <string name="lyrics_timing_repeat_track">বর্তমান গান পুনরাবৃত্তি</string>
+    <string name="lyrics_timing_set_loop_start">লুপের শুরু নির্ধারণ</string>
+    <string name="lyrics_timing_set_loop_end">লুপের শেষ নির্ধারণ</string>
+    <string name="lyrics_timing_clear_loop">A-B লুপ মুছুন</string>
+    <string name="lyrics_timing_target_line">%1$d/%2$d · %3$s</string>
+    <string name="lyrics_timing_continuous_mode">একটানা</string>
+    <string name="lyrics_timing_step_mode">সময়চিহ্নের পর বিরতি</string>
 </resources>
