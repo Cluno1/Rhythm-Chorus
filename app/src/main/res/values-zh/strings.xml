@@ -2713,6 +2713,11 @@
     <string name="player_release_to_close">释放关闭</string>
     <string name="player_swipe_down_to_close">向下滑动关闭</string>
     <string name="lyrics_source_attribution">歌词：%1$s</string>
+    <string name="lyrics_source_display">歌词：%1$s</string>
+    <string name="lyrics_source_music_library">音乐库</string>
+    <string name="lyrics_source_music_library_language">音乐库 · %1$s</string>
+    <string name="lyrics_contribution_uploader_display">上传者：%1$s · %2$s</string>
+    <string name="lyrics_contribution_modifier_display">修改者：%1$s · %2$s</string>
     <string name="lyrics_currently_no_lyrics">目前这首歌还没有歌词。\n</string>
     <string name="lyrics_no_lyrics">这首歌没有可用的歌词。</string>
     <string name="artist_options">艺术家选项</string>

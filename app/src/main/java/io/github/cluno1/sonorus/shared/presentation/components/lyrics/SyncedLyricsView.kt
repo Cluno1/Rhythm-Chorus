@@ -33,6 +33,7 @@ import io.github.cluno1.sonorus.util.LyricsParser
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import io.github.cluno1.sonorus.shared.data.model.AppSettings
+import io.github.cluno1.sonorus.shared.data.model.LyricsContribution
 import io.github.cluno1.sonorus.RhythmApplication
 import androidx.compose.foundation.interaction.collectIsDraggedAsState
 import kotlinx.coroutines.delay
@@ -150,6 +151,7 @@ fun SyncedLyricsView(
     showTranslation: Boolean = true,
     showRomanization: Boolean = true,
     lyricsSource: String? = null, // Source of lyrics (e.g., "LRCLib", "Embedded", "Local File")
+    contributions: List<LyricsContribution> = emptyList(),
     textSizeMultiplier: Float = 1.0f, // Scale factor for lyrics text size
     textAlignment: TextAlign = TextAlign.Center, // Alignment of lyrics text
     onTapLyricsView: (() -> Unit)? = null,
@@ -356,16 +358,14 @@ fun SyncedLyricsView(
                 }
             }
             
-            // Display lyrics source at the bottom
-            if (!lyricsSource.isNullOrBlank()) {
+            if (!lyricsSource.isNullOrBlank() || contributions.isNotEmpty()) {
                 item {
-                    Spacer(modifier = Modifier.height(24.dp))
-                    Text(
-                        text = stringResource(R.string.lyrics_source_attribution, localizedLyricsSourceLabel(lyricsSource)),
-                        style = MaterialTheme.typography.labelSmall,
+                    LyricsAttributionFooter(
+                        lyricsSource = lyricsSource,
+                        contributions = contributions,
                         color = (textColor ?: MaterialTheme.colorScheme.onSurface).copy(alpha = 0.5f),
+                        textStyle = MaterialTheme.typography.labelSmall,
                         textAlign = TextAlign.Center,
-                        modifier = Modifier.padding(bottom = 8.dp)
                     )
                 }
             }

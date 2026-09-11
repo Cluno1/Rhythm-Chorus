@@ -105,7 +105,7 @@ import io.github.cluno1.sonorus.shared.presentation.components.dialogs.PlaybackS
 import io.github.cluno1.sonorus.shared.presentation.components.player.SleepTimerBottomSheetNew
 import io.github.cluno1.sonorus.shared.presentation.components.lyrics.LyricsEditorBottomSheet
 import io.github.cluno1.sonorus.shared.presentation.components.lyrics.SyncedLyricsView
-import io.github.cluno1.sonorus.shared.presentation.components.lyrics.localizedLyricsSourceLabel
+import io.github.cluno1.sonorus.shared.presentation.components.lyrics.LyricsAttributionFooter
 import io.github.cluno1.sonorus.shared.presentation.components.lyrics.WordByWordLyricsView
 import io.github.cluno1.sonorus.shared.presentation.components.player.formatDuration
 import io.github.cluno1.sonorus.features.local.presentation.navigation.Screen
@@ -2571,7 +2571,7 @@ private fun RhythmPlayerLyricsPanel(
 
                 if (wordByWordLyrics != null) {
                     WordByWordLyricsView(wordByWordLyrics, currentTimeMs, Modifier.fillMaxSize(), onSeek = onLyricsSeek,
-                        onTapLyricsView = onTapLyricsView, lyricsSource = lyrics.source, textSizeMultiplier = textSizeMultiplier,
+                        onTapLyricsView = onTapLyricsView, lyricsSource = lyrics.source, contributions = lyrics.contributions, textSizeMultiplier = textSizeMultiplier,
                         textAlignment = textAlignment, showTranslation = showTranslation, showRomanization = showRomanization,
                         textColor = textColor, activeColor = activeColor, subtitleColor = subtitleColor)
                 } else {
@@ -2588,7 +2588,7 @@ private fun RhythmPlayerLyricsPanel(
                     } else if (parsedLyrics?.isNotEmpty() == true) {
                         SyncedLyricsView(lyricsText, currentTimeMs, Modifier.fillMaxSize(), parsedLyricsInput = parsedLyrics,
                             onSeek = onLyricsSeek, onTapLyricsView = onTapLyricsView, showTranslation = showTranslation,
-                            showRomanization = showRomanization, lyricsSource = lyrics.source, textSizeMultiplier = textSizeMultiplier, textAlignment = textAlignment,
+                            showRomanization = showRomanization, lyricsSource = lyrics.source, contributions = lyrics.contributions, textSizeMultiplier = textSizeMultiplier, textAlignment = textAlignment,
                             textColor = textColor, activeColor = activeColor, subtitleColor = subtitleColor)
                     } else {
                         Column(Modifier.fillMaxSize()
@@ -2596,14 +2596,17 @@ private fun RhythmPlayerLyricsPanel(
                             .verticalScroll(rememberScrollState())
                             .padding(24.dp),
                             horizontalAlignment = when (textAlignment) { TextAlign.Start -> Alignment.Start; TextAlign.End -> Alignment.End; else -> Alignment.CenterHorizontally }) {
-                            Text(filteredText, style = MaterialTheme.typography.bodyLarge.copy(fontSize = MaterialTheme.typography.bodyLarge.fontSize * textSizeMultiplier,
+                            Text(io.github.cluno1.sonorus.util.LyricsContributionAttribution.visibleLyrics(filteredText, "plain"), style = MaterialTheme.typography.bodyLarge.copy(fontSize = MaterialTheme.typography.bodyLarge.fontSize * textSizeMultiplier,
                                 lineHeight = MaterialTheme.typography.bodyLarge.lineHeight * 1.6f * textSizeMultiplier, fontWeight = FontWeight.Medium, letterSpacing = 0.5.sp),
                                 color = textColor, textAlign = textAlignment, modifier = Modifier.fillMaxWidth())
-                            if (!lyrics.source.isNullOrBlank()) {
-                                Spacer(Modifier.height(24.dp))
-                                Text(stringResource(R.string.lyrics_source_attribution, localizedLyricsSourceLabel(lyrics.source)), style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Normal, letterSpacing = 0.5.sp),
-                                    color = subtitleColor.copy(alpha = 0.6f), textAlign = textAlignment, modifier = Modifier.fillMaxWidth().padding(bottom = 32.dp))
-                            }
+                            LyricsAttributionFooter(
+                                lyricsSource = lyrics.source,
+                                contributions = lyrics.contributions,
+                                color = subtitleColor.copy(alpha = 0.6f),
+                                textStyle = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Normal, letterSpacing = 0.5.sp),
+                                textAlign = textAlignment,
+                                modifier = Modifier.padding(bottom = 32.dp),
+                            )
                         }
                     }
                 }

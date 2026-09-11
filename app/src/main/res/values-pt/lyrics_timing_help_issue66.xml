@@ -2,11 +2,11 @@
 <resources>
     <string name="lyrics_timing_help_storage_section">Guardar e sincronizar com o servidor</string>
     <string name="lyrics_timing_help_local_title">Rascunho local (na aplicação)</string>
-    <string name="lyrics_timing_help_local_body">Numa música do Catalog, as alterações são guardadas automaticamente como rascunho neste dispositivo após uma breve pausa. “Rascunho local não sincronizado” significa que o trabalho está seguro localmente, mas ainda não chegou ao servidor. Limpar os dados da aplicação pode apagá-lo.</string>
+    <string name="lyrics_timing_help_local_body">Numa música da biblioteca musical, as alterações são guardadas automaticamente como rascunho neste dispositivo após uma breve pausa. “Rascunho local não sincronizado” significa que o trabalho está seguro localmente, mas ainda não chegou ao servidor. Limpar os dados da aplicação pode apagá-lo.</string>
     <string name="lyrics_timing_help_export_title">Guardar letra (exportar ficheiro)</string>
     <string name="lyrics_timing_help_export_body">O botão “Guardar letra” na parte inferior permite escolher onde exportar um ficheiro LRC, JSON ou TTML e atualiza a cache local. Exportar um ficheiro não o envia para o servidor.</string>
     <string name="lyrics_timing_help_server_title">Sincronizar (enviar para o servidor)</string>
-    <string name="lyrics_timing_help_server_body">“Sincronizar” só aparece em músicas do Catalog compatíveis. Envia o idioma de letra atualmente selecionado para esta música. Aguarde “Sincronizado com o servidor”; “Pendente” ou “Falhou” continua a significar apenas local.</string>
+    <string name="lyrics_timing_help_server_body">“Sincronizar” só aparece em músicas compatíveis da biblioteca musical. Envia o idioma de letra atualmente selecionado para esta música. Aguarde “Sincronizado com o servidor”; “Pendente” ou “Falhou” continua a significar apenas local.</string>
     <string name="lyrics_timing_help_conflict_title">Quando existe um conflito</string>
     <string name="lyrics_timing_help_conflict_body">“Usar servidor” remove o rascunho local e carrega a cópia do servidor. “Substituir servidor” troca a cópia mais recente do servidor pelo rascunho local. Reveja ambas antes de escolher.</string>
 </resources>

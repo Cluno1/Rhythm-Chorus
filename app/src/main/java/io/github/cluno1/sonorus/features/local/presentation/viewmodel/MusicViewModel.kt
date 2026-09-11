@@ -137,6 +137,7 @@ import io.github.cluno1.sonorus.util.GenreUtils
 import io.github.cluno1.sonorus.util.NaturalSortComparator
 import io.github.cluno1.sonorus.util.LyricLine
 import io.github.cluno1.sonorus.util.LyricsParser
+import io.github.cluno1.sonorus.util.LyricsContributionAttribution
 import io.github.cluno1.sonorus.util.ServiceStartUtils
 import io.github.cluno1.sonorus.utils.StatusBroadcaster
 import io.github.cluno1.sonorus.shared.data.repository.PlaybackStatsRepository
@@ -8175,30 +8176,35 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     private fun catalogLyricsData(lyrics: String, format: String, language: String): LyricsData {
-        val source = if (language == "und") "Catalog" else "Catalog · $language"
+        val source = "RHYTHM_LIBRARY|$language"
+        val extracted = LyricsContributionAttribution.extract(lyrics, format)
+        val visibleLyrics = extracted.visibleLyrics
         return when (format) {
             "lrc", "enhanced_lrc" -> LyricsData(
-                plainLyrics = lyrics.lines().joinToString("\n") { line ->
+                plainLyrics = visibleLyrics.lines().joinToString("\n") { line ->
                     line.replace(Regex("^\\[\\d{1,2}:\\d{2}(?:\\.\\d{1,3})?]"), "")
                         .replace(Regex("<\\d{1,2}:\\d{2}(?:\\.\\d{1,3})?>"), "")
                         .trim()
                 },
-                syncedLyrics = lyrics,
+                syncedLyrics = visibleLyrics,
                 source = source,
                 isCorrected = true,
+                contributions = extracted.contributions,
             )
             "word_by_word_json" -> LyricsData(
                 plainLyrics = null,
                 syncedLyrics = null,
-                wordByWordLyrics = lyrics,
+                wordByWordLyrics = visibleLyrics,
                 source = source,
                 isCorrected = true,
+                contributions = extracted.contributions,
             )
             else -> LyricsData(
-                plainLyrics = lyrics,
+                plainLyrics = visibleLyrics,
                 syncedLyrics = null,
                 source = source,
                 isCorrected = true,
+                contributions = extracted.contributions,
             )
         }
     }
@@ -8558,7 +8564,12 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
                         val language = normalizeCatalogLyricsLanguageTag(
                             _catalogLyricsLanguage.value ?: catalogNowPlaying.lyricsLanguage ?: "und",
                         )
-                        val backendFormat = backendLyricFormat(sanitizedLyrics, format)
+                        val lyricsWithHistory = LyricsContributionAttribution.preserveHistory(
+                            lyrics = sanitizedLyrics,
+                            existing = _currentLyrics.value?.contributions.orEmpty(),
+                            format = format.orEmpty(),
+                        )
+                        val backendFormat = backendLyricFormat(lyricsWithHistory, format)
                         val existingDraft = catalogLyricsDraftStore.load(
                             connection.draftNamespace,
                             catalogNowPlaying.renditionId,
@@ -8568,7 +8579,7 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
                             namespace = connection.draftNamespace,
                             renditionId = catalogNowPlaying.renditionId,
                             language = language,
-                            lyrics = sanitizedLyrics,
+                            lyrics = lyricsWithHistory,
                             format = backendFormat,
                             baseRevision = existingDraft
                                 ?.takeIf { it.status != "synced" }
@@ -8580,7 +8591,7 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
                         catalogLyricsDraftStore.save(draft)
                         val updated = catalogNowPlaying.withLyricsVariant(
                             language,
-                            sanitizedLyrics,
+                            lyricsWithHistory,
                             backendFormat,
                         )
                         _catalogNowPlaying.value = updated
@@ -8781,7 +8792,12 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
             .replace("\r\n", "\n")
             .replace("\r", "\n")
             .take(MAX_EDITABLE_LYRICS_CHARS)
-        val backendFormat = backendLyricFormat(sanitizedLyrics, format)
+        val lyricsWithHistory = LyricsContributionAttribution.preserveHistory(
+            lyrics = sanitizedLyrics,
+            existing = _currentLyrics.value?.contributions.orEmpty(),
+            format = format,
+        )
+        val backendFormat = backendLyricFormat(lyricsWithHistory, format)
         val connection = catalogRepository.connection()
         if (connection.draftNamespace.isBlank()) return
 
@@ -8804,7 +8820,7 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
                 namespace = connection.draftNamespace,
                 renditionId = nowPlaying.renditionId,
                 language = language,
-                lyrics = sanitizedLyrics,
+                lyrics = lyricsWithHistory,
                 format = backendFormat,
                 baseRevision = expectedRevision,
                 status = "pending",
@@ -8815,7 +8831,7 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
             catalogRepository.replaceRenditionLyrics(
                 renditionId = nowPlaying.renditionId,
                 language = language,
-                lyrics = sanitizedLyrics,
+                lyrics = lyricsWithHistory,
                 format = backendFormat,
                 expectedRevision = expectedRevision,
                 idempotencyKey = java.util.UUID.randomUUID().toString(),

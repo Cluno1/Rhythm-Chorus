@@ -191,6 +191,7 @@ import io.github.cluno1.sonorus.shared.presentation.components.common.NetworkOpe
 import android.view.animation.OvershootInterpolator
 import io.github.cluno1.sonorus.shared.presentation.components.player.SleepTimerBottomSheetNew
 import io.github.cluno1.sonorus.shared.presentation.components.lyrics.SyncedLyricsView
+import io.github.cluno1.sonorus.shared.presentation.components.lyrics.LyricsAttributionFooter
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.asPaddingValues
@@ -2246,6 +2247,7 @@ fun MaterialPlayerScreen(
                                                             onSeek = onLyricsSeek,
                                                             onTapLyricsView = onTapLyricsView,
                                                             lyricsSource = lyrics.source,
+                                                            contributions = lyrics.contributions,
                                                             textSizeMultiplier = playerLyricsTextSize,
                                                             textAlignment = lyricsTextAlign,
                                                             showTranslation = showLyricsTranslation,
@@ -2313,6 +2315,7 @@ fun MaterialPlayerScreen(
                                                                 showTranslation = showLyricsTranslation,
                                                                 showRomanization = showLyricsRomanization,
                                                                 lyricsSource = lyrics.source,
+                                                                contributions = lyrics.contributions,
                                                                 textSizeMultiplier = playerLyricsTextSize,
                                                                 textAlignment = lyricsTextAlign
                                                             )
@@ -2332,7 +2335,10 @@ fun MaterialPlayerScreen(
                                                                 }
                                                             ) {
                                                                 Text(
-                                                                    text = filteredPlainLyricsText,
+                                                                    text = io.github.cluno1.sonorus.util.LyricsContributionAttribution.visibleLyrics(
+                                                                        filteredPlainLyricsText,
+                                                                        "plain",
+                                                                    ),
                                                                     style = MaterialTheme.typography.bodyLarge.copy(
                                                                         fontSize = MaterialTheme.typography.bodyLarge.fontSize * playerLyricsTextSize,
                                                                         lineHeight = MaterialTheme.typography.bodyLarge.lineHeight * 1.6f * playerLyricsTextSize,
@@ -2344,6 +2350,13 @@ fun MaterialPlayerScreen(
                                                                     modifier = Modifier
                                                                         .fillMaxWidth()
                                                                         .padding(horizontal = 8.dp)
+                                                                )
+                                                                LyricsAttributionFooter(
+                                                                    lyricsSource = lyrics.source,
+                                                                    contributions = lyrics.contributions,
+                                                                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
+                                                                    textStyle = MaterialTheme.typography.labelMedium,
+                                                                    textAlign = lyricsTextAlign,
                                                                 )
                                                             }
                                                         }

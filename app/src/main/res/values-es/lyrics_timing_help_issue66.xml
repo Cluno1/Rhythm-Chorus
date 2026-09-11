@@ -2,11 +2,11 @@
 <resources>
     <string name="lyrics_timing_help_storage_section">Guardado y sincronización con el servidor</string>
     <string name="lyrics_timing_help_local_title">Borrador local (en la aplicación)</string>
-    <string name="lyrics_timing_help_local_body">En una canción de Catalog, los cambios se guardan automáticamente como borrador en este dispositivo tras una breve pausa. «Borrador local sin sincronizar» significa que tu trabajo está seguro localmente, pero aún no llegó al servidor. Borrar los datos de la aplicación puede eliminarlo.</string>
+    <string name="lyrics_timing_help_local_body">En una canción de la biblioteca musical, los cambios se guardan automáticamente como borrador en este dispositivo tras una breve pausa. «Borrador local sin sincronizar» significa que tu trabajo está seguro localmente, pero aún no llegó al servidor. Borrar los datos de la aplicación puede eliminarlo.</string>
     <string name="lyrics_timing_help_export_title">Guardar letra (exportar archivo)</string>
     <string name="lyrics_timing_help_export_body">El botón «Guardar letra» de la parte inferior permite elegir dónde exportar un archivo LRC, JSON o TTML y actualiza la caché local. Exportar un archivo no lo sube al servidor.</string>
     <string name="lyrics_timing_help_server_title">Sincronizar (subir al servidor)</string>
-    <string name="lyrics_timing_help_server_body">«Sincronizar» solo aparece en canciones de Catalog compatibles. Sube el idioma de letra actualmente seleccionado para esta canción. Espera a «Sincronizado con el servidor»; «Pendiente» o «Error» sigue significando que solo está local.</string>
+    <string name="lyrics_timing_help_server_body">«Sincronizar» solo aparece en canciones compatibles de la biblioteca musical. Sube el idioma de letra actualmente seleccionado para esta canción. Espera a «Sincronizado con el servidor»; «Pendiente» o «Error» sigue significando que solo está local.</string>
     <string name="lyrics_timing_help_conflict_title">Cuando hay un conflicto</string>
     <string name="lyrics_timing_help_conflict_body">«Usar servidor» elimina el borrador local y carga la copia del servidor. «Sobrescribir servidor» sustituye la copia más nueva del servidor por tu borrador local. Revisa ambas antes de elegir.</string>
 </resources>

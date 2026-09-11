@@ -2,11 +2,11 @@
 <resources>
     <string name="lyrics_timing_help_storage_section">保存与服务器同步</string>
     <string name="lyrics_timing_help_local_title">本地草稿（应用内）</string>
-    <string name="lyrics_timing_help_local_body">对于 Catalog 歌曲，编辑停止片刻后会自动保存为本设备草稿。“本地草稿未同步”表示内容已保存在本机，但尚未上传服务器。清除应用数据可能会删除该草稿。</string>
+    <string name="lyrics_timing_help_local_body">对于音乐库歌曲，编辑停止片刻后会自动保存为本设备草稿。“本地草稿未同步”表示内容已保存在本机，但尚未上传服务器。清除应用数据可能会删除该草稿。</string>
     <string name="lyrics_timing_help_export_title">保存歌词（导出文件）</string>
     <string name="lyrics_timing_help_export_body">底部“保存歌词”会让你选择导出 LRC、JSON 或 TTML 文件的位置，同时更新应用本地缓存。导出文件并不等于上传服务器。</string>
     <string name="lyrics_timing_help_server_title">同步（上传服务器）</string>
-    <string name="lyrics_timing_help_server_body">只有支持的 Catalog 歌曲会显示“同步”。它只上传这首歌当前语言的歌词。请等待“已同步到服务器”；“待同步”或“同步失败”仍表示只保存在本地。</string>
+    <string name="lyrics_timing_help_server_body">只有支持的音乐库歌曲会显示“同步”。它只上传这首歌当前语言的歌词。请等待“已同步到服务器”；“待同步”或“同步失败”仍表示只保存在本地。</string>
     <string name="lyrics_timing_help_conflict_title">发生冲突时</string>
     <string name="lyrics_timing_help_conflict_body">“使用服务器版本”会删除本地草稿并重新载入服务器内容；“覆盖服务器版本”会用本地草稿替换服务器上的较新内容。选择前请先确认。</string>
     <string name="lyrics_timing_help_repeat_default_body">进入编辑器时会自动开启当前歌曲循环，打点过程中不会跳到下一首。启动 A–B 后会暂时关闭整曲循环；离开编辑器时会恢复进入前的循环模式。</string>

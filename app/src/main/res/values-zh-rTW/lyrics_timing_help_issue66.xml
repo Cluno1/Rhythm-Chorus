@@ -2,11 +2,11 @@
 <resources>
     <string name="lyrics_timing_help_storage_section">儲存與伺服器同步</string>
     <string name="lyrics_timing_help_local_title">本機草稿（應用程式內）</string>
-    <string name="lyrics_timing_help_local_body">對於 Catalog 歌曲，停止編輯片刻後會自動儲存為此裝置上的草稿。「本機草稿未同步」表示內容已安全保存在本機，但尚未送到伺服器。清除應用程式資料可能會刪除此草稿。</string>
+    <string name="lyrics_timing_help_local_body">對於音樂庫歌曲，停止編輯片刻後會自動儲存為此裝置上的草稿。「本機草稿未同步」表示內容已安全保存在本機，但尚未送到伺服器。清除應用程式資料可能會刪除此草稿。</string>
     <string name="lyrics_timing_help_export_title">儲存歌詞（匯出檔案）</string>
     <string name="lyrics_timing_help_export_body">底部的「儲存歌詞」會讓你選擇匯出 LRC、JSON 或 TTML 檔案的位置，並更新應用程式的本機快取。匯出檔案不會上傳到伺服器。</string>
     <string name="lyrics_timing_help_server_title">同步（上傳到伺服器）</string>
-    <string name="lyrics_timing_help_server_body">只有支援的 Catalog 歌曲才會顯示「同步」。它只會上傳此歌曲目前語言的歌詞。請等待「已同步到伺服器」；「待同步」或「同步失敗」仍代表只保存在本機。</string>
+    <string name="lyrics_timing_help_server_body">只有支援的音樂庫歌曲才會顯示「同步」。它只會上傳此歌曲目前語言的歌詞。請等待「已同步到伺服器」；「待同步」或「同步失敗」仍代表只保存在本機。</string>
     <string name="lyrics_timing_help_conflict_title">發生衝突時</string>
     <string name="lyrics_timing_help_conflict_body">「使用伺服器版本」會刪除本機草稿並重新載入伺服器內容；「覆蓋伺服器版本」會以本機草稿取代伺服器上較新的內容。選擇前請先確認。</string>
     <string name="lyrics_timing_help_repeat_default_body">進入編輯器時會自動開啟目前歌曲循環，打點期間不會跳到下一首。啟動 A–B 後會暫時關閉整曲循環；離開編輯器時會恢復進入前的循環模式。</string>

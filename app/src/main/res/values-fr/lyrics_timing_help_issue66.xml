@@ -2,11 +2,11 @@
 <resources>
     <string name="lyrics_timing_help_storage_section">Enregistrement et synchronisation serveur</string>
     <string name="lyrics_timing_help_local_title">Brouillon local (dans l’application)</string>
-    <string name="lyrics_timing_help_local_body">Pour un morceau Catalog, les modifications sont automatiquement enregistrées comme brouillon sur cet appareil après une courte pause. « Brouillon local non synchronisé » signifie que votre travail est conservé localement, mais pas encore envoyé au serveur. Effacer les données de l’application peut supprimer ce brouillon.</string>
+    <string name="lyrics_timing_help_local_body">Pour un morceau de la bibliothèque musicale, les modifications sont automatiquement enregistrées comme brouillon sur cet appareil après une courte pause. « Brouillon local non synchronisé » signifie que votre travail est conservé localement, mais pas encore envoyé au serveur. Effacer les données de l’application peut supprimer ce brouillon.</string>
     <string name="lyrics_timing_help_export_title">Enregistrer les paroles (exporter un fichier)</string>
     <string name="lyrics_timing_help_export_body">Le bouton « Enregistrer les paroles » en bas permet de choisir où exporter un fichier LRC, JSON ou TTML et actualise le cache local. Exporter un fichier ne l’envoie pas au serveur.</string>
     <string name="lyrics_timing_help_server_title">Synchroniser (envoyer au serveur)</string>
-    <string name="lyrics_timing_help_server_body">« Synchroniser » apparaît uniquement pour les morceaux Catalog compatibles. Il envoie la langue de paroles actuellement sélectionnée pour ce morceau. Attendez « Synchronisé avec le serveur » ; « En attente » ou « Échec » signifie que le brouillon reste uniquement local.</string>
+    <string name="lyrics_timing_help_server_body">« Synchroniser » apparaît uniquement pour les morceaux compatibles de la bibliothèque musicale. Il envoie la langue de paroles actuellement sélectionnée pour ce morceau. Attendez « Synchronisé avec le serveur » ; « En attente » ou « Échec » signifie que le brouillon reste uniquement local.</string>
     <string name="lyrics_timing_help_conflict_title">En cas de conflit</string>
     <string name="lyrics_timing_help_conflict_body">« Utiliser le serveur » supprime le brouillon local et recharge la version serveur. « Écraser le serveur » remplace la version serveur plus récente par votre brouillon local. Vérifiez les deux avant de choisir.</string>
 </resources>
