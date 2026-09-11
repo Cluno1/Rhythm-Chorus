@@ -2892,6 +2892,9 @@
     <string name="device_manual_metadata_use_lyrics">使用此歌詞</string>
     <string name="device_manual_metadata_use_artwork">使用此封面</string>
     <string name="device_manual_metadata_artwork_preview">封面預覽</string>
+    <string name="device_manual_metadata_artwork_save_desc">可以僅儲存在 Sonorus 中，也可以同時在您選擇的音樂資料夾中儲存通用封面檔案。</string>
+    <string name="device_manual_metadata_artwork_app_only">僅在 Sonorus 中使用</string>
+    <string name="device_manual_metadata_artwork_music_folder">儲存到音樂資料夾</string>
     <string name="lyrics_online_rematch">線上重新配對</string>
     <string name="lyrics_choose_version">選擇其他版本</string>
     <string name="lyrics_restore_local">還原本機歌詞</string>

@@ -63,6 +63,8 @@ private data class CachedArtworkFile(
 
 private data class SiblingArtwork(val file: File, val albumScoped: Boolean)
 
+private data class ArtworkCandidates(val userSelected: Uri?, val cached: Uri?)
+
 private fun <T> Result<T>.throwIfCancelled(): Result<T> = onFailure { error ->
     if (error is CancellationException) throw error
 }
@@ -95,6 +97,12 @@ class DeviceMetadataRepository(private val context: Context) {
 
     suspend fun saveLyrics(song: Song, value: LyricsData, provider: String?, externalId: String?, confidence: Double?, cachePath: String? = null, pinned: Boolean = false) {
         val old = dao.getBySongId(song.id)
+        if (
+            old?.fingerprint == fingerprint(song) &&
+            DeviceMetadataPolicy.shouldPreservePinnedSelection(old.lyricsPinned, pinned)
+        ) {
+            return
+        }
         val resolvedCachePath = cachePath ?: provider?.let {
             metadataDir().resolve("lyrics-${stableId(song)}.json").also { file -> file.writeText(Gson().toJson(value)) }.absolutePath
         }
@@ -247,7 +255,12 @@ class DeviceMetadataRepository(private val context: Context) {
         )
     }
 
-    suspend fun applyArtwork(song: Song, candidate: DeviceArtworkCandidate): Uri? = withContext(Dispatchers.IO) {
+    suspend fun applyArtwork(
+        song: Song,
+        candidate: DeviceArtworkCandidate,
+        saveTarget: DeviceArtworkSaveTarget = DeviceArtworkSaveTarget.APP_ONLY,
+        destinationTreeUri: Uri? = null,
+    ): Uri? = withContext(Dispatchers.IO) {
         if (!song.isDeviceSong()) return@withContext null
         val albumKey = DeviceAlbumIdentity.key(song) ?: return@withContext null
         val downloadProvider = when (candidate.provider) {
@@ -261,6 +274,11 @@ class DeviceMetadataRepository(private val context: Context) {
                 "album-manual-${sha256("$albumKey|${candidate.provider}|${candidate.externalId}|${candidate.imageUrl}")}.jpg",
                 downloadProvider,
             ) ?: return@withLock null
+            if (saveTarget == DeviceArtworkSaveTarget.MUSIC_FOLDER) {
+                val destination = destinationTreeUri ?: return@withLock null
+                folders.writeArtwork(destination, cached.file, cached.mediaType)
+                    ?: return@withLock null
+            }
             saveAlbumArtwork(
                 song = song,
                 file = cached.file,
@@ -278,28 +296,47 @@ class DeviceMetadataRepository(private val context: Context) {
 
     suspend fun cachedArtwork(song: Song): Uri? {
         if (!song.isDeviceSong()) return null
+        val candidates = artworkCandidates(song)
+        return candidates.userSelected ?: candidates.cached
+    }
+
+    suspend fun pinnedArtwork(song: Song): Uri? {
+        if (!song.isDeviceSong()) return null
+        return artworkCandidates(song).userSelected
+    }
+
+    private suspend fun artworkCandidates(song: Song): ArtworkCandidates {
+        val albumKey = DeviceAlbumIdentity.key(song)
+        if (albumKey != null) ensureAlbumLink(song, albumKey)
+        val album = albumKey?.let { albumDao.getAlbum(it) }
+        val albumFile = album?.let(::validAlbumArtwork)?.toUri()
+        val selected = albumFile?.takeIf {
+            album.pinned && album.artworkSource == "USER_SELECTED"
+        }
         val songRow = dao.getBySongId(song.id)
         val songFile = songRow
             ?.takeIf { it.fingerprint == fingerprint(song) }
             ?.artworkCachePath
             ?.let(::File)
             ?.takeIf { it.isFile && artworkValidator.isReadable(it.toUri()) }
-        if (songFile != null) return songFile.toUri()
-
-        val albumKey = DeviceAlbumIdentity.key(song) ?: return null
-        ensureAlbumLink(song, albumKey)
-        return albumDao.getAlbum(albumKey)?.let(::validAlbumArtwork)?.toUri()
+            ?.toUri()
+        return ArtworkCandidates(selected, songFile ?: albumFile)
     }
 
     /** Applies valid DEVICE album cache and removes unreadable shell URIs from the projection. */
     suspend fun projectArtwork(songs: List<Song>): List<Song> = withContext(Dispatchers.IO) {
         val projected = songs.map { song ->
             if (!song.isDeviceSong()) return@map song
+            val candidates = artworkCandidates(song)
             val current = song.artworkUri?.takeIf { uri ->
                 (uri.scheme == "content" || uri.scheme == "file" || uri.scheme == null) &&
                     !isManagedAlbumArtwork(uri) && artworkValidator.isReadable(uri)
             }
-            val resolved = current ?: cachedArtwork(song)
+            val resolved = DeviceMetadataPolicy.resolveArtwork(
+                userSelected = candidates.userSelected,
+                local = current,
+                cached = candidates.cached,
+            )
             if (resolved == song.artworkUri) song else song.copy(artworkUri = resolved)
         }
         val changed = projected.filterIndexed { index, song -> song.artworkUri != songs[index].artworkUri }
@@ -335,6 +372,7 @@ class DeviceMetadataRepository(private val context: Context) {
 
     suspend fun findOrFetchArtwork(song: Song, forceOnline: Boolean = false): Uri? = withContext(Dispatchers.IO) {
         if (!song.isDeviceSong()) return@withContext null
+        pinnedArtwork(song)?.let { return@withContext it }
         if (!forceOnline) {
             song.artworkUri?.takeIf { it.scheme == "content" || it.scheme == "file" || it.scheme == null }
                 ?.takeIf(artworkValidator::isReadable)
@@ -430,6 +468,12 @@ class DeviceMetadataRepository(private val context: Context) {
         val albumKey = DeviceAlbumIdentity.key(song) ?: return
         ensureAlbumLink(song, albumKey)
         val old = albumDao.getAlbum(albumKey)
+        if (
+            old != null &&
+            DeviceMetadataPolicy.shouldPreservePinnedSelection(old.pinned, pinned)
+        ) {
+            return
+        }
         val materialized = cached ?: cachedFile(file)
         albumDao.upsertAlbum(albumBase(song, old).copy(
             provider = provider,

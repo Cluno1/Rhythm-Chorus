@@ -26,6 +26,13 @@ object DeviceMetadataPolicy {
         add(DeviceMetadataSource.PUBLIC_API)
     }
 
+    /** A normal refresh may update caches, but it must never replace an explicit user choice. */
+    fun shouldPreservePinnedSelection(existingPinned: Boolean, incomingPinned: Boolean): Boolean =
+        existingPinned && !incomingPinned
+
+    fun <T> resolveArtwork(userSelected: T?, local: T?, cached: T?): T? =
+        userSelected ?: local ?: cached
+
     fun cacheKey(songId: String, artist: String, title: String) = "$songId:$artist:$title".lowercase()
     fun belongsToSong(cacheKey: String, songId: String) = cacheKey.startsWith("$songId:")
 

@@ -13,6 +13,17 @@ class DeviceMetadataPolicyTest {
             DeviceMetadataPolicy.sourcePriority(true)
         )
         assertEquals(DeviceMetadataSource.EMBEDDED, DeviceMetadataPolicy.sourcePriority(false).first())
+        assertEquals("selected", DeviceMetadataPolicy.resolveArtwork("selected", "embedded", "cache"))
+        assertEquals("embedded", DeviceMetadataPolicy.resolveArtwork(null, "embedded", "cache"))
+        assertTrue(DeviceMetadataPolicy.shouldPreservePinnedSelection(existingPinned = true, incomingPinned = false))
+        assertFalse(DeviceMetadataPolicy.shouldPreservePinnedSelection(existingPinned = true, incomingPinned = true))
+    }
+
+    @Test fun `folder artwork uses conventional names matching its media type`() {
+        assertEquals("cover.jpg", DeviceArtworkFolderPolicy.fileName("image/jpeg"))
+        assertEquals("cover.png", DeviceArtworkFolderPolicy.fileName("image/png; charset=binary"))
+        assertEquals("cover.webp", DeviceArtworkFolderPolicy.fileName("image/webp"))
+        assertEquals("cover.jpg", DeviceArtworkFolderPolicy.fileName("application/octet-stream"))
     }
 
     @Test fun `catalog and arbitrary network songs never enter device enrichment`() {

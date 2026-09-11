@@ -11,10 +11,14 @@ import android.provider.DocumentsContract
 import android.provider.MediaStore
 import androidx.core.content.edit
 import androidx.documentfile.provider.DocumentFile
+import java.io.File
+import java.util.Locale
 
 data class DeviceSiblingFile(val uri: Uri, val name: String)
 
-/** Persisted, read-only Storage Access Framework roots used only for sibling metadata. */
+data class DeviceArtworkFolderFile(val uri: Uri, val name: String)
+
+/** Persisted Storage Access Framework roots used for sibling metadata and explicit cover exports. */
 class DeviceFolderAccess(private val context: Context) {
     private val prefs = context.getSharedPreferences("device_metadata_folders", Context.MODE_PRIVATE)
 
@@ -23,18 +27,50 @@ class DeviceFolderAccess(private val context: Context) {
     }.toSet()
 
     fun add(uri: Uri) {
-        context.contentResolver.takePersistableUriPermission(uri, Intent.FLAG_GRANT_READ_URI_PERMISSION)
+        context.contentResolver.takePersistableUriPermission(
+            uri,
+            Intent.FLAG_GRANT_READ_URI_PERMISSION,
+        )
         prefs.edit { putStringSet(KEY_ROOTS, roots().map(Uri::toString).toSet() + uri.toString()) }
     }
 
     fun clear() {
-        roots().forEach { uri -> runCatching { context.contentResolver.releasePersistableUriPermission(uri, Intent.FLAG_GRANT_READ_URI_PERMISSION) } }
+        roots().forEach(::releasePermission)
         prefs.edit { remove(KEY_ROOTS) }
     }
 
     fun remove(uri: Uri) {
-        runCatching { context.contentResolver.releasePersistableUriPermission(uri, Intent.FLAG_GRANT_READ_URI_PERMISSION) }
+        releasePermission(uri)
         prefs.edit { putStringSet(KEY_ROOTS, roots().filterNot { it == uri }.map(Uri::toString).toSet()) }
+    }
+
+    /** Writes a conventional cover file only after the user explicitly selected the destination tree. */
+    fun writeArtwork(directoryUri: Uri, source: File, mediaType: String): DeviceArtworkFolderFile? =
+        runCatching {
+            if (!source.isFile || source.length() <= 0L) return@runCatching null
+            addWritable(directoryUri)
+            val directory = DocumentFile.fromTreeUri(context, directoryUri)
+                ?.takeIf { it.isDirectory && it.canWrite() }
+                ?: return@runCatching null
+            val normalizedType = DeviceArtworkFolderPolicy.normalizedMediaType(mediaType)
+            val displayName = DeviceArtworkFolderPolicy.fileName(normalizedType)
+            val existing = directory.listFiles().firstOrNull {
+                it.isFile && it.name.equals(displayName, ignoreCase = true)
+            }
+            val target = existing ?: directory.createFile(normalizedType, displayName)
+                ?: return@runCatching null
+            context.contentResolver.openOutputStream(target.uri, "wt")?.use { output ->
+                source.inputStream().use { input -> input.copyTo(output) }
+            } ?: return@runCatching null
+            DeviceArtworkFolderFile(target.uri, target.name ?: displayName)
+        }.getOrNull()
+
+    private fun addWritable(uri: Uri) {
+        context.contentResolver.takePersistableUriPermission(
+            uri,
+            Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION,
+        )
+        prefs.edit { putStringSet(KEY_ROOTS, roots().map(Uri::toString).toSet() + uri.toString()) }
     }
 
     fun findSibling(audioUri: Uri, extensions: Set<String>, commonNames: Set<String> = emptySet()): DeviceSiblingFile? {
@@ -95,8 +131,34 @@ class DeviceFolderAccess(private val context: Context) {
         }
     }.getOrNull()
 
+    private fun releasePermission(uri: Uri) {
+        val readWrite = Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION
+        if (runCatching { context.contentResolver.releasePersistableUriPermission(uri, readWrite) }.isFailure) {
+            runCatching {
+                context.contentResolver.releasePersistableUriPermission(
+                    uri,
+                    Intent.FLAG_GRANT_READ_URI_PERMISSION,
+                )
+            }
+        }
+    }
+
     private companion object {
         const val KEY_ROOTS = "roots"
         const val MAX_DEPTH = 12
+    }
+}
+
+object DeviceArtworkFolderPolicy {
+    fun normalizedMediaType(value: String): String = when (value.substringBefore(';').trim().lowercase(Locale.ROOT)) {
+        "image/png" -> "image/png"
+        "image/webp" -> "image/webp"
+        else -> "image/jpeg"
+    }
+
+    fun fileName(mediaType: String): String = when (normalizedMediaType(mediaType)) {
+        "image/png" -> "cover.png"
+        "image/webp" -> "cover.webp"
+        else -> "cover.jpg"
     }
 }
