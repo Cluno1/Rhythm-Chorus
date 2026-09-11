@@ -2,9 +2,13 @@
 package io.github.cluno1.sonorus.network
 
 import java.util.Base64
+import okhttp3.HttpUrl.Companion.toHttpUrl
+import okhttp3.Request
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertThrows
+import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class SonorusUpdateManifestTest {
@@ -78,5 +82,51 @@ class SonorusUpdateManifestTest {
         )
         assertEquals(universal, SonorusUpdateAssetSelector.select(listOf(x86, universal), listOf("arm64-v8a")))
         assertNull(SonorusUpdateAssetSelector.select(listOf(x86), listOf("arm64-v8a")))
+    }
+
+    @Test
+    fun `accepts only the exact signed update COS object`() {
+        val path = "/debug/releases/2001001/${"cd".repeat(32)}"
+        val signed = (
+            "https://sonorus-updates-1328751369.cos.ap-guangzhou.myqcloud.com$path" +
+                "?q-sign-algorithm=sha1&q-ak=AKIDtest&q-sign-time=1%3B2&q-key-time=1%3B2" +
+                "&q-header-list=host&q-url-param-list=&q-signature=deadbeef"
+            ).toHttpUrl()
+        SonorusUpdateCosRedirectPolicy.validate(signed, path)
+
+        assertThrows(IllegalArgumentException::class.java) {
+            SonorusUpdateCosRedirectPolicy.validate(
+                signed.newBuilder().host("evil.example").build(),
+                path,
+            )
+        }
+        assertThrows(IllegalArgumentException::class.java) {
+            SonorusUpdateCosRedirectPolicy.validate(signed, "/debug/releases/2001002/other.apk")
+        }
+        assertThrows(IllegalArgumentException::class.java) {
+            SonorusUpdateCosRedirectPolicy.validate(
+                signed.newBuilder().removeAllQueryParameters("q-signature").build(),
+                path,
+            )
+        }
+    }
+
+    @Test
+    fun `removes backend credentials and validators before COS request`() {
+        val request = Request.Builder()
+            .url("https://sonorus-updates-1328751369.cos.ap-guangzhou.myqcloud.com/a.apk")
+            .header("Authorization", "Device private-token")
+            .header("X-Rhythm-Signature", "private-signature")
+            .header("X-Sonorus-Update-Channel", "debug")
+            .header("If-Match", "backend-sha256")
+            .header("Range", "bytes=100-")
+            .build()
+
+        val sanitized = SonorusUpdateCosRedirectPolicy.sanitize(request)
+        assertFalse(sanitized.headers.names().any { it.startsWith("X-Rhythm-", ignoreCase = true) })
+        assertFalse(sanitized.headers.names().any { it.startsWith("X-Sonorus-", ignoreCase = true) })
+        assertNull(sanitized.header("Authorization"))
+        assertNull(sanitized.header("If-Match"))
+        assertTrue(sanitized.header("Range") == "bytes=100-")
     }
 }

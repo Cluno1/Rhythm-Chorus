@@ -90,7 +90,7 @@ def validate_bundle(
 
 
 REMOTE_INSTALLER = r"""
-import hashlib, json, os, pathlib, shutil, sys, tarfile
+import hashlib, json, os, pathlib, shutil, subprocess, sys, tarfile
 
 remote_root, channel, version_text, archive_text, nonce, application_id, certificate = sys.argv[1:]
 root = pathlib.Path(remote_root).resolve()
@@ -148,6 +148,10 @@ try:
         shutil.rmtree(incoming)
     else:
         os.replace(incoming, release)
+    subprocess.run([
+        "sudo", "-n", "-u", "ubuntu", "/usr/local/bin/sonorus-sync-update-cos",
+        "--channel", channel, "--version", version_text,
+    ], check=True)
     latest_tmp.write_bytes(manifest_raw)
     os.replace(latest_tmp, latest)
 finally:
