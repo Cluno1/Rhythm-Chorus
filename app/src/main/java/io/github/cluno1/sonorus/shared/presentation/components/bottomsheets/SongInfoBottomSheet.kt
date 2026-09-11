@@ -197,6 +197,7 @@ fun SongInfoBottomSheet(
     appSettings: AppSettings,
     onEditSong: ((title: String, artist: String, album: String, genre: String, year: Int, trackNumber: Int, artworkUri: Uri?, removeArtwork: Boolean, albumArtist: String?, composer: String?, discNumber: Int, onComplete: (Boolean) -> Unit) -> Unit)? = null,
     onShowLyricsEditor: (() -> Unit)? = null,
+    onOpenManualMetadata: (() -> Unit)? = null,
     sheetState: SheetState = rememberBottomSheetState(initialValue = SheetValue.Hidden, enabledValues = setOf(SheetValue.Hidden, SheetValue.Expanded)),
     isStreamingMode: Boolean = false
 ) {
@@ -659,6 +660,15 @@ fun SongInfoBottomSheet(
                                         verticalArrangement = Arrangement.spacedBy(24.dp),
                                         userScrollEnabled = true
                                     ) {
+                                        onOpenManualMetadata?.let { action ->
+                                            item {
+                                                ManualMetadataAction(
+                                                    onClick = {
+                                                        action()
+                                                    },
+                                                )
+                                            }
+                                        }
                                         item {
                                             SongInfoCard(
                                                 song = currentSong ?: song,
@@ -839,7 +849,14 @@ fun SongInfoBottomSheet(
                     Column(
                         verticalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
-                                                Row(
+                        onOpenManualMetadata?.let { action ->
+                            ManualMetadataAction(
+                                onClick = {
+                                    action()
+                                },
+                            )
+                        }
+                        Row(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.spacedBy(12.dp)
                         ) {
@@ -1007,6 +1024,31 @@ fun SongInfoBottomSheet(
             )
         }
     }
+    }
+}
+
+@Composable
+private fun ManualMetadataAction(onClick: () -> Unit) {
+    val context = LocalContext.current
+    val haptics = LocalHapticFeedback.current
+    Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+        RhythmDetailActionButtonFullWidth(
+            onClick = {
+                HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
+                onClick()
+            },
+            type = RhythmButtonType.Tonal,
+            icon = RhythmIcons.Search,
+            text = stringResource(R.string.device_manual_metadata_entry),
+            containerColor = MaterialTheme.colorScheme.primaryContainer,
+            contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+        )
+        Text(
+            text = stringResource(R.string.device_manual_metadata_entry_desc),
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.padding(horizontal = 8.dp),
+        )
     }
 }
 

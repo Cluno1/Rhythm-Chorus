@@ -100,6 +100,7 @@ fun FullScreenLyricsView(
     onSeek: (Float) -> Unit,
     onLyricsSeek: ((Long) -> Unit)?,
     onRetryLyrics: () -> Unit,
+    onManualLyricsSearch: (() -> Unit)? = null,
     onClose: () -> Unit,
     onShowLyricsEditor: () -> Unit,
     onNavigateToLyricsSettings: () -> Unit,
@@ -716,6 +717,18 @@ fun FullScreenLyricsView(
                                     ) {
                                         Text(stringResource(R.string.fullscreenlyricsview_retry_fetching))
                                     }
+                                    onManualLyricsSearch?.let { manualSearch ->
+                                        Spacer(modifier = Modifier.height(10.dp))
+                                        OutlinedButton(onClick = manualSearch) {
+                                            Icon(
+                                                icon = RhythmIcons.Search,
+                                                contentDescription = null,
+                                                modifier = Modifier.size(18.dp),
+                                            )
+                                            Spacer(modifier = Modifier.width(8.dp))
+                                            Text(stringResource(R.string.device_manual_metadata_find_lyrics))
+                                        }
+                                    }
                                 }
                             }
                         }
@@ -1082,6 +1095,23 @@ fun FullScreenLyricsView(
                                             icon = MaterialSymbolIcon("settings", filled = true),
                                             text = stringResource(R.string.lyrics_settings_short)
                                         )
+                                    }
+                                    onManualLyricsSearch?.let { manualSearch ->
+                                        Spacer(modifier = Modifier.height(10.dp))
+                                        OutlinedButton(
+                                            onClick = {
+                                                HapticUtils.performHapticFeedback(context, haptic, HapticType.HEAVY)
+                                                manualSearch()
+                                            },
+                                        ) {
+                                            Icon(
+                                                icon = RhythmIcons.Search,
+                                                contentDescription = null,
+                                                modifier = Modifier.size(18.dp),
+                                            )
+                                            Spacer(modifier = Modifier.width(8.dp))
+                                            Text(stringResource(R.string.device_manual_metadata_find_lyrics))
+                                        }
                                     }
                                 }
                             }

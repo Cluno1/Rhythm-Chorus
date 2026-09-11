@@ -8,6 +8,7 @@ package io.github.cluno1.sonorus.features.local.presentation.screens
 import io.github.cluno1.sonorus.shared.presentation.components.icons.RhythmIcons
 import io.github.cluno1.sonorus.shared.presentation.components.icons.MaterialSymbolIcon
 import io.github.cluno1.sonorus.shared.presentation.components.icons.Icon
+import io.github.cluno1.sonorus.features.local.data.device.DeviceMetadataPolicy
 
 import android.content.Context
 import androidx.compose.ui.focus.FocusRequester
@@ -208,6 +209,7 @@ fun PlaylistDetailScreen(
     onGoToAlbum: (Song) -> Unit = {},
     onGoToArtist: (Song) -> Unit = {},
     onShare: (Song) -> Unit = {},
+    onOpenManualMetadata: ((Song) -> Unit)? = null,
     musicViewModel: MusicViewModel = viewModel()
 ) {
     // Screen size detection for responsive UI
@@ -621,19 +623,23 @@ fun PlaylistDetailScreen(
 
     // Song Info Bottom Sheet
     if (showSongInfo && selectedSongForInfo != null) {
+        val infoSong = selectedSongForInfo!!
         SongInfoBottomSheet(
-            song = selectedSongForInfo,
+            song = infoSong,
             onDismiss = {
                 showSongInfo = false
                 selectedSongForInfo = null
             },
             appSettings = appSettings,
             isStreamingMode = isStreamingPlaylist,
+            onOpenManualMetadata = onOpenManualMetadata
+                ?.takeIf { DeviceMetadataPolicy.isEligible(infoSong.id, infoSong.uri.scheme) }
+                ?.let { action -> { action(infoSong) } },
             onEditSong = { title, artist, album, genre, year, trackNumber, artworkUri, removeArtwork, albumArtist, composer, discNumber, onComplete ->
                 pendingMetadataEditCompleteCallback = onComplete
                 try {
                     musicViewModel.saveMetadataChanges(
-                        song = selectedSongForInfo!!,
+                        song = infoSong,
                         title = title,
                         artist = artist,
                         album = album,
@@ -673,7 +679,7 @@ fun PlaylistDetailScreen(
                     )
                 } catch (e: Exception) {
                     Toast.makeText(context, context.getString(R.string.unexpected_error, e.message ?: ""), Toast.LENGTH_LONG).show()
-                    android.util.Log.w("PlaylistDetailScreen", "Metadata update failed for song: ${selectedSongForInfo!!.title}", e)
+                    android.util.Log.w("PlaylistDetailScreen", "Metadata update failed for song: ${infoSong.title}", e)
                     pendingMetadataEditCompleteCallback?.invoke(false)
                     pendingMetadataEditCompleteCallback = null
                 }

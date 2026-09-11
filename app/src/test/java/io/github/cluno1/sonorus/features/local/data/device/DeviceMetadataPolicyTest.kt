@@ -28,6 +28,15 @@ class DeviceMetadataPolicyTest {
         assertFalse(request.publicFields().contains("path"))
     }
 
+    @Test fun `manual query normalization does not mutate the song identity`() {
+        val request = DeviceMetadataRequest("  Teenagers  ", "  MCR ", "   ", -1).normalized()
+        assertEquals("Teenagers", request.title)
+        assertEquals("MCR", request.artist)
+        assertNull(request.album)
+        assertNull(request.durationSeconds)
+        assertEquals(setOf("title", "artist"), request.publicFields())
+    }
+
     @Test fun `single song cache matching cannot select another song`() {
         val key = DeviceMetadataPolicy.cacheKey("42", "Artist", "Title")
         assertTrue(DeviceMetadataPolicy.belongsToSong(key, "42"))

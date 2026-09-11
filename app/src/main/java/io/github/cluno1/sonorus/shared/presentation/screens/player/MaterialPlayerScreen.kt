@@ -156,6 +156,7 @@ import io.github.cluno1.sonorus.shared.data.model.Playlist
 import io.github.cluno1.sonorus.shared.data.model.Song
 import io.github.cluno1.sonorus.features.catalog.domain.isCatalogLibrarySong
 import io.github.cluno1.sonorus.features.local.data.device.DeviceMetadataPolicy
+import io.github.cluno1.sonorus.features.local.data.device.DeviceManualMetadataKind
 import io.github.cluno1.sonorus.network.CanvasArtwork
 import io.github.cluno1.sonorus.shared.presentation.components.player.CanvasArtworkPlayer
 import io.github.cluno1.sonorus.shared.presentation.components.common.WaveSlider
@@ -1191,7 +1192,19 @@ fun MaterialPlayerScreen(
                     android.util.Log.w("MaterialPlayerScreen", "Metadata update failed for song: ${song.title}", e)
                 }
             },
-            onShowLyricsEditor = { showLyricsEditorDialog = true }
+            onShowLyricsEditor = { showLyricsEditorDialog = true },
+            onOpenManualMetadata = song.takeIf {
+                DeviceMetadataPolicy.isEligible(it.id, it.uri.scheme)
+            }?.let { targetSong ->
+                {
+                    navController.navigate(
+                        Screen.DeviceManualMetadata.createRoute(
+                            targetSong.id,
+                            DeviceManualMetadataKind.LYRICS,
+                        ),
+                    )
+                }
+            },
         )
     }
 

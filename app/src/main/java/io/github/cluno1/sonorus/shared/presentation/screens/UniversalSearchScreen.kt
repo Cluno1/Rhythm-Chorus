@@ -68,6 +68,7 @@ import io.github.cluno1.sonorus.shared.presentation.components.bottomsheets.AddT
 import io.github.cluno1.sonorus.shared.presentation.components.bottomsheets.SongInfoBottomSheet
 import io.github.cluno1.sonorus.shared.presentation.components.dialogs.CreatePlaylistDialog
 import io.github.cluno1.sonorus.features.local.presentation.viewmodel.MusicViewModel
+import io.github.cluno1.sonorus.features.local.data.device.DeviceMetadataPolicy
 import io.github.cluno1.sonorus.shared.data.model.findAlbumForSong
 import io.github.cluno1.sonorus.shared.presentation.components.common.CollapsibleHeaderScreen
 import io.github.cluno1.sonorus.features.streaming.domain.model.StreamingAlbum
@@ -127,6 +128,7 @@ fun UniversalSearchScreen(
     onStreamingAlbumClick: (StreamingAlbum) -> Unit = {},
     onStreamingArtistClick: (StreamingArtist) -> Unit = {},
     onStreamingPlaylistClick: (StreamingPlaylist) -> Unit = {},
+    onOpenManualMetadata: ((Song) -> Unit)? = null,
     onBack: () -> Unit = {}
 ) {
     val context = LocalContext.current
@@ -1670,16 +1672,20 @@ fun UniversalSearchScreen(
         }
 
         if (showSongInfoSheet && selectedSongForInfo != null) {
+            val infoSong = selectedSongForInfo!!
             SongInfoBottomSheet(
-                song = selectedSongForInfo,
+                song = infoSong,
                 onDismiss = { showSongInfoSheet = false },
                 appSettings = appSettings,
                 isStreamingMode = isSongInfoStreaming,
+                onOpenManualMetadata = onOpenManualMetadata
+                    ?.takeIf { !isSongInfoStreaming && DeviceMetadataPolicy.isEligible(infoSong.id, infoSong.uri.scheme) }
+                    ?.let { action -> { action(infoSong) } },
                 onEditSong = { title, artist, album, genre, year, trackNumber, artworkUri, removeArtwork, albumArtist, composer, discNumber, onComplete ->
                     pendingMetadataEditCompleteCallback = onComplete
                     try {
                         localViewModel.saveMetadataChanges(
-                            song = selectedSongForInfo!!,
+                            song = infoSong,
                             title = title,
                             artist = artist,
                             album = album,
@@ -1719,7 +1725,7 @@ fun UniversalSearchScreen(
                         )
                     } catch (e: Exception) {
                         Toast.makeText(context, context.getString(R.string.unexpected_error, e.message ?: ""), Toast.LENGTH_LONG).show()
-                        android.util.Log.w("UniversalSearchScreen", "Metadata update failed for song: ${selectedSongForInfo!!.title}", e)
+                        android.util.Log.w("UniversalSearchScreen", "Metadata update failed for song: ${infoSong.title}", e)
                         pendingMetadataEditCompleteCallback?.invoke(false)
                         pendingMetadataEditCompleteCallback = null
                     }

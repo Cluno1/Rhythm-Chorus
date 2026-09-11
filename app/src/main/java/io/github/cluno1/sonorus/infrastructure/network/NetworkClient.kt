@@ -59,6 +59,7 @@ object NetworkClient {
                 Log.w(TAG, "Error logging HTTP message: ${e.message}")
             }
         }.apply {
+            redactQueryParams("q", "query", "track_name", "artist_name", "album_name", "duration")
             level = if (BuildConfig.DEBUG) HttpLoggingInterceptor.Level.HEADERS else HttpLoggingInterceptor.Level.NONE
         }
     }
@@ -70,15 +71,16 @@ object NetworkClient {
         
         while (currentRetry < MAX_RETRIES) {
             try {
-                Log.d(TAG, "Attempting request (attempt ${currentRetry + 1}/${MAX_RETRIES}): ${chain.request().url}")
+                val logUrl = chain.request().url.newBuilder().query(null).build()
+                Log.d(TAG, "Attempting request (attempt ${currentRetry + 1}/${MAX_RETRIES}): $logUrl")
                 response = chain.proceed(chain.request())
                 
                 if (response.isSuccessful) {
-                    Log.d(TAG, "Request successful: ${chain.request().url}")
+                    Log.d(TAG, "Request successful: $logUrl")
                     return@Interceptor response
                 } else {
                     val code = response.code
-                    Log.w(TAG, "Request failed with code $code: ${chain.request().url}")
+                    Log.w(TAG, "Request failed with code $code: $logUrl")
                     
                     if (code in 400..499 && code != 408 && code != 429) {
                         Log.d(TAG, "Client error $code, not retrying")

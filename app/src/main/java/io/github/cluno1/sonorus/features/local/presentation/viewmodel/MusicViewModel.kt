@@ -49,8 +49,12 @@ import io.github.cluno1.sonorus.shared.data.model.MediaScanMode
 import io.github.cluno1.sonorus.shared.data.model.ScanPhase
 import io.github.cluno1.sonorus.features.local.data.repository.MusicRepository
 import io.github.cluno1.sonorus.features.local.data.device.DeviceLyricsCandidate
+import io.github.cluno1.sonorus.features.local.data.device.DeviceArtworkCandidate
 import io.github.cluno1.sonorus.features.local.data.device.DeviceDocumentPolicy
+import io.github.cluno1.sonorus.features.local.data.device.DeviceManualMetadataKind
+import io.github.cluno1.sonorus.features.local.data.device.DeviceMetadataRequest
 import io.github.cluno1.sonorus.features.local.data.device.DeviceMetadataPolicy
+import io.github.cluno1.sonorus.features.local.data.device.DevicePublicMetadataProvider
 import io.github.cluno1.sonorus.features.catalog.domain.CATALOG_SONG_ID_PREFIX
 import io.github.cluno1.sonorus.features.catalog.domain.CatalogPlaybackPolicy
 import io.github.cluno1.sonorus.features.catalog.domain.RhythmNowPlayingItem
@@ -145,6 +149,29 @@ import io.github.cluno1.sonorus.shared.data.repository.PlaybackActivityKind
 import io.github.cluno1.sonorus.shared.data.repository.PlaybackDurationAccumulator
 import io.github.cluno1.sonorus.shared.data.repository.PlaybackMediaKind
 import io.github.cluno1.sonorus.shared.data.repository.PlaybackSubject
+
+enum class DeviceManualMetadataError {
+    SONG_UNAVAILABLE,
+    TITLE_REQUIRED,
+    PROVIDER_REQUIRED,
+    REQUEST_FAILED,
+    APPLY_FAILED,
+}
+
+enum class DeviceManualProviderStatus { LOADING, SUCCESS, EMPTY, FAILED }
+
+data class DeviceManualMetadataUiState(
+    val songId: String? = null,
+    val kind: DeviceManualMetadataKind = DeviceManualMetadataKind.LYRICS,
+    val isSearching: Boolean = false,
+    val isApplying: Boolean = false,
+    val hasSearched: Boolean = false,
+    val lyricsCandidates: List<DeviceLyricsCandidate> = emptyList(),
+    val artworkCandidates: List<DeviceArtworkCandidate> = emptyList(),
+    val providerStatuses: Map<DevicePublicMetadataProvider, DeviceManualProviderStatus> = emptyMap(),
+    val error: DeviceManualMetadataError? = null,
+    val applied: Boolean = false,
+)
 
 class MusicViewModel(application: Application) : AndroidViewModel(application) {
 
@@ -337,6 +364,11 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
     val deviceLyricsCandidates: StateFlow<List<DeviceLyricsCandidate>> = _deviceLyricsCandidates.asStateFlow()
     private var deviceLyricsCandidateIndex = -1
     private var deviceLyricsCandidatesSongId: String? = null
+    private val _deviceManualMetadataState = MutableStateFlow(DeviceManualMetadataUiState())
+    val deviceManualMetadataState: StateFlow<DeviceManualMetadataUiState> =
+        _deviceManualMetadataState.asStateFlow()
+    private var deviceManualMetadataJob: Job? = null
+    private var deviceManualMetadataRequestId = 0L
 
     private val _isLoadingLyrics = MutableStateFlow(false)
     val isLoadingLyrics: StateFlow<Boolean> = _isLoadingLyrics.asStateFlow()
@@ -8420,6 +8452,221 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
             }
         }
     }
+
+    fun startDeviceManualMetadata(songId: String, kind: DeviceManualMetadataKind) {
+        deviceManualMetadataJob?.cancel()
+        deviceManualMetadataRequestId++
+        val song = findDeviceSong(songId)
+        _deviceManualMetadataState.value = DeviceManualMetadataUiState(
+            songId = songId,
+            kind = kind,
+            error = if (song == null) DeviceManualMetadataError.SONG_UNAVAILABLE else null,
+        )
+    }
+
+    fun searchDeviceManualMetadata(
+        songId: String,
+        kind: DeviceManualMetadataKind,
+        query: DeviceMetadataRequest,
+        providers: Set<DevicePublicMetadataProvider>,
+    ) {
+        val normalizedTitle = query.title.trim()
+        if (normalizedTitle.isBlank()) {
+            _deviceManualMetadataState.value = _deviceManualMetadataState.value.copy(
+                error = DeviceManualMetadataError.TITLE_REQUIRED,
+            )
+            return
+        }
+        val supportedProviders = when (kind) {
+            DeviceManualMetadataKind.LYRICS -> providers.intersect(
+                setOf(DevicePublicMetadataProvider.LRCLIB),
+            )
+            DeviceManualMetadataKind.ARTWORK -> providers.intersect(
+                setOf(
+                    DevicePublicMetadataProvider.MUSICBRAINZ_CAA,
+                    DevicePublicMetadataProvider.DEEZER,
+                ),
+            )
+        }
+        if (supportedProviders.isEmpty()) {
+            _deviceManualMetadataState.value = _deviceManualMetadataState.value.copy(
+                error = DeviceManualMetadataError.PROVIDER_REQUIRED,
+            )
+            return
+        }
+        val song = findDeviceSong(songId)
+        if (song == null) {
+            _deviceManualMetadataState.value = DeviceManualMetadataUiState(
+                songId = songId,
+                kind = kind,
+                error = DeviceManualMetadataError.SONG_UNAVAILABLE,
+            )
+            return
+        }
+
+        deviceManualMetadataJob?.cancel()
+        val requestId = ++deviceManualMetadataRequestId
+        deviceManualMetadataJob = viewModelScope.launch {
+            _deviceManualMetadataState.value = DeviceManualMetadataUiState(
+                songId = songId,
+                kind = kind,
+                isSearching = true,
+                providerStatuses = supportedProviders.associateWith {
+                    DeviceManualProviderStatus.LOADING
+                },
+            )
+            try {
+                var lyricsCandidates = emptyList<DeviceLyricsCandidate>()
+                var artworkCandidates = emptyList<DeviceArtworkCandidate>()
+                val providerStatuses = when (kind) {
+                    DeviceManualMetadataKind.LYRICS -> {
+                        val result = repository.searchDeviceLyricsCandidatesWithStatus(song, query)
+                        lyricsCandidates = result.candidates
+                        val status = result.toManualStatus()
+                        if (requestId == deviceManualMetadataRequestId) {
+                            _deviceManualMetadataState.value = _deviceManualMetadataState.value.copy(
+                                lyricsCandidates = result.candidates,
+                                providerStatuses = mapOf(result.provider to status),
+                            )
+                        }
+                        mapOf(result.provider to status)
+                    }
+                    DeviceManualMetadataKind.ARTWORK -> {
+                        val searches = supportedProviders.map { provider ->
+                            async {
+                                val result = repository.searchDeviceArtworkCandidatesWithStatus(
+                                    song,
+                                    query,
+                                    provider,
+                                )
+                                if (requestId == deviceManualMetadataRequestId) {
+                                    val current = _deviceManualMetadataState.value
+                                    _deviceManualMetadataState.value = current.copy(
+                                        artworkCandidates = (current.artworkCandidates + result.candidates)
+                                            .distinctBy { it.provider to it.externalId }
+                                            .sortedByDescending(DeviceArtworkCandidate::confidence),
+                                        providerStatuses = current.providerStatuses +
+                                            (result.provider to result.toManualStatus()),
+                                    )
+                                }
+                                result
+                            }
+                        }
+                        val results = searches.map { it.await() }
+                        artworkCandidates = results.flatMap { it.candidates }
+                            .distinctBy { it.provider to it.externalId }
+                            .sortedByDescending(DeviceArtworkCandidate::confidence)
+                        results.associate { it.provider to it.toManualStatus() }
+                    }
+                }
+                if (requestId != deviceManualMetadataRequestId) return@launch
+                _deviceManualMetadataState.value = DeviceManualMetadataUiState(
+                    songId = songId,
+                    kind = kind,
+                    hasSearched = true,
+                    lyricsCandidates = lyricsCandidates,
+                    artworkCandidates = artworkCandidates,
+                    providerStatuses = providerStatuses,
+                    error = DeviceManualMetadataError.REQUEST_FAILED.takeIf {
+                        providerStatuses.isNotEmpty() &&
+                            providerStatuses.values.all { it == DeviceManualProviderStatus.FAILED }
+                    },
+                )
+            } catch (error: CancellationException) {
+                throw error
+            } catch (error: Exception) {
+                Log.w(TAG, "Manual DEVICE metadata lookup failed", error)
+                if (requestId == deviceManualMetadataRequestId) {
+                    _deviceManualMetadataState.value = DeviceManualMetadataUiState(
+                        songId = songId,
+                        kind = kind,
+                        hasSearched = true,
+                        error = DeviceManualMetadataError.REQUEST_FAILED,
+                    )
+                }
+            }
+        }
+    }
+
+    fun applyDeviceManualLyrics(songId: String, candidate: DeviceLyricsCandidate) {
+        val state = _deviceManualMetadataState.value
+        val song = findDeviceSong(songId)
+        if (song == null || state.songId != songId || candidate !in state.lyricsCandidates) return
+        deviceManualMetadataJob?.cancel()
+        val requestId = ++deviceManualMetadataRequestId
+        deviceManualMetadataJob = viewModelScope.launch {
+            _deviceManualMetadataState.value = state.copy(isApplying = true, error = null)
+            try {
+                val selected = repository.applyDeviceLyricsCandidate(song, candidate)
+                if (requestId != deviceManualMetadataRequestId) return@launch
+                if (_currentSong.value?.id == songId) _currentLyrics.value = selected
+                _deviceManualMetadataState.value = state.copy(applied = true)
+            } catch (error: CancellationException) {
+                throw error
+            } catch (error: Exception) {
+                Log.w(TAG, "Could not apply manual DEVICE lyrics", error)
+                if (requestId == deviceManualMetadataRequestId) {
+                    _deviceManualMetadataState.value = state.copy(
+                        error = DeviceManualMetadataError.APPLY_FAILED,
+                    )
+                }
+            }
+        }
+    }
+
+    fun applyDeviceManualArtwork(songId: String, candidate: DeviceArtworkCandidate) {
+        val state = _deviceManualMetadataState.value
+        val song = findDeviceSong(songId)
+        if (song == null || state.songId != songId || candidate !in state.artworkCandidates) return
+        deviceManualMetadataJob?.cancel()
+        val requestId = ++deviceManualMetadataRequestId
+        deviceManualMetadataJob = viewModelScope.launch {
+            _deviceManualMetadataState.value = state.copy(isApplying = true, error = null)
+            try {
+                val artwork = repository.applyDeviceArtworkCandidate(song, candidate)
+                    ?: error("Artwork response was not a valid image")
+                if (requestId != deviceManualMetadataRequestId) return@launch
+                val withSelection = _songs.value.map { current ->
+                    if (current.id == songId) current.copy(artworkUri = artwork) else current
+                }
+                val projected = repository.projectDeviceArtwork(withSelection)
+                _songs.value = projected
+                repository.updateAndPersistSongs(projected)
+                _albums.value = repository.loadAlbums()
+                if (_currentSong.value?.id == songId) {
+                    _currentSong.value = projected.firstOrNull { it.id == songId }
+                        ?: song.copy(artworkUri = artwork)
+                }
+                _deviceManualMetadataState.value = state.copy(applied = true)
+            } catch (error: CancellationException) {
+                throw error
+            } catch (error: Exception) {
+                Log.w(TAG, "Could not apply manual DEVICE artwork", error)
+                if (requestId == deviceManualMetadataRequestId) {
+                    _deviceManualMetadataState.value = state.copy(
+                        error = DeviceManualMetadataError.APPLY_FAILED,
+                    )
+                }
+            }
+        }
+    }
+
+    fun clearDeviceManualMetadata() {
+        deviceManualMetadataJob?.cancel()
+        deviceManualMetadataRequestId++
+        _deviceManualMetadataState.value = DeviceManualMetadataUiState()
+    }
+
+    private fun findDeviceSong(songId: String): Song? =
+        (_songs.value.firstOrNull { it.id == songId } ?: _currentSong.value?.takeIf { it.id == songId })
+            ?.takeIf { DeviceMetadataPolicy.isEligible(it.id, it.uri.scheme) }
+
+    private fun <T> io.github.cluno1.sonorus.features.local.data.device.DeviceProviderSearchResult<T>
+        .toManualStatus(): DeviceManualProviderStatus = when {
+            failed -> DeviceManualProviderStatus.FAILED
+            candidates.isEmpty() -> DeviceManualProviderStatus.EMPTY
+            else -> DeviceManualProviderStatus.SUCCESS
+        }
 
     fun searchAndApplyBestDeviceLyrics() {
         val song = _currentSong.value?.takeUnless { it.id.startsWith("rhythm-catalog:") } ?: return

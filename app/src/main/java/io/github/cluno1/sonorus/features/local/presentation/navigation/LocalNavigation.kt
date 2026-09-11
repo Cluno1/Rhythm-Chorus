@@ -247,6 +247,12 @@ sealed class Screen(val route: String) {
     object Player : Screen("player")
     object Settings : Screen("settings")
     object CatalogSettings : Screen("catalog_settings")
+    object DeviceManualMetadata : Screen("device_manual_metadata/{songId}?kind={kind}") {
+        fun createRoute(
+            songId: String,
+            kind: io.github.cluno1.sonorus.features.local.data.device.DeviceManualMetadataKind,
+        ): String = "device_manual_metadata/${Uri.encode(songId)}?kind=${kind.name}"
+    }
     object CatalogScore : Screen("catalog_score/{workId}/{scoreId}/{revisionId}?title={title}&scoreLabel={scoreLabel}&parts={parts}") {
         fun createRoute(
             workId: String,
@@ -2251,6 +2257,15 @@ private fun LocalNavigationContent(
                             onNavigateToArtist = { artist ->
                                 navController.navigate(Screen.ArtistDetail.createRoute(artist.name))
                             },
+                            onOpenManualMetadata = { song ->
+                                navController.navigate(
+                                    Screen.DeviceManualMetadata.createRoute(
+                                        song.id,
+                                        io.github.cluno1.sonorus.features.local.data.device
+                                            .DeviceManualMetadataKind.LYRICS,
+                                    )
+                                )
+                            },
                             isStreamingMode = isStreamingMode,
                             streamingViewModel = streamingMusicViewModel,
                             streamingSongs = streamingMappedSongs,
@@ -2307,6 +2322,45 @@ private fun LocalNavigationContent(
                         onClearInviteUiState = catalogViewModel::clearInviteUiState,
                         onBack = {
                             if (!navController.popBackStack()) navigateToTopLevel(Screen.Home.route)
+                        },
+                    )
+                }
+
+                composable(
+                    route = Screen.DeviceManualMetadata.route,
+                    arguments = listOf(
+                        navArgument("songId") { type = NavType.StringType },
+                        navArgument("kind") {
+                            type = NavType.StringType
+                            defaultValue = io.github.cluno1.sonorus.features.local.data.device
+                                .DeviceManualMetadataKind.LYRICS.name
+                        },
+                    ),
+                ) { backStackEntry ->
+                    val songId = backStackEntry.arguments?.getString("songId")?.let(Uri::decode).orEmpty()
+                    val initialKind = runCatching {
+                        enumValueOf<io.github.cluno1.sonorus.features.local.data.device.DeviceManualMetadataKind>(
+                            backStackEntry.arguments?.getString("kind").orEmpty(),
+                        )
+                    }.getOrDefault(
+                        io.github.cluno1.sonorus.features.local.data.device.DeviceManualMetadataKind.LYRICS,
+                    )
+                    val manualState by viewModel.deviceManualMetadataState.collectAsState()
+                    val targetSong = remember(songId, songs, currentSong) {
+                        songs.firstOrNull { it.id == songId } ?: currentSong?.takeIf { it.id == songId }
+                    }
+                    io.github.cluno1.sonorus.features.local.presentation.screens.DeviceManualMetadataScreen(
+                        song = targetSong,
+                        initialKind = initialKind,
+                        state = manualState,
+                        appSettings = appSettings,
+                        onStart = viewModel::startDeviceManualMetadata,
+                        onSearch = viewModel::searchDeviceManualMetadata,
+                        onApplyLyrics = viewModel::applyDeviceManualLyrics,
+                        onApplyArtwork = viewModel::applyDeviceManualArtwork,
+                        onClear = viewModel::clearDeviceManualMetadata,
+                        onBack = {
+                            if (!navController.popBackStack()) navigateToTopLevel(Screen.Library.route)
                         },
                     )
                 }
@@ -2416,6 +2470,15 @@ private fun LocalNavigationContent(
                                 navController.navigate(StreamingRoutes.playlist(playlist.id)) {
                                     launchSingleTop = true
                                 }
+                            },
+                            onOpenManualMetadata = { song ->
+                                navController.navigate(
+                                    Screen.DeviceManualMetadata.createRoute(
+                                        song.id,
+                                        io.github.cluno1.sonorus.features.local.data.device
+                                            .DeviceManualMetadataKind.LYRICS,
+                                    )
+                                )
                             },
                             onBack = { navigateToLanding() }
                         )
@@ -3677,6 +3740,15 @@ private fun LocalNavigationContent(
                                     navController.navigate(Screen.ArtistDetail.createRoute(artist.name))
                                 }
                             },
+                        onOpenManualMetadata = { song ->
+                            navController.navigate(
+                                Screen.DeviceManualMetadata.createRoute(
+                                    song.id,
+                                    io.github.cluno1.sonorus.features.local.data.device
+                                        .DeviceManualMetadataKind.LYRICS,
+                                )
+                            )
+                        },
                         isStreamingMode = isStreamingMode,
                         streamingServiceName = streamingServiceName,
                         streamingServiceConnected = streamingServiceConnected,
@@ -3914,7 +3986,16 @@ private fun LocalNavigationContent(
                                 } catch (e: Exception) {
                                     android.widget.Toast.makeText(context, R.string.materialplayerscreen_unable_to_share_file, android.widget.Toast.LENGTH_SHORT).show()
                                 }
-                            }
+                            },
+                            onOpenManualMetadata = { song ->
+                                navController.navigate(
+                                    Screen.DeviceManualMetadata.createRoute(
+                                        song.id,
+                                        io.github.cluno1.sonorus.features.local.data.device
+                                            .DeviceManualMetadataKind.LYRICS,
+                                    )
+                                )
+                            },
                         )
                     }
                 }
@@ -4104,8 +4185,9 @@ private fun LocalNavigationContent(
                     
                     // Song info bottom sheet
                     if (showSongInfoSheet && selectedSongForInfo != null) {
+                        val infoSong = selectedSongForInfo!!
                         SongInfoBottomSheet(
-                            song = selectedSongForInfo!!,
+                            song = infoSong,
                             onDismiss = { 
                                 showSongInfoSheet = false
                                 selectedSongForInfo = null
@@ -4114,7 +4196,7 @@ private fun LocalNavigationContent(
                             onEditSong = { title, artist, album, genre, year, trackNumber, artworkUri, removeArtwork, albumArtist, composer, discNumber, onComplete ->
                                 pendingMetadataEditCompleteCallback = onComplete
                                 viewModel.saveMetadataChanges(
-                                    song = selectedSongForInfo!!,
+                                    song = infoSong,
                                     title = title,
                                     artist = artist,
                                     album = album,
@@ -4151,7 +4233,21 @@ private fun LocalNavigationContent(
                                         }
                                     }
                                 )
-                            }
+                            },
+                            onOpenManualMetadata = if (
+                                io.github.cluno1.sonorus.features.local.data.device.DeviceMetadataPolicy
+                                    .isEligible(infoSong.id, infoSong.uri.scheme)
+                            ) {
+                                {
+                                    navController.navigate(
+                                        Screen.DeviceManualMetadata.createRoute(
+                                            infoSong.id,
+                                            io.github.cluno1.sonorus.features.local.data.device
+                                                .DeviceManualMetadataKind.LYRICS,
+                                        ),
+                                    )
+                                }
+                            } else null,
                         )
                     }
 
@@ -4406,9 +4502,10 @@ private fun LocalNavigationContent(
                     }
 
                     if (showSongInfoSheet && selectedSongForInfo != null) {
-                        val infoSongIsCatalog = selectedSongForInfo!!.isCatalogLibrarySong()
+                        val infoSong = selectedSongForInfo!!
+                        val infoSongIsCatalog = infoSong.isCatalogLibrarySong()
                         SongInfoBottomSheet(
-                            song = selectedSongForInfo!!,
+                            song = infoSong,
                             onDismiss = { 
                                 showSongInfoSheet = false
                                 selectedSongForInfo = null
@@ -4417,7 +4514,7 @@ private fun LocalNavigationContent(
                             isStreamingMode = infoSongIsCatalog,
                             onEditSong = if (infoSongIsCatalog) null else { title, artist, album, genre, year, trackNumber, artworkUri, removeArtwork, albumArtist, composer, discNumber, onComplete ->
                                 viewModel.saveMetadataChanges(
-                                    song = selectedSongForInfo!!,
+                                    song = infoSong,
                                     title = title,
                                     artist = artist,
                                     album = album,
@@ -4451,7 +4548,22 @@ private fun LocalNavigationContent(
                                         }
                                     }
                                 )
-                            }
+                            },
+                            onOpenManualMetadata = if (
+                                !infoSongIsCatalog &&
+                                io.github.cluno1.sonorus.features.local.data.device.DeviceMetadataPolicy
+                                    .isEligible(infoSong.id, infoSong.uri.scheme)
+                            ) {
+                                {
+                                    navController.navigate(
+                                        Screen.DeviceManualMetadata.createRoute(
+                                            infoSong.id,
+                                            io.github.cluno1.sonorus.features.local.data.device
+                                                .DeviceManualMetadataKind.LYRICS,
+                                        ),
+                                    )
+                                }
+                            } else null,
                         )
                     }
                 }

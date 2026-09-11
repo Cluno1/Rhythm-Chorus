@@ -8,6 +8,7 @@ package io.github.cluno1.sonorus.features.local.presentation.screens
 
 import io.github.cluno1.sonorus.shared.presentation.components.bottomsheets.RhythmAdaptiveModalSheet
 import io.github.cluno1.sonorus.shared.presentation.components.bottomsheets.SheetAdaptiveType
+import io.github.cluno1.sonorus.features.local.data.device.DeviceMetadataPolicy
 
 import io.github.cluno1.sonorus.shared.presentation.components.icons.RhythmIcons
 import io.github.cluno1.sonorus.shared.presentation.components.icons.MaterialSymbolIcon
@@ -339,6 +340,7 @@ fun LibraryScreen(
     onImportPlaylist: ((Uri, (Result<String>) -> Unit, (() -> Unit)?) -> Unit)? = null,
     onRestartApp: (() -> Unit)? = null,
     onNavigateToArtist: (Artist) -> Unit = {},
+    onOpenManualMetadata: ((Song) -> Unit)? = null,
     isStreamingMode: Boolean = false,
     streamingServiceName: String = "",
     streamingServiceConnected: Boolean = true,
@@ -699,6 +701,9 @@ fun LibraryScreen(
             onDismiss = { showSongInfoSheet = false },
             appSettings = appSettings,
             isStreamingMode = isStreamingMode || displaySong.id.startsWith("rhythm-catalog:"),
+            onOpenManualMetadata = onOpenManualMetadata
+                ?.takeIf { DeviceMetadataPolicy.isEligible(displaySong.id, displaySong.uri.scheme) }
+                ?.let { action -> { action(displaySong) } },
             onEditSong = { title, artist, album, genre, year, trackNumber, artworkUri, removeArtwork, albumArtist, composer, discNumber, onComplete ->
                 pendingMetadataEditCompleteCallback = onComplete
                 musicViewModel.saveMetadataChanges(
