@@ -3244,6 +3244,12 @@
     <string name="chorus_recording_preview_play">播放录音</string>
     <string name="chorus_recording_preview_pause">暂停预览</string>
     <string name="chorus_recording_preview_format">%1$s · %2$s</string>
+    <string name="chorus_recording_trim_title">裁剪录音</string>
+    <string name="chorus_recording_trim_start">起点 %1$s</string>
+    <string name="chorus_recording_trim_end">终点 %1$s</string>
+    <string name="chorus_recording_trim_duration">将保留 %1$s；上传前不会改动原始录音。</string>
+    <string name="chorus_recording_trim_reset">重置</string>
+    <string name="chorus_recording_trim_unavailable">这份恢复的录音暂时无法裁剪，请重新录制或上传完整录音。</string>
     <string name="chorus_recording_track_details">音轨信息</string>
     <string name="chorus_recording_track_name">音轨名称</string>
     <string name="chorus_recording_type">贡献类型</string>
@@ -3256,6 +3262,7 @@
     <string name="chorus_recording_record_again">重新录制</string>
     <string name="chorus_recording_upload_publish">上传合唱音轨</string>
     <string name="chorus_recording_uploading">正在上传</string>
+    <string name="chorus_recording_upload_requires_rights">请先在下方确认分享权利，之后即可上传。</string>
     <string name="chorus_recording_help_open">合唱录制说明</string>
     <string name="chorus_recording_help_close">关闭说明</string>
     <string name="chorus_recording_help_title">合唱录制指南</string>

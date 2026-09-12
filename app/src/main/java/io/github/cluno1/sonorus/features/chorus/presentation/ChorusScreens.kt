@@ -51,6 +51,7 @@ import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.RangeSlider
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SheetValue
 import androidx.compose.material3.Slider
@@ -70,6 +71,7 @@ import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -101,6 +103,7 @@ import io.github.cluno1.sonorus.features.catalog.presentation.CatalogScoreSelect
 import io.github.cluno1.sonorus.features.catalog.presentation.CatalogViewModel
 import io.github.cluno1.sonorus.features.catalog.presentation.formatScoreRevisionTime
 import io.github.cluno1.sonorus.features.chorus.data.ChorusAudioRecorder
+import io.github.cluno1.sonorus.features.chorus.data.ChorusPcmEditor
 import io.github.cluno1.sonorus.features.chorus.data.ChorusRecordingResult
 import io.github.cluno1.sonorus.features.scores.presentation.RemoteScoreScreen
 import io.github.cluno1.sonorus.features.scores.presentation.ScorePlaybackCommand
@@ -444,10 +447,9 @@ fun ChorusScreen(
     pendingUpload?.let { pending ->
         UploadAudioDialog(
             audio = pending,
-            parts = project?.parts.orEmpty(),
             busy = busy,
             onDismiss = { if (!busy) { pending.file.delete(); pendingUpload = null } },
-            onUpload = { partId, kind, label, offsetMs ->
+            onUpload = { kind, label, offsetMs ->
                 val current = project ?: return@UploadAudioDialog
                 val currentTimeline = timeline ?: return@UploadAudioDialog
                 scope.launch {
@@ -459,7 +461,7 @@ fun ChorusScreen(
                         mediaType = pending.mediaType,
                         sha256 = pending.sha256,
                         durationMs = pending.durationMs,
-                        partId = partId,
+                        partId = null,
                         contributionKind = kind,
                         displayLabel = label,
                         initialAnchors = listOf(ChorusSyncAnchor(0, 0, 0)),
@@ -543,7 +545,6 @@ fun ChorusRecordingScreen(
     var resultAnchors by remember { mutableStateOf<List<ChorusSyncAnchor>>(emptyList()) }
     var label by remember { mutableStateOf("我的声部") }
     var kind by remember { mutableStateOf("vocal_part") }
-    var partId by remember { mutableStateOf<String?>(null) }
     val currentRecorder = recorder
     val emptyDuration = remember { MutableStateFlow(0L) }
     val emptyPeak = remember { MutableStateFlow(0f) }
@@ -589,7 +590,6 @@ fun ChorusRecordingScreen(
             resultAnchors = emptyList()
             transportOffsetMs = 0
         }
-        if (target.id != project?.id) partId = target.parts.firstOrNull()?.id
         project = target
         timeline = targetTimeline
         scoreRevision = null
@@ -794,8 +794,6 @@ fun ChorusRecordingScreen(
         recordedResult != null -> RecordingReview(
             title = title,
             result = recordedResult,
-            parts = project?.parts.orEmpty(),
-            partId = partId,
             kind = kind,
             label = label,
             offsetMs = offsetMs,
@@ -804,7 +802,6 @@ fun ChorusRecordingScreen(
             error = error,
             onBack = onBack,
             onHelp = { showHelp = true },
-            onPart = { partId = it },
             onKind = { kind = it },
             onLabel = { label = it },
             onOffset = { offsetMs = it.coerceIn(-60_000, 60_000) },
@@ -819,35 +816,49 @@ fun ChorusRecordingScreen(
                     error = null
                 }
             },
-            onUpload = {
+            onUpload = { trimStartMs, trimEndMs ->
                 val activeProject = project ?: return@RecordingReview
                 val activeTimeline = timeline ?: return@RecordingReview
                 val recorded = result ?: return@RecordingReview
                 scope.launch {
                     busy = true
                     error = null
-                    val sha = sha256(recorded.uploadFile)
-                    val upload = ChorusTrackUpload(
-                        chorusTimelineId = activeTimeline.id,
-                        file = recorded.uploadFile,
-                        mediaType = recorded.mediaType,
-                        sha256 = sha,
-                        durationMs = recorded.durationMs,
-                        partId = partId,
-                        contributionKind = kind,
-                        displayLabel = label.ifBlank {
-                            context.getString(R.string.chorus_recording_default_track_name)
-                        },
-                        initialAnchors = resultAnchors.ifEmpty {
-                            listOf(ChorusSyncAnchor(0, scoreTick, scoreTimeMs.coerceAtLeast(0)))
-                        },
-                    )
-                    uploadAndSubmit(
-                        viewModel,
-                        activeProject.id,
-                        upload,
-                        (offsetMs + transportOffsetMs).coerceIn(-15 * 60_000L, 15 * 60_000L),
-                    ).fold(
+                    runCatching {
+                        val edited = if (trimStartMs == 0L && trimEndMs == recorded.durationMs) {
+                            recorded
+                        } else {
+                            checkNotNull(recorder) {
+                                context.getString(R.string.chorus_recording_trim_unavailable)
+                            }.exportTrimmed(recorded, trimStartMs, trimEndMs)
+                        }
+                        val anchors = trimChorusAnchors(
+                            resultAnchors.ifEmpty {
+                                listOf(ChorusSyncAnchor(0, scoreTick, scoreTimeMs.coerceAtLeast(0)))
+                            },
+                            trimStartMs,
+                            trimEndMs,
+                        )
+                        val upload = ChorusTrackUpload(
+                            chorusTimelineId = activeTimeline.id,
+                            file = edited.uploadFile,
+                            mediaType = edited.mediaType,
+                            sha256 = sha256(edited.uploadFile),
+                            durationMs = edited.durationMs,
+                            partId = null,
+                            contributionKind = kind,
+                            displayLabel = label.ifBlank {
+                                context.getString(R.string.chorus_recording_default_track_name)
+                            },
+                            initialAnchors = anchors,
+                        )
+                        uploadAndSubmit(
+                            viewModel,
+                            activeProject.id,
+                            upload,
+                            (offsetMs + transportOffsetMs + trimStartMs)
+                                .coerceIn(-15 * 60_000L, 15 * 60_000L),
+                        ).getOrThrow()
+                    }.fold(
                         onSuccess = {
                             recorder?.discard()
                             onUploaded()
@@ -1518,13 +1529,11 @@ private fun ErrorCard(message: String) {
 @Composable
 private fun UploadAudioDialog(
     audio: PendingAudio,
-    parts: List<ChorusPart>,
     busy: Boolean,
     onDismiss: () -> Unit,
-    onUpload: (String?, String, String, Long) -> Unit,
+    onUpload: (String, String, Long) -> Unit,
 ) {
-    var selectedPart by remember(parts) { mutableStateOf(parts.firstOrNull()?.id) }
-    var kind by remember { mutableStateOf(if (parts.isEmpty()) "other" else "vocal_part") }
+    var kind by remember { mutableStateOf("vocal_part") }
     var label by remember { mutableStateOf(audio.file.nameWithoutExtension.take(100)) }
     var offsetMs by remember { mutableLongStateOf(0L) }
     var rightsConfirmed by remember { mutableStateOf(false) }
@@ -1535,7 +1544,7 @@ private fun UploadAudioDialog(
             Column(Modifier.verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(10.dp)) {
                 Text("${formatDuration(audio.durationMs)} · ${audio.mediaType}")
                 AudioPreviewButton(audio.file)
-                KindAndPartFields(parts, selectedPart, kind, { selectedPart = it }, { kind = it })
+                ContributionKindFields(kind, { kind = it })
                 OutlinedTextField(label, { label = it.take(300) }, label = { Text("音轨名称") })
                 Text("起点微调：$offsetMs ms", style = MaterialTheme.typography.bodySmall)
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -1556,14 +1565,12 @@ private fun UploadAudioDialog(
             Button(
                 onClick = {
                     onUpload(
-                        if (kind == "vocal_part") selectedPart else null,
                         kind,
                         label.ifBlank { "我的音轨" },
                         offsetMs,
                     )
                 },
-                enabled = !busy && rightsConfirmed && label.isNotBlank() &&
-                    (kind != "vocal_part" || selectedPart != null),
+                enabled = !busy && rightsConfirmed && label.isNotBlank(),
             ) {
                 Text(
                     stringResource(
@@ -1606,8 +1613,6 @@ private fun AudioPreviewButton(file: File) {
 private fun RecordingReview(
     title: String,
     result: ChorusRecordingResult,
-    parts: List<ChorusPart>,
-    partId: String?,
     kind: String,
     label: String,
     offsetMs: Long,
@@ -1616,13 +1621,12 @@ private fun RecordingReview(
     error: String?,
     onBack: () -> Unit,
     onHelp: () -> Unit,
-    onPart: (String?) -> Unit,
     onKind: (String) -> Unit,
     onLabel: (String) -> Unit,
     onOffset: (Long) -> Unit,
     onRights: (Boolean) -> Unit,
     onDiscard: () -> Unit,
-    onUpload: () -> Unit,
+    onUpload: (trimStartMs: Long, trimEndMs: Long) -> Unit,
 ) {
     val context = LocalContext.current
     val miniPlayerBottomPadding = LocalMiniPlayerPadding.current.calculateBottomPadding()
@@ -1634,25 +1638,42 @@ private fun RecordingReview(
         }
     }
     var previewPlaying by remember { mutableStateOf(false) }
-    var previewPositionMs by remember { mutableLongStateOf(0L) }
+    var previewPositionMs by remember(result.wavFile) { mutableLongStateOf(0L) }
     val previewDurationMs = result.durationMs.coerceAtLeast(1L)
+    val minimumSelectionMs = minOf(ChorusPcmEditor.MIN_TRIM_DURATION_MS, previewDurationMs)
+    var trimStartMs by remember(result.wavFile) { mutableLongStateOf(0L) }
+    var trimEndMs by remember(result.wavFile) { mutableLongStateOf(previewDurationMs) }
+    val selectedDurationMs = trimEndMs - trimStartMs
+    val currentTrimStartMs by rememberUpdatedState(trimStartMs)
     DisposableEffect(previewPlayer) {
         val listener = object : Player.Listener {
             override fun onIsPlayingChanged(isPlaying: Boolean) { previewPlaying = isPlaying }
             override fun onPlaybackStateChanged(playbackState: Int) {
                 if (playbackState == Player.STATE_ENDED) {
-                    previewPlayer.seekTo(0)
-                    previewPositionMs = 0
+                    previewPlayer.seekTo(currentTrimStartMs)
+                    previewPositionMs = currentTrimStartMs
                 }
             }
         }
         previewPlayer.addListener(listener)
         onDispose { previewPlayer.release() }
     }
-    LaunchedEffect(previewPlaying) {
+    LaunchedEffect(previewPlaying, trimStartMs, trimEndMs) {
         while (previewPlaying) {
             previewPositionMs = previewPlayer.currentPosition.coerceIn(0L, previewDurationMs)
+            if (previewPositionMs >= trimEndMs) {
+                previewPlayer.pause()
+                previewPlayer.seekTo(trimStartMs)
+                previewPositionMs = trimStartMs
+            }
             delay(150)
+        }
+    }
+    LaunchedEffect(trimStartMs, trimEndMs) {
+        if (previewPositionMs !in trimStartMs..trimEndMs) {
+            previewPlayer.pause()
+            previewPlayer.seekTo(trimStartMs)
+            previewPositionMs = trimStartMs
         }
     }
     Scaffold(
@@ -1723,9 +1744,9 @@ private fun RecordingReview(
                         )
                     }
                     ExpressiveGroupButton(
-                        onClick = onUpload,
+                        onClick = { onUpload(trimStartMs, trimEndMs) },
                         enabled = !busy && rightsConfirmed && label.isNotBlank() &&
-                            (kind != "vocal_part" || partId != null),
+                            selectedDurationMs >= minimumSelectionMs,
                         isEnd = true,
                         modifier = Modifier.weight(1f),
                         colors = ButtonDefaults.buttonColors(),
@@ -1786,6 +1807,14 @@ private fun RecordingReview(
                         }
                     }
                 }
+                if (!rightsConfirmed) {
+                    Text(
+                        stringResource(R.string.chorus_recording_upload_requires_rights),
+                        modifier = Modifier.padding(top = 8.dp),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
             }
 
             item {
@@ -1804,25 +1833,106 @@ private fun RecordingReview(
                             fontWeight = FontWeight.Bold,
                         )
                         Waveform(result.peakSamples)
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically,
+                        ) {
+                            Text(
+                                stringResource(R.string.chorus_recording_trim_title),
+                                style = MaterialTheme.typography.titleSmall,
+                                fontWeight = FontWeight.SemiBold,
+                            )
+                            if (trimStartMs != 0L || trimEndMs != previewDurationMs) {
+                                TextButton(
+                                    onClick = {
+                                        previewPlayer.pause()
+                                        trimStartMs = 0L
+                                        trimEndMs = previewDurationMs
+                                        previewPositionMs = 0L
+                                        previewPlayer.seekTo(0L)
+                                    },
+                                ) {
+                                    Text(stringResource(R.string.chorus_recording_trim_reset))
+                                }
+                            }
+                        }
+                        RangeSlider(
+                            value = trimStartMs.toFloat()..trimEndMs.toFloat(),
+                            onValueChange = { range ->
+                                val start = range.start.toLong().coerceIn(
+                                    0L,
+                                    previewDurationMs - minimumSelectionMs,
+                                )
+                                val end = range.endInclusive.toLong().coerceIn(
+                                    minimumSelectionMs,
+                                    previewDurationMs,
+                                )
+                                if (end - start >= minimumSelectionMs) {
+                                    previewPlayer.pause()
+                                    trimStartMs = start
+                                    trimEndMs = end
+                                    if (previewPositionMs !in start..end) {
+                                        previewPositionMs = start
+                                        previewPlayer.seekTo(start)
+                                    }
+                                }
+                            },
+                            valueRange = 0f..previewDurationMs.toFloat(),
+                            enabled = previewDurationMs > minimumSelectionMs && !busy,
+                        )
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                        ) {
+                            Text(
+                                stringResource(
+                                    R.string.chorus_recording_trim_start,
+                                    formatEditDuration(trimStartMs),
+                                ),
+                                style = MaterialTheme.typography.labelMedium,
+                            )
+                            Text(
+                                stringResource(
+                                    R.string.chorus_recording_trim_end,
+                                    formatEditDuration(trimEndMs),
+                                ),
+                                style = MaterialTheme.typography.labelMedium,
+                            )
+                        }
+                        Text(
+                            stringResource(
+                                R.string.chorus_recording_trim_duration,
+                                formatEditDuration(selectedDurationMs),
+                            ),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
                         Slider(
-                            value = previewPositionMs.toFloat(),
+                            value = previewPositionMs.coerceIn(trimStartMs, trimEndMs).toFloat(),
                             onValueChange = {
                                 previewPositionMs = it.toLong()
                                 previewPlayer.seekTo(previewPositionMs)
                             },
-                            valueRange = 0f..previewDurationMs.toFloat(),
+                            valueRange = trimStartMs.toFloat()..trimEndMs.toFloat(),
                         )
                         Row(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.SpaceBetween,
                         ) {
                             Text(formatDuration(previewPositionMs), style = MaterialTheme.typography.labelMedium)
-                            Text(formatDuration(previewDurationMs), style = MaterialTheme.typography.labelMedium)
+                            Text(formatDuration(trimEndMs), style = MaterialTheme.typography.labelMedium)
                         }
                         FilledTonalButton(
                             onClick = {
                                 if (previewPlaying) previewPlayer.pause()
-                                else previewPlayer.play()
+                                else {
+                                    if (previewPositionMs !in trimStartMs until trimEndMs) {
+                                        previewPositionMs = trimStartMs
+                                        previewPlayer.seekTo(trimStartMs)
+                                    }
+                                    previewPlayer.play()
+                                }
                             },
                             modifier = Modifier.fillMaxWidth(),
                         ) {
@@ -1838,7 +1948,7 @@ private fun RecordingReview(
                         Text(
                             stringResource(
                                 R.string.chorus_recording_preview_format,
-                                formatDuration(result.durationMs),
+                                formatDuration(selectedDurationMs),
                                 result.mediaType,
                             ),
                             style = MaterialTheme.typography.bodySmall,
@@ -1863,7 +1973,7 @@ private fun RecordingReview(
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.Bold,
                         )
-                        KindAndPartFields(parts, partId, kind, onPart, onKind)
+                        ContributionKindFields(kind, onKind)
                         OutlinedTextField(
                             label,
                             onLabel,
@@ -1947,11 +2057,8 @@ private fun RecordingReview(
 }
 
 @Composable
-private fun KindAndPartFields(
-    parts: List<ChorusPart>,
-    partId: String?,
+private fun ContributionKindFields(
     kind: String,
-    onPart: (String?) -> Unit,
     onKind: (String) -> Unit,
 ) {
     Text(stringResource(R.string.chorus_recording_type), fontWeight = FontWeight.SemiBold)
@@ -1961,17 +2068,6 @@ private fun KindAndPartFields(
     ) {
         listOf("vocal_part", "harmony", "guitar", "piano", "percussion", "other").forEach { value ->
             FilterChip(selected = value == kind, onClick = { onKind(value) }, label = { Text(kindLabel(value)) })
-        }
-    }
-    if (kind == "vocal_part") {
-        Text(stringResource(R.string.chorus_recording_part), fontWeight = FontWeight.SemiBold)
-        Row(
-            modifier = Modifier.horizontalScroll(rememberScrollState()),
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-        ) {
-            parts.forEach { part ->
-                FilterChip(selected = part.id == partId, onClick = { onPart(part.id) }, label = { Text(part.name) })
-            }
         }
     }
 }
@@ -2045,6 +2141,54 @@ private fun detectAudioMediaType(file: File): String? {
     }
 }
 
+private fun trimChorusAnchors(
+    anchors: List<ChorusSyncAnchor>,
+    startMs: Long,
+    endMs: Long,
+): List<ChorusSyncAnchor> {
+    if (anchors.isEmpty()) return emptyList()
+    val sorted = anchors.sortedWith(
+        compareBy(ChorusSyncAnchor::mediaMs, ChorusSyncAnchor::anchorOrder),
+    )
+
+    fun anchorAt(positionMs: Long): ChorusSyncAnchor {
+        val before = sorted.lastOrNull { it.mediaMs <= positionMs } ?: sorted.first()
+        val after = sorted.firstOrNull { it.mediaMs >= positionMs } ?: sorted.last()
+        val mediaSpan = after.mediaMs - before.mediaMs
+        val tick = if (mediaSpan <= 0L) {
+            before.scoreTick
+        } else {
+            val progress = (positionMs - before.mediaMs).toDouble() / mediaSpan
+            (before.scoreTick + (after.scoreTick - before.scoreTick) * progress)
+                .toLong()
+                .coerceAtLeast(0L)
+        }
+        return ChorusSyncAnchor(
+            anchorOrder = 0,
+            scoreTick = tick,
+            mediaMs = (positionMs - startMs).coerceAtLeast(0L),
+            confidence = minOf(before.confidence, after.confidence),
+            source = before.source,
+        )
+    }
+
+    val candidates = buildList {
+        add(anchorAt(startMs))
+        addAll(
+            sorted.filter { it.mediaMs > startMs && it.mediaMs < endMs }
+                .map { it.copy(mediaMs = it.mediaMs - startMs) },
+        )
+        add(anchorAt(endMs))
+    }.distinctBy(ChorusSyncAnchor::mediaMs)
+    val limited = if (candidates.size <= 16) {
+        candidates
+    } else {
+        (0 until 16).map { index -> candidates[index * candidates.lastIndex / 15] }
+            .distinctBy(ChorusSyncAnchor::mediaMs)
+    }
+    return limited.mapIndexed { index, anchor -> anchor.copy(anchorOrder = index) }
+}
+
 private suspend fun uploadAndSubmit(
     viewModel: CatalogViewModel,
     projectId: String,
@@ -2111,4 +2255,9 @@ private fun alignmentLabel(state: String): String = when (state) {
 private fun formatDuration(durationMs: Long): String {
     val seconds = durationMs.coerceAtLeast(0) / 1_000
     return "%02d:%02d".format(seconds / 60, seconds % 60)
+}
+
+private fun formatEditDuration(durationMs: Long): String {
+    val tenths = durationMs.coerceAtLeast(0) / 100
+    return "%02d:%02d.%d".format(tenths / 600, tenths / 10 % 60, tenths % 10)
 }

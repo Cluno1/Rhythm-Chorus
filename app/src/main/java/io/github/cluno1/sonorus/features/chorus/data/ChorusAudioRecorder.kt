@@ -220,6 +220,34 @@ class ChorusAudioRecorder private constructor(
         )
     }
 
+    suspend fun exportTrimmed(
+        result: ChorusRecordingResult,
+        startMs: Long,
+        endMs: Long,
+    ): ChorusRecordingResult = withContext(Dispatchers.IO) {
+        val normalizedStart = startMs.coerceIn(0L, result.durationMs)
+        val normalizedEnd = endMs.coerceIn(normalizedStart, result.durationMs)
+        if (normalizedStart == 0L && normalizedEnd == result.durationMs) {
+            return@withContext result
+        }
+        val wav = File(root, "recording-trimmed.wav")
+        val trim = ChorusPcmEditor.trimWav(
+            source = result.wavFile,
+            destination = wav,
+            startMs = normalizedStart,
+            endMs = normalizedEnd,
+        )
+        val m4a = File(root, "recording-trimmed.m4a")
+        val encoded = runCatching { encodeWavToAac(wav, m4a) }.getOrNull()
+        ChorusRecordingResult(
+            wavFile = wav,
+            uploadFile = encoded ?: wav,
+            mediaType = if (encoded != null) "audio/mp4" else "audio/wav",
+            durationMs = trim.durationMs,
+            peakSamples = trim.peakSamples,
+        )
+    }
+
     suspend fun discard() = withContext(Dispatchers.IO) {
         pause()
         jobs.joinAll()

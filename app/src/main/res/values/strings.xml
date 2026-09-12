@@ -3506,6 +3506,12 @@
     <string name="chorus_recording_preview_play">Play recording</string>
     <string name="chorus_recording_preview_pause">Pause preview</string>
     <string name="chorus_recording_preview_format">%1$s · %2$s</string>
+    <string name="chorus_recording_trim_title">Trim recording</string>
+    <string name="chorus_recording_trim_start">Start %1$s</string>
+    <string name="chorus_recording_trim_end">End %1$s</string>
+    <string name="chorus_recording_trim_duration">Keeping %1$s. The original recording stays unchanged until upload.</string>
+    <string name="chorus_recording_trim_reset">Reset</string>
+    <string name="chorus_recording_trim_unavailable">This recovered recording cannot be trimmed. Record it again or upload the full recording.</string>
     <string name="chorus_recording_track_details">Track details</string>
     <string name="chorus_recording_track_name">Track name</string>
     <string name="chorus_recording_type">Contribution type</string>
@@ -3518,6 +3524,7 @@
     <string name="chorus_recording_record_again">Record again</string>
     <string name="chorus_recording_upload_publish">Upload chorus track</string>
     <string name="chorus_recording_uploading">Uploading</string>
+    <string name="chorus_recording_upload_requires_rights">Confirm the sharing permission below to enable upload.</string>
     <string name="chorus_recording_help_open">How chorus recording works</string>
     <string name="chorus_recording_help_close">Close help</string>
     <string name="chorus_recording_help_title">Chorus recording guide</string>
