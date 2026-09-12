@@ -53,7 +53,7 @@
         android:localeConfig="@xml/locale_config"
         android:theme="@style/Theme.Rhythm"
         android:largeHeap="true"
-        android:enableOnBackInvokedCallback="true"
+        android:enableOnBackInvokedCallback="false"
         tools:targetApi="36">
         
         <!--
