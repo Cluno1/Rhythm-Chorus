@@ -693,7 +693,13 @@ fun PlayerScreen(
                     onSongClickAtIndex(index)
                     showQueueSheet = false
                 },
-                onDismiss = { showQueueSheet = false },
+                onDismiss = {
+                    showQueueSheet = false
+                    // Returning from the queue must not depend on a second Back callback being
+                    // registered after the modal window disappears. Collapse the player in the
+                    // same dismissal transaction so every Android version lands on MiniPlayer.
+                    onBack()
+                },
                 onRemoveSongAtIndex = onRemoveFromQueueAtIndex,
                 onMoveQueueItem = onMoveQueueItem,
                 onAddSongsClick = {

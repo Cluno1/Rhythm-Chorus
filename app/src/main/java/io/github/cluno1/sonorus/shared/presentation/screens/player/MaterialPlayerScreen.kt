@@ -1006,7 +1006,12 @@ fun MaterialPlayerScreen(
                 onSongClickAtIndex(index)
                 showQueueSheet = false
             },
-            onDismiss = { showQueueSheet = false },
+            onDismiss = {
+                showQueueSheet = false
+                // Keep queue dismissal deterministic across legacy and predictive Back: the
+                // destination below the modal is MiniPlayer, not another full-screen player.
+                onBack()
+            },
             onRemoveSongAtIndex = { indexToRemove ->
                 onRemoveFromQueueAtIndex(indexToRemove)
             },
