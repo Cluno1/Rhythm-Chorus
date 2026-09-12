@@ -195,6 +195,7 @@ object SettingsRoutes {
     const val BATTERY_SAVER = "battery_saver_settings"
     const val REPLAY_GAIN = "replay_gain_settings"
     const val CATALOG = "catalog_settings"
+    const val CHORUS_ADMIN = "chorus_admin"
 }
 
 data class SettingItem(
@@ -1062,6 +1063,8 @@ fun SettingsScreenWrapper(
             }
         } else if (route == SettingsRoutes.CATALOG) {
             navController.navigate("catalog_settings")
+        } else if (route == SettingsRoutes.CHORUS_ADMIN) {
+            navController.navigate(Screen.ChorusAdmin.route)
         } else if (route == SettingsRoutes.EQUALIZER) {
             navController.navigate(Screen.Equalizer.route)
         } else if (route == SettingsRoutes.SLEEP_TIMER) {

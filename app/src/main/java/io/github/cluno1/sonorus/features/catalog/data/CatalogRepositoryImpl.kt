@@ -5,6 +5,9 @@ import io.github.cluno1.sonorus.features.catalog.data.local.CatalogCache
 import io.github.cluno1.sonorus.features.catalog.data.local.CatalogQueueStore
 import io.github.cluno1.sonorus.features.catalog.data.local.CatalogOfflineCache
 import io.github.cluno1.sonorus.features.catalog.data.remote.CatalogApiClient
+import io.github.cluno1.sonorus.features.catalog.data.remote.AdminDeviceDto
+import io.github.cluno1.sonorus.features.catalog.data.remote.ChorusModerationRequestDto
+import io.github.cluno1.sonorus.features.catalog.data.remote.ChorusModerationSettingsPatchDto
 import io.github.cluno1.sonorus.features.catalog.data.remote.CatalogDeviceAuthClient
 import io.github.cluno1.sonorus.features.catalog.data.remote.CatalogDtoMapper
 import io.github.cluno1.sonorus.features.catalog.data.remote.CatalogEndpoint
@@ -14,6 +17,8 @@ import io.github.cluno1.sonorus.features.catalog.data.remote.ChorusMixResolveDto
 import io.github.cluno1.sonorus.features.catalog.data.remote.ChorusSyncAnchorDto
 import io.github.cluno1.sonorus.features.catalog.data.remote.ChorusTrackCreateDto
 import io.github.cluno1.sonorus.features.catalog.domain.CatalogChanges
+import io.github.cluno1.sonorus.features.catalog.domain.CatalogAdminDashboard
+import io.github.cluno1.sonorus.features.catalog.domain.CatalogAdminDevice
 import io.github.cluno1.sonorus.features.catalog.domain.CatalogArtwork
 import io.github.cluno1.sonorus.features.catalog.domain.CatalogConnection
 import io.github.cluno1.sonorus.features.catalog.domain.CatalogFailure
@@ -21,6 +26,8 @@ import io.github.cluno1.sonorus.features.catalog.domain.CatalogIssuedInvite
 import io.github.cluno1.sonorus.features.catalog.domain.CatalogLyricsWriteResult
 import io.github.cluno1.sonorus.features.catalog.domain.ChorusCatalog
 import io.github.cluno1.sonorus.features.catalog.domain.ChorusMix
+import io.github.cluno1.sonorus.features.catalog.domain.ChorusModerationItem
+import io.github.cluno1.sonorus.features.catalog.domain.ChorusModerationSettings
 import io.github.cluno1.sonorus.features.catalog.domain.ChorusPlayback
 import io.github.cluno1.sonorus.features.catalog.domain.ChorusProject
 import io.github.cluno1.sonorus.features.catalog.domain.ChorusSyncAnchor
@@ -52,6 +59,7 @@ class CatalogRepositoryImpl(context: Context) : CatalogRepository {
     private val cache = CatalogCache(context)
     private val queueStore = CatalogQueueStore(context)
     private val offlineCache = CatalogOfflineCache(context)
+    @Volatile private var passwordAdminToken: String? = null
 
     override fun connection(): CatalogConnection {
         val server = credentials.loadServerUrl().orEmpty()
@@ -64,6 +72,8 @@ class CatalogRepositoryImpl(context: Context) : CatalogRepository {
             deviceRegistered,
             reenrollmentRequired,
             if (server.isEmpty()) "" else "$server|${credentials.loadDeviceId() ?: "legacy"}",
+            credentials.loadDevice()?.userId,
+            credentials.loadDeviceId(),
         )
     }
 
@@ -101,7 +111,117 @@ class CatalogRepositoryImpl(context: Context) : CatalogRepository {
         )
     }
 
+    override suspend fun authenticateAdministrator(
+        username: String,
+        password: String,
+    ): Result<List<CatalogAdminDevice>> = guarded {
+        val server = credentials.loadServerUrl() ?: throw CatalogFailure.NotConfigured()
+        val session = CatalogDeviceAuthClient(server, credentials)
+            .authenticateAdministrator(username, password)
+        passwordAdminToken = session.accessToken
+        session.devices.items.orEmpty().map(::adminDevice)
+    }
+
+    override suspend fun setDeviceAdministrator(
+        deviceId: String,
+        enabled: Boolean,
+    ): Result<List<CatalogAdminDevice>> = guarded {
+        val id = validUuid(deviceId)
+        val passwordToken = passwordAdminToken
+        val items = if (passwordToken != null) {
+            val server = credentials.loadServerUrl() ?: throw CatalogFailure.NotConfigured()
+            CatalogDeviceAuthClient(server, credentials)
+                .setAdministrator(passwordToken, id, enabled)
+                .items
+                .orEmpty()
+        } else {
+            val api = client().adminApi
+            val changed = if (enabled) {
+                api.grantAdministrator(id)
+            } else {
+                api.revokeAdministrator(id)
+            }
+            changed.bodyOrThrow()
+            api.devices().bodyOrThrow().items.orEmpty()
+        }
+        if (enabled && id == credentials.loadDeviceId()) passwordAdminToken = null
+        items.map(::adminDevice)
+    }
+
+    override suspend fun getAdminDashboard(): Result<CatalogAdminDashboard> = guarded {
+        val api = client().adminApi
+        val devices = api.devices().bodyOrThrow().items.orEmpty().map(::adminDevice)
+        val settings = api.moderationSettings().bodyOrThrow().let {
+            ChorusModerationSettings(
+                automaticApproval = requireNotNull(it.automaticApproval),
+                updatedBy = it.updatedBy.orEmpty(),
+                updatedAt = it.updatedAt,
+            )
+        }
+        val pendingTracks = api.moderationTracks().bodyOrThrow().items.orEmpty().map { item ->
+            ChorusModerationItem(
+                workId = requireNotNull(item.workId),
+                projectTitle = requireNotNull(item.projectTitle),
+                track = ChorusDtoMapper.track(requireNotNull(item.track)),
+            )
+        }
+        CatalogAdminDashboard(devices, settings, pendingTracks)
+    }
+
+    override suspend fun issueInviteAsAdministrator(
+        userId: String,
+        displayName: String?,
+        replaceExistingDevice: Boolean,
+    ): Result<CatalogIssuedInvite> = guarded {
+        client().adminApi.createInvite(
+            io.github.cluno1.sonorus.features.catalog.data.remote.InviteRequest(
+                userId = userId.trim(),
+                displayName = displayName?.trim()?.takeIf(String::isNotEmpty),
+                replaceExistingDevice = replaceExistingDevice,
+            ),
+        ).bodyOrThrow().let {
+            CatalogIssuedInvite(
+                inviteCode = requireNotNull(it.inviteCode),
+                userId = requireNotNull(it.userId),
+                expiresAt = requireNotNull(it.expiresAt),
+            )
+        }
+    }
+
+    override suspend fun setChorusAutomaticApproval(
+        enabled: Boolean,
+    ): Result<ChorusModerationSettings> = guarded {
+        client().adminApi.updateModerationSettings(
+            ChorusModerationSettingsPatchDto(enabled),
+        ).bodyOrThrow().let {
+            ChorusModerationSettings(
+                automaticApproval = requireNotNull(it.automaticApproval),
+                updatedBy = it.updatedBy.orEmpty(),
+                updatedAt = it.updatedAt,
+            )
+        }
+    }
+
+    override suspend fun moderateChorusTrack(
+        trackId: String,
+        revision: Int,
+        publish: Boolean,
+        reason: String?,
+    ): Result<ChorusTrack> = guarded {
+        ChorusDtoMapper.track(
+            client().adminApi.moderateTrack(
+                trackId = validUuid(trackId),
+                ifMatch = "\"rev-$revision\"",
+                body = ChorusModerationRequestDto(
+                    status = if (publish) "published" else "rejected",
+                    reason = reason?.trim()?.takeIf(String::isNotEmpty),
+                ),
+            ).bodyOrThrow(),
+        )
+    }
+
     override fun clearConnection() {
+        passwordAdminToken = null
         credentials.clear()
         cache.clearSession()
         queueStore.clear()
@@ -633,6 +753,17 @@ class CatalogRepositoryImpl(context: Context) : CatalogRepository {
         }
         return CatalogApiClient(server, credentials)
     }
+
+    private fun adminDevice(dto: AdminDeviceDto): CatalogAdminDevice = CatalogAdminDevice(
+        deviceId = requireNotNull(dto.deviceId),
+        userId = requireNotNull(dto.userId),
+        displayName = dto.displayName,
+        applicationId = requireNotNull(dto.applicationId),
+        status = requireNotNull(dto.status),
+        isAdministrator = requireNotNull(dto.isAdministrator),
+        createdAt = requireNotNull(dto.createdAt),
+        lastSeenAt = dto.lastSeenAt,
+    )
 
     private fun cacheNamespace(): String {
         val server = credentials.loadServerUrl() ?: throw CatalogFailure.NotConfigured()

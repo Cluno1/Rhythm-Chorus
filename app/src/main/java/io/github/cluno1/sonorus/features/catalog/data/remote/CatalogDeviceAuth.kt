@@ -18,9 +18,11 @@ import retrofit2.Response
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.http.Body
+import retrofit2.http.DELETE
 import retrofit2.http.GET
 import retrofit2.http.Header
 import retrofit2.http.POST
+import retrofit2.http.Path
 import java.io.IOException
 import java.security.MessageDigest
 import java.time.Instant
@@ -28,6 +30,10 @@ import java.util.concurrent.TimeUnit
 
 internal data class AdminSessionRequest(val username: String, val password: String)
 internal data class AdminSessionDto(val accessToken: String, val expiresIn: Long)
+internal data class PasswordAdminSession(
+    val accessToken: String,
+    val devices: AdminDeviceListDto,
+)
 internal data class InviteRequest(
     val userId: String,
     val displayName: String? = null,
@@ -76,6 +82,23 @@ internal interface CatalogDeviceAuthApi {
         @Header("Authorization") authorization: String,
         @Body body: InviteRequest,
     ): Response<InviteDto>
+
+    @GET("v2/admin/devices")
+    suspend fun adminDevices(
+        @Header("Authorization") authorization: String,
+    ): Response<AdminDeviceListDto>
+
+    @POST("v2/admin/devices/{id}/administrator")
+    suspend fun grantAdministrator(
+        @Header("Authorization") authorization: String,
+        @Path("id") deviceId: String,
+    ): Response<AdministratorChangeDto>
+
+    @DELETE("v2/admin/devices/{id}/administrator")
+    suspend fun revokeAdministrator(
+        @Header("Authorization") authorization: String,
+        @Path("id") deviceId: String,
+    ): Response<AdministratorChangeDto>
 
     @GET("healthz")
     suspend fun health(): Response<HealthDto>
@@ -221,6 +244,35 @@ internal class CatalogDeviceAuthClient(
         ).adminBodyOrThrow().toIssuedInvite()
     }
 
+    suspend fun authenticateAdministrator(
+        username: String,
+        password: String,
+    ): PasswordAdminSession {
+        val session = api.adminSession(
+            AdminSessionRequest(username.trim(), password),
+        ).adminBodyOrThrow()
+        val authorization = "Bearer ${session.accessToken}"
+        return PasswordAdminSession(
+            accessToken = session.accessToken,
+            devices = api.adminDevices(authorization).adminBodyOrThrow(),
+        )
+    }
+
+    suspend fun setAdministrator(
+        accessToken: String,
+        deviceId: String,
+        enabled: Boolean,
+    ): AdminDeviceListDto {
+        val authorization = "Bearer $accessToken"
+        val response = if (enabled) {
+            api.grantAdministrator(authorization, deviceId)
+        } else {
+            api.revokeAdministrator(authorization, deviceId)
+        }
+        response.adminBodyOrThrow()
+        return api.adminDevices(authorization).adminBodyOrThrow()
+    }
+
     @Synchronized
     fun proof(request: Request, precomputedContentSha256: String? = null): Map<String, String> {
         val isRead = request.method == "GET" || request.method == "HEAD"
@@ -228,7 +280,9 @@ internal class CatalogDeviceAuthClient(
             request.url.encodedPath.matches(Regex("^/v2/renditions/[^/]+/lyrics/[^/]+$"))
         val isChorusWrite = request.url.encodedPath.startsWith("/v2/chorus-") &&
             request.method in setOf("POST", "PUT", "PATCH", "DELETE")
-        require(isRead || isLyricWrite || isChorusWrite) {
+        val isAdminWrite = request.url.encodedPath.startsWith("/v2/admin/") &&
+            request.method in setOf("POST", "PATCH", "DELETE")
+        require(isRead || isLyricWrite || isChorusWrite || isAdminWrite) {
             "public Catalog only signs reads and narrow owned writes"
         }
         if (credentials.isReenrollmentRequired()) throw CatalogFailure.InvalidCredentials()

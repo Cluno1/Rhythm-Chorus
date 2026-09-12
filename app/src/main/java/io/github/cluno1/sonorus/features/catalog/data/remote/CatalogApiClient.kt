@@ -64,6 +64,7 @@ internal class CatalogApiClient(
     val api: CatalogApi = retrofit.create(CatalogApi::class.java)
     val lyricsWriteApi: CatalogLyricsWriteApi = retrofit.create(CatalogLyricsWriteApi::class.java)
     val chorusApi: CatalogChorusApi = retrofit.create(CatalogChorusApi::class.java)
+    val adminApi: CatalogAdminApi = retrofit.create(CatalogAdminApi::class.java)
 
     fun uploadChorusToSignedUrl(url: String, file: File, mediaType: String) {
         require(CatalogPlaybackPolicy.isSignedObjectStoreUrl(url)) {

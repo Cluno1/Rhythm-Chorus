@@ -100,6 +100,7 @@ import io.github.cluno1.sonorus.features.scores.data.ScoreSettingsStore
 import io.github.cluno1.sonorus.features.scores.data.ScoreSourceMap
 import io.github.cluno1.sonorus.infrastructure.service.MediaPlaybackService
 import io.github.cluno1.sonorus.shared.presentation.components.icons.Icon
+import io.github.cluno1.sonorus.shared.presentation.components.icons.MaterialSymbolIcon
 import io.github.cluno1.sonorus.shared.presentation.components.icons.RhythmIcons
 import io.github.cluno1.sonorus.ui.LocalMiniPlayerPadding
 import androidx.compose.ui.platform.LocalContext
@@ -595,16 +596,21 @@ fun RemoteScoreScreen(
     canonicalMusicXml: ByteArray,
     onBackClick: () -> Unit,
     onChorusClick: (() -> Unit)? = null,
+    onHelpClick: (() -> Unit)? = null,
     onPlaybackPositionChanged: (tick: Long, timeMs: Long) -> Unit = { _, _ -> },
     playbackCommand: ScorePlaybackCommand? = null,
+    playbackInteractionEnabled: Boolean = true,
     scoreLabel: String? = null,
     revisionLabel: String? = null,
     revisionTimeLabel: String? = null,
+    revisionLockedMessage: String? = null,
     canOpenNewerRevision: Boolean = false,
     canOpenOlderRevision: Boolean = false,
     onOpenNewerRevision: () -> Unit = {},
     onOpenOlderRevision: () -> Unit = {},
     scoreSettingsContent: @Composable () -> Unit = {},
+    topContent: @Composable () -> Unit = {},
+    overlayContent: @Composable () -> Unit = {},
     expectedPartCount: Int? = null,
     playbackSubject: PlaybackSubject? = null,
     modifier: Modifier = Modifier,
@@ -668,6 +674,20 @@ fun RemoteScoreScreen(
                             )
                         }
                     },
+                    actions = {
+                        if (onHelpClick != null) {
+                            FilledTonalIconButton(
+                                onClick = onHelpClick,
+                                modifier = Modifier.size(48.dp),
+                            ) {
+                                Icon(
+                                    MaterialSymbolIcon("help", filled = true),
+                                    contentDescription = stringResource(R.string.chorus_recording_help_open),
+                                    modifier = Modifier.size(24.dp),
+                                )
+                            }
+                        }
+                    },
                     colors = TopAppBarDefaults.topAppBarColors(
                         containerColor = MaterialTheme.colorScheme.background,
                     ),
@@ -711,8 +731,10 @@ fun RemoteScoreScreen(
                         subtitle = scoreLabel,
                         onBackClick = onBackClick,
                         onChorusClick = onChorusClick,
+                        onHelpClick = onHelpClick,
                         onPlaybackPositionChanged = onPlaybackPositionChanged,
                         playbackCommand = playbackCommand,
+                        playbackInteractionEnabled = playbackInteractionEnabled,
                         scoreSettingsContent = {
                             scoreSettingsContent()
                             if (revisionLabel != null) {
@@ -739,22 +761,50 @@ fun RemoteScoreScreen(
                                         }
                                     }
                                     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                                        FilterChip(
-                                            selected = !canOpenNewerRevision,
-                                            onClick = onOpenNewerRevision,
-                                            enabled = canOpenNewerRevision,
-                                            label = { Text(stringResource(R.string.score_revision_newest)) },
-                                        )
-                                        FilterChip(
-                                            selected = canOpenNewerRevision,
-                                            onClick = onOpenOlderRevision,
-                                            enabled = canOpenOlderRevision,
-                                            label = { Text(stringResource(R.string.score_revision_older)) },
-                                        )
+                                        if (revisionLockedMessage == null) {
+                                            FilterChip(
+                                                selected = !canOpenNewerRevision,
+                                                onClick = onOpenNewerRevision,
+                                                enabled = canOpenNewerRevision,
+                                                label = { Text(stringResource(R.string.score_revision_newest)) },
+                                            )
+                                            FilterChip(
+                                                selected = canOpenNewerRevision,
+                                                onClick = onOpenOlderRevision,
+                                                enabled = canOpenOlderRevision,
+                                                label = { Text(stringResource(R.string.score_revision_older)) },
+                                            )
+                                        }
+                                    }
+                                    if (revisionLockedMessage != null) {
+                                        Surface(
+                                            modifier = Modifier.fillMaxWidth(),
+                                            shape = RoundedCornerShape(18.dp),
+                                            color = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.72f),
+                                            contentColor = MaterialTheme.colorScheme.onSecondaryContainer,
+                                        ) {
+                                            Row(
+                                                modifier = Modifier.padding(14.dp),
+                                                horizontalArrangement = Arrangement.spacedBy(10.dp),
+                                                verticalAlignment = Alignment.Top,
+                                            ) {
+                                                Icon(
+                                                    MaterialSymbolIcon("lock", filled = true),
+                                                    contentDescription = null,
+                                                    modifier = Modifier.size(20.dp),
+                                                )
+                                                Text(
+                                                    revisionLockedMessage,
+                                                    style = MaterialTheme.typography.bodySmall,
+                                                )
+                                            }
+                                        }
                                     }
                                 }
                             }
                         },
+                        topContent = topContent,
+                        overlayContent = overlayContent,
                         playbackSubject = playbackSubject,
                         modifier = Modifier.fillMaxWidth().weight(1f),
                     )
@@ -791,9 +841,13 @@ private fun ScoreReadyContent(
     subtitle: String? = null,
     onBackClick: (() -> Unit)? = null,
     onChorusClick: (() -> Unit)? = null,
+    onHelpClick: (() -> Unit)? = null,
     onPlaybackPositionChanged: (tick: Long, timeMs: Long) -> Unit = { _, _ -> },
     playbackCommand: ScorePlaybackCommand? = null,
+    playbackInteractionEnabled: Boolean = true,
     scoreSettingsContent: @Composable () -> Unit = {},
+    topContent: @Composable () -> Unit = {},
+    overlayContent: @Composable () -> Unit = {},
     playbackSubject: PlaybackSubject? = null,
     modifier: Modifier = Modifier
 ) {
@@ -1153,6 +1207,7 @@ private fun ScoreReadyContent(
             subtitle = subtitle,
             onBackClick = onBackClick,
             onChorusClick = onChorusClick,
+            onHelpClick = onHelpClick,
             viewMode = viewMode,
             playbackVariant = playbackVariant,
             status = playbackStatus,
@@ -1197,7 +1252,7 @@ private fun ScoreReadyContent(
                 playbackController.stop()
                 playbackStatus = ScorePlaybackStatus.READY
             },
-            interactionEnabled = editSession == null,
+            interactionEnabled = editSession == null && playbackInteractionEnabled,
             settingsContent = {
                 scoreSettingsContent()
             },
@@ -1249,6 +1304,7 @@ private fun ScoreReadyContent(
             },
             modifier = Modifier.fillMaxWidth()
         )
+        topContent()
         if (allowEditing) {
             ScoreEditControls(
                 editing = editSession != null,
@@ -1408,6 +1464,8 @@ private fun ScoreReadyContent(
                     modifier = Modifier.size(1.dp)
                 )
             }
+
+            overlayContent()
 
         }
         if (editSession != null) {
@@ -1815,6 +1873,7 @@ private fun ScorePlaybackControls(
     subtitle: String?,
     onBackClick: (() -> Unit)?,
     onChorusClick: (() -> Unit)?,
+    onHelpClick: (() -> Unit)?,
     viewMode: ScoreViewMode,
     playbackVariant: BundledScoreVariant,
     status: ScorePlaybackStatus,
@@ -1915,6 +1974,22 @@ private fun ScorePlaybackControls(
                     Icon(
                         RhythmIcons.MusicNote,
                         contentDescription = stringResource(R.string.score_chorus),
+                        modifier = Modifier.size(24.dp),
+                    )
+                }
+            }
+
+            if (onHelpClick != null) {
+                FilledTonalIconButton(
+                    onClick = onHelpClick,
+                    modifier = Modifier.size(48.dp),
+                    colors = IconButtonDefaults.filledTonalIconButtonColors(
+                        containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+                    ),
+                ) {
+                    Icon(
+                        MaterialSymbolIcon("help", filled = true),
+                        contentDescription = stringResource(R.string.chorus_recording_help_open),
                         modifier = Modifier.size(24.dp),
                     )
                 }

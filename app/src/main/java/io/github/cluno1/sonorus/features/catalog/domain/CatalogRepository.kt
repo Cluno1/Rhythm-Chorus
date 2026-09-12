@@ -20,6 +20,8 @@ data class CatalogConnection(
     val deviceRegistered: Boolean,
     val reenrollmentRequired: Boolean = false,
     val draftNamespace: String = "",
+    val userId: String? = null,
+    val deviceId: String? = null,
 )
 
 interface CatalogRepository {
@@ -36,6 +38,21 @@ interface CatalogRepository {
         displayName: String? = null,
         replaceExistingDevice: Boolean = false,
     ): Result<CatalogIssuedInvite>
+    suspend fun authenticateAdministrator(username: String, password: String): Result<List<CatalogAdminDevice>>
+    suspend fun setDeviceAdministrator(deviceId: String, enabled: Boolean): Result<List<CatalogAdminDevice>>
+    suspend fun getAdminDashboard(): Result<CatalogAdminDashboard>
+    suspend fun issueInviteAsAdministrator(
+        userId: String,
+        displayName: String? = null,
+        replaceExistingDevice: Boolean = false,
+    ): Result<CatalogIssuedInvite>
+    suspend fun setChorusAutomaticApproval(enabled: Boolean): Result<ChorusModerationSettings>
+    suspend fun moderateChorusTrack(
+        trackId: String,
+        revision: Int,
+        publish: Boolean,
+        reason: String? = null,
+    ): Result<ChorusTrack>
     fun clearConnection()
     suspend fun listWorks(query: String? = null, cursor: String? = null, limit: Int = 50): Result<CatalogPage>
     suspend fun getWorkBundle(workId: String, forceRefresh: Boolean = false): Result<WorkBundle>

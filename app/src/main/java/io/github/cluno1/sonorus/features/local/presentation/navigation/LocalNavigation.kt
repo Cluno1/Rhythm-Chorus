@@ -144,6 +144,7 @@ import io.github.cluno1.sonorus.features.catalog.domain.toStableCatalogSongId
 import io.github.cluno1.sonorus.features.catalog.domain.toRhythmAlbum
 import io.github.cluno1.sonorus.features.catalog.domain.toRhythmSong
 import io.github.cluno1.sonorus.features.catalog.presentation.CatalogServerSettingsScreen
+import io.github.cluno1.sonorus.features.catalog.presentation.ChorusAdminScreen
 import io.github.cluno1.sonorus.features.catalog.presentation.CatalogRemoteScoreScreen
 import io.github.cluno1.sonorus.features.chorus.presentation.ChorusRecordingScreen
 import io.github.cluno1.sonorus.features.chorus.presentation.ChorusScreen
@@ -250,6 +251,7 @@ sealed class Screen(val route: String) {
     object Player : Screen("player")
     object Settings : Screen("settings")
     object CatalogSettings : Screen("catalog_settings")
+    object ChorusAdmin : Screen("chorus_admin")
     object DeviceManualMetadata : Screen(
         "device_manual_metadata/{songId}?kind={kind}&artistName={artistName}",
     ) {
@@ -2381,6 +2383,17 @@ private fun LocalNavigationContent(
                         onBack = {
                             if (!navController.popBackStack()) navigateToTopLevel(Screen.Home.route)
                         },
+                    )
+                }
+
+                composable(Screen.ChorusAdmin.route) {
+                    ChorusAdminScreen(
+                        state = catalogState,
+                        viewModel = catalogViewModel,
+                        onOpenDeviceRegistration = {
+                            navController.navigate(Screen.CatalogSettings.route) { launchSingleTop = true }
+                        },
+                        onBack = { navController.popBackStack() },
                     )
                 }
 

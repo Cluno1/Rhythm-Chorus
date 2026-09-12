@@ -18,6 +18,8 @@ import io.github.cluno1.sonorus.features.catalog.domain.CatalogLibraryAlbum
 import io.github.cluno1.sonorus.features.catalog.domain.CatalogLibrarySong
 import io.github.cluno1.sonorus.features.catalog.domain.CatalogLibraryScoreWork
 import io.github.cluno1.sonorus.features.catalog.domain.CatalogIssuedInvite
+import io.github.cluno1.sonorus.features.catalog.domain.CatalogAdminDashboard
+import io.github.cluno1.sonorus.features.catalog.domain.CatalogAdminDevice
 import io.github.cluno1.sonorus.features.catalog.domain.CatalogSmartEnrollmentError
 import io.github.cluno1.sonorus.features.catalog.domain.CatalogSmartEnrollmentException
 import io.github.cluno1.sonorus.features.catalog.domain.CatalogSmartEnrollmentText
@@ -51,6 +53,12 @@ data class CatalogUiState(
     val refreshing: Boolean = false,
     val offlineSnapshot: Boolean = false,
     val issuedInvite: CatalogIssuedInvite? = null,
+    val currentDeviceId: String? = null,
+    val administratorDevices: List<CatalogAdminDevice> = emptyList(),
+    val administratorDashboard: CatalogAdminDashboard? = null,
+    val administratorLoginRequired: Boolean = false,
+    val administratorSessionActive: Boolean = false,
+    val administratorLoading: Boolean = false,
     val error: String? = null,
     val adminError: String? = null,
 )
@@ -78,6 +86,7 @@ class CatalogViewModel(application: Application) : AndroidViewModel(application)
                 deviceRegistered = it.deviceRegistered,
                 reenrollmentRequired = it.reenrollmentRequired,
                 serverUrl = it.serverUrl,
+                currentDeviceId = it.deviceId,
                 works = repository.cachedWorks(),
                 songs = repository.cachedLibrary()?.songs.orEmpty(),
                 albums = repository.cachedLibrary()?.albums.orEmpty(),
@@ -105,6 +114,7 @@ class CatalogViewModel(application: Application) : AndroidViewModel(application)
                         deviceRegistered = connection.deviceRegistered,
                         reenrollmentRequired = connection.reenrollmentRequired,
                         serverUrl = connection.serverUrl,
+                        currentDeviceId = connection.deviceId,
                         loading = false,
                     )
                     refreshLibrary()
@@ -174,6 +184,152 @@ class CatalogViewModel(application: Application) : AndroidViewModel(application)
 
     fun clearInviteUiState() {
         _state.value = _state.value.copy(issuedInvite = null, adminError = null)
+    }
+
+    fun refreshAdministrator() {
+        viewModelScope.launch {
+            _state.value = _state.value.copy(administratorLoading = true, adminError = null)
+            repository.getAdminDashboard().fold(
+                onSuccess = { dashboard ->
+                    _state.value = _state.value.copy(
+                        administratorDashboard = dashboard,
+                        administratorDevices = dashboard.devices,
+                        administratorLoginRequired = false,
+                        administratorLoading = false,
+                        adminError = null,
+                    )
+                },
+                onFailure = { error ->
+                    if (error is CatalogFailure.Forbidden) {
+                        _state.value = _state.value.copy(
+                            administratorDashboard = null,
+                            administratorLoginRequired = true,
+                            administratorLoading = false,
+                            adminError = null,
+                        )
+                    } else {
+                        _state.value = _state.value.copy(
+                            administratorDashboard = null,
+                            administratorLoading = false,
+                            adminError = message(error),
+                        )
+                    }
+                },
+            )
+        }
+    }
+
+    fun authenticateAdministrator(username: String, password: String) {
+        viewModelScope.launch {
+            _state.value = _state.value.copy(administratorLoading = true, adminError = null)
+            repository.authenticateAdministrator(username, password).fold(
+                onSuccess = { devices ->
+                    _state.value = _state.value.copy(
+                        administratorDevices = devices,
+                        administratorSessionActive = true,
+                        administratorLoginRequired = true,
+                        administratorLoading = false,
+                        adminError = null,
+                    )
+                },
+                onFailure = {
+                    _state.value = _state.value.copy(
+                        administratorSessionActive = false,
+                        administratorLoading = false,
+                        adminError = message(it),
+                    )
+                },
+            )
+        }
+    }
+
+    fun setDeviceAdministrator(deviceId: String, enabled: Boolean) {
+        viewModelScope.launch {
+            _state.value = _state.value.copy(administratorLoading = true, adminError = null)
+            repository.setDeviceAdministrator(deviceId, enabled).fold(
+                onSuccess = { devices ->
+                    _state.value = _state.value.copy(
+                        administratorDevices = devices,
+                        administratorLoading = false,
+                    )
+                    if (deviceId == _state.value.currentDeviceId) refreshAdministrator()
+                },
+                onFailure = {
+                    _state.value = _state.value.copy(
+                        administratorLoading = false,
+                        adminError = message(it),
+                    )
+                },
+            )
+        }
+    }
+
+    fun issueInviteAsAdministrator(
+        userId: String,
+        displayName: String,
+        replaceExistingDevice: Boolean,
+    ) {
+        viewModelScope.launch {
+            _state.value = _state.value.copy(
+                administratorLoading = true,
+                issuedInvite = null,
+                adminError = null,
+            )
+            repository.issueInviteAsAdministrator(
+                userId,
+                displayName,
+                replaceExistingDevice,
+            ).fold(
+                onSuccess = {
+                    _state.value = _state.value.copy(
+                        issuedInvite = it,
+                        administratorLoading = false,
+                    )
+                },
+                onFailure = {
+                    _state.value = _state.value.copy(
+                        administratorLoading = false,
+                        adminError = message(it),
+                    )
+                },
+            )
+        }
+    }
+
+    fun setChorusAutomaticApproval(enabled: Boolean) {
+        viewModelScope.launch {
+            _state.value = _state.value.copy(administratorLoading = true, adminError = null)
+            repository.setChorusAutomaticApproval(enabled).fold(
+                onSuccess = { settings ->
+                    val dashboard = _state.value.administratorDashboard
+                    _state.value = _state.value.copy(
+                        administratorDashboard = dashboard?.copy(settings = settings),
+                        administratorLoading = false,
+                    )
+                },
+                onFailure = {
+                    _state.value = _state.value.copy(
+                        administratorLoading = false,
+                        adminError = message(it),
+                    )
+                },
+            )
+        }
+    }
+
+    fun moderateChorusTrack(trackId: String, revision: Int, publish: Boolean, reason: String?) {
+        viewModelScope.launch {
+            _state.value = _state.value.copy(administratorLoading = true, adminError = null)
+            repository.moderateChorusTrack(trackId, revision, publish, reason).fold(
+                onSuccess = { refreshAdministrator() },
+                onFailure = {
+                    _state.value = _state.value.copy(
+                        administratorLoading = false,
+                        adminError = message(it),
+                    )
+                },
+            )
+        }
     }
 
     fun refreshWorks(query: String? = null) {

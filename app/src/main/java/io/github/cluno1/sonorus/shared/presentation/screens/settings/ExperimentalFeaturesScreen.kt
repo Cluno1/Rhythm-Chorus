@@ -236,6 +236,12 @@ fun LabsSettingsScreen(
                             context.getString(R.string.labs_score_chorus_desc),
                             toggleState = scoreChorusLabEnabled,
                             onToggleChange = { appSettings.setScoreChorusLabEnabled(it) }
+                        ),
+                        SettingItem(
+                            MaterialSymbolIcon("admin_panel_settings", filled = true),
+                            context.getString(R.string.chorus_admin_title),
+                            context.getString(R.string.labs_chorus_admin_desc),
+                            onClick = { onNavigateTo(SettingsRoutes.CHORUS_ADMIN) }
                         )
                     )
                 )

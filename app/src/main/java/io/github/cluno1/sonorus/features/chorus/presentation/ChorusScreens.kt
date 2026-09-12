@@ -1,13 +1,13 @@
 package io.github.cluno1.sonorus.features.chorus.presentation
 
 import android.Manifest
-import android.content.pm.PackageManager
 import android.media.MediaMetadataRetriever
 import android.media.AudioDeviceCallback
 import android.media.AudioDeviceInfo
 import android.media.AudioManager
 import android.media.ToneGenerator
 import android.net.Uri
+import io.github.cluno1.sonorus.R
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Canvas
@@ -15,41 +15,51 @@ import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.AssistChip
+import androidx.compose.material3.BottomSheetDefaults
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Checkbox
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.FilledTonalIconButton
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SheetValue
+import androidx.compose.material3.Slider
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.rememberBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -63,15 +73,13 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.core.content.ContextCompat
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
@@ -87,14 +95,21 @@ import io.github.cluno1.sonorus.features.catalog.domain.ChorusSyncAnchor
 import io.github.cluno1.sonorus.features.catalog.domain.ChorusTrack
 import io.github.cluno1.sonorus.features.catalog.domain.ChorusTrackUpload
 import io.github.cluno1.sonorus.features.catalog.domain.MusicXmlRuntimeSanitizer
+import io.github.cluno1.sonorus.features.catalog.domain.ScoreRevision
 import io.github.cluno1.sonorus.features.catalog.presentation.CatalogViewModel
+import io.github.cluno1.sonorus.features.catalog.presentation.formatScoreRevisionTime
 import io.github.cluno1.sonorus.features.chorus.data.ChorusAudioRecorder
 import io.github.cluno1.sonorus.features.chorus.data.ChorusRecordingResult
 import io.github.cluno1.sonorus.features.scores.presentation.RemoteScoreScreen
 import io.github.cluno1.sonorus.features.scores.presentation.ScorePlaybackCommand
 import io.github.cluno1.sonorus.features.scores.presentation.ScorePlaybackCommandAction
+import io.github.cluno1.sonorus.shared.data.repository.PlaybackMediaKind
+import io.github.cluno1.sonorus.shared.data.repository.PlaybackSubject
+import io.github.cluno1.sonorus.shared.presentation.components.bottomsheets.RhythmAdaptiveModalSheet
+import io.github.cluno1.sonorus.shared.presentation.components.bottomsheets.SheetAdaptiveType
 import io.github.cluno1.sonorus.shared.presentation.components.common.M3CircularLoader
 import io.github.cluno1.sonorus.shared.presentation.components.icons.Icon
+import io.github.cluno1.sonorus.shared.presentation.components.icons.MaterialSymbolIcon
 import io.github.cluno1.sonorus.shared.presentation.components.icons.RhythmIcons
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -114,6 +129,7 @@ fun ChorusScreen(
 ) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
+    val lifecycleOwner = LocalLifecycleOwner.current
     var projects by remember(workId) { mutableStateOf<List<ChorusProject>>(emptyList()) }
     var activeProjectId by remember(workId) { mutableStateOf<String?>(null) }
     var selectedIds by remember(workId) { mutableStateOf<Set<String>>(emptySet()) }
@@ -122,6 +138,7 @@ fun ChorusScreen(
     var error by remember { mutableStateOf<String?>(null) }
     var mix by remember { mutableStateOf<ChorusMix?>(null) }
     var pendingUpload by remember { mutableStateOf<PendingAudio?>(null) }
+    var pendingDelete by remember { mutableStateOf<ChorusTrack?>(null) }
     var refreshKey by remember { mutableIntStateOf(0) }
     val project = projects.firstOrNull { it.id == activeProjectId }
     val playableTracks = project?.tracks.orEmpty().filter { it.status == "published" }
@@ -131,6 +148,14 @@ fun ChorusScreen(
         }
     }
     var playing by remember { mutableStateOf(false) }
+
+    DisposableEffect(lifecycleOwner) {
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_RESUME) refreshKey++
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
+    }
 
     fun playReadyMix(value: ChorusMix) {
         val url = value.playback?.url ?: return
@@ -387,15 +412,8 @@ fun ChorusScreen(
                                     selectedIds = if (checked) selectedIds + track.id else selectedIds - track.id
                                 }
                             },
-                            onWithdraw = if (track.ownedByRequester && track.status != "withdrawn") ({
-                                scope.launch {
-                                    busy = true
-                                    viewModel.withdrawChorusTrack(track.id).fold(
-                                        onSuccess = { refreshKey++ },
-                                        onFailure = { error = it.message ?: "撤回失败" },
-                                    )
-                                    busy = false
-                                }
+                            onDelete = if (track.ownedByRequester && track.status != "withdrawn") ({
+                                pendingDelete = track
                             }) else null,
                         )
                     }
@@ -435,6 +453,31 @@ fun ChorusScreen(
             },
         )
     }
+
+    pendingDelete?.let { track ->
+        DeleteTrackDialog(
+            trackName = track.displayLabel,
+            busy = busy,
+            onDismiss = { if (!busy) pendingDelete = null },
+            onConfirm = {
+                scope.launch {
+                    busy = true
+                    error = null
+                    viewModel.withdrawChorusTrack(track.id).fold(
+                        onSuccess = {
+                            selectedIds = selectedIds - track.id
+                            pendingDelete = null
+                            refreshKey++
+                        },
+                        onFailure = {
+                            error = it.message ?: context.getString(R.string.chorus_track_delete_error)
+                        },
+                    )
+                    busy = false
+                }
+            },
+        )
+    }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -453,14 +496,17 @@ fun ChorusRecordingScreen(
     val lifecycleOwner = LocalLifecycleOwner.current
     val rootView = LocalView.current
     var project by remember { mutableStateOf<ChorusProject?>(null) }
+    var scoreRevision by remember { mutableStateOf<ScoreRevision?>(null) }
     var scoreBytes by remember { mutableStateOf<ByteArray?>(null) }
     var recorder by remember { mutableStateOf<ChorusAudioRecorder?>(null) }
     var recording by remember { mutableStateOf(false) }
     var countdown by remember { mutableIntStateOf(0) }
     var result by remember { mutableStateOf<ChorusRecordingResult?>(null) }
     var busy by remember { mutableStateOf(false) }
+    var finishing by remember { mutableStateOf(false) }
     var error by remember { mutableStateOf<String?>(null) }
     var showLyrics by remember { mutableStateOf(false) }
+    var showHelp by remember { mutableStateOf(false) }
     var rightsConfirmed by remember { mutableStateOf(false) }
     var offsetMs by remember { mutableLongStateOf(0L) }
     var scoreTick by remember { mutableLongStateOf(0L) }
@@ -479,6 +525,23 @@ fun ChorusRecordingScreen(
     val duration by (currentRecorder?.durationMs ?: emptyDuration).collectAsState()
     val peak by (currentRecorder?.peak ?: emptyPeak).collectAsState()
     val lyrics = catalogState.songs.firstOrNull { it.workId == project?.workId }?.lyrics
+    val scoreWork = catalogState.scoreWorks.firstOrNull { it.workId == project?.workId }
+    val scoreOption = scoreWork?.scoreOptions?.firstOrNull { it.revisionId == scoreRevision?.id }
+    val scoreDisplayLabel = scoreOption?.scoreLabel
+        ?: stringResource(R.string.chorus_recording_alignment_score)
+    val playbackSubject = scoreRevision?.let { revision ->
+        PlaybackSubject(
+            subjectId = "rhythm-score:score:${revision.scoreId}",
+            mediaKind = PlaybackMediaKind.SCORE,
+            title = scoreWork?.title ?: title,
+            artist = scoreWork?.artist,
+            collection = scoreOption?.scoreLabel,
+            artworkUri = scoreWork?.coverUrl,
+            workId = project?.workId,
+            scoreId = revision.scoreId,
+            revisionId = revision.id,
+        )
+    }
 
     fun sendPlaybackCommand(action: ScorePlaybackCommandAction) {
         commandSequence++
@@ -520,21 +583,17 @@ fun ChorusRecordingScreen(
                 }.onFailure { error = it.message ?: "无法开始录音" }
             }
         } else {
-            error = "需要麦克风权限才能录制合唱音轨"
+            error = context.getString(R.string.chorus_recording_microphone_required)
         }
     }
 
     fun requestStart() {
-        if (ContextCompat.checkSelfPermission(context, Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED) {
-            permission.launch(Manifest.permission.RECORD_AUDIO)
-        } else {
-            permission.launch(Manifest.permission.RECORD_AUDIO)
-        }
+        permission.launch(Manifest.permission.RECORD_AUDIO)
     }
 
     LaunchedEffect(projectId, revisionId) {
         val loadedProject = viewModel.chorusProject(projectId).getOrElse {
-            error = it.message ?: "合唱项目加载失败"
+            error = it.message ?: context.getString(R.string.chorus_recording_project_load_error)
             return@LaunchedEffect
         }
         project = loadedProject
@@ -558,12 +617,16 @@ fun ChorusRecordingScreen(
                 }
             }
         }
-        val revision = viewModel.scoreRevision(revisionId).getOrElse {
-            error = it.message ?: "谱面修订加载失败"
+        val revision = viewModel.scoreRevision(loadedProject.alignmentScoreRevisionId).getOrElse {
+            error = it.message ?: context.getString(R.string.chorus_recording_revision_load_error)
             return@LaunchedEffect
         }
+        scoreRevision = revision
         scoreBytes = viewModel.scoreBytes(revision).mapCatching(MusicXmlRuntimeSanitizer::forAlphaTab)
-            .getOrElse { error = it.message ?: "谱面加载失败"; null }
+            .getOrElse {
+                error = it.message ?: context.getString(R.string.chorus_recording_score_load_error)
+                null
+            }
     }
 
     DisposableEffect(lifecycleOwner) {
@@ -594,7 +657,7 @@ fun ChorusRecordingScreen(
                     recorder?.pauseSafely()
                     sendPlaybackCommand(ScorePlaybackCommandAction.PAUSE)
                     recording = false
-                    error = "音频设备已变化，录音已安全暂停；确认耳机后再继续"
+                    error = context.getString(R.string.chorus_recording_audio_route_changed)
                 }
             }
         }
@@ -602,172 +665,621 @@ fun ChorusRecordingScreen(
         onDispose { if (recording) audioManager.unregisterAudioDeviceCallback(callback) }
     }
 
+    val recordedResult = result
+    val bytes = scoreBytes
+    when {
+        recordedResult != null -> RecordingReview(
+            title = title,
+            result = recordedResult,
+            parts = project?.parts.orEmpty(),
+            partId = partId,
+            kind = kind,
+            label = label,
+            offsetMs = offsetMs,
+            rightsConfirmed = rightsConfirmed,
+            busy = busy,
+            error = error,
+            onBack = onBack,
+            onHelp = { showHelp = true },
+            onPart = { partId = it },
+            onKind = { kind = it },
+            onLabel = { label = it },
+            onOffset = { offsetMs = it.coerceIn(-60_000, 60_000) },
+            onRights = { rightsConfirmed = it },
+            onDiscard = {
+                scope.launch {
+                    recorder?.discard()
+                    recorder = null
+                    result = null
+                    resultAnchors = emptyList()
+                    recordingAnchors = emptyList()
+                    error = null
+                }
+            },
+            onUpload = {
+                val activeProject = project ?: return@RecordingReview
+                val recorded = result ?: return@RecordingReview
+                scope.launch {
+                    busy = true
+                    error = null
+                    val sha = sha256(recorded.uploadFile)
+                    val upload = ChorusTrackUpload(
+                        file = recorded.uploadFile,
+                        mediaType = recorded.mediaType,
+                        sha256 = sha,
+                        durationMs = recorded.durationMs,
+                        partId = partId,
+                        contributionKind = kind,
+                        displayLabel = label.ifBlank {
+                            context.getString(R.string.chorus_recording_default_track_name)
+                        },
+                        initialAnchors = resultAnchors.ifEmpty {
+                            listOf(ChorusSyncAnchor(0, scoreTick, scoreTimeMs.coerceAtLeast(0)))
+                        },
+                    )
+                    uploadAndSubmit(
+                        viewModel,
+                        activeProject.id,
+                        upload,
+                        (offsetMs + transportOffsetMs).coerceIn(-15 * 60_000L, 15 * 60_000L),
+                    ).fold(
+                        onSuccess = {
+                            recorder?.discard()
+                            onUploaded()
+                        },
+                        onFailure = {
+                            error = it.message
+                                ?: context.getString(R.string.chorus_recording_upload_error)
+                        },
+                    )
+                    busy = false
+                }
+            },
+        )
+
+        bytes != null && project != null -> RemoteScoreScreen(
+            title = title,
+            canonicalMusicXml = bytes,
+            onBackClick = onBack,
+            onHelpClick = { showHelp = true },
+            expectedPartCount = project?.parts?.size,
+            onPlaybackPositionChanged = { tick, timeMs ->
+                scoreTick = tick
+                scoreTimeMs = timeMs
+            },
+            playbackCommand = playbackCommand,
+            playbackInteractionEnabled = !recording && countdown == 0 && !finishing,
+            scoreLabel = stringResource(R.string.chorus_recording_header_subtitle, scoreDisplayLabel),
+            revisionLabel = scoreRevision?.let {
+                stringResource(R.string.score_revision_label, it.revisionNo)
+            },
+            revisionTimeLabel = scoreRevision?.let { formatScoreRevisionTime(it.createdAt) },
+            revisionLockedMessage = stringResource(R.string.chorus_recording_revision_locked),
+            playbackSubject = playbackSubject,
+            topContent = {
+                ChorusRecordingPanel(
+                    durationMs = duration,
+                    peak = peak,
+                    recording = recording,
+                    countdown = countdown,
+                    finishing = finishing,
+                    hasAudio = currentRecorder?.hasAudio == true,
+                    showLyrics = showLyrics,
+                    error = error,
+                    onShowScore = { showLyrics = false },
+                    onShowLyrics = { showLyrics = true },
+                    onToggleRecording = {
+                        if (recording) {
+                            scope.launch {
+                                recorder?.pause()
+                                sendPlaybackCommand(ScorePlaybackCommandAction.PAUSE)
+                                recording = false
+                            }
+                        } else {
+                            requestStart()
+                        }
+                    },
+                    onFinish = {
+                        scope.launch {
+                            finishing = true
+                            error = null
+                            runCatching {
+                                recorder?.finish()
+                                    ?: error(context.getString(R.string.chorus_recording_no_audio))
+                            }.fold(
+                                onSuccess = { finished ->
+                                    val endAnchor = ChorusSyncAnchor(
+                                        anchorOrder = recordingAnchors.size,
+                                        scoreTick = scoreTick,
+                                        mediaMs = finished.durationMs,
+                                    )
+                                    val anchors = (recordingAnchors + endAnchor)
+                                        .filterIndexed { index, anchor ->
+                                            index == 0 || anchor.scoreTick >=
+                                                (recordingAnchors.getOrNull(index - 1)?.scoreTick ?: 0L)
+                                        }
+                                        .mapIndexed { index, anchor -> anchor.copy(anchorOrder = index) }
+                                    resultAnchors = anchors
+                                    recorder?.saveTimelineAnchors(
+                                        anchors.map { anchor -> anchor.scoreTick to anchor.mediaMs },
+                                    )
+                                    result = finished
+                                    recording = false
+                                    sendPlaybackCommand(ScorePlaybackCommandAction.PAUSE)
+                                },
+                                onFailure = {
+                                    error = it.message
+                                        ?: context.getString(R.string.chorus_recording_finish_error)
+                                },
+                            )
+                            finishing = false
+                        }
+                    },
+                )
+            },
+            overlayContent = {
+                if (showLyrics) {
+                    ChorusRecordingLyrics(lyrics)
+                }
+            },
+            modifier = Modifier.fillMaxSize(),
+        )
+
+        else -> ChorusRecordingLoadState(
+            error = error,
+            onBack = onBack,
+            onHelp = { showHelp = true },
+        )
+    }
+
+    if (showHelp) {
+        ChorusRecordingHelpSheet(onDismiss = { showHelp = false })
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun ChorusRecordingLoadState(
+    error: String?,
+    onBack: () -> Unit,
+    onHelp: () -> Unit,
+) {
     Scaffold(
         topBar = {
             TopAppBar(
-                title = {
-                    Column {
-                        Text("录制合唱", fontWeight = FontWeight.Bold)
-                        Text(formatDuration(duration), style = MaterialTheme.typography.labelMedium)
-                    }
-                },
+                title = { Text(stringResource(R.string.chorus_recording_title), fontWeight = FontWeight.Bold) },
                 navigationIcon = {
-                    FilledTonalIconButton(onClick = onBack, modifier = Modifier.padding(start = 12.dp)) {
-                        Icon(RhythmIcons.Back, "返回")
+                    FilledTonalIconButton(
+                        onClick = onBack,
+                        modifier = Modifier.padding(start = 12.dp),
+                    ) {
+                        Icon(RhythmIcons.Back, stringResource(R.string.score_back))
                     }
                 },
                 actions = {
-                    FilledTonalIconButton(
-                        onClick = {
-                            if (recording) scope.launch { recorder?.pause(); recording = false }
-                            if (recording) sendPlaybackCommand(ScorePlaybackCommandAction.PAUSE)
-                            else requestStart()
-                        },
-                        enabled = project != null && result == null && countdown == 0,
-                    ) { Icon(if (recording) RhythmIcons.Pause else RhythmIcons.Play, "开始或暂停") }
-                    FilledTonalIconButton(
-                        onClick = {
-                            scope.launch {
-                                busy = true
-                                runCatching { recorder?.finish() ?: error("还没有录音") }.fold(
-                                    onSuccess = {
-                                        val endAnchor = ChorusSyncAnchor(
-                                            anchorOrder = recordingAnchors.size,
-                                            scoreTick = scoreTick,
-                                            mediaMs = it.durationMs,
-                                        )
-                                        val anchors = (recordingAnchors + endAnchor)
-                                            .filterIndexed { index, anchor ->
-                                                index == 0 || anchor.scoreTick >=
-                                                    (recordingAnchors.getOrNull(index - 1)?.scoreTick ?: 0L)
-                                            }
-                                            .mapIndexed { index, anchor -> anchor.copy(anchorOrder = index) }
-                                        resultAnchors = anchors
-                                        recorder?.saveTimelineAnchors(
-                                            anchors.map { anchor -> anchor.scoreTick to anchor.mediaMs },
-                                        )
-                                        result = it
-                                        recording = false
-                                        sendPlaybackCommand(ScorePlaybackCommandAction.PAUSE)
-                                    },
-                                    onFailure = { error = it.message ?: "录音终止失败" },
-                                )
-                                busy = false
-                            }
-                        },
-                        enabled = currentRecorder?.hasAudio == true && result == null && countdown == 0 && !busy,
-                    ) { Icon(RhythmIcons.Stop, "终止录音") }
+                    FilledTonalIconButton(onClick = onHelp) {
+                        Icon(
+                            MaterialSymbolIcon("help", filled = true),
+                            stringResource(R.string.chorus_recording_help_open),
+                        )
+                    }
                 },
             )
         },
     ) { padding ->
-        Column(Modifier.fillMaxSize().padding(padding)) {
-            Surface(color = MaterialTheme.colorScheme.surfaceContainer) {
-                Column(Modifier.fillMaxWidth().padding(12.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    if (countdown > 0) Text("预备 $countdown", style = MaterialTheme.typography.headlineMedium)
-                    Canvas(Modifier.fillMaxWidth().height(30.dp)) {
-                        drawLine(
-                            color = if (peak > .88f) Color.Red else Color(0xff43a047),
-                            start = Offset(0f, size.height / 2),
-                            end = Offset(size.width * peak, size.height / 2),
-                            strokeWidth = size.height / 2,
+        Box(Modifier.fillMaxSize().padding(padding), contentAlignment = Alignment.Center) {
+            if (error == null) M3CircularLoader()
+            else ErrorCard(error)
+        }
+    }
+}
+
+@Composable
+private fun ChorusRecordingPanel(
+    durationMs: Long,
+    peak: Float,
+    recording: Boolean,
+    countdown: Int,
+    finishing: Boolean,
+    hasAudio: Boolean,
+    showLyrics: Boolean,
+    error: String?,
+    onShowScore: () -> Unit,
+    onShowLyrics: () -> Unit,
+    onToggleRecording: () -> Unit,
+    onFinish: () -> Unit,
+) {
+    Surface(
+        modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 8.dp),
+        shape = RoundedCornerShape(28.dp),
+        color = MaterialTheme.colorScheme.surfaceContainerHigh,
+        tonalElevation = 3.dp,
+    ) {
+        Column(
+            modifier = Modifier.padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp),
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Surface(
+                    shape = RoundedCornerShape(50),
+                    color = when {
+                        countdown > 0 -> MaterialTheme.colorScheme.tertiaryContainer
+                        recording -> MaterialTheme.colorScheme.errorContainer
+                        hasAudio -> MaterialTheme.colorScheme.secondaryContainer
+                        else -> MaterialTheme.colorScheme.primaryContainer
+                    },
+                ) {
+                    Row(
+                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 7.dp),
+                        horizontalArrangement = Arrangement.spacedBy(7.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Icon(
+                            MaterialSymbolIcon(
+                                if (recording) "mic" else if (hasAudio) "pause" else "music_note",
+                                filled = true,
+                            ),
+                            contentDescription = null,
+                            modifier = Modifier.size(18.dp),
+                        )
+                        Text(
+                            when {
+                                countdown > 0 -> stringResource(
+                                    R.string.chorus_recording_countdown,
+                                    countdown,
+                                )
+                                recording -> stringResource(R.string.chorus_recording_status_recording)
+                                hasAudio -> stringResource(R.string.chorus_recording_status_paused)
+                                else -> stringResource(R.string.chorus_recording_status_ready)
+                            },
+                            style = MaterialTheme.typography.labelLarge,
+                            fontWeight = FontWeight.SemiBold,
                         )
                     }
-                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        FilterChip(selected = !showLyrics, onClick = { showLyrics = false }, label = { Text("乐谱") })
-                        FilterChip(selected = showLyrics, onClick = { showLyrics = true }, label = { Text("歌词") })
-                        AssistChip(onClick = {}, label = { Text("节拍器可在谱面设置中开启") })
+                }
+                Text(
+                    formatDuration(durationMs),
+                    style = MaterialTheme.typography.titleLarge,
+                    fontWeight = FontWeight.Bold,
+                )
+            }
+
+            Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                ) {
+                    Text(
+                        stringResource(R.string.chorus_recording_input_level),
+                        style = MaterialTheme.typography.labelMedium,
+                    )
+                    Text(
+                        if (peak > .88f) stringResource(R.string.chorus_recording_input_too_loud)
+                        else stringResource(R.string.chorus_recording_input_good),
+                        style = MaterialTheme.typography.labelSmall,
+                        color = if (peak > .88f) MaterialTheme.colorScheme.error
+                        else MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+                LinearProgressIndicator(
+                    progress = { peak.coerceIn(0f, 1f) },
+                    modifier = Modifier.fillMaxWidth().height(8.dp),
+                    color = if (peak > .88f) MaterialTheme.colorScheme.error
+                    else MaterialTheme.colorScheme.primary,
+                    trackColor = MaterialTheme.colorScheme.surfaceContainerHighest,
+                )
+            }
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                FilterChip(
+                    selected = !showLyrics,
+                    onClick = onShowScore,
+                    label = { Text(stringResource(R.string.chorus_recording_tab_score)) },
+                    leadingIcon = { Icon(RhythmIcons.Score, null, modifier = Modifier.size(18.dp)) },
+                )
+                FilterChip(
+                    selected = showLyrics,
+                    onClick = onShowLyrics,
+                    label = { Text(stringResource(R.string.chorus_recording_tab_lyrics)) },
+                    leadingIcon = {
+                        Icon(MaterialSymbolIcon("lyrics", filled = true), null, modifier = Modifier.size(18.dp))
+                    },
+                )
+                Text(
+                    stringResource(R.string.chorus_recording_metronome_hint),
+                    modifier = Modifier.weight(1f),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(10.dp),
+            ) {
+                FilledTonalButton(
+                    onClick = onToggleRecording,
+                    enabled = countdown == 0 && !finishing,
+                    modifier = Modifier.weight(1f),
+                ) {
+                    Icon(
+                        if (recording) RhythmIcons.Pause else MaterialSymbolIcon("mic", filled = true),
+                        contentDescription = null,
+                    )
+                    Text(
+                        text = stringResource(
+                            if (recording) R.string.chorus_recording_pause
+                            else if (hasAudio) R.string.chorus_recording_continue
+                            else R.string.chorus_recording_start,
+                        ),
+                        modifier = Modifier.padding(start = 8.dp),
+                    )
+                }
+                Button(
+                    onClick = onFinish,
+                    enabled = hasAudio && countdown == 0 && !finishing,
+                    modifier = Modifier.weight(1f),
+                ) {
+                    if (finishing) {
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(20.dp),
+                            strokeWidth = 2.dp,
+                        )
+                    } else {
+                        Icon(MaterialSymbolIcon("preview", filled = true), contentDescription = null)
                     }
                     Text(
-                        "建议使用有线或 USB 耳机；蓝牙延迟可能变化。切到后台或音频中断时会自动安全暂停并保留草稿。",
+                        text = stringResource(
+                            if (finishing) R.string.chorus_recording_preparing_preview
+                            else R.string.chorus_recording_finish_preview,
+                        ),
+                        modifier = Modifier.padding(start = 8.dp),
+                    )
+                }
+            }
+
+            Text(
+                stringResource(R.string.chorus_recording_headphone_hint),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            error?.let { ErrorCard(it) }
+        }
+    }
+}
+
+@Composable
+private fun ChorusRecordingLyrics(lyrics: String?) {
+    Surface(
+        modifier = Modifier.fillMaxSize(),
+        color = MaterialTheme.colorScheme.background,
+    ) {
+        if (lyrics.isNullOrBlank()) {
+            Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                Text(
+                    stringResource(R.string.chorus_recording_no_lyrics),
+                    modifier = Modifier.padding(28.dp),
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+        } else {
+            Text(
+                lyrics,
+                modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(24.dp),
+                style = MaterialTheme.typography.bodyLarge,
+            )
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun ChorusRecordingHelpSheet(onDismiss: () -> Unit) {
+    val sheetState = rememberBottomSheetState(
+        initialValue = SheetValue.Hidden,
+        enabledValues = setOf(SheetValue.Hidden, SheetValue.Expanded),
+    )
+    RhythmAdaptiveModalSheet(
+        onDismissRequest = onDismiss,
+        adaptiveType = SheetAdaptiveType.AUTO_DIALOG,
+        tabletMaxWidth = 680.dp,
+        showCloseButton = false,
+        sheetState = sheetState,
+        sheetGesturesEnabled = true,
+        dragHandle = { BottomSheetDefaults.DragHandle(color = MaterialTheme.colorScheme.primary) },
+        shape = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp),
+        containerColor = MaterialTheme.colorScheme.surfaceContainer,
+    ) {
+        Column(Modifier.fillMaxWidth().heightIn(max = 760.dp)) {
+            Row(
+                modifier = Modifier.fillMaxWidth().padding(start = 20.dp, end = 12.dp, bottom = 12.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(12.dp),
+            ) {
+                Surface(
+                    modifier = Modifier.size(44.dp),
+                    shape = CircleShape,
+                    color = MaterialTheme.colorScheme.primaryContainer,
+                    contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                ) {
+                    Box(contentAlignment = Alignment.Center) {
+                        Icon(
+                            MaterialSymbolIcon("help", filled = true),
+                            contentDescription = null,
+                            modifier = Modifier.size(24.dp),
+                        )
+                    }
+                }
+                Column(Modifier.weight(1f)) {
+                    Text(
+                        stringResource(R.string.chorus_recording_help_title),
+                        style = MaterialTheme.typography.titleLarge,
+                        fontWeight = FontWeight.SemiBold,
+                    )
+                    Text(
+                        stringResource(R.string.chorus_recording_help_subtitle),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
-                    error?.let { Text(it, color = MaterialTheme.colorScheme.error) }
+                }
+                FilledTonalIconButton(onClick = onDismiss, modifier = Modifier.size(40.dp)) {
+                    Icon(
+                        MaterialSymbolIcon("close", filled = true),
+                        stringResource(R.string.chorus_recording_help_close),
+                        modifier = Modifier.size(20.dp),
+                    )
                 }
             }
-            if (result == null) {
-                Box(Modifier.fillMaxSize()) {
-                    val bytes = scoreBytes
-                    if (bytes == null) Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { M3CircularLoader() }
-                    else RemoteScoreScreen(
-                        title = title,
-                        canonicalMusicXml = bytes,
-                        onBackClick = onBack,
-                        expectedPartCount = project?.parts?.size,
-                        onPlaybackPositionChanged = { tick, timeMs ->
-                            scoreTick = tick
-                            scoreTimeMs = timeMs
-                        },
-                        playbackCommand = playbackCommand,
-                        modifier = Modifier.fillMaxSize().alpha(if (showLyrics) 0f else 1f),
-                    )
-                    if (showLyrics) {
-                        Surface(Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
-                            if (lyrics.isNullOrBlank()) {
-                                Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                                    Text("这份作品暂无可显示的歌词；录音仍会按谱面时间轴对齐。")
-                                }
-                            } else {
-                                Text(
-                                    lyrics,
-                                    modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(24.dp),
-                                    style = MaterialTheme.typography.bodyLarge,
-                                )
-                            }
-                        }
+
+            LazyColumn(
+                modifier = Modifier.fillMaxWidth(),
+                contentPadding = PaddingValues(start = 20.dp, end = 20.dp, bottom = 32.dp),
+                verticalArrangement = Arrangement.spacedBy(10.dp),
+            ) {
+                item {
+                    Surface(
+                        shape = RoundedCornerShape(20.dp),
+                        color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.55f),
+                        contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                    ) {
+                        Text(
+                            stringResource(R.string.chorus_recording_help_overview),
+                            modifier = Modifier.padding(16.dp),
+                            style = MaterialTheme.typography.bodyMedium,
+                        )
                     }
                 }
-            } else {
-                RecordingReview(
-                    result = result!!,
-                    parts = project?.parts.orEmpty(),
-                    partId = partId,
-                    kind = kind,
-                    label = label,
-                    offsetMs = offsetMs,
-                    rightsConfirmed = rightsConfirmed,
-                    busy = busy,
-                    onPart = { partId = it },
-                    onKind = { kind = it },
-                    onLabel = { label = it },
-                    onOffset = { offsetMs = it.coerceIn(-60_000, 60_000) },
-                    onRights = { rightsConfirmed = it },
-                    onDiscard = {
-                        scope.launch { recorder?.discard(); recorder = null; result = null }
-                    },
-                    onUpload = {
-                        val activeProject = project ?: return@RecordingReview
-                        val recorded = result ?: return@RecordingReview
-                        scope.launch {
-                            busy = true
-                            error = null
-                            val sha = sha256(recorded.uploadFile)
-                            val upload = ChorusTrackUpload(
-                                file = recorded.uploadFile,
-                                mediaType = recorded.mediaType,
-                                sha256 = sha,
-                                durationMs = recorded.durationMs,
-                                partId = partId,
-                                contributionKind = kind,
-                                displayLabel = label.ifBlank { "我的声部" },
-                                initialAnchors = resultAnchors.ifEmpty {
-                                    listOf(ChorusSyncAnchor(0, scoreTick, scoreTimeMs.coerceAtLeast(0)))
-                                },
-                            )
-                            uploadAndSubmit(
-                                viewModel,
-                                activeProject.id,
-                                upload,
-                                (offsetMs + transportOffsetMs).coerceIn(-15 * 60_000L, 15 * 60_000L),
-                            ).fold(
-                                onSuccess = { recorder?.discard(); onUploaded() },
-                                onFailure = { error = it.message ?: "上传录音失败" },
-                            )
-                            busy = false
-                        }
-                    },
-                )
+                item {
+                    Text(
+                        stringResource(R.string.chorus_recording_help_steps),
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.SemiBold,
+                        modifier = Modifier.padding(top = 8.dp),
+                    )
+                }
+                item {
+                    ChorusRecordingHelpStep(
+                        1,
+                        stringResource(R.string.chorus_recording_help_step_prepare_title),
+                        stringResource(R.string.chorus_recording_help_step_prepare_body),
+                    )
+                }
+                item {
+                    ChorusRecordingHelpStep(
+                        2,
+                        stringResource(R.string.chorus_recording_help_step_record_title),
+                        stringResource(R.string.chorus_recording_help_step_record_body),
+                    )
+                }
+                item {
+                    ChorusRecordingHelpStep(
+                        3,
+                        stringResource(R.string.chorus_recording_help_step_preview_title),
+                        stringResource(R.string.chorus_recording_help_step_preview_body),
+                    )
+                }
+                item {
+                    ChorusRecordingHelpStep(
+                        4,
+                        stringResource(R.string.chorus_recording_help_step_publish_title),
+                        stringResource(R.string.chorus_recording_help_step_publish_body),
+                    )
+                }
+                item {
+                    ChorusRecordingHelpNote(
+                        "lock",
+                        stringResource(R.string.chorus_recording_help_version_title),
+                        stringResource(R.string.chorus_recording_help_version_body),
+                    )
+                }
+                item {
+                    ChorusRecordingHelpNote(
+                        "headphones",
+                        stringResource(R.string.chorus_recording_help_latency_title),
+                        stringResource(R.string.chorus_recording_help_latency_body),
+                    )
+                }
+                item {
+                    ChorusRecordingHelpNote(
+                        "save",
+                        stringResource(R.string.chorus_recording_help_draft_title),
+                        stringResource(R.string.chorus_recording_help_draft_body),
+                    )
+                }
+                item {
+                    ChorusRecordingHelpNote(
+                        "delete",
+                        stringResource(R.string.chorus_recording_help_delete_title),
+                        stringResource(R.string.chorus_recording_help_delete_body),
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun ChorusRecordingHelpStep(number: Int, title: String, body: String) {
+    Surface(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(18.dp),
+        color = MaterialTheme.colorScheme.surfaceContainerHigh,
+    ) {
+        Row(
+            modifier = Modifier.padding(14.dp),
+            verticalAlignment = Alignment.Top,
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+        ) {
+            Surface(
+                modifier = Modifier.size(30.dp),
+                shape = CircleShape,
+                color = MaterialTheme.colorScheme.primary,
+                contentColor = MaterialTheme.colorScheme.onPrimary,
+            ) {
+                Box(contentAlignment = Alignment.Center) {
+                    Text(number.toString(), fontWeight = FontWeight.Bold)
+                }
+            }
+            Column(Modifier.weight(1f)) {
+                Text(title, style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.SemiBold)
+                Spacer(Modifier.height(3.dp))
+                Text(body, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            }
+        }
+    }
+}
+
+@Composable
+private fun ChorusRecordingHelpNote(iconName: String, title: String, body: String) {
+    Surface(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(18.dp),
+        color = MaterialTheme.colorScheme.tertiaryContainer.copy(alpha = 0.55f),
+        contentColor = MaterialTheme.colorScheme.onTertiaryContainer,
+    ) {
+        Row(
+            modifier = Modifier.padding(15.dp),
+            verticalAlignment = Alignment.Top,
+            horizontalArrangement = Arrangement.spacedBy(10.dp),
+        ) {
+            Icon(
+                MaterialSymbolIcon(iconName, filled = true),
+                contentDescription = null,
+                modifier = Modifier.size(21.dp),
+            )
+            Column(Modifier.weight(1f)) {
+                Text(title, style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.SemiBold)
+                Spacer(Modifier.height(3.dp))
+                Text(body, style = MaterialTheme.typography.bodySmall)
             }
         }
     }
@@ -779,7 +1291,7 @@ private fun TrackCard(
     part: ChorusPart?,
     checked: Boolean,
     onChecked: (Boolean) -> Unit,
-    onWithdraw: (() -> Unit)?,
+    onDelete: (() -> Unit)?,
 ) {
     Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerHigh)) {
         Row(Modifier.fillMaxWidth().padding(14.dp), verticalAlignment = Alignment.CenterVertically) {
@@ -797,9 +1309,45 @@ private fun TrackCard(
                     color = MaterialTheme.colorScheme.primary,
                 )
             }
-            onWithdraw?.let { TextButton(onClick = it) { Text("撤回") } }
+            onDelete?.let {
+                TextButton(onClick = it) {
+                    Icon(MaterialSymbolIcon("delete", filled = true), contentDescription = null)
+                    Text(stringResource(R.string.chorus_track_delete))
+                }
+            }
         }
     }
+}
+
+@Composable
+private fun DeleteTrackDialog(
+    trackName: String,
+    busy: Boolean,
+    onDismiss: () -> Unit,
+    onConfirm: () -> Unit,
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        icon = { Icon(MaterialSymbolIcon("delete", filled = true), contentDescription = null) },
+        title = { Text(stringResource(R.string.chorus_track_delete_title)) },
+        text = {
+            Text(stringResource(R.string.chorus_track_delete_body, trackName))
+        },
+        confirmButton = {
+            TextButton(onClick = onConfirm, enabled = !busy) {
+                Text(
+                    stringResource(
+                        if (busy) R.string.chorus_track_deleting else R.string.chorus_track_delete_confirm,
+                    )
+                )
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss, enabled = !busy) {
+                Text(stringResource(R.string.chorus_track_delete_cancel))
+            }
+        },
+    )
 }
 
 @Composable
@@ -852,7 +1400,7 @@ private fun UploadAudioDialog(
                 }
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Checkbox(rightsConfirmed, { rightsConfirmed = it })
-                    Text("我拥有此录音的上传权，并同意审核通过后向已登记用户公开。")
+                    Text(stringResource(R.string.chorus_recording_rights_direct))
                 }
             }
         },
@@ -868,7 +1416,14 @@ private fun UploadAudioDialog(
                 },
                 enabled = !busy && rightsConfirmed && label.isNotBlank() &&
                     (kind != "vocal_part" || selectedPart != null),
-            ) { Text(if (busy) "上传中" else "确认上传") }
+            ) {
+                Text(
+                    stringResource(
+                        if (busy) R.string.chorus_recording_uploading
+                        else R.string.chorus_recording_upload_publish,
+                    )
+                )
+            }
         },
         dismissButton = { TextButton(onClick = onDismiss, enabled = !busy) { Text("取消") } },
     )
@@ -898,8 +1453,10 @@ private fun AudioPreviewButton(file: File) {
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun RecordingReview(
+    title: String,
     result: ChorusRecordingResult,
     parts: List<ChorusPart>,
     partId: String?,
@@ -908,6 +1465,9 @@ private fun RecordingReview(
     offsetMs: Long,
     rightsConfirmed: Boolean,
     busy: Boolean,
+    error: String?,
+    onBack: () -> Unit,
+    onHelp: () -> Unit,
     onPart: (String?) -> Unit,
     onKind: (String) -> Unit,
     onLabel: (String) -> Unit,
@@ -925,45 +1485,310 @@ private fun RecordingReview(
         }
     }
     var previewPlaying by remember { mutableStateOf(false) }
+    var previewPositionMs by remember { mutableLongStateOf(0L) }
+    val previewDurationMs = result.durationMs.coerceAtLeast(1L)
     DisposableEffect(previewPlayer) {
         val listener = object : Player.Listener {
             override fun onIsPlayingChanged(isPlaying: Boolean) { previewPlaying = isPlaying }
+            override fun onPlaybackStateChanged(playbackState: Int) {
+                if (playbackState == Player.STATE_ENDED) {
+                    previewPlayer.seekTo(0)
+                    previewPositionMs = 0
+                }
+            }
         }
         previewPlayer.addListener(listener)
         onDispose { previewPlayer.release() }
     }
-    Column(
-        Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(16.dp),
-        verticalArrangement = Arrangement.spacedBy(14.dp),
-    ) {
-        Text("录音预览", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
-        Waveform(result.peakSamples)
-        Text("时长 ${formatDuration(result.durationMs)} · ${result.mediaType}")
-        FilledTonalButton(
-            onClick = { if (previewPlaying) previewPlayer.pause() else previewPlayer.play() },
-        ) {
-            Icon(if (previewPlaying) RhythmIcons.Pause else RhythmIcons.Play, null)
-            Text(if (previewPlaying) " 暂停预览" else " 播放预览")
+    LaunchedEffect(previewPlaying) {
+        while (previewPlaying) {
+            previewPositionMs = previewPlayer.currentPosition.coerceIn(0L, previewDurationMs)
+            delay(150)
         }
-        KindAndPartFields(parts, partId, kind, onPart, onKind)
-        OutlinedTextField(label, onLabel, label = { Text("音轨名称") }, modifier = Modifier.fillMaxWidth())
-        Text("时间轴微调：${offsetMs} ms")
-        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            listOf(-50L, -10L, 10L, 50L).forEach { delta ->
-                AssistChip(onClick = { onOffset(offsetMs + delta) }, label = { Text(if (delta > 0) "+$delta" else "$delta") })
+    }
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = {
+                    Column {
+                        Text(
+                            stringResource(R.string.chorus_recording_preview_title),
+                            fontWeight = FontWeight.Bold,
+                        )
+                        Text(
+                            title,
+                            style = MaterialTheme.typography.labelMedium,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                        )
+                    }
+                },
+                navigationIcon = {
+                    FilledTonalIconButton(
+                        onClick = onBack,
+                        modifier = Modifier.padding(start = 12.dp),
+                    ) {
+                        Icon(RhythmIcons.Back, stringResource(R.string.score_back))
+                    }
+                },
+                actions = {
+                    FilledTonalIconButton(onClick = onHelp) {
+                        Icon(
+                            MaterialSymbolIcon("help", filled = true),
+                            stringResource(R.string.chorus_recording_help_open),
+                        )
+                    }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.background,
+                ),
+            )
+        },
+        bottomBar = {
+            Surface(
+                shadowElevation = 8.dp,
+                color = MaterialTheme.colorScheme.surfaceContainer,
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth().navigationBarsPadding().padding(12.dp),
+                    horizontalArrangement = Arrangement.spacedBy(10.dp),
+                ) {
+                    OutlinedButton(
+                        onClick = onDiscard,
+                        enabled = !busy,
+                        modifier = Modifier.weight(1f),
+                    ) {
+                        Icon(MaterialSymbolIcon("restart_alt", filled = true), null)
+                        Text(
+                            stringResource(R.string.chorus_recording_record_again),
+                            modifier = Modifier.padding(start = 8.dp),
+                        )
+                    }
+                    Button(
+                        onClick = onUpload,
+                        enabled = !busy && rightsConfirmed && label.isNotBlank() &&
+                            (kind != "vocal_part" || partId != null),
+                        modifier = Modifier.weight(1f),
+                    ) {
+                        if (busy) {
+                            CircularProgressIndicator(
+                                modifier = Modifier.size(20.dp),
+                                strokeWidth = 2.dp,
+                            )
+                        } else {
+                            Icon(RhythmIcons.CloudUpload, null)
+                        }
+                        Text(
+                            stringResource(
+                                if (busy) R.string.chorus_recording_uploading
+                                else R.string.chorus_recording_upload_publish,
+                            ),
+                            modifier = Modifier.padding(start = 8.dp),
+                        )
+                    }
+                }
             }
-        }
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Checkbox(rightsConfirmed, onRights)
-            Text("我拥有此录音的上传权，并同意审核通过后向已登记用户公开")
-        }
-        Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-            OutlinedButton(onClick = onDiscard, enabled = !busy, modifier = Modifier.weight(1f)) { Text("放弃") }
-            Button(
-                onClick = onUpload,
-                enabled = !busy && rightsConfirmed && label.isNotBlank() && (kind != "vocal_part" || partId != null),
-                modifier = Modifier.weight(1f),
-            ) { Text(if (busy) "上传中" else "上传并投稿") }
+        },
+    ) { padding ->
+        LazyColumn(
+            modifier = Modifier.fillMaxSize().padding(padding),
+            contentPadding = PaddingValues(16.dp),
+            verticalArrangement = Arrangement.spacedBy(14.dp),
+        ) {
+            item {
+                Surface(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(28.dp),
+                    color = MaterialTheme.colorScheme.primaryContainer,
+                    contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                ) {
+                    Row(
+                        modifier = Modifier.padding(18.dp),
+                        horizontalArrangement = Arrangement.spacedBy(14.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Surface(
+                            modifier = Modifier.size(48.dp),
+                            shape = CircleShape,
+                            color = MaterialTheme.colorScheme.primary,
+                            contentColor = MaterialTheme.colorScheme.onPrimary,
+                        ) {
+                            Box(contentAlignment = Alignment.Center) {
+                                Icon(
+                                    MaterialSymbolIcon("check", filled = true),
+                                    contentDescription = null,
+                                )
+                            }
+                        }
+                        Column(Modifier.weight(1f)) {
+                            Text(
+                                stringResource(R.string.chorus_recording_preview_ready),
+                                style = MaterialTheme.typography.titleMedium,
+                                fontWeight = FontWeight.Bold,
+                            )
+                            Text(
+                                stringResource(R.string.chorus_recording_preview_local),
+                                style = MaterialTheme.typography.bodySmall,
+                            )
+                        }
+                    }
+                }
+            }
+
+            item {
+                Surface(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(28.dp),
+                    color = MaterialTheme.colorScheme.surfaceContainerHigh,
+                ) {
+                    Column(
+                        modifier = Modifier.padding(18.dp),
+                        verticalArrangement = Arrangement.spacedBy(10.dp),
+                    ) {
+                        Text(
+                            stringResource(R.string.chorus_recording_preview_listen),
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold,
+                        )
+                        Waveform(result.peakSamples)
+                        Slider(
+                            value = previewPositionMs.toFloat(),
+                            onValueChange = {
+                                previewPositionMs = it.toLong()
+                                previewPlayer.seekTo(previewPositionMs)
+                            },
+                            valueRange = 0f..previewDurationMs.toFloat(),
+                        )
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                        ) {
+                            Text(formatDuration(previewPositionMs), style = MaterialTheme.typography.labelMedium)
+                            Text(formatDuration(previewDurationMs), style = MaterialTheme.typography.labelMedium)
+                        }
+                        FilledTonalButton(
+                            onClick = {
+                                if (previewPlaying) previewPlayer.pause()
+                                else previewPlayer.play()
+                            },
+                            modifier = Modifier.fillMaxWidth(),
+                        ) {
+                            Icon(if (previewPlaying) RhythmIcons.Pause else RhythmIcons.Play, null)
+                            Text(
+                                stringResource(
+                                    if (previewPlaying) R.string.chorus_recording_preview_pause
+                                    else R.string.chorus_recording_preview_play,
+                                ),
+                                modifier = Modifier.padding(start = 8.dp),
+                            )
+                        }
+                        Text(
+                            stringResource(
+                                R.string.chorus_recording_preview_format,
+                                formatDuration(result.durationMs),
+                                result.mediaType,
+                            ),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
+                }
+            }
+
+            item {
+                Surface(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(28.dp),
+                    color = MaterialTheme.colorScheme.surfaceContainerHigh,
+                ) {
+                    Column(
+                        modifier = Modifier.padding(18.dp),
+                        verticalArrangement = Arrangement.spacedBy(10.dp),
+                    ) {
+                        Text(
+                            stringResource(R.string.chorus_recording_track_details),
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold,
+                        )
+                        KindAndPartFields(parts, partId, kind, onPart, onKind)
+                        OutlinedTextField(
+                            label,
+                            onLabel,
+                            label = { Text(stringResource(R.string.chorus_recording_track_name)) },
+                            modifier = Modifier.fillMaxWidth(),
+                        )
+                    }
+                }
+            }
+
+            item {
+                Surface(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(28.dp),
+                    color = MaterialTheme.colorScheme.surfaceContainerHigh,
+                ) {
+                    Column(
+                        modifier = Modifier.padding(18.dp),
+                        verticalArrangement = Arrangement.spacedBy(10.dp),
+                    ) {
+                        Text(
+                            stringResource(R.string.chorus_recording_alignment_title),
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold,
+                        )
+                        Text(
+                            stringResource(R.string.chorus_recording_alignment_value, offsetMs),
+                            color = MaterialTheme.colorScheme.primary,
+                        )
+                        Row(
+                            modifier = Modifier.horizontalScroll(rememberScrollState()),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        ) {
+                            listOf(-50L, -10L, 10L, 50L).forEach { delta ->
+                                AssistChip(
+                                    onClick = { onOffset(offsetMs + delta) },
+                                    label = { Text(if (delta > 0) "+$delta ms" else "$delta ms") },
+                                )
+                            }
+                        }
+                        Text(
+                            stringResource(R.string.chorus_recording_alignment_hint),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
+                }
+            }
+
+            item {
+                Surface(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(28.dp),
+                    color = MaterialTheme.colorScheme.tertiaryContainer.copy(alpha = 0.55f),
+                    contentColor = MaterialTheme.colorScheme.onTertiaryContainer,
+                ) {
+                    Row(
+                        modifier = Modifier.padding(16.dp),
+                        verticalAlignment = Alignment.Top,
+                        horizontalArrangement = Arrangement.spacedBy(10.dp),
+                    ) {
+                        Checkbox(rightsConfirmed, onRights)
+                        Column(Modifier.weight(1f)) {
+                            Text(
+                                stringResource(R.string.chorus_recording_publish_direct_title),
+                                style = MaterialTheme.typography.titleSmall,
+                                fontWeight = FontWeight.SemiBold,
+                            )
+                            Text(
+                                stringResource(R.string.chorus_recording_rights_direct),
+                                style = MaterialTheme.typography.bodySmall,
+                            )
+                        }
+                    }
+                }
+            }
+
+            error?.let { message -> item { ErrorCard(message) } }
         }
     }
 }
@@ -976,7 +1801,7 @@ private fun KindAndPartFields(
     onPart: (String?) -> Unit,
     onKind: (String) -> Unit,
 ) {
-    Text("类型", fontWeight = FontWeight.SemiBold)
+    Text(stringResource(R.string.chorus_recording_type), fontWeight = FontWeight.SemiBold)
     Row(
         modifier = Modifier.horizontalScroll(rememberScrollState()),
         horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -986,7 +1811,7 @@ private fun KindAndPartFields(
         }
     }
     if (kind == "vocal_part") {
-        Text("声部", fontWeight = FontWeight.SemiBold)
+        Text(stringResource(R.string.chorus_recording_part), fontWeight = FontWeight.SemiBold)
         Row(
             modifier = Modifier.horizontalScroll(rememberScrollState()),
             horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -1083,7 +1908,11 @@ private suspend fun uploadAndSubmit(
     check(track.status == "pending_review") { "服务器尚未完成音频处理，请稍后在合唱页刷新" }
     val anchors = upload.initialAnchors.ifEmpty { listOf(ChorusSyncAnchor(0, 0, max(0, offsetMs))) }
     track = viewModel.alignChorusTrack(track.id, track.revision, offsetMs, anchors).getOrThrow()
-    viewModel.submitChorusTrack(track.id).getOrThrow()
+    track = viewModel.submitChorusTrack(track.id).getOrThrow()
+    check(track.status in setOf("published", "pending_review")) {
+        "服务器未确认音轨提交状态，请刷新后重试"
+    }
+    track
 }
 
 private fun sha256(file: File): String {
@@ -1110,10 +1939,10 @@ private fun kindLabel(kind: String): String = when (kind) {
 
 private fun statusLabel(status: String): String = when (status) {
     "published" -> "已公开"
-    "pending_review" -> "等待审核"
+    "pending_review" -> "等待发布确认"
     "processing" -> "处理中"
-    "rejected" -> "未通过审核"
-    "withdrawn" -> "已撤回"
+    "rejected" -> "已下架"
+    "withdrawn" -> "已删除"
     "failed" -> "处理失败"
     else -> "草稿"
 }
