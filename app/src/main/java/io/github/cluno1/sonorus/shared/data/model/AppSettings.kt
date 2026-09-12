@@ -62,6 +62,38 @@ internal fun resolveAvailableExpressiveBottomButtons(
     return active.available().ifEmpty { fallback.available() }
 }
 
+internal data class ExpressiveBottomButtonLayout(
+    val visible: List<String>,
+    val overflow: List<String>,
+)
+
+internal fun resolveExpressiveBottomButtonLayout(
+    active: List<String>,
+    fallback: List<String>,
+    scoreAvailable: Boolean,
+    maxVisible: Int = 6,
+): ExpressiveBottomButtonLayout {
+    require(maxVisible >= 1) { "At least one visible bottom-button slot is required" }
+
+    val available = resolveAvailableExpressiveBottomButtons(
+        active = active,
+        fallback = fallback,
+        scoreAvailable = scoreAvailable,
+    )
+    if (available.size <= maxVisible) {
+        return ExpressiveBottomButtonLayout(visible = available, overflow = emptyList())
+    }
+
+    // Reserve the final slot for More whenever enabled controls exceed the bar capacity.
+    // More itself is never placed inside its own overflow list.
+    val actions = available.filterNot { it == "MORE" }
+    val directActions = actions.take(maxVisible - 1)
+    return ExpressiveBottomButtonLayout(
+        visible = directActions + "MORE",
+        overflow = actions.drop(maxVisible - 1),
+    )
+}
+
 /**
  * Data class to represent a single crash log entry
  */
@@ -1035,7 +1067,7 @@ class AppSettings private constructor(context: Context) {
     val defaultExpressiveBottomButtonsMerge = listOf("LYRICS", "FAVORITE", "SCORE", "DEVICE", "QUEUE", "MORE")
     val allExpressiveBottomButtons = listOf(
         "LYRICS", "FAVORITE", "SCORE", "DEVICE", "QUEUE", "MORE",
-        "SHUFFLE", "REPEAT", "EQUALIZER", "SPEED", "SLEEP_TIMER",
+        "EQUALIZER", "SPEED", "SLEEP_TIMER",
         "ADD_TO_PLAYLIST", "ALBUM", "ARTIST", "SONG_INFO", "SHARE"
     )
 

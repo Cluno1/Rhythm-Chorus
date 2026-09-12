@@ -3003,7 +3003,7 @@
     <string name="lyrics_timing_continuous_mode">連續打點</string>
     <string name="lyrics_timing_step_mode">打點後暫停</string>
     <string name="bottomsheet_edit_controls">編輯控制項</string>
-    <string name="expressive_bottom_buttons_desc">自訂並排序底部操作按鈕</string>
+    <string name="expressive_bottom_buttons_desc">選擇並排序控制項；底部列最多顯示 6 個，其餘收進「更多」</string>
     <string name="expressive_bottom_buttons_title">編輯控制項</string>
     <string name="expressive_bottom_buttons_normal_tab">一般模式</string>
     <string name="expressive_bottom_buttons_merge_tab">合併模式</string>
@@ -3011,7 +3011,7 @@
     <string name="expressive_bottom_buttons_reset">已恢復預設按鈕順序和顯示狀態</string>
     <string name="expressive_bottom_buttons_at_least_one">至少需要顯示一個按鈕</string>
     <string name="settings_expressive_bottom_buttons">自訂底部按鈕</string>
-    <string name="settings_expressive_bottom_buttons_desc">調整一般模式和合併模式下底部操作按鈕的順序與顯示狀態</string>
+    <string name="settings_expressive_bottom_buttons_desc">選擇一般與合併模式控制項；超出部分收進「更多」</string>
     <string name="expressive_button_lyrics_desc">切換同步歌詞或一般歌詞</string>
     <string name="expressive_button_favorite_desc">收藏目前歌曲</string>
     <string name="expressive_button_score_desc">開啟目前歌曲的樂譜</string>

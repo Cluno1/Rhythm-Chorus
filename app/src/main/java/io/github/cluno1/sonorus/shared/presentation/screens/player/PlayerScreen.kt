@@ -363,6 +363,7 @@ fun PlayerScreen(
         var showSongInfoSheet by remember { mutableStateOf(false) }
         var showMoreSheet by remember { mutableStateOf(false) }
         var showExpressiveBottomButtonsSheet by remember { mutableStateOf(false) }
+        var overflowBottomButtonIds by remember { mutableStateOf(emptyList<String>()) }
         var showDeviceOutputSheet by remember { mutableStateOf(false) }
         var showAddToPlaylistSheetInternal by remember { mutableStateOf(false) }
         var showPlaybackSpeedDialog by remember { mutableStateOf(false) }
@@ -386,6 +387,7 @@ fun PlayerScreen(
         val artistSeparatorEnabled by appSettings.artistSeparatorEnabled.collectAsState()
         val artistSeparatorDelimiters by appSettings.artistSeparatorDelimiters.collectAsState()
         val gesturePlayerSwipeDismiss by appSettings.gesturePlayerSwipeDismiss.collectAsState()
+        val playerMergeControlsToBottom by appSettings.playerMergeControlsToBottom.collectAsState()
 
         val splitArtistNames: (String) -> List<String> = remember {
             { artistName ->
@@ -568,7 +570,8 @@ fun PlayerScreen(
                     }
                 }
             },
-            onMoreClick = {
+            onMoreClick = { overflowIds ->
+                overflowBottomButtonIds = overflowIds
                 showSongInfoSheet = false
                 showMoreSheet = true
             },
@@ -772,13 +775,23 @@ fun PlayerScreen(
             val haptic = LocalHapticFeedback.current
 
             ExtraControlBottomSheet(
-                onDismiss = { showMoreSheet = false },
+                onDismiss = {
+                    showMoreSheet = false
+                    overflowBottomButtonIds = emptyList()
+                },
                 sheetState = moreSheetState,
                 hiddenChips = hiddenChips,
                 equalizerEnabled = equalizerEnabled,
                 sleepTimerActive = sleepTimerActive,
                 sleepTimerRemainingSeconds = sleepTimerRemainingSeconds,
                 lyrics = lyrics,
+                overflowButtonIds = overflowBottomButtonIds,
+                isFavorite = isFavorite,
+                onToggleLyrics = { showLyricsView = !showLyricsView },
+                onToggleFavorite = onToggleFavorite,
+                onOpenScore = onCatalogOpenScore,
+                onDevice = { showDeviceOutputSheet = true },
+                onQueue = { showQueueSheet = true },
                 onAddToPlaylist = { showAddToPlaylistSheetInternal = true },
                 onEditControls = { showExpressiveBottomButtonsSheet = true },
                 onPlaybackSpeed = { showPlaybackSpeedDialog = true },
@@ -861,7 +874,8 @@ fun PlayerScreen(
             ExpressiveBottomButtonsOrderBottomSheet(
                 onDismiss = { showExpressiveBottomButtonsSheet = false },
                 appSettings = appSettings,
-                haptics = haptic
+                haptics = haptic,
+                initialModeIndex = if (playerMergeControlsToBottom) 1 else 0,
             )
         }
 

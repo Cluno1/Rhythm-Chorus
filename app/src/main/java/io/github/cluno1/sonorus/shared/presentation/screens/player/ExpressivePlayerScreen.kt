@@ -94,6 +94,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import androidx.media3.common.Player
 import io.github.cluno1.sonorus.R
 import io.github.cluno1.sonorus.shared.presentation.components.bottomsheets.ExtraControlBottomSheet
 import io.github.cluno1.sonorus.shared.presentation.components.bottomsheets.AddToPlaylistBottomSheet
@@ -112,7 +113,7 @@ import io.github.cluno1.sonorus.features.local.presentation.navigation.Screen
 import io.github.cluno1.sonorus.features.local.presentation.viewmodel.MusicViewModel
 import io.github.cluno1.sonorus.shared.data.model.Album
 import io.github.cluno1.sonorus.shared.data.model.AppSettings
-import io.github.cluno1.sonorus.shared.data.model.resolveAvailableExpressiveBottomButtons
+import io.github.cluno1.sonorus.shared.data.model.resolveExpressiveBottomButtonLayout
 import io.github.cluno1.sonorus.shared.data.model.Artist
 import io.github.cluno1.sonorus.shared.data.model.LyricsData
 import io.github.cluno1.sonorus.shared.data.model.PlaybackLocation
@@ -328,7 +329,7 @@ fun ExpressivePlayerScreen(
     onSongInfoClick: () -> Unit,
     onShowAlbumBottomSheet: () -> Unit,
     onShowArtist: () -> Unit,
-    onMoreClick: () -> Unit,
+    onMoreClick: (List<String>) -> Unit,
     onDeviceClick: () -> Unit,
     onQueueClick: () -> Unit,
     onBack: () -> Unit,
@@ -1639,13 +1640,13 @@ fun ExpressivePlayerScreen(
                                 }
                             }
 
-                            val displayedButtons = remember(
+                            val buttonLayout = remember(
                                 activeButtons,
                                 isCatalogItem,
                                 isCatalogScoreAvailable,
                                 playerMergeControlsToBottom,
                             ) {
-                                resolveAvailableExpressiveBottomButtons(
+                                resolveExpressiveBottomButtonLayout(
                                     active = activeButtons,
                                     fallback = if (playerMergeControlsToBottom) {
                                         appSettings.defaultExpressiveBottomButtonsMerge
@@ -1655,6 +1656,7 @@ fun ExpressivePlayerScreen(
                                     scoreAvailable = isCatalogItem && isCatalogScoreAvailable,
                                 )
                             }
+                            val displayedButtons = buttonLayout.visible
 
                             val isCompactButtons = playerMergeControlsToBottom || displayedButtons.size > 3
 
@@ -1769,7 +1771,7 @@ fun ExpressivePlayerScreen(
                                             }
                                             "MORE" -> {
                                                 RhythmDetailActionButton(
-                                                    onClick = { HapticUtils.performHapticFeedback(context, haptic, HapticType.MEDIUM); onMoreClick() },
+                                                    onClick = { HapticUtils.performHapticFeedback(context, haptic, HapticType.MEDIUM); onMoreClick(buttonLayout.overflow) },
                                                     weight = 1f,
                                                     height = 44.dp,
                                                     isFirst = isFirst,
@@ -1781,43 +1783,6 @@ fun ExpressivePlayerScreen(
                                                     contentDescription = stringResource(R.string.expressiveplayerscreen_more),
                                                     containerColor = controlsContainerColor,
                                                     contentColor = defaultContentColor
-                                                )
-                                            }
-                                            "SHUFFLE" -> {
-                                                RhythmDetailActionButton(
-                                                    onClick = { HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT); onToggleShuffle() },
-                                                    weight = 1f,
-                                                    height = 44.dp,
-                                                    isFirst = isFirst,
-                                                    isLast = isLast,
-                                                    type = RhythmButtonType.Tonal,
-                                                    icon = RhythmIcons.Player.Shuffle,
-                                                    iconSize = 20.dp,
-                                                    text = null,
-                                                    contentDescription = stringResource(R.string.action_shuffle),
-                                                    containerColor = if (isShuffleEnabled) primaryColor.copy(alpha = 0.35f) else controlsContainerColor,
-                                                    contentColor = if (isShuffleEnabled) primaryColor else defaultContentColor
-                                                )
-                                            }
-                                            "REPEAT" -> {
-                                                val repeatIcon = when (repeatMode) {
-                                                    2 -> RhythmIcons.Player.RepeatOne
-                                                    1 -> RhythmIcons.Player.Repeat
-                                                    else -> RhythmIcons.Player.Repeat
-                                                }
-                                                RhythmDetailActionButton(
-                                                    onClick = { HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT); onToggleRepeat() },
-                                                    weight = 1f,
-                                                    height = 44.dp,
-                                                    isFirst = isFirst,
-                                                    isLast = isLast,
-                                                    type = RhythmButtonType.Tonal,
-                                                    icon = repeatIcon,
-                                                    iconSize = 20.dp,
-                                                    text = null,
-                                                    contentDescription = stringResource(R.string.player_chip_repeat),
-                                                    containerColor = if (repeatMode != 0) primaryColor.copy(alpha = 0.35f) else controlsContainerColor,
-                                                    contentColor = if (repeatMode != 0) primaryColor else defaultContentColor
                                                 )
                                             }
                                             "EQUALIZER" -> {
@@ -2013,7 +1978,7 @@ fun ExpressivePlayerScreen(
                                             }
                                             "MORE" -> {
                                                 RhythmDetailActionButton(
-                                                    onClick = { HapticUtils.performHapticFeedback(context, haptic, HapticType.MEDIUM); onMoreClick() },
+                                                    onClick = { HapticUtils.performHapticFeedback(context, haptic, HapticType.MEDIUM); onMoreClick(buttonLayout.overflow) },
                                                     weight = 0.35f,
                                                     height = 44.dp,
                                                     isFirst = isFirst,
@@ -2072,41 +2037,6 @@ fun ExpressivePlayerScreen(
                                                     contentDescription = stringResource(R.string.catalog_scores),
                                                     containerColor = controlsContainerColor,
                                                     contentColor = defaultContentColor
-                                                )
-                                            }
-                                            "SHUFFLE" -> {
-                                                RhythmDetailActionButton(
-                                                    onClick = { HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT); onToggleShuffle() },
-                                                    weight = 0.6f,
-                                                    height = 44.dp,
-                                                    isFirst = isFirst,
-                                                    isLast = isLast,
-                                                    type = RhythmButtonType.Tonal,
-                                                    icon = RhythmIcons.Player.Shuffle,
-                                                    iconSize = 20.dp,
-                                                    contentDescription = stringResource(R.string.action_shuffle),
-                                                    containerColor = if (isShuffleEnabled) primaryColor.copy(alpha = 0.35f) else controlsContainerColor,
-                                                    contentColor = if (isShuffleEnabled) primaryColor else defaultContentColor
-                                                )
-                                            }
-                                            "REPEAT" -> {
-                                                val repeatIcon = when (repeatMode) {
-                                                    2 -> RhythmIcons.Player.RepeatOne
-                                                    1 -> RhythmIcons.Player.Repeat
-                                                    else -> RhythmIcons.Player.Repeat
-                                                }
-                                                RhythmDetailActionButton(
-                                                    onClick = { HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT); onToggleRepeat() },
-                                                    weight = 0.6f,
-                                                    height = 44.dp,
-                                                    isFirst = isFirst,
-                                                    isLast = isLast,
-                                                    type = RhythmButtonType.Tonal,
-                                                    icon = repeatIcon,
-                                                    iconSize = 20.dp,
-                                                    contentDescription = stringResource(R.string.player_chip_repeat),
-                                                    containerColor = if (repeatMode != 0) primaryColor.copy(alpha = 0.35f) else controlsContainerColor,
-                                                    contentColor = if (repeatMode != 0) primaryColor else defaultContentColor
                                                 )
                                             }
                                             "EQUALIZER" -> {
@@ -2443,22 +2373,82 @@ fun ExpressivePlayerScreen(
                     }
                 }
 
-                // Audio quality icon at top-right — fades in once the (debounced) track settles
-                // and auto-hides after 5 seconds
-                if (playerShowAudioQualityBadges) {
-                    debouncedSong.value?.let { displaySong ->
-                        AudioQualityIcon(
-                            song = displaySong,
-                            iconSize = 40.dp,
-                            padding = 6.dp,
-                            autoHideAfterMs = 5000,
-                            tint = when {
-                                showDarkBg -> Color.White
-                                useAccentBackground -> accentFg
-                                else -> null
+                // Playback modes remain easy to reach without consuming configurable bottom-bar slots.
+                val topActionContentColor = when {
+                    needsDarkSurfaces -> ambientControlContent
+                    useAccentBackground -> accentFg
+                    else -> monoFg
+                }
+                Row(
+                    modifier = Modifier
+                        .align(Alignment.TopEnd)
+                        .padding(top = 8.dp, end = 12.dp),
+                    horizontalArrangement = Arrangement.spacedBy(6.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .size(40.dp)
+                            .clip(CircleShape)
+                            .background(
+                                if (isShuffleEnabled) primaryColor.copy(alpha = 0.35f)
+                                else controlsContainerColor,
+                            )
+                            .clickable {
+                                HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT)
+                                onToggleShuffle()
                             },
-                            modifier = Modifier.align(Alignment.TopEnd).padding(top = 8.dp, end = 12.dp)
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        Icon(
+                            imageVector = RhythmIcons.Player.Shuffle,
+                            contentDescription = stringResource(R.string.action_shuffle),
+                            tint = if (isShuffleEnabled) primaryColor else topActionContentColor,
+                            modifier = Modifier.size(20.dp),
                         )
+                    }
+
+                    Box(
+                        modifier = Modifier
+                            .size(40.dp)
+                            .clip(CircleShape)
+                            .background(
+                                if (repeatMode != Player.REPEAT_MODE_OFF) primaryColor.copy(alpha = 0.35f)
+                                else controlsContainerColor,
+                            )
+                            .clickable {
+                                HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT)
+                                onToggleRepeat()
+                            },
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        Icon(
+                            imageVector = if (repeatMode == Player.REPEAT_MODE_ONE) {
+                                RhythmIcons.Player.RepeatOne
+                            } else {
+                                RhythmIcons.Player.Repeat
+                            },
+                            contentDescription = stringResource(R.string.player_chip_repeat),
+                            tint = if (repeatMode != Player.REPEAT_MODE_OFF) primaryColor else topActionContentColor,
+                            modifier = Modifier.size(20.dp),
+                        )
+                    }
+
+                    // The audio-quality badge follows the fixed playback-mode buttons and still auto-hides.
+                    if (playerShowAudioQualityBadges) {
+                        debouncedSong.value?.let { displaySong ->
+                            AudioQualityIcon(
+                                song = displaySong,
+                                iconSize = 40.dp,
+                                padding = 6.dp,
+                                autoHideAfterMs = 5000,
+                                tint = when {
+                                    showDarkBg -> Color.White
+                                    useAccentBackground -> accentFg
+                                    else -> null
+                                },
+                            )
+                        }
                     }
                 }
             }

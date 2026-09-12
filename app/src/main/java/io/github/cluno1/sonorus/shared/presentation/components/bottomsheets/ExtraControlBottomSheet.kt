@@ -121,6 +121,13 @@ fun ExtraControlBottomSheet(
     sleepTimerActive: Boolean,
     sleepTimerRemainingSeconds: Long,
     lyrics: LyricsData?,
+    overflowButtonIds: List<String> = emptyList(),
+    isFavorite: Boolean = false,
+    onToggleLyrics: () -> Unit = {},
+    onToggleFavorite: () -> Unit = {},
+    onOpenScore: () -> Unit = {},
+    onDevice: () -> Unit = {},
+    onQueue: () -> Unit = {},
     onAddToPlaylist: () -> Unit,
     onEditControls: (() -> Unit)? = null,
     onPlaybackSpeed: () -> Unit,
@@ -153,8 +160,121 @@ fun ExtraControlBottomSheet(
     val onSecondary = MaterialTheme.colorScheme.onSecondaryContainer
     val tertiary = MaterialTheme.colorScheme.tertiaryContainer
     val onTertiary = MaterialTheme.colorScheme.onTertiaryContainer
+    val overflowIds = overflowButtonIds.filterNot { it == "MORE" }.distinct()
+    val sleepLabel = if (sleepTimerActive) {
+        val minutes = sleepTimerRemainingSeconds / 60
+        val seconds = sleepTimerRemainingSeconds % 60
+        "${minutes}:${seconds.toString().padStart(2, '0')}"
+    } else {
+        context.getString(R.string.status_disabled)
+    }
+
+    fun controlAction(
+        icon: MaterialSymbolIcon,
+        label: String,
+        description: String? = null,
+        active: Boolean = false,
+        hapticType: HapticType = HapticType.HEAVY,
+        action: () -> Unit,
+    ) = ControlAction(
+        icon = icon,
+        label = label,
+        description = description,
+        containerColor = if (active) tertiary else secondary,
+        iconColor = if (active) onTertiary else onSecondary,
+        onClick = {
+            HapticUtils.performHapticFeedback(context, haptic, hapticType)
+            dismissAndDo(action)
+        },
+    )
+
+    fun overflowAction(buttonId: String): ControlAction? = when (buttonId) {
+        "LYRICS" -> controlAction(
+            icon = MaterialSymbolIcon("lyrics", filled = true),
+            label = context.getString(R.string.expressiveplayerscreen_lyrics),
+            hapticType = HapticType.LIGHT,
+            action = onToggleLyrics,
+        )
+        "FAVORITE" -> controlAction(
+            icon = if (isFavorite) RhythmIcons.Actions.Favorite else RhythmIcons.Actions.FavoriteOutlined,
+            label = context.getString(R.string.expressiveplayerscreen_favorite),
+            description = context.getString(
+                if (isFavorite) R.string.player_favorite_remove_description
+                else R.string.player_favorite_add_description,
+            ),
+            active = isFavorite,
+            hapticType = HapticType.LIGHT,
+            action = onToggleFavorite,
+        )
+        "SCORE" -> controlAction(
+            icon = RhythmIcons.Score,
+            label = context.getString(R.string.catalog_scores),
+            hapticType = HapticType.LIGHT,
+            action = onOpenScore,
+        )
+        "DEVICE" -> controlAction(
+            icon = RhythmIcons.SpeakerFilled,
+            label = context.getString(R.string.expressiveplayerscreen_device),
+            action = onDevice,
+        )
+        "QUEUE" -> controlAction(
+            icon = RhythmIcons.Queue,
+            label = context.getString(R.string.bottomsheet_queue),
+            action = onQueue,
+        )
+        "EQUALIZER" -> controlAction(
+            icon = MaterialSymbolIcon("graphic_eq", filled = true),
+            label = context.getString(R.string.equalizer),
+            description = context.getString(
+                if (equalizerEnabled) R.string.status_enabled else R.string.status_disabled,
+            ),
+            active = equalizerEnabled,
+            action = onEqualizer,
+        )
+        "SPEED" -> controlAction(
+            icon = MaterialSymbolIcon("tune", filled = true),
+            label = context.getString(R.string.player_speed_and_pitch),
+            description = context.getString(R.string.extrasheet_tempo_pitch),
+            action = onPlaybackSpeed,
+        )
+        "SLEEP_TIMER" -> controlAction(
+            icon = RhythmIcons.AccessTime,
+            label = context.getString(R.string.sleep_timer),
+            description = sleepLabel,
+            active = sleepTimerActive,
+            action = onSleepTimer,
+        )
+        "ADD_TO_PLAYLIST" -> controlAction(
+            icon = RhythmIcons.AddToPlaylist,
+            label = context.getString(R.string.bottomsheet_add_to_playlist),
+            action = onAddToPlaylist,
+        )
+        "ALBUM" -> controlAction(
+            icon = RhythmIcons.AlbumFilled,
+            label = context.getString(R.string.multiselectionbottomsheet_go_to_album),
+            action = onAlbum,
+        )
+        "ARTIST" -> controlAction(
+            icon = RhythmIcons.ArtistFilled,
+            label = context.getString(R.string.multiselectionbottomsheet_go_to_artist),
+            action = onArtist,
+        )
+        "SONG_INFO" -> controlAction(
+            icon = RhythmIcons.Info,
+            label = context.getString(R.string.action_song_info),
+            action = onSongInfo,
+        )
+        "SHARE" -> controlAction(
+            icon = RhythmIcons.Share,
+            label = context.getString(R.string.extrasheet_share_file),
+            action = onShareFile,
+        )
+        else -> null
+    }
 
     val actions = buildList {
+        overflowIds.mapNotNull(::overflowAction).forEach { add(it) }
+
         onEditControls?.let { editControls ->
             add(ControlAction(
                 icon = RhythmIcons.Edit,
@@ -169,19 +289,15 @@ fun ExtraControlBottomSheet(
             ))
         }
 
-        add(ControlAction(
-            icon = RhythmIcons.AddToPlaylist,
-            label = context.getString(R.string.bottomsheet_add_to_playlist),
-            description = null,
-            containerColor = secondary,
-            iconColor = onSecondary,
-            onClick = {
-                HapticUtils.performHapticFeedback(context, haptic, HapticType.HEAVY)
-                dismissAndDo { onAddToPlaylist() }
-            }
-        ))
+        if ("ADD_TO_PLAYLIST" !in overflowIds) {
+            add(controlAction(
+                icon = RhythmIcons.AddToPlaylist,
+                label = context.getString(R.string.bottomsheet_add_to_playlist),
+                action = onAddToPlaylist,
+            ))
+        }
 
-        if ("SPEED" !in hiddenChips || "PITCH" !in hiddenChips) {
+        if ("SPEED" !in overflowIds && ("SPEED" !in hiddenChips || "PITCH" !in hiddenChips)) {
             add(ControlAction(
                 icon = MaterialSymbolIcon("tune", filled = true),
                 label = context.getString(R.string.player_speed_and_pitch),
@@ -195,7 +311,7 @@ fun ExtraControlBottomSheet(
             ))
         }
 
-        if ("EQUALIZER" !in hiddenChips) {
+        if ("EQUALIZER" !in overflowIds && "EQUALIZER" !in hiddenChips) {
             add(ControlAction(
                 icon = MaterialSymbolIcon("graphic_eq", filled = true),
                 label = context.getString(R.string.equalizer),
@@ -209,11 +325,7 @@ fun ExtraControlBottomSheet(
             ))
         }
 
-        if ("SLEEP_TIMER" !in hiddenChips) {                val sleepLabel = if (sleepTimerActive) {
-                val m = sleepTimerRemainingSeconds / 60
-                val s = sleepTimerRemainingSeconds % 60
-                "${m}:${s.toString().padStart(2, '0')}"
-            } else context.getString(R.string.status_disabled)
+        if ("SLEEP_TIMER" !in overflowIds && "SLEEP_TIMER" !in hiddenChips) {
             add(ControlAction(
                 icon = RhythmIcons.AccessTime,
                 label = context.getString(R.string.sleep_timer),
@@ -242,7 +354,7 @@ fun ExtraControlBottomSheet(
             ))
         }
 
-        if ("ALBUM" !in hiddenChips) {
+        if ("ALBUM" !in overflowIds && "ALBUM" !in hiddenChips) {
             add(ControlAction(
                 icon = RhythmIcons.AlbumFilled,
                 label = context.getString(R.string.multiselectionbottomsheet_go_to_album),
@@ -256,7 +368,7 @@ fun ExtraControlBottomSheet(
             ))
         }
 
-        if ("ARTIST" !in hiddenChips) {
+        if ("ARTIST" !in overflowIds && "ARTIST" !in hiddenChips) {
             add(ControlAction(
                 icon = RhythmIcons.ArtistFilled,
                 label = context.getString(R.string.multiselectionbottomsheet_go_to_artist),
@@ -270,29 +382,21 @@ fun ExtraControlBottomSheet(
             ))
         }
 
-        add(ControlAction(
-            icon = RhythmIcons.Info,
-            label = context.getString(R.string.action_song_info),
-            description = null,
-            containerColor = secondary,
-            iconColor = onSecondary,
-            onClick = {
-                HapticUtils.performHapticFeedback(context, haptic, HapticType.HEAVY)
-                dismissAndDo { onSongInfo() }
-            }
-        ))
+        if ("SONG_INFO" !in overflowIds) {
+            add(controlAction(
+                icon = RhythmIcons.Info,
+                label = context.getString(R.string.action_song_info),
+                action = onSongInfo,
+            ))
+        }
 
-        add(ControlAction(
-            icon = RhythmIcons.Share,
-            label = context.getString(R.string.extrasheet_share_file),
-            description = null,
-            containerColor = secondary,
-            iconColor = onSecondary,
-            onClick = {
-                HapticUtils.performHapticFeedback(context, haptic, HapticType.HEAVY)
-                dismissAndDo { onShareFile() }
-            }
-        ))
+        if ("SHARE" !in overflowIds) {
+            add(controlAction(
+                icon = RhythmIcons.Share,
+                label = context.getString(R.string.extrasheet_share_file),
+                action = onShareFile,
+            ))
+        }
     }
 
     val scrollState = rememberScrollState()

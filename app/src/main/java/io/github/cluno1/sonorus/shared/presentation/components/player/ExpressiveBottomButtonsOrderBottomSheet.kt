@@ -276,6 +276,7 @@ fun ExpressiveBottomButtonsOrderBottomSheet(
                     onItemClick = { index ->
                         HapticUtils.performHapticFeedback(context, haptics, HapticType.LIGHT)
                         selectedModeIndex = index
+                        appSettings.setPlayerMergeControlsToBottom(index == 1)
                     },
                     modifier = Modifier.fillMaxWidth()
                 )

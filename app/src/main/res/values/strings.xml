@@ -3149,7 +3149,7 @@
     <string name="score_edit_map_error">Could not map that note back to MusicXML.</string>
     <string name="settings_floating_navigation">Floating Navigation Bar</string>
     <string name="settings_floating_navigation_desc">Float navigation bar above content on phone and tablet, or dock it to screen edges</string>
-    <string name="expressive_bottom_buttons_desc">Customize and reorder bottom action buttons</string>
+    <string name="expressive_bottom_buttons_desc">Choose and reorder controls. Up to 6 appear in the bar; the rest move under More.</string>
     <string name="expressive_bottom_buttons_title">Edit Controls</string>
     <string name="expressive_bottom_buttons_normal_tab">Normal Mode</string>
     <string name="expressive_bottom_buttons_merge_tab">Merge Mode</string>
@@ -3157,7 +3157,7 @@
     <string name="expressive_bottom_buttons_reset">Reset to default button order and visibility</string>
     <string name="expressive_bottom_buttons_at_least_one">At least one button must be visible</string>
     <string name="settings_expressive_bottom_buttons">Customize Bottom Buttons</string>
-    <string name="settings_expressive_bottom_buttons_desc">Reorder and toggle bottom action buttons for Normal and Merge modes</string>
+    <string name="settings_expressive_bottom_buttons_desc">Choose controls for Normal and Merge modes; overflow moves under More</string>
     <string name="expressive_button_lyrics_desc">Toggle synchronized or plain lyrics</string>
     <string name="expressive_button_favorite_desc">Like or favorite current track</string>
     <string name="expressive_button_score_desc">Open the score for the current track</string>

@@ -59,4 +59,69 @@ class ExpressiveBottomButtonSettingsTest {
             ),
         )
     }
+
+    @Test
+    fun sixOrFewerButtonsRemainInTheBottomBar() {
+        val active = listOf("LYRICS", "FAVORITE", "SCORE", "DEVICE", "QUEUE", "MORE")
+
+        assertEquals(
+            ExpressiveBottomButtonLayout(visible = active, overflow = emptyList()),
+            resolveExpressiveBottomButtonLayout(
+                active = active,
+                fallback = emptyList(),
+                scoreAvailable = true,
+            ),
+        )
+    }
+
+    @Test
+    fun extraButtonsMoveUnderMoreAndMoreUsesTheSixthSlot() {
+        assertEquals(
+            ExpressiveBottomButtonLayout(
+                visible = listOf("LYRICS", "FAVORITE", "SCORE", "DEVICE", "QUEUE", "MORE"),
+                overflow = listOf("EQUALIZER", "SPEED"),
+            ),
+            resolveExpressiveBottomButtonLayout(
+                active = listOf(
+                    "LYRICS", "FAVORITE", "SCORE", "DEVICE", "QUEUE", "EQUALIZER", "SPEED", "MORE",
+                ),
+                fallback = emptyList(),
+                scoreAvailable = true,
+            ),
+        )
+    }
+
+    @Test
+    fun moreIsAddedAutomaticallyWhenOverflowExists() {
+        assertEquals(
+            ExpressiveBottomButtonLayout(
+                visible = listOf("DEVICE", "QUEUE", "EQUALIZER", "SPEED", "SLEEP_TIMER", "MORE"),
+                overflow = listOf("ADD_TO_PLAYLIST", "ALBUM"),
+            ),
+            resolveExpressiveBottomButtonLayout(
+                active = listOf(
+                    "DEVICE", "QUEUE", "EQUALIZER", "SPEED", "SLEEP_TIMER", "ADD_TO_PLAYLIST", "ALBUM",
+                ),
+                fallback = emptyList(),
+                scoreAvailable = false,
+            ),
+        )
+    }
+
+    @Test
+    fun unavailableScoreIsRemovedBeforeOverflowIsCalculated() {
+        assertEquals(
+            ExpressiveBottomButtonLayout(
+                visible = listOf("DEVICE", "QUEUE", "EQUALIZER", "SPEED", "SLEEP_TIMER", "MORE"),
+                overflow = listOf("ADD_TO_PLAYLIST"),
+            ),
+            resolveExpressiveBottomButtonLayout(
+                active = listOf(
+                    "SCORE", "DEVICE", "QUEUE", "EQUALIZER", "SPEED", "SLEEP_TIMER", "ADD_TO_PLAYLIST", "MORE",
+                ),
+                fallback = emptyList(),
+                scoreAvailable = false,
+            ),
+        )
+    }
 }
