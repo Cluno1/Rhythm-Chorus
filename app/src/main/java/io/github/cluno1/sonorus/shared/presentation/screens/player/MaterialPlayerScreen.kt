@@ -3109,7 +3109,7 @@ fun MaterialPlayerScreen(
                                                             if (playbackSpeed != 1.0f)
                                                                 "${String.format(Locale.US, "%.2f", playbackSpeed)}x"
                                                             else
-                                                                "Speed",
+                                                                stringResource(R.string.player_speed_label),
                                                             style = MaterialTheme.typography.labelLarge.copy(
                                                                 fontSize = if (isExtraSmallWidth) 11.sp else 12.sp
                                                             )
@@ -3181,7 +3181,7 @@ fun MaterialPlayerScreen(
                                                             if (playbackPitch != 1.0f)
                                                                 "${String.format(Locale.US, "%.2f", playbackPitch)}x"
                                                             else
-                                                                "Pitch",
+                                                                stringResource(R.string.player_pitch_label),
                                                             style = MaterialTheme.typography.labelLarge.copy(
                                                                 fontSize = if (isExtraSmallWidth) 11.sp else 12.sp
                                                             )
@@ -3225,7 +3225,10 @@ fun MaterialPlayerScreen(
                                                     },
                                                     label = {
                                                         Text(
-                                                            if (equalizerEnabled) "EQ ON" else "EQ OFF",
+                                                            stringResource(
+                                                                if (equalizerEnabled) R.string.player_equalizer_on
+                                                                else R.string.player_equalizer_off
+                                                            ),
                                                             style = MaterialTheme.typography.labelLarge.copy(
                                                                 fontSize = if (isExtraSmallWidth) 11.sp else 12.sp
                                                             ),
@@ -3235,7 +3238,10 @@ fun MaterialPlayerScreen(
                                                     leadingIcon = {
                                                         Icon(
                                                             imageVector = if (equalizerEnabled) MaterialSymbolIcon("graphic_eq") else MaterialSymbolIcon("graphic_eq"),
-                                                            contentDescription = if (equalizerEnabled) "Equalizer enabled" else "Equalizer disabled",
+                                                            contentDescription = stringResource(
+                                                                if (equalizerEnabled) R.string.player_equalizer_enabled_desc
+                                                                else R.string.player_equalizer_disabled_desc
+                                                            ),
                                                             modifier = Modifier.size(if (isExtraSmallWidth) 14.dp else 16.dp),
                                                             tint = if (equalizerEnabled)
                                                                 MaterialTheme.colorScheme.primary
@@ -3299,7 +3305,7 @@ fun MaterialPlayerScreen(
                                                     val seconds = sleepTimerRemainingSeconds % 60
                                                     "${minutes}:${seconds.toString().padStart(2, '0')}"
                                                 } else {
-                                                    "Timer"
+                                                    stringResource(R.string.player_sleep_timer_short)
                                                 }
 
                                                 val chipColors = if (sleepTimerActive) {
@@ -3338,7 +3344,10 @@ fun MaterialPlayerScreen(
                                                     leadingIcon = {
                                                         Icon(
                                                             imageVector = if (sleepTimerActive) RhythmIcons.AccessTime else RhythmIcons.AccessTime,
-                                                            contentDescription = if (sleepTimerActive) "Active sleep timer" else "Set sleep timer",
+                                                            contentDescription = stringResource(
+                                                                if (sleepTimerActive) R.string.player_sleep_timer_active_desc
+                                                                else R.string.player_sleep_timer_set_desc
+                                                            ),
                                                             modifier = Modifier.size(if (isExtraSmallWidth) 14.dp else 16.dp)
                                                         )
                                                     },
@@ -3396,7 +3405,10 @@ fun MaterialPlayerScreen(
                                                     },
                                                     label = {
                                                         Text(
-                                                            text = if (hasLyrics) "Edit Lyrics" else "Add Lyrics",
+                                                            text = stringResource(
+                                                                if (hasLyrics) R.string.action_edit_lyrics
+                                                                else R.string.action_add_lyrics
+                                                            ),
                                                             style = MaterialTheme.typography.labelLarge.copy(
                                                                 fontSize = if (isExtraSmallWidth) 11.sp else 12.sp
                                                             )
@@ -3405,7 +3417,10 @@ fun MaterialPlayerScreen(
                                                     leadingIcon = {
                                                         Icon(
                                                             imageVector = if (hasLyrics) RhythmIcons.Edit else MaterialSymbolIcon("lyrics", filled = true),
-                                                            contentDescription = if (hasLyrics) "Edit lyrics" else "Add lyrics",
+                                                            contentDescription = stringResource(
+                                                                if (hasLyrics) R.string.action_edit_lyrics
+                                                                else R.string.action_add_lyrics
+                                                            ),
                                                             modifier = Modifier.size(if (isExtraSmallWidth) 14.dp else 16.dp)
                                                         )
                                                     },
@@ -3464,7 +3479,7 @@ fun MaterialPlayerScreen(
                                                     },
                                                     label = {
                                                         Text(
-                                                            "Album",
+                                                            stringResource(R.string.player_chip_album),
                                                             style = MaterialTheme.typography.labelLarge.copy(
                                                                 fontSize = if (isExtraSmallWidth) 11.sp else 12.sp
                                                             )
@@ -3527,7 +3542,7 @@ fun MaterialPlayerScreen(
                                                     },
                                                     label = {
                                                         Text(
-                                                            "Artist",
+                                                            stringResource(R.string.player_chip_artist),
                                                             style = MaterialTheme.typography.labelLarge.copy(
                                                                 fontSize = if (isExtraSmallWidth) 11.sp else 12.sp
                                                             )
@@ -3588,7 +3603,7 @@ fun MaterialPlayerScreen(
                                                     },
                                                     label = {
                                                         Text(
-                                                            "Share",
+                                                            stringResource(R.string.action_share),
                                                             style = MaterialTheme.typography.labelLarge.copy(
                                                                 fontSize = if (isExtraSmallWidth) 11.sp else 12.sp
                                                             )
@@ -3833,14 +3848,17 @@ fun MaterialPlayerScreen(
                                         horizontalAlignment = Alignment.Start
                                     ) {
                                         Text(
-                                            text = location?.name ?: "Device Output",
+                                            text = location?.name ?: stringResource(R.string.playback_device_output),
                                             style = MaterialTheme.typography.titleSmall,
                                             color = MaterialTheme.colorScheme.onPrimaryContainer,
                                             maxLines = 1,
                                             overflow = TextOverflow.Ellipsis
                                         )
                                         val displayVolume = if (useSystemVolume) systemVolume else volume
-                                        val volumeText = if (useSystemVolume) "System" else "App"
+                                        val volumeText = stringResource(
+                                            if (useSystemVolume) R.string.playback_volume_system_short
+                                            else R.string.playback_volume_app_short
+                                        )
                                         Text(
                                             text = "${(displayVolume * 100).toInt()}% $volumeText",
                                             style = MaterialTheme.typography.bodySmall,

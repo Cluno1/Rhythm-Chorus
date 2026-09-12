@@ -108,16 +108,16 @@ fun PlayerChipOrderBottomSheet(
     // Helper function to get display name and icon for chip
     fun getChipInfo(chipId: String): Pair<String, MaterialSymbolIcon> {
         return when (chipId) {
-            "FAVORITE" -> Pair("Favorite", RhythmIcons.FavoriteFilled)
-            "SPEED_PITCH" -> Pair("Speed & Pitch", MaterialSymbolIcon("tune", filled = true))
-            "SPEED" -> Pair("Speed & Pitch", MaterialSymbolIcon("speed", filled = true))
-            "PITCH" -> Pair("Speed & Pitch", MaterialSymbolIcon("graphic_eq", filled = true))
-            "EQUALIZER" -> Pair("Equalizer", MaterialSymbolIcon("graphic_eq", filled = true))
-            "SLEEP_TIMER" -> Pair("Sleep Timer", RhythmIcons.AccessTime)
-            "LYRICS" -> Pair("Lyrics", MaterialSymbolIcon("lyrics", filled = true))
-            "ALBUM" -> Pair("Album", RhythmIcons.Music.Album)
-            "ARTIST" -> Pair("Artist", RhythmIcons.Music.Artist)
-            "SHARE" -> Pair("Share", RhythmIcons.Share)
+            "FAVORITE" -> Pair(context.getString(R.string.player_chip_favorite), RhythmIcons.FavoriteFilled)
+            "SPEED_PITCH" -> Pair(context.getString(R.string.player_speed_and_pitch), MaterialSymbolIcon("tune", filled = true))
+            "SPEED" -> Pair(context.getString(R.string.player_speed_label), MaterialSymbolIcon("speed", filled = true))
+            "PITCH" -> Pair(context.getString(R.string.player_pitch_label), MaterialSymbolIcon("graphic_eq", filled = true))
+            "EQUALIZER" -> Pair(context.getString(R.string.equalizer), MaterialSymbolIcon("graphic_eq", filled = true))
+            "SLEEP_TIMER" -> Pair(context.getString(R.string.sleep_timer), RhythmIcons.AccessTime)
+            "LYRICS" -> Pair(context.getString(R.string.player_chip_lyrics), MaterialSymbolIcon("lyrics", filled = true))
+            "ALBUM" -> Pair(context.getString(R.string.player_chip_album), RhythmIcons.Music.Album)
+            "ARTIST" -> Pair(context.getString(R.string.player_chip_artist), RhythmIcons.Music.Artist)
+            "SHARE" -> Pair(context.getString(R.string.action_share), RhythmIcons.Share)
             else -> Pair(chipId, RhythmIcons.Edit)
         }
     }
@@ -253,7 +253,9 @@ fun PlayerChipOrderBottomSheet(
                             ) {
                                 Icon(
                                     imageVector = if (isHidden) RhythmIcons.VisibilityOff else RhythmIcons.Visibility,
-                                    contentDescription = if (isHidden) "Show chip" else "Hide chip",
+                                    contentDescription = context.getString(
+                                        if (isHidden) R.string.player_chip_show else R.string.player_chip_hide
+                                    ),
                                     tint = if (isHidden) MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f) else MaterialTheme.colorScheme.primary,
                                     modifier = Modifier.size(20.dp)
                                 )

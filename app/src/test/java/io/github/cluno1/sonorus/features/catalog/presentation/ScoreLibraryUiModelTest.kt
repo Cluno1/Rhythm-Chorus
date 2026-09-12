@@ -39,7 +39,7 @@ class ScoreLibraryUiModelTest {
     }
 
     @Test
-    fun overviewNavigationSelectsLatestPublishedOptionInsteadOfPreferredDefault() {
+    fun overviewNavigationUsesBackendCurrentScoreInsteadOfGuessingByPublishedTime() {
         val olderPreferred = scoreOption(
             id = "older",
             origin = "musicxml_import",
@@ -59,7 +59,11 @@ class ScoreLibraryUiModelTest {
         )
 
         assertEquals(latest.scoreId, work.latestPublishedOption()?.scoreId)
-        assertEquals(latest.scoreId, work.initialOptionFor(null)?.scoreId)
+        assertEquals(olderPreferred.scoreId, work.currentScoreOption()?.scoreId)
+        assertEquals(olderPreferred.scoreId, work.initialOptionFor(null)?.scoreId)
+        assertEquals(olderPreferred.scoreId, work.resolveInitialScoreId(null))
+        assertEquals(olderPreferred.scoreId, work.resolveInitialScoreId("missing"))
+        assertEquals(olderPreferred.scoreId, work.resolveInitialScoreId(olderPreferred.scoreId))
     }
 
     @Test

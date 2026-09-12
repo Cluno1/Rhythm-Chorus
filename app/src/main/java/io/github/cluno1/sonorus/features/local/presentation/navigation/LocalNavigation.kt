@@ -148,7 +148,7 @@ import io.github.cluno1.sonorus.features.catalog.presentation.CatalogRemoteScore
 import io.github.cluno1.sonorus.features.chorus.presentation.ChorusRecordingScreen
 import io.github.cluno1.sonorus.features.chorus.presentation.ChorusScreen
 import io.github.cluno1.sonorus.features.catalog.presentation.CatalogViewModel
-import io.github.cluno1.sonorus.features.catalog.presentation.latestPublishedOption
+import io.github.cluno1.sonorus.features.catalog.presentation.currentScoreOption
 import io.github.cluno1.sonorus.core.ProductCapabilities
 import io.github.cluno1.sonorus.core.ProductRoutePolicy
 import io.github.cluno1.sonorus.shared.presentation.screens.RhythmStatsScreen
@@ -1473,6 +1473,22 @@ private fun LocalNavigationContent(
                         onCatalogOpenScore = {
                             activeCatalogItem?.let { item ->
                                 coroutineScope.launch {
+                                    val currentScoreWork = catalogState.scoreWorks
+                                        .firstOrNull { it.workId == item.workId }
+                                    val currentOption = currentScoreWork?.currentScoreOption()
+                                    if (currentOption != null) {
+                                        navController.navigate(
+                                            Screen.CatalogScore.createRoute(
+                                                item.workId,
+                                                currentOption.scoreId,
+                                                currentOption.revisionId,
+                                                currentScoreWork.title,
+                                                currentOption.scoreLabel,
+                                                currentOption.partCount,
+                                            )
+                                        ) { launchSingleTop = true }
+                                        return@launch
+                                    }
                                     val bundle = catalogState.selectedBundle
                                         ?.takeIf { it.work.id == item.workId }
                                         ?: catalogViewModel.loadWork(item.workId).getOrElse { error ->
@@ -2244,7 +2260,7 @@ private fun LocalNavigationContent(
                             scoreWorks = catalogState.scoreWorks,
                             scoreArtworkServerUrl = catalogState.serverUrl,
                             onScoreWorkClick = { work ->
-                                val option = work.latestPublishedOption()
+                                val option = work.currentScoreOption()
                                 if (option != null) navController.navigate(
                                     Screen.CatalogScore.createRoute(
                                         work.workId,
@@ -2535,7 +2551,7 @@ private fun LocalNavigationContent(
                                 navController.navigate(Screen.AlbumDetail.createRoute(album.id, album.title))
                             },
                             onCatalogScoreWorkClick = { work ->
-                                val option = work.latestPublishedOption()
+                                val option = work.currentScoreOption()
                                 if (option != null) navController.navigate(
                                     Screen.CatalogScore.createRoute(
                                         work.workId,
@@ -3883,7 +3899,7 @@ private fun LocalNavigationContent(
                         scoreWorks = if (isStreamingMode) emptyList() else catalogState.scoreWorks,
                         scoreArtworkServerUrl = catalogState.serverUrl,
                         onScoreWorkClick = { work, _ ->
-                            val option = work.latestPublishedOption()
+                            val option = work.currentScoreOption()
                             if (option != null) {
                                 navController.navigate(
                                     Screen.CatalogScore.createRoute(

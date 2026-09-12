@@ -1914,7 +1914,7 @@ private fun ScorePlaybackControls(
                 ) {
                     Icon(
                         RhythmIcons.MusicNote,
-                        contentDescription = "在线合唱",
+                        contentDescription = stringResource(R.string.score_chorus),
                         modifier = Modifier.size(24.dp),
                     )
                 }

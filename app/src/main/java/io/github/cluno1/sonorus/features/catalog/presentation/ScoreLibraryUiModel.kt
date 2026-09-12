@@ -20,13 +20,26 @@ fun CatalogLibraryScoreWork.latestPublishedOption(): CatalogScoreOption? =
             .thenBy { it.scoreId },
     )
 
+fun CatalogLibraryScoreWork.currentScoreOption(): CatalogScoreOption? =
+    scoreOptions.firstOrNull { it.scoreId == defaultScoreId }
+
 fun CatalogLibraryScoreWork.initialOptionFor(scoreLabel: String?): CatalogScoreOption? {
+    if (scoreLabel == null) return currentScoreOption()
     val matching = scoreOptions.filter { it.matchesScoreLabel(scoreLabel) }
     return matching.maxWithOrNull(
         compareBy<CatalogScoreOption> { it.publishedAt }
             .thenBy { it.revisionNo }
             .thenBy { it.scoreId },
     )
+}
+
+fun CatalogLibraryScoreWork.resolveInitialScoreId(requestedScoreId: String?): String? {
+    val availableScoreIds = scoreOptions.mapTo(linkedSetOf()) { it.scoreId }
+    return sequenceOf(
+        requestedScoreId,
+        defaultScoreId,
+    ).filterNotNull().firstOrNull(availableScoreIds::contains)
+        ?: availableScoreIds.firstOrNull()
 }
 
 fun prepareCatalogScoreWorks(

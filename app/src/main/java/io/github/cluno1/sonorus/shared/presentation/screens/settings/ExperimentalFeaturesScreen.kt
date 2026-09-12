@@ -187,6 +187,7 @@ fun LabsSettingsScreen(
     val hapticFeedbackEnabled by appSettings.hapticFeedbackEnabled.collectAsState()
     val enableAlbumEditing by appSettings.enableAlbumEditing.collectAsState()
     val lyricsEditorEnabled by appSettings.lyricsEditorEnabled.collectAsState()
+    val scoreChorusLabEnabled by appSettings.scoreChorusLabEnabled.collectAsState()
     val haptic = LocalHapticFeedback.current
     
     val forcePlayerCompactMode by appSettings.forcePlayerCompactMode.collectAsState()
@@ -220,6 +221,21 @@ fun LabsSettingsScreen(
                             context.getString(R.string.labs_lyrics_editor_desc),
                             toggleState = lyricsEditorEnabled,
                             onToggleChange = { appSettings.setLyricsEditorEnabled(it) }
+                        )
+                    )
+                )
+            )
+
+            add(
+                SettingGroup(
+                    title = context.getString(R.string.labs_music_score_experiments),
+                    items = listOf(
+                        SettingItem(
+                            MaterialSymbolIcon("groups", filled = true),
+                            context.getString(R.string.labs_score_chorus),
+                            context.getString(R.string.labs_score_chorus_desc),
+                            toggleState = scoreChorusLabEnabled,
+                            onToggleChange = { appSettings.setScoreChorusLabEnabled(it) }
                         )
                     )
                 )

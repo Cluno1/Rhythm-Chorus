@@ -126,16 +126,6 @@ internal object ScoreSettingsCodec {
         ?.let { runCatching { it.asInt }.getOrNull() }
 }
 
-internal fun resolveRememberedScoreId(
-    rememberedScoreId: String?,
-    requestedScoreId: String?,
-    defaultScoreId: String?,
-    availableScoreIds: Set<String>,
-): String? = sequenceOf(rememberedScoreId, requestedScoreId, defaultScoreId)
-    .filterNotNull()
-    .firstOrNull(availableScoreIds::contains)
-    ?: availableScoreIds.firstOrNull()
-
 internal class ScoreSettingsStore(context: Context) {
     private val preferences = context.applicationContext.getSharedPreferences(
         PREFERENCES_NAME,
@@ -161,20 +151,7 @@ internal class ScoreSettingsStore(context: Context) {
         }
     }
 
-    fun loadSelectedScoreId(workId: String): String? = workId
-        .takeIf(String::isNotBlank)
-        ?.let { preferences.getString(workSelectionKey(it), null) }
-        ?.takeIf(String::isNotBlank)
-
-    fun saveSelectedScoreId(workId: String, scoreId: String) {
-        if (workId.isBlank() || scoreId.isBlank()) return
-        preferences.edit(commit = true) {
-            putString(workSelectionKey(workId), scoreId)
-        }
-    }
-
     private fun scoreKey(scoreId: String) = "score:${scoreId.trim()}"
-    private fun workSelectionKey(workId: String) = "work-score:${workId.trim()}"
 
     private companion object {
         const val PREFERENCES_NAME = "rhythm_score_settings_v1"

@@ -238,7 +238,7 @@ fun PlayerCustomizationSettingsScreen(onBackClick: () -> Unit) {
                                     ExpressiveButtonGroup(
                                         items = listOf(
                                             "Sonorus",
-                                            "Expressive"
+                                            stringResource(R.string.player_theme_expressive_label)
                                         ),
                                         selectedIndex = if (playerThemeId == "MATERIAL") 0 else 1,
                                         onItemClick = { index ->
@@ -498,7 +498,7 @@ fun PlayerCustomizationSettingsScreen(onBackClick: () -> Unit) {
                             item = SettingItem(
                                 icon = MaterialSymbolIcon("linear_scale"),
                                 title = stringResource(R.string.settings_miniplayer_progress_style),
-                                description = playerProgressStyle.lowercase().replaceFirstChar { it.uppercase() },
+                                description = context.getString(progressStyleLabelRes(playerProgressStyle)),
                                 onClick = { showPlayerProgressStyleSheet = true }
                             )
                         ),
@@ -508,7 +508,7 @@ fun PlayerCustomizationSettingsScreen(onBackClick: () -> Unit) {
                             item = SettingItem(
                                 icon = MaterialSymbolIcon("touch_app"),
                                 title = context.getString(R.string.settings_thumb_style),
-                                description = playerProgressThumbStyle.lowercase().replaceFirstChar { it.uppercase() },
+                                description = context.getString(thumbStyleLabelRes(playerProgressThumbStyle)),
                                 onClick = { showPlayerThumbStyleSheet = true }
                             )
                         ),
@@ -971,14 +971,14 @@ fun ProgressStyleBottomSheet(
     val sheetState = rememberBottomSheetState(initialValue = SheetValue.Hidden, enabledValues = setOf(SheetValue.Hidden, SheetValue.Expanded))
 
     val progressStyles = listOf(
-        ProgressStyleOption("NORMAL", "Normal", MaterialSymbolIcon("linear_scale"), "Standard progress bar"),
-        ProgressStyleOption("WAVY", "Wavy", MaterialSymbolIcon("graphic_eq"), "Animated wavy line"),
-        ProgressStyleOption("ROUNDED", "Rounded", MaterialSymbolIcon("rounded_corner"), "Pill-shaped progress"),
-        ProgressStyleOption("THIN", "Thin", RhythmIcons.Remove, "Thin elegant line"),
-        ProgressStyleOption("THICK", "Thick", RhythmIcons.DragHandle, "Bold thick bar"),
-        ProgressStyleOption("GRADIENT", "Gradient", MaterialSymbolIcon("gradient"), "Multi-color gradient"),
-        ProgressStyleOption("SEGMENTED", "Segmented", MaterialSymbolIcon("more_horiz"), "Segmented blocks"),
-        ProgressStyleOption("DOTS", "Dots", MaterialSymbolIcon("fiber_manual_record"), "Dot indicators")
+        ProgressStyleOption("NORMAL", context.getString(R.string.progress_style_normal), MaterialSymbolIcon("linear_scale"), context.getString(R.string.progress_style_normal_desc)),
+        ProgressStyleOption("WAVY", context.getString(R.string.progress_style_wavy), MaterialSymbolIcon("graphic_eq"), context.getString(R.string.progress_style_wavy_desc)),
+        ProgressStyleOption("ROUNDED", context.getString(R.string.progress_style_rounded), MaterialSymbolIcon("rounded_corner"), context.getString(R.string.progress_style_rounded_desc)),
+        ProgressStyleOption("THIN", context.getString(R.string.progress_style_thin), RhythmIcons.Remove, context.getString(R.string.progress_style_thin_desc)),
+        ProgressStyleOption("THICK", context.getString(R.string.progress_style_thick), RhythmIcons.DragHandle, context.getString(R.string.progress_style_thick_desc)),
+        ProgressStyleOption("GRADIENT", context.getString(R.string.progress_style_gradient), MaterialSymbolIcon("gradient"), context.getString(R.string.progress_style_gradient_desc)),
+        ProgressStyleOption("SEGMENTED", context.getString(R.string.progress_style_segmented), MaterialSymbolIcon("more_horiz"), context.getString(R.string.progress_style_segmented_desc)),
+        ProgressStyleOption("DOTS", context.getString(R.string.progress_style_dots), MaterialSymbolIcon("fiber_manual_record"), context.getString(R.string.progress_style_dots_desc))
     )
 
     RhythmAdaptiveModalSheet(
@@ -1120,6 +1120,32 @@ data class ThumbStyleOption(
     val description: String
 )
 
+private fun progressStyleLabelRes(style: String): Int = when (style.uppercase()) {
+    "NORMAL" -> R.string.progress_style_normal
+    "WAVY" -> R.string.progress_style_wavy
+    "ROUNDED" -> R.string.progress_style_rounded
+    "THIN" -> R.string.progress_style_thin
+    "THICK" -> R.string.progress_style_thick
+    "GRADIENT" -> R.string.progress_style_gradient
+    "SEGMENTED" -> R.string.progress_style_segmented
+    "DOTS" -> R.string.progress_style_dots
+    else -> R.string.progress_style_normal
+}
+
+private fun thumbStyleLabelRes(style: String): Int = when (style.uppercase()) {
+    "NONE" -> R.string.thumb_style_none
+    "DEFAULT" -> R.string.thumb_style_default
+    "CIRCLE" -> R.string.thumb_style_circle
+    "SQUARE" -> R.string.thumb_style_square
+    "PILL" -> R.string.thumb_style_pill
+    "DIAMOND" -> R.string.thumb_style_diamond
+    "FLOWER" -> R.string.thumb_style_flower
+    "HEART" -> R.string.thumb_style_heart
+    "COOKIE" -> R.string.thumb_style_cookie
+    "PUFFY" -> R.string.thumb_style_puffy
+    else -> R.string.thumb_style_default
+}
+
 /**
  * Bottom sheet for selecting thumb style
  */
@@ -1136,16 +1162,16 @@ fun ThumbStyleBottomSheet(
     val sheetState = rememberBottomSheetState(initialValue = SheetValue.Hidden, enabledValues = setOf(SheetValue.Hidden, SheetValue.Expanded))
 
     val thumbStyles = listOf(
-        ThumbStyleOption("NONE", "None", RhythmIcons.VisibilityOff, "No thumb indicator"),
-        ThumbStyleOption("DEFAULT", "Default", MaterialSymbolIcon("fiber_manual_record"), "Official M3 slider thumb"),
-        ThumbStyleOption("CIRCLE", "Circle", MaterialSymbolIcon("circle"), "M3 circle"),
-        ThumbStyleOption("SQUARE", "Square", MaterialSymbolIcon("crop_square"), "M3 rounded square"),
-        ThumbStyleOption("PILL", "Pill", MaterialSymbolIcon("rounded_corner"), "M3 pill"),
-        ThumbStyleOption("DIAMOND", "Diamond", MaterialSymbolIcon("diamond"), "M3 diamond"),
-        ThumbStyleOption("FLOWER", "Flower", MaterialSymbolIcon("local_florist"), "M3 flower"),
-        ThumbStyleOption("HEART", "Heart", MaterialSymbolIcon("favorite"), "M3 heart"),
-        ThumbStyleOption("COOKIE", "Cookie", MaterialSymbolIcon("cookie"), "M3 6-sided cookie"),
-        ThumbStyleOption("PUFFY", "Puffy", MaterialSymbolIcon("cloud"), "M3 puffy")
+        ThumbStyleOption("NONE", context.getString(R.string.thumb_style_none), RhythmIcons.VisibilityOff, context.getString(R.string.thumb_style_none_desc)),
+        ThumbStyleOption("DEFAULT", context.getString(R.string.thumb_style_default), MaterialSymbolIcon("fiber_manual_record"), context.getString(R.string.thumb_style_default_desc)),
+        ThumbStyleOption("CIRCLE", context.getString(R.string.thumb_style_circle), MaterialSymbolIcon("circle"), context.getString(R.string.thumb_style_circle_desc)),
+        ThumbStyleOption("SQUARE", context.getString(R.string.thumb_style_square), MaterialSymbolIcon("crop_square"), context.getString(R.string.thumb_style_square_desc)),
+        ThumbStyleOption("PILL", context.getString(R.string.thumb_style_pill), MaterialSymbolIcon("rounded_corner"), context.getString(R.string.thumb_style_pill_desc)),
+        ThumbStyleOption("DIAMOND", context.getString(R.string.thumb_style_diamond), MaterialSymbolIcon("diamond"), context.getString(R.string.thumb_style_diamond_desc)),
+        ThumbStyleOption("FLOWER", context.getString(R.string.thumb_style_flower), MaterialSymbolIcon("local_florist"), context.getString(R.string.thumb_style_flower_desc)),
+        ThumbStyleOption("HEART", context.getString(R.string.thumb_style_heart), MaterialSymbolIcon("favorite"), context.getString(R.string.thumb_style_heart_desc)),
+        ThumbStyleOption("COOKIE", context.getString(R.string.thumb_style_cookie), MaterialSymbolIcon("cookie"), context.getString(R.string.thumb_style_cookie_desc)),
+        ThumbStyleOption("PUFFY", context.getString(R.string.thumb_style_puffy), MaterialSymbolIcon("cloud"), context.getString(R.string.thumb_style_puffy_desc))
     )
 
     RhythmAdaptiveModalSheet(
@@ -1306,9 +1332,9 @@ fun PlayerTextAlignmentBottomSheet(
                     .padding(start = 24.dp, end = 24.dp + endPadding, top = 8.dp, bottom = 24.dp)
             ) {
                 listOf(
-                    Triple("START", "Left", MaterialSymbolIcon("align_horizontal_left", filled = true)),
-                    Triple("CENTER", "Center", MaterialSymbolIcon("format_align_center")),
-                    Triple("END", "Right", MaterialSymbolIcon("align_horizontal_right", filled = true))
+                    Triple("START", context.getString(R.string.settings_left_aligned), MaterialSymbolIcon("align_horizontal_left", filled = true)),
+                    Triple("CENTER", context.getString(R.string.settings_center_aligned), MaterialSymbolIcon("format_align_center")),
+                    Triple("END", context.getString(R.string.settings_right_aligned), MaterialSymbolIcon("align_horizontal_right", filled = true))
                 ).forEach { (value, label, icon) ->
                     val isSelected = currentAlignment == value
                     Card(

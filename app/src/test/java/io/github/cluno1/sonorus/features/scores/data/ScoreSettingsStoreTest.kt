@@ -81,17 +81,4 @@ class ScoreSettingsStoreTest {
         assertEquals(mapOf("OCR" to listOf(0, 2)), invalid.mutedTrackIndexesByVariant)
     }
 
-    @Test
-    fun `remembered score wins only while it is available`() {
-        val available = linkedSetOf("rough", "reviewed")
-        assertEquals(
-            "reviewed",
-            resolveRememberedScoreId("reviewed", "rough", "rough", available),
-        )
-        assertEquals(
-            "rough",
-            resolveRememberedScoreId("removed", "rough", "reviewed", available),
-        )
-        assertNull(resolveRememberedScoreId("removed", null, null, emptySet()))
-    }
 }

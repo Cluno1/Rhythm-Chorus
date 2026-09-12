@@ -546,10 +546,10 @@ private fun VolumeAndDeviceCard(
     )
 
     val typeDescription = when {
-        location?.id?.startsWith("bt_") == true -> "Bluetooth device"
-        location?.id == "wired_headset" -> "Wired headphones"
-        location?.id == "speaker" -> "Built-in speaker"
-        else -> "Audio device"
+        location?.id?.startsWith("bt_") == true -> context.getString(R.string.playback_device_bluetooth)
+        location?.id == "wired_headset" -> context.getString(R.string.playback_device_wired_headphones)
+        location?.id == "speaker" -> context.getString(R.string.playback_device_builtin_speaker)
+        else -> context.getString(R.string.playback_device_audio)
     }
 
     val primaryVariant = MaterialTheme.colorScheme.onPrimaryContainer
@@ -701,7 +701,11 @@ private fun VolumeAndDeviceCard(
             ) {
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
-                        text = if (useSystemVolume) "System Volume" else "App Volume",
+                        text = if (useSystemVolume) {
+                            context.getString(R.string.settings_system_volume)
+                        } else {
+                            context.getString(R.string.playback_app_volume)
+                        },
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.SemiBold,
                         color = primaryVariant
@@ -1022,7 +1026,7 @@ private fun PlaybackQuickSettingsCard(
                     title = {
                         Text(
                             text = if (appMode == "STREAMING") {
-                                "Go Mode"
+                                context.getString(R.string.exp_go_mode)
                             } else {
                                 context.getString(R.string.settings_queue_playback_title)
                             }
@@ -1031,7 +1035,7 @@ private fun PlaybackQuickSettingsCard(
                     description = {
                         Text(
                             text = if (appMode == "STREAMING") {
-                                "Open Go settings for provider and streaming controls"
+                                context.getString(R.string.playback_go_settings_desc)
                             } else {
                                 context.getString(R.string.settings_queue_playback_desc)
                             }
@@ -1693,4 +1697,3 @@ private fun QualitySelectionBottomSheet(
         }
     }
 }
-
