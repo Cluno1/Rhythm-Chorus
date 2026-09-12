@@ -75,7 +75,12 @@ fun CatalogRemoteScoreScreen(
     initialScoreId: String? = null,
     viewModel: CatalogViewModel,
     onBack: () -> Unit,
-    onOpenChorus: (workId: String, revisionId: String, title: String) -> Unit,
+    onOpenChorus: (
+        workId: String,
+        scoreId: String,
+        revisionId: String,
+        title: String,
+    ) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val context = LocalContext.current
@@ -136,6 +141,9 @@ fun CatalogRemoteScoreScreen(
                 {
                     onOpenChorus(
                         workId,
+                        selectedOption?.scoreId
+                            ?: history.getOrNull(selectedIndex)?.scoreId
+                            ?: initialScoreId.orEmpty(),
                         history.getOrNull(selectedIndex)?.id ?: activeRevisionId,
                         scoreWork?.title ?: title,
                     )
@@ -153,53 +161,11 @@ fun CatalogRemoteScoreScreen(
             onOpenNewerRevision = { selectedIndex-- },
             onOpenOlderRevision = { selectedIndex++ },
             scoreSettingsContent = {
-                scoreWork?.takeIf { it.scoreOptions.size > 1 }?.let { work ->
-                    Surface(
-                        modifier = Modifier.fillMaxWidth(),
-                        shape = RoundedCornerShape(28.dp),
-                        color = MaterialTheme.colorScheme.surfaceContainerHigh,
-                    ) {
-                        Column(
-                            modifier = Modifier.padding(16.dp),
-                            verticalArrangement = Arrangement.spacedBy(12.dp),
-                        ) {
-                            Row(
-                                horizontalArrangement = Arrangement.spacedBy(10.dp),
-                                verticalAlignment = Alignment.CenterVertically,
-                            ) {
-                                Icon(
-                                    RhythmIcons.ScoreFilled,
-                                    contentDescription = null,
-                                    tint = MaterialTheme.colorScheme.primary,
-                                )
-                                Text(
-                                    stringResource(R.string.score_selection),
-                                    style = MaterialTheme.typography.titleMedium,
-                                    fontWeight = FontWeight.Bold,
-                                )
-                            }
-                            Row(
-                                modifier = Modifier.horizontalScroll(rememberScrollState()),
-                                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                            ) {
-                                work.scoreOptions.forEach { option ->
-                                    FilterChip(
-                                        selected = option.scoreId == selectedOption?.scoreId,
-                                        onClick = {
-                                            selectedScoreId = option.scoreId
-                                        },
-                                        label = {
-                                            Text(
-                                                "${option.scoreLabel} · ${stringResource(R.string.score_revision_label, option.revisionNo)}",
-                                                maxLines = 1,
-                                            )
-                                        },
-                                    )
-                                }
-                            }
-                        }
-                    }
-                }
+                CatalogScoreSelectionCard(
+                    scoreWork = scoreWork,
+                    selectedScoreId = selectedOption?.scoreId,
+                    onSelectScore = { selectedScoreId = it },
+                )
             },
             expectedPartCount = activePartCount,
             playbackSubject = history.getOrNull(selectedIndex)?.let { revision ->
@@ -249,6 +215,61 @@ fun CatalogRemoteScoreScreen(
         }
         else -> Box(modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
             M3CircularLoader()
+        }
+    }
+}
+
+@Composable
+internal fun CatalogScoreSelectionCard(
+    scoreWork: CatalogLibraryScoreWork?,
+    selectedScoreId: String?,
+    onSelectScore: (String) -> Unit,
+    enabled: Boolean = true,
+) {
+    scoreWork?.takeIf { it.scoreOptions.size > 1 }?.let { work ->
+        Surface(
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(28.dp),
+            color = MaterialTheme.colorScheme.surfaceContainerHigh,
+        ) {
+            Column(
+                modifier = Modifier.padding(16.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp),
+            ) {
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(10.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Icon(
+                        RhythmIcons.ScoreFilled,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.primary,
+                    )
+                    Text(
+                        stringResource(R.string.score_selection),
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold,
+                    )
+                }
+                Row(
+                    modifier = Modifier.horizontalScroll(rememberScrollState()),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                ) {
+                    work.scoreOptions.forEach { option ->
+                        FilterChip(
+                            selected = option.scoreId == selectedScoreId,
+                            onClick = { onSelectScore(option.scoreId) },
+                            enabled = enabled,
+                            label = {
+                                Text(
+                                    "${option.scoreLabel} · ${stringResource(R.string.score_revision_label, option.revisionNo)}",
+                                    maxLines = 1,
+                                )
+                            },
+                        )
+                    }
+                }
+            }
         }
     }
 }

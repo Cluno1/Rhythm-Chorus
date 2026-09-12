@@ -3209,7 +3209,8 @@
     <string name="chorus_recording_title">录制合唱声部</string>
     <string name="chorus_recording_header_subtitle">合唱 · %1$s</string>
     <string name="chorus_recording_alignment_score">项目乐谱</string>
-    <string name="chorus_recording_revision_locked">本合唱项目已绑定这个乐谱版本；如需更换版本，请新建合唱项目。</string>
+    <string name="chorus_recording_revision_locked">录音已经开始，歌谱和修订本已锁定；如需更换，请先完成并丢弃当前录音。</string>
+    <string name="chorus_requested_selection_unavailable">所选歌谱或修订本暂未开放合唱，下面已显示其他可用选项。</string>
     <string name="chorus_recording_project_load_error">无法加载合唱项目</string>
     <string name="chorus_recording_revision_load_error">无法加载项目绑定的乐谱版本</string>
     <string name="chorus_recording_score_load_error">无法打开项目乐谱</string>

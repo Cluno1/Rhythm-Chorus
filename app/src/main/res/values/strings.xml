@@ -3471,7 +3471,8 @@
     <string name="chorus_recording_title">Record chorus part</string>
     <string name="chorus_recording_header_subtitle">Chorus · %1$s</string>
     <string name="chorus_recording_alignment_score">Project score</string>
-    <string name="chorus_recording_revision_locked">The chorus timeline is bound to this score revision. Create a new chorus project to use another revision.</string>
+    <string name="chorus_recording_revision_locked">Recording has started, so the score and revision are locked. Finish and discard this take before changing them.</string>
+    <string name="chorus_requested_selection_unavailable">The selected score or revision is not available for chorus yet. Another available selection is shown below.</string>
     <string name="chorus_recording_project_load_error">Unable to load the chorus project</string>
     <string name="chorus_recording_revision_load_error">Unable to load the project score revision</string>
     <string name="chorus_recording_score_load_error">Unable to open the project score</string>

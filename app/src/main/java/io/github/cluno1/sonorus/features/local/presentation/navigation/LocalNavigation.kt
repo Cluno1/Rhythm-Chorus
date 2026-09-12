@@ -273,9 +273,12 @@ sealed class Screen(val route: String) {
         ) = "catalog_score/${Uri.encode(workId)}/${Uri.encode(scoreId)}/${Uri.encode(revisionId)}" +
             "?title=${Uri.encode(title)}&scoreLabel=${Uri.encode(scoreLabel)}&parts=$parts"
     }
-    object Chorus : Screen("chorus/{workId}?title={title}") {
-        fun createRoute(workId: String, title: String) =
-            "chorus/${Uri.encode(workId)}?title=${Uri.encode(title)}"
+    object Chorus : Screen(
+        "chorus/{workId}?title={title}&scoreId={scoreId}&revisionId={revisionId}",
+    ) {
+        fun createRoute(workId: String, scoreId: String, revisionId: String, title: String) =
+            "chorus/${Uri.encode(workId)}?title=${Uri.encode(title)}" +
+                "&scoreId=${Uri.encode(scoreId)}&revisionId=${Uri.encode(revisionId)}"
     }
     object ChorusRecording : Screen("chorus_record/{projectId}/{revisionId}?title={title}") {
         fun createRoute(projectId: String, revisionId: String, title: String) =
@@ -2403,12 +2406,20 @@ private fun LocalNavigationContent(
                     arguments = listOf(
                         navArgument("workId") { type = NavType.StringType },
                         navArgument("title") { type = NavType.StringType; defaultValue = "在线合唱" },
+                        navArgument("scoreId") { type = NavType.StringType; defaultValue = "" },
+                        navArgument("revisionId") { type = NavType.StringType; defaultValue = "" },
                     ),
                 ) { backStackEntry ->
                     val workId = backStackEntry.arguments?.getString("workId")?.let(Uri::decode).orEmpty()
                     val chorusTitle = backStackEntry.arguments?.getString("title")?.let(Uri::decode) ?: "在线合唱"
                     ChorusScreen(
                         workId = workId,
+                        initialScoreId = backStackEntry.arguments?.getString("scoreId")
+                            ?.let(Uri::decode)
+                            .orEmpty(),
+                        initialRevisionId = backStackEntry.arguments?.getString("revisionId")
+                            ?.let(Uri::decode)
+                            .orEmpty(),
                         title = chorusTitle,
                         viewModel = catalogViewModel,
                         onBack = { navController.popBackStack() },
@@ -2512,8 +2523,15 @@ private fun LocalNavigationContent(
                         onBack = {
                             if (!navController.popBackStack()) navigateToTopLevel(Screen.Home.route)
                         },
-                        onOpenChorus = { targetWorkId, _, targetTitle ->
-                            navController.navigate(Screen.Chorus.createRoute(targetWorkId, targetTitle)) {
+                        onOpenChorus = { targetWorkId, targetScoreId, targetRevisionId, targetTitle ->
+                            navController.navigate(
+                                Screen.Chorus.createRoute(
+                                    targetWorkId,
+                                    targetScoreId,
+                                    targetRevisionId,
+                                    targetTitle,
+                                ),
+                            ) {
                                 launchSingleTop = true
                             }
                         },
