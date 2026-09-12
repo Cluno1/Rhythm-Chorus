@@ -4,6 +4,7 @@ import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -13,21 +14,21 @@ import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.FilledTonalButton
-import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -56,9 +57,13 @@ import androidx.media3.exoplayer.ExoPlayer
 import io.github.cluno1.sonorus.R
 import io.github.cluno1.sonorus.features.catalog.domain.CatalogAdminDevice
 import io.github.cluno1.sonorus.features.catalog.domain.ChorusModerationItem
+import io.github.cluno1.sonorus.shared.presentation.components.Material3SettingsGroup
+import io.github.cluno1.sonorus.shared.presentation.components.Material3SettingsItem
 import io.github.cluno1.sonorus.shared.presentation.components.common.CollapsibleHeaderScreen
+import io.github.cluno1.sonorus.shared.presentation.components.common.TabAnimation
 import io.github.cluno1.sonorus.shared.presentation.components.icons.MaterialSymbolIcon
 import io.github.cluno1.sonorus.shared.presentation.components.icons.Icon
+import io.github.cluno1.sonorus.shared.presentation.screens.settings.TunerAnimatedSwitch
 import io.github.cluno1.sonorus.ui.LocalMiniPlayerPadding
 import kotlinx.coroutines.launch
 
@@ -275,6 +280,7 @@ private fun AdministratorDashboard(
     var inviteDisplayName by rememberSaveable { mutableStateOf("") }
     var replaceDevice by rememberSaveable { mutableStateOf(false) }
     var rejecting by remember { mutableStateOf<ChorusModerationItem?>(null) }
+    var selectedSection by rememberSaveable { mutableStateOf(ChorusAdminSection.REVIEW) }
 
     LazyColumn(
         modifier = modifier.fillMaxSize(),
@@ -287,149 +293,181 @@ private fun AdministratorDashboard(
         verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {
         item {
-            Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer)) {
-                Row(
-                    Modifier.fillMaxWidth().padding(18.dp),
-                    horizontalArrangement = Arrangement.spacedBy(14.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    Icon(MaterialSymbolIcon("verified_user", filled = true), null, Modifier.size(34.dp))
-                    Column(Modifier.weight(1f)) {
-                        Text(stringResource(R.string.chorus_admin_device_active), fontWeight = FontWeight.Bold)
-                        Text(
-                            stringResource(R.string.chorus_admin_device_active_desc),
-                            style = MaterialTheme.typography.bodySmall,
-                        )
-                    }
-                    TextButton(onClick = onRefresh, enabled = !state.administratorLoading) {
-                        Text(stringResource(R.string.chorus_admin_refresh))
-                    }
-                }
-            }
-        }
-        item {
-            Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer)) {
-                Row(
-                    Modifier.fillMaxWidth().padding(18.dp),
-                    horizontalArrangement = Arrangement.spacedBy(14.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    Column(Modifier.weight(1f)) {
-                        Text(stringResource(R.string.chorus_admin_auto_review), fontWeight = FontWeight.Bold)
-                        Text(
-                            stringResource(
-                                if (dashboard.settings.automaticApproval) {
-                                    R.string.chorus_admin_auto_review_on_desc
-                                } else {
-                                    R.string.chorus_admin_auto_review_off_desc
-                                },
-                            ),
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        )
-                    }
-                    Switch(
-                        checked = dashboard.settings.automaticApproval,
-                        onCheckedChange = onAutomaticApprovalChange,
-                        enabled = !state.administratorLoading,
-                    )
-                }
-            }
-        }
-        item {
-            Text(
-                stringResource(R.string.chorus_admin_pending_title, dashboard.pendingTracks.size),
-                style = MaterialTheme.typography.titleLarge,
+            Material3SettingsGroup(
+                title = stringResource(R.string.chorus_admin_policy_title),
+                items = listOf(
+                    Material3SettingsItem(
+                        icon = MaterialSymbolIcon("verified_user", filled = true),
+                        title = { Text(stringResource(R.string.chorus_admin_device_active)) },
+                        description = { Text(stringResource(R.string.chorus_admin_device_active_desc)) },
+                        trailingContent = {
+                            IconButton(onClick = onRefresh, enabled = !state.administratorLoading) {
+                                Icon(
+                                    imageVector = MaterialSymbolIcon("refresh"),
+                                    contentDescription = stringResource(R.string.chorus_admin_refresh),
+                                )
+                            }
+                        },
+                        onClick = onRefresh,
+                    ),
+                    Material3SettingsItem(
+                        icon = MaterialSymbolIcon("fact_check", filled = true),
+                        title = { Text(stringResource(R.string.chorus_admin_auto_review)) },
+                        description = {
+                            Text(
+                                stringResource(
+                                    if (dashboard.settings.automaticApproval) {
+                                        R.string.chorus_admin_auto_review_on_desc
+                                    } else {
+                                        R.string.chorus_admin_auto_review_off_desc
+                                    },
+                                ),
+                            )
+                        },
+                        trailingContent = {
+                            TunerAnimatedSwitch(
+                                checked = dashboard.settings.automaticApproval,
+                                onCheckedChange = onAutomaticApprovalChange,
+                                enabled = !state.administratorLoading,
+                            )
+                        },
+                        onClick = {
+                            if (!state.administratorLoading) {
+                                onAutomaticApprovalChange(!dashboard.settings.automaticApproval)
+                            }
+                        },
+                    ),
+                ),
             )
         }
+        item {
+            ChorusAdminSectionTabs(
+                selectedSection = selectedSection,
+                pendingCount = dashboard.pendingTracks.size,
+                onSectionSelected = { selectedSection = it },
+            )
+        }
+
         playbackError?.let { item { ErrorMessage(it) } }
         state.adminError?.let { item { ErrorMessage(it) } }
-        if (dashboard.pendingTracks.isEmpty()) {
-            item {
-                Text(
-                    stringResource(R.string.chorus_admin_pending_empty),
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-            }
-        } else {
-            items(dashboard.pendingTracks, key = { it.track.id }) { item ->
-                ModerationCard(
-                    item = item,
-                    playing = playingTrackId == item.track.id,
-                    busy = state.administratorLoading,
-                    onPreview = { onPreview(item) },
-                    onPublish = { onModerate(item.track.id, item.track.revision, true, null) },
-                    onReject = { rejecting = item },
-                )
-            }
-        }
-        item { HorizontalDivider() }
-        item {
-            Text(stringResource(R.string.chorus_admin_invite_title), style = MaterialTheme.typography.titleLarge)
-        }
-        item {
-            Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer)) {
-                Column(Modifier.padding(18.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                    OutlinedTextField(
-                        value = inviteUserId,
-                        onValueChange = { inviteUserId = it },
-                        label = { Text(stringResource(R.string.catalog_user_id)) },
-                        singleLine = true,
-                        modifier = Modifier.fillMaxWidth(),
-                    )
-                    OutlinedTextField(
-                        value = inviteDisplayName,
-                        onValueChange = { inviteDisplayName = it },
-                        label = { Text(stringResource(R.string.catalog_user_display_name)) },
-                        singleLine = true,
-                        modifier = Modifier.fillMaxWidth(),
-                    )
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Column(Modifier.weight(1f)) {
-                            Text(stringResource(R.string.catalog_replace_existing_device))
-                            Text(
-                                stringResource(R.string.catalog_replace_existing_device_desc),
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            )
-                        }
-                        Switch(checked = replaceDevice, onCheckedChange = { replaceDevice = it })
+
+        when (selectedSection) {
+            ChorusAdminSection.REVIEW -> {
+                if (dashboard.pendingTracks.isEmpty()) {
+                    item {
+                        Material3SettingsGroup(
+                            items = listOf(
+                                Material3SettingsItem(
+                                    icon = MaterialSymbolIcon("task_alt", filled = true),
+                                    title = { Text(stringResource(R.string.chorus_admin_pending_empty)) },
+                                ),
+                            ),
+                            containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
+                        )
                     }
-                    Button(
-                        onClick = {
-                            onIssueInvite(inviteUserId, inviteDisplayName, replaceDevice)
-                        },
-                        enabled = inviteUserId.isNotBlank() && !state.administratorLoading,
-                        modifier = Modifier.fillMaxWidth(),
-                    ) {
-                        Text(stringResource(R.string.chorus_admin_invite_action))
-                    }
-                    state.issuedInvite?.let { invite ->
-                        Text(stringResource(R.string.chorus_admin_invite_created), fontWeight = FontWeight.Bold)
-                        Text(invite.inviteCode, style = MaterialTheme.typography.bodyLarge)
-                        Text(
-                            stringResource(R.string.chorus_admin_invite_expiry, invite.expiresAt),
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                } else {
+                    items(dashboard.pendingTracks, key = { it.track.id }) { item ->
+                        ModerationCard(
+                            item = item,
+                            playing = playingTrackId == item.track.id,
+                            busy = state.administratorLoading,
+                            onPreview = { onPreview(item) },
+                            onPublish = { onModerate(item.track.id, item.track.revision, true, null) },
+                            onReject = { rejecting = item },
                         )
                     }
                 }
             }
-        }
-        item { HorizontalDivider() }
-        item {
-            Text(stringResource(R.string.chorus_admin_devices_title), style = MaterialTheme.typography.titleLarge)
-        }
-        items(dashboard.devices, key = { it.deviceId }) { device ->
-            DeviceRow(
-                device = device,
-                current = device.deviceId == state.currentDeviceId,
-                busy = state.administratorLoading,
-                onSetAdministrator = onSetAdministrator,
-            )
+
+            ChorusAdminSection.INVITE -> item {
+                Card(
+                    shape = RoundedCornerShape(24.dp),
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer),
+                ) {
+                    Column(Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(14.dp)) {
+                        Text(
+                            stringResource(R.string.chorus_admin_invite_title),
+                            style = MaterialTheme.typography.titleLarge,
+                            fontWeight = FontWeight.Bold,
+                        )
+                        OutlinedTextField(
+                            value = inviteUserId,
+                            onValueChange = { inviteUserId = it },
+                            label = { Text(stringResource(R.string.catalog_user_id)) },
+                            singleLine = true,
+                            modifier = Modifier.fillMaxWidth(),
+                        )
+                        OutlinedTextField(
+                            value = inviteDisplayName,
+                            onValueChange = { inviteDisplayName = it },
+                            label = { Text(stringResource(R.string.catalog_user_display_name)) },
+                            singleLine = true,
+                            modifier = Modifier.fillMaxWidth(),
+                        )
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Column(Modifier.weight(1f)) {
+                                Text(stringResource(R.string.catalog_replace_existing_device))
+                                Text(
+                                    stringResource(R.string.catalog_replace_existing_device_desc),
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                )
+                            }
+                            TunerAnimatedSwitch(
+                                checked = replaceDevice,
+                                onCheckedChange = { replaceDevice = it },
+                            )
+                        }
+                        Button(
+                            onClick = { onIssueInvite(inviteUserId, inviteDisplayName, replaceDevice) },
+                            enabled = inviteUserId.isNotBlank() && !state.administratorLoading,
+                            modifier = Modifier.fillMaxWidth(),
+                        ) {
+                            Text(stringResource(R.string.chorus_admin_invite_action))
+                        }
+                        state.issuedInvite?.let { invite ->
+                            Card(
+                                shape = RoundedCornerShape(18.dp),
+                                colors = CardDefaults.cardColors(
+                                    containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                                ),
+                            ) {
+                                Column(
+                                    Modifier.fillMaxWidth().padding(16.dp),
+                                    verticalArrangement = Arrangement.spacedBy(4.dp),
+                                ) {
+                                    Text(
+                                        stringResource(R.string.chorus_admin_invite_created),
+                                        fontWeight = FontWeight.Bold,
+                                    )
+                                    Text(invite.inviteCode, style = MaterialTheme.typography.headlineSmall)
+                                    Text(
+                                        stringResource(R.string.chorus_admin_invite_expiry, invite.expiresAt),
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = MaterialTheme.colorScheme.onSecondaryContainer,
+                                    )
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            ChorusAdminSection.DEVICES -> item {
+                DeviceList(
+                    devices = dashboard.devices,
+                    currentDeviceId = state.currentDeviceId,
+                    busy = state.administratorLoading,
+                    onSetAdministrator = onSetAdministrator,
+                )
+            }
         }
         if (state.administratorLoading) {
-            item { CircularProgressIndicator(Modifier.padding(12.dp)) }
+            item {
+                Box(Modifier.fillMaxWidth().padding(12.dp), contentAlignment = Alignment.Center) {
+                    CircularProgressIndicator()
+                }
+            }
         }
     }
 
@@ -446,6 +484,77 @@ private fun AdministratorDashboard(
     }
 }
 
+private enum class ChorusAdminSection {
+    REVIEW,
+    INVITE,
+    DEVICES,
+}
+
+@Composable
+private fun ChorusAdminSectionTabs(
+    selectedSection: ChorusAdminSection,
+    pendingCount: Int,
+    onSectionSelected: (ChorusAdminSection) -> Unit,
+) {
+    val sections = ChorusAdminSection.entries
+    val titles = listOf(
+        stringResource(R.string.chorus_admin_pending_title, pendingCount),
+        stringResource(R.string.chorus_admin_workspace_invite),
+        stringResource(R.string.chorus_admin_workspace_devices),
+    )
+
+    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        Text(
+            text = stringResource(R.string.chorus_admin_workspace_title),
+            style = MaterialTheme.typography.labelLarge,
+            color = MaterialTheme.colorScheme.primary,
+        )
+        LazyRow(
+            modifier = Modifier.fillMaxWidth(),
+            contentPadding = PaddingValues(horizontal = 2.dp),
+            horizontalArrangement = Arrangement.spacedBy(4.dp),
+        ) {
+            itemsIndexed(sections) { index, section ->
+                val title = titles[index]
+                TabAnimation(
+                    index = index,
+                    selectedIndex = sections.indexOf(selectedSection),
+                    title = title,
+                    selectedColor = MaterialTheme.colorScheme.primary,
+                    onSelectedColor = MaterialTheme.colorScheme.onPrimary,
+                    unselectedColor = MaterialTheme.colorScheme.surfaceContainer,
+                    onUnselectedColor = MaterialTheme.colorScheme.onSurface,
+                    onClick = { onSectionSelected(section) },
+                    modifier = Modifier.padding(2.dp),
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    ) {
+                        Icon(
+                            imageVector = MaterialSymbolIcon(
+                                when (section) {
+                                    ChorusAdminSection.REVIEW -> "fact_check"
+                                    ChorusAdminSection.INVITE -> "key"
+                                    ChorusAdminSection.DEVICES -> "devices"
+                                },
+                                filled = section == selectedSection,
+                            ),
+                            contentDescription = null,
+                            modifier = Modifier.size(20.dp),
+                        )
+                        Text(
+                            text = title,
+                            style = MaterialTheme.typography.labelLarge,
+                            fontWeight = if (section == selectedSection) FontWeight.Bold else FontWeight.Medium,
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+
 @Composable
 private fun ModerationCard(
     item: ChorusModerationItem,
@@ -455,7 +564,10 @@ private fun ModerationCard(
     onPublish: () -> Unit,
     onReject: () -> Unit,
 ) {
-    Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerHigh)) {
+    Card(
+        shape = RoundedCornerShape(24.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerHigh),
+    ) {
         Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
             Text(item.track.displayLabel, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
             Text(
@@ -518,60 +630,49 @@ private fun DeviceList(
     busy: Boolean,
     onSetAdministrator: (String, Boolean) -> Unit,
 ) {
-    Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-        devices.forEach { device ->
-            DeviceRow(
-                device = device,
-                current = device.deviceId == currentDeviceId,
-                busy = busy,
-                onSetAdministrator = onSetAdministrator,
-            )
-        }
-    }
-}
-
-@Composable
-private fun DeviceRow(
-    device: CatalogAdminDevice,
-    current: Boolean,
-    busy: Boolean,
-    onSetAdministrator: (String, Boolean) -> Unit,
-) {
     val currentDeviceLabel = stringResource(R.string.chorus_admin_current_device)
-    Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer)) {
-        Row(
-            Modifier.fillMaxWidth().padding(14.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(12.dp),
-        ) {
-            Icon(MaterialSymbolIcon("smartphone", filled = current), null)
-            Column(Modifier.weight(1f)) {
-                Text(device.displayName ?: device.userId, fontWeight = FontWeight.SemiBold)
-                Text(
-                    buildString {
-                        append(device.userId)
-                        if (current) append(" · ").append(currentDeviceLabel)
-                    },
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-            }
-            OutlinedButton(
-                onClick = { onSetAdministrator(device.deviceId, !device.isAdministrator) },
-                enabled = device.status == "active" && !busy,
-            ) {
-                Text(
-                    stringResource(
-                        if (device.isAdministrator) {
-                            R.string.chorus_admin_device_revoke
-                        } else {
-                            R.string.chorus_admin_device_grant
+    Material3SettingsGroup(
+        items = devices.map { device ->
+            val current = device.deviceId == currentDeviceId
+            Material3SettingsItem(
+                icon = MaterialSymbolIcon("smartphone", filled = current),
+                title = {
+                    Text(
+                        device.displayName ?: device.userId,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+                },
+                description = {
+                    Text(
+                        buildString {
+                            append(device.userId)
+                            if (current) append(" · ").append(currentDeviceLabel)
                         },
-                    ),
-                )
-            }
-        }
-    }
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+                },
+                trailingContent = {
+                    TextButton(
+                        onClick = { onSetAdministrator(device.deviceId, !device.isAdministrator) },
+                        enabled = device.status == "active" && !busy,
+                    ) {
+                        Text(
+                            stringResource(
+                                if (device.isAdministrator) {
+                                    R.string.chorus_admin_device_revoke
+                                } else {
+                                    R.string.chorus_admin_device_grant
+                                },
+                            ),
+                        )
+                    }
+                },
+            )
+        },
+        containerColor = MaterialTheme.colorScheme.surfaceContainer,
+    )
 }
 
 @Composable

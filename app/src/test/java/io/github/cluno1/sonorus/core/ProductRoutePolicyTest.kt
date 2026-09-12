@@ -16,6 +16,7 @@ class ProductRoutePolicyTest {
     fun `catalog-only keeps first-party navigation routes`() {
         assertTrue(ProductRoutePolicy.allowsInitialNavigationRoute("home", true))
         assertTrue(ProductRoutePolicy.allowsInitialNavigationRoute("rhythm_stats", true))
+        assertTrue(ProductRoutePolicy.allowsInitialNavigationRoute("chorus_admin", true))
     }
 
     @Test

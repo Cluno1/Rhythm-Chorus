@@ -611,6 +611,7 @@ fun LocalNavigation(
                 pendingRoute == Screen.Search.route ||
                 pendingRoute == Screen.Player.route ||
                 pendingRoute == Screen.Settings.route ||
+                pendingRoute == Screen.ChorusAdmin.route ||
                 pendingRoute == Screen.RhythmStats.route ||
                 pendingRoute.startsWith(Screen.Library.route.substringBefore("?")) ||
                 pendingRoute.startsWith("playlist/") ||
@@ -2648,7 +2649,14 @@ private fun LocalNavigationContent(
                 }
 
                 composable(Screen.TunerLabs.route) {
-                    io.github.cluno1.sonorus.shared.presentation.screens.settings.LabsSettingsScreen(onBackClick = navigateBackOrToSettings)
+                    io.github.cluno1.sonorus.shared.presentation.screens.settings.LabsSettingsScreen(
+                        onBackClick = navigateBackOrToSettings,
+                        onNavigateTo = { route ->
+                            if (route == SettingsRoutes.CHORUS_ADMIN) {
+                                navController.navigate(Screen.ChorusAdmin.route) { launchSingleTop = true }
+                            }
+                        },
+                    )
                 }
 
                 composable(Screen.TunerAbout.route) {

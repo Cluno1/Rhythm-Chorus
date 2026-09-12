@@ -22,7 +22,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
-import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
@@ -37,6 +36,7 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.BottomSheetDefaults
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Checkbox
@@ -107,10 +107,14 @@ import io.github.cluno1.sonorus.shared.data.repository.PlaybackMediaKind
 import io.github.cluno1.sonorus.shared.data.repository.PlaybackSubject
 import io.github.cluno1.sonorus.shared.presentation.components.bottomsheets.RhythmAdaptiveModalSheet
 import io.github.cluno1.sonorus.shared.presentation.components.bottomsheets.SheetAdaptiveType
+import io.github.cluno1.sonorus.shared.presentation.components.common.ButtonGroupStyle
+import io.github.cluno1.sonorus.shared.presentation.components.common.ExpressiveButtonGroup
+import io.github.cluno1.sonorus.shared.presentation.components.common.ExpressiveGroupButton
 import io.github.cluno1.sonorus.shared.presentation.components.common.M3CircularLoader
 import io.github.cluno1.sonorus.shared.presentation.components.icons.Icon
 import io.github.cluno1.sonorus.shared.presentation.components.icons.MaterialSymbolIcon
 import io.github.cluno1.sonorus.shared.presentation.components.icons.RhythmIcons
+import io.github.cluno1.sonorus.ui.LocalMiniPlayerPadding
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
@@ -262,35 +266,6 @@ fun ChorusScreen(
                 ),
             )
         },
-        bottomBar = {
-            if (project != null) {
-                Surface(shadowElevation = 6.dp) {
-                    Row(
-                        Modifier.fillMaxWidth().navigationBarsPadding().padding(12.dp),
-                        horizontalArrangement = Arrangement.spacedBy(10.dp),
-                    ) {
-                        FilledTonalButton(
-                            onClick = { picker.launch("audio/*") },
-                            enabled = !busy,
-                            modifier = Modifier.weight(1f),
-                        ) {
-                            Icon(RhythmIcons.CloudUpload, null)
-                            Text(" 上传音频")
-                        }
-                        Button(
-                            onClick = {
-                                onRecord(project.id, project.alignmentScoreRevisionId)
-                            },
-                            enabled = !busy,
-                            modifier = Modifier.weight(1f),
-                        ) {
-                            Icon(RhythmIcons.MusicNote, null)
-                            Text(" 录制声部")
-                        }
-                    }
-                }
-            }
-        },
     ) { padding ->
         when {
             loading -> Box(Modifier.fillMaxSize().padding(padding), contentAlignment = Alignment.Center) {
@@ -306,9 +281,41 @@ fun ChorusScreen(
             )
             else -> LazyColumn(
                 modifier = Modifier.fillMaxSize().padding(padding),
-                contentPadding = androidx.compose.foundation.layout.PaddingValues(16.dp),
+                contentPadding = PaddingValues(
+                    start = 16.dp,
+                    top = 16.dp,
+                    end = 16.dp,
+                    bottom = 24.dp + LocalMiniPlayerPadding.current.calculateBottomPadding(),
+                ),
                 verticalArrangement = Arrangement.spacedBy(12.dp),
             ) {
+                item {
+                    ExpressiveButtonGroup(
+                        modifier = Modifier.fillMaxWidth(),
+                        style = ButtonGroupStyle.Tonal,
+                    ) {
+                        ExpressiveGroupButton(
+                            onClick = { picker.launch("audio/*") },
+                            enabled = !busy,
+                            isStart = true,
+                            modifier = Modifier.weight(1f),
+                            colors = ButtonDefaults.filledTonalButtonColors(),
+                        ) {
+                            Icon(RhythmIcons.CloudUpload, null)
+                            Text(" 上传音频", modifier = Modifier.padding(start = 8.dp))
+                        }
+                        ExpressiveGroupButton(
+                            onClick = { onRecord(project.id, project.alignmentScoreRevisionId) },
+                            enabled = !busy,
+                            isEnd = true,
+                            modifier = Modifier.weight(1f),
+                            colors = ButtonDefaults.buttonColors(),
+                        ) {
+                            Icon(RhythmIcons.MusicNote, null)
+                            Text(" 录制声部", modifier = Modifier.padding(start = 8.dp))
+                        }
+                    }
+                }
                 error?.let { message ->
                     item { ErrorCard(message) }
                 }
@@ -1477,6 +1484,7 @@ private fun RecordingReview(
     onUpload: () -> Unit,
 ) {
     val context = LocalContext.current
+    val miniPlayerBottomPadding = LocalMiniPlayerPadding.current.calculateBottomPadding()
     val previewPlayer = remember(result.wavFile) {
         ExoPlayer.Builder(context.applicationContext).build().apply {
             setAudioAttributes(AudioAttributes.DEFAULT, true)
@@ -1544,19 +1552,28 @@ private fun RecordingReview(
                 ),
             )
         },
-        bottomBar = {
-            Surface(
-                shadowElevation = 8.dp,
-                color = MaterialTheme.colorScheme.surfaceContainer,
-            ) {
-                Row(
-                    modifier = Modifier.fillMaxWidth().navigationBarsPadding().padding(12.dp),
-                    horizontalArrangement = Arrangement.spacedBy(10.dp),
+    ) { padding ->
+        LazyColumn(
+            modifier = Modifier.fillMaxSize().padding(padding),
+            contentPadding = PaddingValues(
+                start = 16.dp,
+                top = 16.dp,
+                end = 16.dp,
+                bottom = 24.dp + miniPlayerBottomPadding,
+            ),
+            verticalArrangement = Arrangement.spacedBy(14.dp),
+        ) {
+            item {
+                ExpressiveButtonGroup(
+                    modifier = Modifier.fillMaxWidth(),
+                    style = ButtonGroupStyle.Tonal,
                 ) {
-                    OutlinedButton(
+                    ExpressiveGroupButton(
                         onClick = onDiscard,
                         enabled = !busy,
+                        isStart = true,
                         modifier = Modifier.weight(1f),
+                        colors = ButtonDefaults.filledTonalButtonColors(),
                     ) {
                         Icon(MaterialSymbolIcon("restart_alt", filled = true), null)
                         Text(
@@ -1564,11 +1581,13 @@ private fun RecordingReview(
                             modifier = Modifier.padding(start = 8.dp),
                         )
                     }
-                    Button(
+                    ExpressiveGroupButton(
                         onClick = onUpload,
                         enabled = !busy && rightsConfirmed && label.isNotBlank() &&
                             (kind != "vocal_part" || partId != null),
+                        isEnd = true,
                         modifier = Modifier.weight(1f),
+                        colors = ButtonDefaults.buttonColors(),
                     ) {
                         if (busy) {
                             CircularProgressIndicator(
@@ -1588,13 +1607,6 @@ private fun RecordingReview(
                     }
                 }
             }
-        },
-    ) { padding ->
-        LazyColumn(
-            modifier = Modifier.fillMaxSize().padding(padding),
-            contentPadding = PaddingValues(16.dp),
-            verticalArrangement = Arrangement.spacedBy(14.dp),
-        ) {
             item {
                 Surface(
                     modifier = Modifier.fillMaxWidth(),

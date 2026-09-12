@@ -1064,7 +1064,14 @@ fun SettingsScreenWrapper(
         } else if (route == SettingsRoutes.CATALOG) {
             navController.navigate("catalog_settings")
         } else if (route == SettingsRoutes.CHORUS_ADMIN) {
-            navController.navigate(Screen.ChorusAdmin.route)
+            if (navController.graph.findNode(Screen.ChorusAdmin.route) != null) {
+                navController.navigate(Screen.ChorusAdmin.route) { launchSingleTop = true }
+            } else {
+                appSettings.setInitialStreamingRoute(Screen.ChorusAdmin.route)
+                if (!navController.popBackStack()) {
+                    safeNavigateToMain(navController)
+                }
+            }
         } else if (route == SettingsRoutes.EQUALIZER) {
             navController.navigate(Screen.Equalizer.route)
         } else if (route == SettingsRoutes.SLEEP_TIMER) {
@@ -1167,7 +1174,7 @@ fun SettingsScreenWrapper(
                         SettingsRoutes.UPDATES -> UpdatesSettingsScreen(onBackClick = { currentRoute = null })
                         SettingsRoutes.LABS, SettingsRoutes.EXPERIMENTAL_FEATURES -> LabsSettingsScreen(
                             onBackClick = { currentRoute = null },
-                            onNavigateTo = { currentRoute = it },
+                            onNavigateTo = onNavigateToSubsetting,
                             onNavigateToGoSettings = { currentRoute = SettingsRoutes.GO_SETTINGS }
                         )
                         SettingsRoutes.GO_SETTINGS -> io.github.cluno1.sonorus.features.streaming.presentation.screens.GoSettingsScreen(
@@ -1302,7 +1309,7 @@ fun SettingsScreenWrapper(
                 SettingsRoutes.UPDATES -> UpdatesSettingsScreen(onBackClick = { currentRoute = null })
                 SettingsRoutes.LABS, SettingsRoutes.EXPERIMENTAL_FEATURES -> LabsSettingsScreen(
                     onBackClick = { currentRoute = null },
-                    onNavigateTo = { currentRoute = it },
+                    onNavigateTo = onNavigateToSubsetting,
                     onNavigateToGoSettings = { currentRoute = SettingsRoutes.GO_SETTINGS }
                 )
                 SettingsRoutes.GO_SETTINGS -> io.github.cluno1.sonorus.features.streaming.presentation.screens.GoSettingsScreen(

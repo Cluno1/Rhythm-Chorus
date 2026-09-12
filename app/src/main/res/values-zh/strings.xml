@@ -3183,6 +3183,10 @@
     <string name="chorus_admin_device_revoke">撤销管理员</string>
     <string name="chorus_admin_devices_title">管理员设备</string>
     <string name="chorus_admin_refresh">刷新</string>
+    <string name="chorus_admin_policy_title">审核策略</string>
+    <string name="chorus_admin_workspace_title">管理工作区</string>
+    <string name="chorus_admin_workspace_invite">邀请码</string>
+    <string name="chorus_admin_workspace_devices">设备</string>
     <string name="chorus_admin_auto_review">自动审核</string>
     <string name="chorus_admin_auto_review_on_desc">新上传会立即公开；已有待审核音轨不会被批量误通过。</string>
     <string name="chorus_admin_auto_review_off_desc">新上传仅自己和管理员可见，通过审核后才向普通用户公开。</string>

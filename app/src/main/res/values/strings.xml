@@ -3445,6 +3445,10 @@
     <string name="chorus_admin_device_revoke">Revoke admin</string>
     <string name="chorus_admin_devices_title">Administrator devices</string>
     <string name="chorus_admin_refresh">Refresh</string>
+    <string name="chorus_admin_policy_title">Review policy</string>
+    <string name="chorus_admin_workspace_title">Administration workspace</string>
+    <string name="chorus_admin_workspace_invite">Invitation</string>
+    <string name="chorus_admin_workspace_devices">Devices</string>
     <string name="chorus_admin_auto_review">Automatic approval</string>
     <string name="chorus_admin_auto_review_on_desc">New uploads publish immediately. Existing pending tracks remain pending.</string>
     <string name="chorus_admin_auto_review_off_desc">New uploads remain private until an administrator approves them.</string>
