@@ -588,6 +588,7 @@ class CatalogRepositoryImpl(context: Context) : CatalogRepository {
             projectId = id,
             idempotencyKey = UUID.randomUUID().toString(),
             body = ChorusTrackCreateDto(
+                chorusTimelineId = validUuid(upload.chorusTimelineId),
                 partId = upload.partId,
                 contributionKind = upload.contributionKind,
                 displayLabel = upload.displayLabel,
@@ -663,6 +664,7 @@ class CatalogRepositoryImpl(context: Context) : CatalogRepository {
 
     override suspend fun resolveChorusMix(
         projectId: String,
+        chorusTimelineId: String,
         trackIds: List<String>,
     ): Result<ChorusMix> = guarded {
         require(trackIds.isNotEmpty() && trackIds.size <= 50) { "请选择 1 至 50 条合唱音轨" }
@@ -673,7 +675,7 @@ class CatalogRepositoryImpl(context: Context) : CatalogRepository {
             apiClient.chorusApi.resolveMix(
                 validUuid(projectId),
                 UUID.randomUUID().toString(),
-                ChorusMixResolveDto(ids),
+                ChorusMixResolveDto(validUuid(chorusTimelineId), ids),
             ).bodyOrThrow(),
         ).resolvePlayback(apiClient)
     }

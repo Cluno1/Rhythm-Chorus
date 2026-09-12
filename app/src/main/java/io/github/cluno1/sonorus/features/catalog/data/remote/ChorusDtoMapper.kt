@@ -6,6 +6,7 @@ import io.github.cluno1.sonorus.features.catalog.domain.ChorusPart
 import io.github.cluno1.sonorus.features.catalog.domain.ChorusPlayback
 import io.github.cluno1.sonorus.features.catalog.domain.ChorusProject
 import io.github.cluno1.sonorus.features.catalog.domain.ChorusSyncAnchor
+import io.github.cluno1.sonorus.features.catalog.domain.ChorusTimeline
 import io.github.cluno1.sonorus.features.catalog.domain.ChorusTrack
 import java.util.UUID
 
@@ -33,12 +34,36 @@ internal object ChorusDtoMapper {
     fun project(dto: ChorusProjectDto): ChorusProject {
         val id = uuid(dto.id, "chorus_project.id")
         val arrangementId = uuid(dto.arrangementId, "chorus_project.arrangement_id")
+        val timelines = requireNotNull(dto.timelines) {
+            "chorus_project.timelines is missing"
+        }.map { timeline ->
+            ChorusTimeline(
+                id = uuid(timeline.id, "chorus_timeline.id"),
+                chorusProjectId = uuid(
+                    timeline.chorusProjectId,
+                    "chorus_timeline.chorus_project_id",
+                ),
+                scoreRevisionId = uuid(
+                    timeline.scoreRevisionId,
+                    "chorus_timeline.score_revision_id",
+                ),
+                timelineHash = hash(timeline.timelineHash, "chorus_timeline.timeline_hash"),
+                revision = positive(timeline.revision, "chorus_timeline.revision"),
+            )
+        }
+        require(timelines.isNotEmpty() && timelines.all { it.chorusProjectId == id }) {
+            "chorus timeline belongs to another project"
+        }
         val tracks = requireNotNull(dto.tracks) { "chorus_project.tracks is missing" }.map(::track)
         require(tracks.all { it.chorusProjectId == id }) { "chorus track belongs to another project" }
+        require(tracks.all { track -> timelines.any { it.id == track.chorusTimelineId } }) {
+            "chorus track belongs to an unknown timeline"
+        }
         return ChorusProject(
             id = id,
             workId = uuid(dto.workId, "chorus_project.work_id"),
             arrangementId = arrangementId,
+            scoreId = uuid(dto.scoreId, "chorus_project.score_id"),
             alignmentScoreRevisionId = uuid(
                 dto.alignmentScoreRevisionId,
                 "chorus_project.alignment_score_revision_id",
@@ -57,6 +82,7 @@ internal object ChorusDtoMapper {
                     displayOrder = positive(part.displayOrder, "chorus_part.display_order"),
                 )
             },
+            timelines = timelines,
             tracks = tracks,
         )
     }
@@ -64,6 +90,7 @@ internal object ChorusDtoMapper {
     fun track(dto: ChorusTrackDto): ChorusTrack = ChorusTrack(
         id = uuid(dto.id, "chorus_track.id"),
         chorusProjectId = uuid(dto.chorusProjectId, "chorus_track.chorus_project_id"),
+        chorusTimelineId = uuid(dto.chorusTimelineId, "chorus_track.chorus_timeline_id"),
         renditionId = uuid(dto.renditionId, "chorus_track.rendition_id"),
         uploaderDisplayName = text(dto.uploaderDisplayName, "chorus_track.uploader_display_name"),
         ownedByRequester = requireNotNull(dto.ownedByRequester) {
@@ -137,6 +164,7 @@ internal object ChorusDtoMapper {
         return ChorusMix(
             id = uuid(dto.id, "chorus_mix.id"),
             chorusProjectId = uuid(dto.chorusProjectId, "chorus_mix.chorus_project_id"),
+            chorusTimelineId = uuid(dto.chorusTimelineId, "chorus_mix.chorus_timeline_id"),
             selectionHash = hash(dto.selectionHash, "chorus_mix.selection_hash"),
             selectedTrackIds = trackIds,
             state = state,

@@ -87,6 +87,10 @@ interface CatalogRepository {
     ): Result<ChorusTrack>
     suspend fun submitChorusTrack(trackId: String): Result<ChorusTrack>
     suspend fun withdrawChorusTrack(trackId: String): Result<ChorusTrack>
-    suspend fun resolveChorusMix(projectId: String, trackIds: List<String>): Result<ChorusMix>
+    suspend fun resolveChorusMix(
+        projectId: String,
+        chorusTimelineId: String,
+        trackIds: List<String>,
+    ): Result<ChorusMix>
     suspend fun getChorusMix(mixId: String): Result<ChorusMix>
 }

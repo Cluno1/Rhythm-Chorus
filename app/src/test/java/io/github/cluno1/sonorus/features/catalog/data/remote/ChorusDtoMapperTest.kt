@@ -15,6 +15,8 @@ class ChorusDtoMapperTest {
     private val projectId = "00000000-0000-4000-8000-000000000002"
     private val arrangementId = "00000000-0000-4000-8000-000000000003"
     private val revisionId = "00000000-0000-4000-8000-000000000004"
+    private val scoreId = "00000000-0000-4000-8000-000000000008"
+    private val timelineId = "00000000-0000-4000-8000-000000000009"
     private val partId = "00000000-0000-4000-8000-000000000005"
     private val trackId = "00000000-0000-4000-8000-000000000006"
     private val renditionId = "00000000-0000-4000-8000-000000000007"
@@ -24,8 +26,11 @@ class ChorusDtoMapperTest {
         val project = ChorusDtoMapper.project(projectDto())
 
         assertEquals(projectId, project.id)
+        assertEquals(scoreId, project.scoreId)
+        assertEquals(timelineId, project.timelines.single().id)
         assertEquals("Soprano", project.parts.single().name)
         assertEquals(trackId, project.tracks.single().id)
+        assertEquals(timelineId, project.tracks.single().chorusTimelineId)
         assertEquals(960L, project.tracks.single().anchors.last().scoreTick)
         assertTrue(project.tracks.single().ownedByRequester)
     }
@@ -53,16 +58,27 @@ class ChorusDtoMapperTest {
         id = projectId,
         workId = workId,
         arrangementId = arrangementId,
+        scoreId = scoreId,
         alignmentScoreRevisionId = revisionId,
         timelineHash = "a".repeat(64),
         title = "Community chorus",
         status = "open",
         revision = 1,
         parts = listOf(ChorusPartDto(partId, "S", "Soprano", 1)),
+        timelines = listOf(
+            ChorusTimelineDto(
+                id = timelineId,
+                chorusProjectId = projectId,
+                scoreRevisionId = revisionId,
+                timelineHash = "a".repeat(64),
+                revision = 1,
+            ),
+        ),
         tracks = listOf(
             ChorusTrackDto(
                 id = trackId,
                 chorusProjectId = projectId,
+                chorusTimelineId = timelineId,
                 renditionId = renditionId,
                 uploaderDisplayName = "Singer",
                 ownedByRequester = true,

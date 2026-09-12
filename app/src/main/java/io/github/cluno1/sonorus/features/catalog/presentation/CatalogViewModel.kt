@@ -473,8 +473,11 @@ class CatalogViewModel(application: Application) : AndroidViewModel(application)
     suspend fun withdrawChorusTrack(trackId: String): Result<ChorusTrack> =
         repository.withdrawChorusTrack(trackId)
 
-    suspend fun resolveChorusMix(projectId: String, trackIds: List<String>): Result<ChorusMix> =
-        repository.resolveChorusMix(projectId, trackIds)
+    suspend fun resolveChorusMix(
+        projectId: String,
+        chorusTimelineId: String,
+        trackIds: List<String>,
+    ): Result<ChorusMix> = repository.resolveChorusMix(projectId, chorusTimelineId, trackIds)
 
     suspend fun chorusMix(mixId: String): Result<ChorusMix> = repository.getChorusMix(mixId)
 

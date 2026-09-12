@@ -11,13 +11,23 @@ internal data class ChorusProjectDto(
     val id: String?,
     @SerializedName("work_id") val workId: String?,
     @SerializedName("arrangement_id") val arrangementId: String?,
+    @SerializedName("score_id") val scoreId: String?,
     @SerializedName("alignment_score_revision_id") val alignmentScoreRevisionId: String?,
     @SerializedName("timeline_hash") val timelineHash: String?,
     val title: String?,
     val status: String?,
     val revision: Int?,
     val parts: List<ChorusPartDto>?,
+    val timelines: List<ChorusTimelineDto>?,
     val tracks: List<ChorusTrackDto>?,
+)
+
+internal data class ChorusTimelineDto(
+    val id: String?,
+    @SerializedName("chorus_project_id") val chorusProjectId: String?,
+    @SerializedName("score_revision_id") val scoreRevisionId: String?,
+    @SerializedName("timeline_hash") val timelineHash: String?,
+    val revision: Int?,
 )
 
 internal data class ChorusPartDto(
@@ -38,6 +48,7 @@ internal data class ChorusSyncAnchorDto(
 internal data class ChorusTrackDto(
     val id: String?,
     @SerializedName("chorus_project_id") val chorusProjectId: String?,
+    @SerializedName("chorus_timeline_id") val chorusTimelineId: String?,
     @SerializedName("rendition_id") val renditionId: String?,
     @SerializedName("uploader_display_name") val uploaderDisplayName: String?,
     @SerializedName("owned_by_requester") val ownedByRequester: Boolean?,
@@ -58,6 +69,7 @@ internal data class ChorusTrackDto(
 )
 
 internal data class ChorusTrackCreateDto(
+    @SerializedName("chorus_timeline_id") val chorusTimelineId: String,
     @SerializedName("part_id") val partId: String?,
     @SerializedName("contribution_kind") val contributionKind: String,
     @SerializedName("display_label") val displayLabel: String,
@@ -90,12 +102,14 @@ internal data class ChorusAlignmentPatchDto(
 )
 
 internal data class ChorusMixResolveDto(
+    @SerializedName("chorus_timeline_id") val chorusTimelineId: String,
     @SerializedName("track_ids") val trackIds: List<String>,
 )
 
 internal data class ChorusMixDto(
     val id: String?,
     @SerializedName("chorus_project_id") val chorusProjectId: String?,
+    @SerializedName("chorus_timeline_id") val chorusTimelineId: String?,
     @SerializedName("selection_hash") val selectionHash: String?,
     @SerializedName("selected_track_ids") val selectedTrackIds: List<String>?,
     @SerializedName("selected_track_count") val selectedTrackCount: Int?,

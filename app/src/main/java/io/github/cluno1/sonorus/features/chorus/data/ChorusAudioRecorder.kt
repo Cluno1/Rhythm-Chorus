@@ -43,9 +43,11 @@ data class ChorusRecordingResult(
 class ChorusAudioRecorder private constructor(
     context: Context,
     private val projectId: String,
+    private val timelineId: String,
     existingRoot: File?,
 ) {
-    constructor(context: Context, projectId: String) : this(context, projectId, null)
+    constructor(context: Context, projectId: String, timelineId: String) :
+        this(context, projectId, timelineId, null)
 
     private val root = (existingRoot ?: File(
         context.filesDir,
@@ -68,6 +70,7 @@ class ChorusAudioRecorder private constructor(
 
     init {
         File(root, PROJECT_MARKER).writeText(projectId)
+        File(root, TIMELINE_MARKER).writeText(timelineId)
         root.listFiles { file -> file.name.startsWith("clip-") && file.extension == "pcm" }
             .orEmpty()
             .sortedBy(File::getName)
@@ -358,6 +361,7 @@ class ChorusAudioRecorder private constructor(
 
     companion object {
         private const val PROJECT_MARKER = "project-id.txt"
+        private const val TIMELINE_MARKER = "timeline-id.txt"
         private const val ANCHOR_MARKER = "timeline-anchors.csv"
         private const val OFFSET_MARKER = "transport-offset-ms.txt"
         private const val SAMPLE_RATE = 48_000
@@ -372,16 +376,26 @@ class ChorusAudioRecorder private constructor(
         private const val FADE_SAMPLES = 240
         private const val MIN_FREE_SPACE_BYTES = 32L * 1024 * 1024
 
-        fun recover(context: Context, projectId: String): ChorusAudioRecorder? {
+        fun recover(
+            context: Context,
+            projectId: String,
+            timelineId: String,
+            allowLegacyProjectDraft: Boolean = false,
+        ): ChorusAudioRecorder? {
             val root = File(context.filesDir, "chorus-drafts")
             val draft = root.listFiles(File::isDirectory).orEmpty()
                 .filter { directory ->
+                    val storedTimeline = File(directory, TIMELINE_MARKER)
+                        .takeIf(File::isFile)
+                        ?.readText()
                     File(directory, PROJECT_MARKER).takeIf(File::isFile)?.readText() == projectId &&
+                        (storedTimeline == timelineId ||
+                            storedTimeline == null && allowLegacyProjectDraft) &&
                         directory.listFiles { file -> file.extension == "pcm" }.orEmpty().isNotEmpty()
                 }
                 .maxByOrNull(File::lastModified)
                 ?: return null
-            return ChorusAudioRecorder(context, projectId, draft)
+            return ChorusAudioRecorder(context, projectId, timelineId, draft)
         }
     }
 }

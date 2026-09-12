@@ -91,6 +91,7 @@ import androidx.media3.exoplayer.ExoPlayer
 import io.github.cluno1.sonorus.features.catalog.domain.ChorusMix
 import io.github.cluno1.sonorus.features.catalog.domain.ChorusPart
 import io.github.cluno1.sonorus.features.catalog.domain.ChorusProject
+import io.github.cluno1.sonorus.features.catalog.domain.ChorusTimeline
 import io.github.cluno1.sonorus.features.catalog.domain.ChorusSyncAnchor
 import io.github.cluno1.sonorus.features.catalog.domain.ChorusTrack
 import io.github.cluno1.sonorus.features.catalog.domain.ChorusTrackUpload
@@ -138,10 +139,8 @@ fun ChorusScreen(
     val scope = rememberCoroutineScope()
     val lifecycleOwner = LocalLifecycleOwner.current
     var projects by remember(workId) { mutableStateOf<List<ChorusProject>>(emptyList()) }
-    var projectRevisions by remember(workId) {
-        mutableStateOf<Map<String, ScoreRevision>>(emptyMap())
-    }
     var activeProjectId by remember(workId) { mutableStateOf<String?>(null) }
+    var activeTimelineId by remember(workId) { mutableStateOf<String?>(null) }
     var selectedIds by remember(workId) { mutableStateOf<Set<String>>(emptySet()) }
     var loading by remember { mutableStateOf(true) }
     var busy by remember { mutableStateOf(false) }
@@ -151,7 +150,11 @@ fun ChorusScreen(
     var pendingDelete by remember { mutableStateOf<ChorusTrack?>(null) }
     var refreshKey by remember { mutableIntStateOf(0) }
     val project = projects.firstOrNull { it.id == activeProjectId }
-    val playableTracks = project?.tracks.orEmpty().filter { it.status == "published" }
+    val timeline = project?.timelines?.firstOrNull { it.id == activeTimelineId }
+    val visibleTracks = project?.tracks.orEmpty().filter {
+        it.chorusTimelineId == timeline?.id
+    }
+    val playableTracks = visibleTracks.filter { it.status == "published" }
     val player = remember {
         ExoPlayer.Builder(context.applicationContext).build().apply {
             setAudioAttributes(AudioAttributes.DEFAULT, true)
@@ -202,31 +205,28 @@ fun ChorusScreen(
         loading = true
         viewModel.chorus(workId).fold(
             onSuccess = { catalog ->
-                val loadedRevisions = catalog.projects.mapNotNull { item ->
-                    viewModel.scoreRevision(item.alignmentScoreRevisionId).getOrNull()?.let {
-                        item.id to it
-                    }
-                }.toMap()
                 projects = catalog.projects
-                projectRevisions = loadedRevisions
                 val chosen = catalog.projects.firstOrNull { it.id == activeProjectId }
-                    ?: catalog.projects.firstOrNull {
-                        it.alignmentScoreRevisionId == initialRevisionId
-                    }
-                    ?: catalog.projects
-                        .filter { loadedRevisions[it.id]?.scoreId == initialScoreId }
-                        .maxByOrNull { loadedRevisions[it.id]?.revisionNo ?: 0 }
+                    ?: catalog.projects.firstOrNull { it.scoreId == initialScoreId }
                     ?: catalog.projects.firstOrNull()
+                val chosenTimeline = chosen?.timelines?.firstOrNull {
+                    it.id == activeTimelineId
+                } ?: chosen?.timelines?.firstOrNull {
+                    it.scoreRevisionId == initialRevisionId
+                } ?: chosen?.timelines?.firstOrNull()
                 activeProjectId = chosen?.id
-                selectedIds = chosen?.tracks.orEmpty().filter { it.status == "published" }
+                activeTimelineId = chosenTimeline?.id
+                selectedIds = chosen?.tracks.orEmpty().filter {
+                    it.chorusTimelineId == chosenTimeline?.id && it.status == "published"
+                }
                     .mapTo(linkedSetOf(), ChorusTrack::id)
                 error = if (
                     (initialRevisionId.isNotBlank() &&
-                        catalog.projects.none {
-                            it.alignmentScoreRevisionId == initialRevisionId
+                        catalog.projects.none { candidate ->
+                            candidate.timelines.any { it.scoreRevisionId == initialRevisionId }
                         }) ||
                     (initialScoreId.isNotBlank() &&
-                        catalog.projects.none { loadedRevisions[it.id]?.scoreId == initialScoreId })
+                        catalog.projects.none { it.scoreId == initialScoreId })
                 ) {
                     context.getString(R.string.chorus_requested_selection_unavailable)
                 } else {
@@ -304,7 +304,7 @@ fun ChorusScreen(
                 message = error ?: "管理员尚未为这份乐谱开放合唱项目",
                 modifier = Modifier.fillMaxSize().padding(padding),
             )
-            project == null -> EmptyChorus(
+            project == null || timeline == null -> EmptyChorus(
                 message = "当前合唱项目已经不可用，请刷新后重试",
                 modifier = Modifier.fillMaxSize().padding(padding),
             )
@@ -337,7 +337,7 @@ fun ChorusScreen(
                             Text(" 上传音频", modifier = Modifier.padding(start = 8.dp))
                         }
                         ExpressiveGroupButton(
-                            onClick = { onRecord(project.id, project.alignmentScoreRevisionId) },
+                            onClick = { onRecord(project.id, timeline.scoreRevisionId) },
                             enabled = !busy,
                             isEnd = true,
                             modifier = Modifier.weight(1f),
@@ -393,7 +393,11 @@ fun ChorusScreen(
                                         scope.launch {
                                             busy = true
                                             error = null
-                                            viewModel.resolveChorusMix(current.id, selectedIds.toList()).fold(
+                                            viewModel.resolveChorusMix(
+                                                current.id,
+                                                timeline.id,
+                                                selectedIds.toList(),
+                                            ).fold(
                                                 onSuccess = {
                                                     mix = it
                                                     if (it.state == "ready") playReadyMix(it)
@@ -413,10 +417,10 @@ fun ChorusScreen(
                         }
                     }
                 }
-                if (project.tracks.isEmpty()) {
+                if (visibleTracks.isEmpty()) {
                     item { Text("还没有人上传音轨。你可以成为第一个。") }
                 } else {
-                    items(project.tracks, key = ChorusTrack::id) { track ->
+                    items(visibleTracks, key = ChorusTrack::id) { track ->
                         TrackCard(
                             track = track,
                             part = project.parts.firstOrNull { it.id == track.partId },
@@ -445,10 +449,12 @@ fun ChorusScreen(
             onDismiss = { if (!busy) { pending.file.delete(); pendingUpload = null } },
             onUpload = { partId, kind, label, offsetMs ->
                 val current = project ?: return@UploadAudioDialog
+                val currentTimeline = timeline ?: return@UploadAudioDialog
                 scope.launch {
                     busy = true
                     error = null
                     val upload = ChorusTrackUpload(
+                        chorusTimelineId = currentTimeline.id,
                         file = pending.file,
                         mediaType = pending.mediaType,
                         sha256 = pending.sha256,
@@ -514,6 +520,7 @@ fun ChorusRecordingScreen(
     var availableRevisions by remember {
         mutableStateOf<Map<String, ScoreRevision>>(emptyMap())
     }
+    var timeline by remember { mutableStateOf<ChorusTimeline?>(null) }
     var scoreRevision by remember { mutableStateOf<ScoreRevision?>(null) }
     var scoreBytes by remember { mutableStateOf<ByteArray?>(null) }
     var recorder by remember { mutableStateOf<ChorusAudioRecorder?>(null) }
@@ -549,10 +556,9 @@ fun ChorusRecordingScreen(
     val scoreOption = scoreWork?.scoreOptions?.firstOrNull { it.scoreId == scoreRevision?.scoreId }
     val scoreDisplayLabel = scoreOption?.scoreLabel
         ?: stringResource(R.string.chorus_recording_alignment_score)
-    val revisionProjects = availableProjects
-        .filter { availableRevisions[it.id]?.scoreId == scoreRevision?.scoreId }
+    val revisionTimelines = project?.timelines.orEmpty()
         .sortedByDescending { availableRevisions[it.id]?.revisionNo ?: 0 }
-    val activeRevisionIndex = revisionProjects.indexOfFirst { it.id == project?.id }
+    val activeRevisionIndex = revisionTimelines.indexOfFirst { it.id == timeline?.id }
     val playbackSubject = scoreRevision?.let { revision ->
         PlaybackSubject(
             subjectId = "rhythm-score:score:${revision.scoreId}",
@@ -572,21 +578,35 @@ fun ChorusRecordingScreen(
         playbackCommand = ScorePlaybackCommand(commandSequence, action)
     }
 
-    suspend fun loadProjectScore(target: ChorusProject) {
+    suspend fun loadProjectScore(target: ChorusProject, targetTimeline: ChorusTimeline) {
         sendPlaybackCommand(ScorePlaybackCommandAction.PAUSE)
+        if ((project != null || timeline != null) &&
+            (target.id != project?.id || targetTimeline.id != timeline?.id)
+        ) {
+            recorder?.discard()
+            recorder = null
+            recordingAnchors = emptyList()
+            resultAnchors = emptyList()
+            transportOffsetMs = 0
+        }
+        if (target.id != project?.id) partId = target.parts.firstOrNull()?.id
         project = target
-        partId = target.parts.firstOrNull()?.id
+        timeline = targetTimeline
         scoreRevision = null
         scoreBytes = null
         scoreTick = 0
         scoreTimeMs = 0
-        val revision = availableRevisions[target.id]
-            ?: viewModel.scoreRevision(target.alignmentScoreRevisionId).getOrElse {
+        val revision = availableRevisions[targetTimeline.id]
+            ?: viewModel.scoreRevision(targetTimeline.scoreRevisionId).getOrElse {
                 error = it.message
                     ?: context.getString(R.string.chorus_recording_revision_load_error)
                 return
             }
-        availableRevisions = availableRevisions + (target.id to revision)
+        if (revision.scoreId != target.scoreId) {
+            error = context.getString(R.string.chorus_requested_selection_unavailable)
+            return
+        }
+        availableRevisions = availableRevisions + (targetTimeline.id to revision)
         scoreRevision = revision
         scoreBytes = viewModel.scoreBytes(revision)
             .mapCatching(MusicXmlRuntimeSanitizer::forAlphaTab)
@@ -598,10 +618,24 @@ fun ChorusRecordingScreen(
 
     fun selectProject(target: ChorusProject?) {
         if (!canChangeScore || target == null || target.id == project?.id) return
+        val targetTimeline = target.timelines.maxByOrNull {
+            availableRevisions[it.id]?.revisionNo ?: 0
+        } ?: return
         scope.launch {
             busy = true
             error = null
-            loadProjectScore(target)
+            loadProjectScore(target, targetTimeline)
+            busy = false
+        }
+    }
+
+    fun selectTimeline(target: ChorusTimeline?) {
+        val activeProject = project ?: return
+        if (!canChangeScore || target == null || target.id == timeline?.id) return
+        scope.launch {
+            busy = true
+            error = null
+            loadProjectScore(activeProject, target)
             busy = false
         }
     }
@@ -623,8 +657,14 @@ fun ChorusRecordingScreen(
                 }
                 runCatching {
                     val activeProjectId = project?.id ?: projectId
+                    val activeTimelineId = timeline?.id
+                        ?: error(context.getString(R.string.chorus_requested_selection_unavailable))
                     val next = recorder
-                        ?: ChorusAudioRecorder(context, activeProjectId).also { recorder = it }
+                        ?: ChorusAudioRecorder(
+                            context,
+                            activeProjectId,
+                            activeTimelineId,
+                        ).also { recorder = it }
                     val nextTransportOffset = scoreTimeMs - next.durationMs.value
                     if (recordingAnchors.isEmpty()) {
                         transportOffsetMs = nextTransportOffset
@@ -658,17 +698,36 @@ fun ChorusRecordingScreen(
         }
         val catalog = viewModel.chorus(loadedProject.workId).getOrNull()
         availableProjects = catalog?.projects.orEmpty().ifEmpty { listOf(loadedProject) }
-        availableRevisions = availableProjects.mapNotNull { item ->
-            viewModel.scoreRevision(item.alignmentScoreRevisionId).getOrNull()?.let {
-                item.id to it
+        availableRevisions = availableProjects.flatMap { item ->
+            item.timelines.mapNotNull { itemTimeline ->
+                viewModel.scoreRevision(itemTimeline.scoreRevisionId).getOrNull()?.let {
+                    itemTimeline.id to it
+                }
             }
         }.toMap()
+        val requestedTimeline = loadedProject.timelines.firstOrNull {
+            it.scoreRevisionId == revisionId
+        } ?: loadedProject.timelines.firstOrNull {
+            it.scoreRevisionId == loadedProject.alignmentScoreRevisionId
+        } ?: loadedProject.timelines.firstOrNull() ?: run {
+            error = context.getString(R.string.chorus_requested_selection_unavailable)
+            return@LaunchedEffect
+        }
         var recoveredProject = loadedProject
+        var recoveredTimeline = requestedTimeline
         val recovered = (listOf(loadedProject) + availableProjects)
             .distinctBy(ChorusProject::id)
-            .firstNotNullOfOrNull { candidate ->
-                ChorusAudioRecorder.recover(context, candidate.id)?.also {
+            .flatMap { candidate -> candidate.timelines.map { candidate to it } }
+            .firstNotNullOfOrNull { (candidate, candidateTimeline) ->
+                ChorusAudioRecorder.recover(
+                    context = context,
+                    projectId = candidate.id,
+                    timelineId = candidateTimeline.id,
+                    allowLegacyProjectDraft = candidateTimeline.scoreRevisionId ==
+                        candidate.alignmentScoreRevisionId,
+                )?.also {
                     recoveredProject = candidate
+                    recoveredTimeline = candidateTimeline
                 }
             }
         recovered?.let {
@@ -690,7 +749,7 @@ fun ChorusRecordingScreen(
                 }
             }
         }
-        loadProjectScore(recoveredProject)
+        loadProjectScore(recoveredProject, recoveredTimeline)
     }
 
     DisposableEffect(lifecycleOwner) {
@@ -762,12 +821,14 @@ fun ChorusRecordingScreen(
             },
             onUpload = {
                 val activeProject = project ?: return@RecordingReview
+                val activeTimeline = timeline ?: return@RecordingReview
                 val recorded = result ?: return@RecordingReview
                 scope.launch {
                     busy = true
                     error = null
                     val sha = sha256(recorded.uploadFile)
                     val upload = ChorusTrackUpload(
+                        chorusTimelineId = activeTimeline.id,
                         file = recorded.uploadFile,
                         mediaType = recorded.mediaType,
                         sha256 = sha,
@@ -825,12 +886,12 @@ fun ChorusRecordingScreen(
             },
             canOpenNewerRevision = canChangeScore && activeRevisionIndex > 0,
             canOpenOlderRevision = canChangeScore && activeRevisionIndex in 0 until
-                revisionProjects.lastIndex,
+                revisionTimelines.lastIndex,
             onOpenNewerRevision = {
-                selectProject(revisionProjects.getOrNull(activeRevisionIndex - 1))
+                selectTimeline(revisionTimelines.getOrNull(activeRevisionIndex - 1))
             },
             onOpenOlderRevision = {
-                selectProject(revisionProjects.getOrNull(activeRevisionIndex + 1))
+                selectTimeline(revisionTimelines.getOrNull(activeRevisionIndex + 1))
             },
             scoreSettingsContent = {
                 CatalogScoreSelectionCard(
@@ -838,11 +899,7 @@ fun ChorusRecordingScreen(
                     selectedScoreId = scoreRevision?.scoreId,
                     enabled = canChangeScore,
                     onSelectScore = { scoreId ->
-                        selectProject(
-                            availableProjects
-                                .filter { availableRevisions[it.id]?.scoreId == scoreId }
-                                .maxByOrNull { availableRevisions[it.id]?.revisionNo ?: 0 },
-                        )
+                        selectProject(availableProjects.firstOrNull { it.scoreId == scoreId })
                     },
                 )
             },

@@ -11,13 +11,23 @@ data class ChorusProject(
     val id: String,
     val workId: String,
     val arrangementId: String,
+    val scoreId: String,
     val alignmentScoreRevisionId: String,
     val timelineHash: String,
     val title: String,
     val status: String,
     val revision: Int,
     val parts: List<ChorusPart>,
+    val timelines: List<ChorusTimeline>,
     val tracks: List<ChorusTrack>,
+)
+
+data class ChorusTimeline(
+    val id: String,
+    val chorusProjectId: String,
+    val scoreRevisionId: String,
+    val timelineHash: String,
+    val revision: Int,
 )
 
 data class ChorusPart(
@@ -38,6 +48,7 @@ data class ChorusSyncAnchor(
 data class ChorusTrack(
     val id: String,
     val chorusProjectId: String,
+    val chorusTimelineId: String,
     val renditionId: String,
     val uploaderDisplayName: String,
     val ownedByRequester: Boolean,
@@ -58,6 +69,7 @@ data class ChorusTrack(
 )
 
 data class ChorusTrackUpload(
+    val chorusTimelineId: String,
     val file: File,
     val mediaType: String,
     val sha256: String,
@@ -72,6 +84,7 @@ data class ChorusTrackUpload(
 data class ChorusMix(
     val id: String,
     val chorusProjectId: String,
+    val chorusTimelineId: String,
     val selectionHash: String,
     val selectedTrackIds: List<String>,
     val state: String,
