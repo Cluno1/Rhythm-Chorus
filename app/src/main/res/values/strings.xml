@@ -3160,6 +3160,7 @@
     <string name="settings_expressive_bottom_buttons_desc">Reorder and toggle bottom action buttons for Normal and Merge modes</string>
     <string name="expressive_button_lyrics_desc">Toggle synchronized or plain lyrics</string>
     <string name="expressive_button_favorite_desc">Like or favorite current track</string>
+    <string name="expressive_button_score_desc">Open the score for the current track</string>
     <string name="expressive_button_device_desc">Audio output route and device picker</string>
     <string name="expressive_button_queue_desc">Queue list and track counter</string>
     <string name="expressive_button_more_desc">More playback actions and options</string>
@@ -3173,6 +3174,8 @@
     <string name="expressive_button_artist_desc">Go to artist details</string>
     <string name="expressive_button_song_info_desc">View and edit song metadata</string>
     <string name="expressive_button_share_desc">Share audio file</string>
+    <string name="expressive_bottom_buttons_show_button">Show button</string>
+    <string name="expressive_bottom_buttons_hide_button">Hide button</string>
     <string name="player_favorite_add_description">Add to Liked</string>
     <string name="player_favorite_remove_description">Liked, tap to remove</string>
     <string name="player_favorite_added_message">Added to Liked</string>

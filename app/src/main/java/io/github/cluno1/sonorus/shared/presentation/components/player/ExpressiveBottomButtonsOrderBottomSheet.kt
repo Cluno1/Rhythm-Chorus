@@ -184,6 +184,10 @@ fun ExpressiveBottomButtonsOrderBottomSheet(
                 title = context.getString(R.string.libraryscreen_more_actions),
                 icon = RhythmIcons.More
             )
+            "SCORE" -> ButtonDescriptor(
+                title = context.getString(R.string.catalog_scores),
+                icon = RhythmIcons.Score
+            )
             "SHUFFLE" -> ButtonDescriptor(
                 title = context.getString(R.string.action_shuffle),
                 icon = RhythmIcons.Player.Shuffle
@@ -411,7 +415,10 @@ fun ExpressiveBottomButtonsOrderBottomSheet(
                                 ) {
                                     Icon(
                                         imageVector = if (isHidden) RhythmIcons.VisibilityOff else RhythmIcons.Visibility,
-                                        contentDescription = if (isHidden) "Show button" else "Hide button",
+                                        contentDescription = stringResource(
+                                            if (isHidden) R.string.expressive_bottom_buttons_show_button
+                                            else R.string.expressive_bottom_buttons_hide_button
+                                        ),
                                         tint = if (isHidden)
                                             MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
                                         else
@@ -476,9 +483,9 @@ fun ExpressiveBottomButtonsOrderBottomSheet(
                     RhythmButtonWeighted(
                         onClick = {
                             HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
-                            appSettings.setExpressiveBottomButtonsNormal(restoreFixedButtons(fullNormalList, reorderableNormalList))
+                            appSettings.setExpressiveBottomButtonsNormal(restoreFixedButtons(normalOrder, reorderableNormalList))
                             appSettings.setExpressiveHiddenBottomButtonsNormal(hiddenNormalSet - fixedBottomButtons.toSet())
-                            appSettings.setExpressiveBottomButtonsMerge(restoreFixedButtons(fullMergeList, reorderableMergeList))
+                            appSettings.setExpressiveBottomButtonsMerge(restoreFixedButtons(mergeOrder, reorderableMergeList))
                             appSettings.setExpressiveHiddenBottomButtonsMerge(hiddenMergeSet - fixedBottomButtons.toSet())
                             Toast.makeText(context, R.string.expressive_bottom_buttons_saved, Toast.LENGTH_SHORT).show()
                             scope.launch {

@@ -32,6 +32,36 @@ import java.util.concurrent.TimeUnit
 import androidx.core.content.edit
 import androidx.core.net.toUri
 
+internal fun migrateLegacyExpressiveBottomButtonOrder(
+    order: List<String>,
+    mergeMode: Boolean,
+): List<String> {
+    if ("SCORE" in order) return order
+
+    val migrated = order.toMutableList()
+    if (!mergeMode) {
+        migrated.add(0, "SCORE")
+        return migrated
+    }
+
+    if ("LYRICS" !in migrated) migrated.add(0, "LYRICS")
+    if ("FAVORITE" !in migrated) {
+        migrated.add(migrated.indexOf("LYRICS") + 1, "FAVORITE")
+    }
+    migrated.add(migrated.indexOf("FAVORITE") + 1, "SCORE")
+    return migrated
+}
+
+internal fun resolveAvailableExpressiveBottomButtons(
+    active: List<String>,
+    fallback: List<String>,
+    scoreAvailable: Boolean,
+): List<String> {
+    fun List<String>.available() = filter { it != "SCORE" || scoreAvailable }.distinct()
+
+    return active.available().ifEmpty { fallback.available() }
+}
+
 /**
  * Data class to represent a single crash log entry
  */
@@ -1000,10 +1030,10 @@ class AppSettings private constructor(context: Context) {
     val hiddenPlayerChips: StateFlow<Set<String>> = _hiddenPlayerChips.asStateFlow()
 
     // Expressive Player Bottom Buttons
-    val defaultExpressiveBottomButtonsNormal = listOf("DEVICE", "QUEUE", "MORE")
-    val defaultExpressiveBottomButtonsMerge = listOf("LYRICS", "FAVORITE", "DEVICE", "QUEUE", "MORE")
+    val defaultExpressiveBottomButtonsNormal = listOf("SCORE", "DEVICE", "QUEUE", "MORE")
+    val defaultExpressiveBottomButtonsMerge = listOf("LYRICS", "FAVORITE", "SCORE", "DEVICE", "QUEUE", "MORE")
     val allExpressiveBottomButtons = listOf(
-        "LYRICS", "FAVORITE", "DEVICE", "QUEUE", "MORE",
+        "LYRICS", "FAVORITE", "SCORE", "DEVICE", "QUEUE", "MORE",
         "SHUFFLE", "REPEAT", "EQUALIZER", "SPEED", "SLEEP_TIMER",
         "ADD_TO_PLAYLIST", "ALBUM", "ARTIST", "SONG_INFO", "SHARE"
     )
@@ -1015,6 +1045,7 @@ class AppSettings private constructor(context: Context) {
             ?.distinct()
             ?.filter { it in allExpressiveBottomButtons }
             ?.takeIf { it.isNotEmpty() }
+            ?.let { migrateLegacyExpressiveBottomButtonOrder(it, mergeMode = false) }
             ?: defaultExpressiveBottomButtonsNormal
     )
     val expressiveBottomButtonsNormal: StateFlow<List<String>> = _expressiveBottomButtonsNormal.asStateFlow()
@@ -1036,6 +1067,7 @@ class AppSettings private constructor(context: Context) {
             ?.distinct()
             ?.filter { it in allExpressiveBottomButtons }
             ?.takeIf { it.isNotEmpty() }
+            ?.let { migrateLegacyExpressiveBottomButtonOrder(it, mergeMode = true) }
             ?: defaultExpressiveBottomButtonsMerge
     )
     val expressiveBottomButtonsMerge: StateFlow<List<String>> = _expressiveBottomButtonsMerge.asStateFlow()

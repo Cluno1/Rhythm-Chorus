@@ -112,6 +112,7 @@ import io.github.cluno1.sonorus.features.local.presentation.navigation.Screen
 import io.github.cluno1.sonorus.features.local.presentation.viewmodel.MusicViewModel
 import io.github.cluno1.sonorus.shared.data.model.Album
 import io.github.cluno1.sonorus.shared.data.model.AppSettings
+import io.github.cluno1.sonorus.shared.data.model.resolveAvailableExpressiveBottomButtons
 import io.github.cluno1.sonorus.shared.data.model.Artist
 import io.github.cluno1.sonorus.shared.data.model.LyricsData
 import io.github.cluno1.sonorus.shared.data.model.PlaybackLocation
@@ -1437,9 +1438,7 @@ fun ExpressivePlayerScreen(
                                     RhythmGroupedButton(
                                         size = RhythmButtonSize.Small,
                                         isFillMaxWidth = false,
-                                        modifier = Modifier.widthIn(
-                                            max = if (isCatalogItem && isCatalogScoreAvailable) 150.dp else 100.dp
-                                        )
+                                        modifier = Modifier.widthIn(max = 100.dp)
                                     ) {
                                         RhythmButtonWeighted(
                                             onClick = { HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT); onToggleLyrics() },
@@ -1458,7 +1457,7 @@ fun ExpressivePlayerScreen(
                                             },
                                             weight = 1f,
                                             isFirst = false,
-                                            isLast = !(isCatalogItem && isCatalogScoreAvailable),
+                                            isLast = true,
                                             containerColor = if (isFavorite) primaryColor.copy(alpha = 0.35f) else controlsContainerColor,
                                             contentColor = if (isFavorite) primaryColor else when { needsDarkSurfaces -> ambientControlContent; useAccentBackground -> accentFg; else -> monoFg },
                                             selected = isFavorite,
@@ -1468,21 +1467,6 @@ fun ExpressivePlayerScreen(
                                                 else R.string.player_favorite_add_description
                                             )
                                         )
-                                        if (isCatalogItem && isCatalogScoreAvailable) {
-                                            RhythmButtonWeighted(
-                                                onClick = {
-                                                    HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT)
-                                                    onOpenScore()
-                                                },
-                                                weight = 1f,
-                                                isFirst = false,
-                                                isLast = true,
-                                                containerColor = controlsContainerColor,
-                                                contentColor = when { needsDarkSurfaces -> ambientControlContent; useAccentBackground -> accentFg; else -> monoFg },
-                                                icon = RhythmIcons.Score,
-                                                contentDescription = "乐谱"
-                                            )
-                                        }
                                     }
                                 }
                             }
@@ -1655,15 +1639,21 @@ fun ExpressivePlayerScreen(
                                 }
                             }
 
-                            val displayedButtons = remember(activeButtons, isCatalogItem, isCatalogScoreAvailable) {
-                                buildList {
-                                    activeButtons.forEach { buttonId ->
-                                        add(buttonId)
-                                        if (buttonId == "FAVORITE" && isCatalogItem && isCatalogScoreAvailable) {
-                                            add("SCORE")
-                                        }
-                                    }
-                                }.distinct()
+                            val displayedButtons = remember(
+                                activeButtons,
+                                isCatalogItem,
+                                isCatalogScoreAvailable,
+                                playerMergeControlsToBottom,
+                            ) {
+                                resolveAvailableExpressiveBottomButtons(
+                                    active = activeButtons,
+                                    fallback = if (playerMergeControlsToBottom) {
+                                        appSettings.defaultExpressiveBottomButtonsMerge
+                                    } else {
+                                        appSettings.defaultExpressiveBottomButtonsNormal
+                                    },
+                                    scoreAvailable = isCatalogItem && isCatalogScoreAvailable,
+                                )
                             }
 
                             val isCompactButtons = playerMergeControlsToBottom || displayedButtons.size > 3
@@ -1725,7 +1715,7 @@ fun ExpressivePlayerScreen(
                                                     icon = RhythmIcons.Score,
                                                     iconSize = 20.dp,
                                                     text = null,
-                                                    contentDescription = "乐谱",
+                                                    contentDescription = stringResource(R.string.catalog_scores),
                                                     containerColor = controlsContainerColor,
                                                     contentColor = defaultContentColor
                                                 )
@@ -2079,7 +2069,7 @@ fun ExpressivePlayerScreen(
                                                     type = RhythmButtonType.Tonal,
                                                     icon = RhythmIcons.Score,
                                                     iconSize = 20.dp,
-                                                    contentDescription = "乐谱",
+                                                    contentDescription = stringResource(R.string.catalog_scores),
                                                     containerColor = controlsContainerColor,
                                                     contentColor = defaultContentColor
                                                 )
