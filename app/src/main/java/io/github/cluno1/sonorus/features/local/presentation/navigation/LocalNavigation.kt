@@ -130,7 +130,6 @@ import io.github.cluno1.sonorus.shared.presentation.components.dialogs.CreatePla
 import io.github.cluno1.sonorus.shared.presentation.components.dialogs.QueueActionDialog
 import io.github.cluno1.sonorus.shared.presentation.components.dialogs.QueueListActionDialog
 import io.github.cluno1.sonorus.shared.presentation.components.player.MiniPlayer
-import io.github.cluno1.sonorus.shared.presentation.components.player.PlayerNavigationPolicy
 import io.github.cluno1.sonorus.shared.presentation.components.player.RhythmPlayerSheet
 import io.github.cluno1.sonorus.shared.presentation.components.player.SleepTimerBottomSheetNew
 import io.github.cluno1.sonorus.features.local.presentation.screens.LibraryScreen
@@ -1439,12 +1438,7 @@ private fun LocalNavigationContent(
                             }
                         },
                         onCollapse = {
-                            if (
-                                PlayerNavigationPolicy.canCollapseCurrentDestination(
-                                    currentRoute = currentRoute,
-                                    playerRoute = Screen.Player.route,
-                                )
-                            ) {
+                            if (currentRoute == Screen.Player.route) {
                                 navigateBackOrToLanding()
                             }
                         },

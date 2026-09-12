@@ -5,7 +5,6 @@
 
 package io.github.cluno1.sonorus.shared.presentation.screens.player
 
-import android.os.Build
 import android.widget.Toast
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -257,7 +256,6 @@ fun PlayerScreen(
     onCatalogOpenScore: () -> Unit = {},
     swipeToDismissEnabled: Boolean = true,
     expansionFraction: Float = 1f,
-    systemBackEnabled: Boolean = true,
     snackbarHostState: SnackbarHostState? = null,
 ) {
     // issue 9: catalog MP3 走 Rhythm 原生播放器（Expressive/Material），不再进自研的
@@ -273,19 +271,10 @@ fun PlayerScreen(
     val catalogNowPlaying by musicViewModel.catalogNowPlaying.collectAsState()
     val editorPlaybackSpeed by musicViewModel.playbackSpeed.collectAsState()
 
-    BackHandler(enabled = systemBackEnabled) {
-        if (showFullScreenLyrics) {
-            showFullScreenLyrics = false
-        } else {
-            onBack()
-        }
-    }
-
-    LaunchedEffect(systemBackEnabled) {
-        if (!systemBackEnabled) {
-            showFullScreenLyrics = false
-            showLyricsEditorDialog = false
-        }
+    // The player is already a NavHost destination. Let NavHost be the sole owner of ordinary
+    // system Back and intercept it only for a real child layer that must close first.
+    BackHandler(enabled = showFullScreenLyrics) {
+        showFullScreenLyrics = false
     }
 
     val context = LocalContext.current
@@ -695,10 +684,6 @@ fun PlayerScreen(
                 },
                 onDismiss = {
                     showQueueSheet = false
-                    // Returning from the queue must not depend on a second Back callback being
-                    // registered after the modal window disappears. Collapse the player in the
-                    // same dismissal transaction so every Android version lands on MiniPlayer.
-                    onBack()
                 },
                 onRemoveSongAtIndex = onRemoveFromQueueAtIndex,
                 onMoveQueueItem = onMoveQueueItem,

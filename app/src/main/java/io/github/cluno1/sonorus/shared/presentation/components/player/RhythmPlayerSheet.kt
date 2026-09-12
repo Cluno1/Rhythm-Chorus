@@ -263,14 +263,9 @@ fun RhythmPlayerSheet(
                     )
                 }
                 
-                // Keep the expanded surface only while it is active or finishing its visual
-                // transition. System Back ownership is based solely on the player route.
-                if (
-                    PlayerNavigationPolicy.keepsExpandedContentComposed(
-                        isPlayerRouteActive = isExpanded,
-                        expansionFraction = expansionFraction,
-                    )
-                ) {
+                // Keep the expanded surface through its visual exit, but do not let this
+                // presentation layer own ordinary system Back; NavHost owns the Player route.
+                if (isExpanded || expansionFraction > 0.001f) {
                     Box(
                         modifier = Modifier
                             .fillMaxSize()
@@ -352,7 +347,6 @@ fun RhythmPlayerSheet(
                             onCatalogOpenScore = onCatalogOpenScore,
                             swipeToDismissEnabled = false,
                             expansionFraction = expansionFraction,
-                            systemBackEnabled = PlayerNavigationPolicy.handlesSystemBack(isExpanded),
                         )
                     }
                 }
