@@ -130,6 +130,7 @@ import io.github.cluno1.sonorus.shared.presentation.components.dialogs.CreatePla
 import io.github.cluno1.sonorus.shared.presentation.components.dialogs.QueueActionDialog
 import io.github.cluno1.sonorus.shared.presentation.components.dialogs.QueueListActionDialog
 import io.github.cluno1.sonorus.shared.presentation.components.player.MiniPlayer
+import io.github.cluno1.sonorus.shared.presentation.components.player.PlayerNavigationPolicy
 import io.github.cluno1.sonorus.shared.presentation.components.player.RhythmPlayerSheet
 import io.github.cluno1.sonorus.shared.presentation.components.player.SleepTimerBottomSheetNew
 import io.github.cluno1.sonorus.features.local.presentation.screens.LibraryScreen
@@ -585,7 +586,9 @@ fun LocalNavigation(
 
     // Player click navigates to full player screen
     val onPlayerClick = {
-        navController.navigate(Screen.Player.route)
+        navController.navigate(Screen.Player.route) {
+            launchSingleTop = true
+        }
     }
 
     // Track current destination for hiding navigation bar on player screen
@@ -1436,17 +1439,14 @@ private fun LocalNavigationContent(
                             }
                         },
                         onCollapse = {
-                            try {
-                                val hasPlayerEntry = try {
-                                    navController.getBackStackEntry(Screen.Player.route)
-                                    true
-                                } catch (_: IllegalArgumentException) {
-                                    false
-                                }
-                                if (hasPlayerEntry) {
-                                    navController.popBackStack(Screen.Player.route, inclusive = true)
-                                }
-                            } catch (_: Exception) { }
+                            if (
+                                PlayerNavigationPolicy.canCollapseCurrentDestination(
+                                    currentRoute = currentRoute,
+                                    playerRoute = Screen.Player.route,
+                                )
+                            ) {
+                                navigateBackOrToLanding()
+                            }
                         },
                         onMiniPlayerDismiss = {
                             onMiniPlayerDismiss()
@@ -2233,7 +2233,9 @@ private fun LocalNavigationContent(
                             onArtistClick = onPlayArtist,
                             onPlayPause = onPlayPause,
                             onPlayerClick = {
-                                navController.navigate(Screen.Player.route)
+                                navController.navigate(Screen.Player.route) {
+                                    launchSingleTop = true
+                                }
                             },
                             onViewAllSongs = {
                                 // Navigate to songs screen
@@ -2599,7 +2601,9 @@ private fun LocalNavigationContent(
                             onLocalPlaylistClick = { playlist -> navController.navigate(Screen.PlaylistDetail.createRoute(playlist.id)) },
                             onStreamingSongClick = { song ->
                                 streamingViewModel.playSong(song)
-                                navController.navigate(Screen.Player.route)
+                                navController.navigate(Screen.Player.route) {
+                                    launchSingleTop = true
+                                }
                             },
                             onStreamingAlbumClick = { streamingAlbum ->
                                 navController.navigate(StreamingRoutes.album(streamingAlbum.id, streamingAlbum.title)) {
@@ -3734,7 +3738,9 @@ private fun LocalNavigationContent(
                         },
                         onPlayPause = onPlayPause,
                         onPlayerClick = {
-                            navController.navigate(Screen.Player.route)
+                            navController.navigate(Screen.Player.route) {
+                                launchSingleTop = true
+                            }
                         },
                         onPlaylistClick = { playlist ->
                             if (isStreamingMode) {
@@ -4054,7 +4060,9 @@ private fun LocalNavigationContent(
                             isPlaying = isPlaying,
                             onPlayPause = onPlayPause,
                             onPlayerClick = {
-                                navController.navigate(Screen.Player.route)
+                                navController.navigate(Screen.Player.route) {
+                                    launchSingleTop = true
+                                }
                             },
                             onPlayAll = {
                                 onPlayPlaylist(playlist)
@@ -4262,7 +4270,9 @@ private fun LocalNavigationContent(
                             showAddToPlaylistSheet = true
                         },
                         onPlayerClick = {
-                            navController.navigate(Screen.Player.route)
+                            navController.navigate(Screen.Player.route) {
+                                launchSingleTop = true
+                            }
                         },
                         onPlayNext = { song ->
                             viewModel.playNext(song)
@@ -4506,7 +4516,9 @@ private fun LocalNavigationContent(
                             showAddToPlaylistSheet = true
                         },
                         onPlayerClick = {
-                            navController.navigate(Screen.Player.route)
+                            navController.navigate(Screen.Player.route) {
+                                launchSingleTop = true
+                            }
                         },
                         onPlayNext = { song ->
                             if (catalogAlbum == null) {

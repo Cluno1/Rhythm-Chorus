@@ -257,6 +257,7 @@ fun PlayerScreen(
     onCatalogOpenScore: () -> Unit = {},
     swipeToDismissEnabled: Boolean = true,
     expansionFraction: Float = 1f,
+    systemBackEnabled: Boolean = true,
     snackbarHostState: SnackbarHostState? = null,
 ) {
     // issue 9: catalog MP3 走 Rhythm 原生播放器（Expressive/Material），不再进自研的
@@ -266,12 +267,13 @@ fun PlayerScreen(
     // ManagedCatalogPlayer 暂保留（签名与回退兼容，编译期未使用不影响）。
     val playerThemeId by appSettings.playerThemeId.collectAsState()
     var showFullScreenLyrics by remember { mutableStateOf(false) }
+    var showLyricsEditorDialog by remember { mutableStateOf(false) }
     val catalogLyricsLanguages by musicViewModel.catalogLyricsLanguages.collectAsState()
     val selectedCatalogLyricsLanguage by musicViewModel.catalogLyricsLanguage.collectAsState()
     val catalogNowPlaying by musicViewModel.catalogNowPlaying.collectAsState()
     val editorPlaybackSpeed by musicViewModel.playbackSpeed.collectAsState()
 
-    BackHandler(enabled = showFullScreenLyrics || expansionFraction > 0.5f) {
+    BackHandler(enabled = systemBackEnabled) {
         if (showFullScreenLyrics) {
             showFullScreenLyrics = false
         } else {
@@ -279,9 +281,15 @@ fun PlayerScreen(
         }
     }
 
+    LaunchedEffect(systemBackEnabled) {
+        if (!systemBackEnabled) {
+            showFullScreenLyrics = false
+            showLyricsEditorDialog = false
+        }
+    }
+
     val context = LocalContext.current
     val lyricsTimeOffset by musicViewModel.lyricsTimeOffset.collectAsState()
-    var showLyricsEditorDialog by remember { mutableStateOf(false) }
 
     val appleCanvasEnabled by appSettings.appleCanvasEnabled.collectAsState()
     val appleCanvasNetworkMode by appSettings.appleCanvasNetworkMode.collectAsState()
