@@ -18,13 +18,22 @@ import urllib.parse
 import zipfile
 from pathlib import Path, PurePosixPath
 
-CHANNEL = "debug"
-APPLICATION_ID = "io.github.cluno1.sonorus.debug"
-CERTIFICATE_SHA256 = (
-    "4b165f85d181c2c36d293545e18028874c4aece8f900d5b69f99fd7ed04d0fdb"
-)
+CHANNEL_IDENTITIES = {
+    "debug": {
+        "application_id": "io.github.cluno1.sonorus.debug",
+        "certificate_sha256": (
+            "4b165f85d181c2c36d293545e18028874c4aece8f900d5b69f99fd7ed04d0fdb"
+        ),
+    },
+    "stable": {
+        "application_id": "io.github.cluno1.sonorus",
+        "certificate_sha256": (
+            "16365d0ea682ad6105789b1a836dfa7f0380095ef3950229cca8bb3d98caa6b7"
+        ),
+    },
+}
 UPDATE_ROOT = Path("/srv/sonorus-updates")
-PUBLIC_KEY = Path("/etc/sonorus-update/debug-manifest-public.pem")
+PUBLIC_KEY_ROOT = Path("/etc/sonorus-update")
 PROXY = "http://127.0.0.1:7890"
 ALLOWED_DOWNLOAD_SUFFIXES = (
     ".blob.core.windows.net",
@@ -147,7 +156,7 @@ def canonical_json(manifest: dict[str, object]) -> bytes:
     ).encode()
 
 
-def verify_signature(manifest: dict[str, object], work: Path) -> None:
+def verify_signature(manifest: dict[str, object], work: Path, channel: str) -> None:
     try:
         signature = base64.b64decode(
             str(manifest["manifestSignature"]), validate=True
@@ -167,7 +176,7 @@ def verify_signature(manifest: dict[str, object], work: Path) -> None:
             "-verify",
             "-pubin",
             "-inkey",
-            str(PUBLIC_KEY),
+            str(PUBLIC_KEY_ROOT / f"{channel}-manifest-public.pem"),
             "-rawin",
             "-in",
             str(payload_path),
@@ -179,7 +188,8 @@ def verify_signature(manifest: dict[str, object], work: Path) -> None:
     )
 
 
-def validate(root: Path) -> tuple[int, bytes, Path, list[Path]]:
+def validate(root: Path, channel: str) -> tuple[int, bytes, Path, list[Path]]:
+    identity = CHANNEL_IDENTITIES[channel]
     latest_path = root / "latest.json"
     try:
         latest_raw = latest_path.read_bytes()
@@ -192,14 +202,14 @@ def validate(root: Path) -> tuple[int, bytes, Path, list[Path]]:
     if (
         version <= 0
         or manifest.get("schemaVersion") != 1
-        or manifest.get("channel") != CHANNEL
-        or manifest.get("applicationId") != APPLICATION_ID
+        or manifest.get("channel") != channel
+        or manifest.get("applicationId") != identity["application_id"]
         or normalize_digest(str(manifest.get("signingCertificateSha256", "")))
-        != CERTIFICATE_SHA256
+        != identity["certificate_sha256"]
         or release_manifest.read_bytes() != latest_raw
     ):
         raise SystemExit("artifact manifest identity or immutable copy is invalid")
-    verify_signature(manifest, root)
+    verify_signature(manifest, root, channel)
     assets = manifest.get("assets")
     if not isinstance(assets, list) or not assets:
         raise SystemExit("artifact manifest contains no assets")
@@ -241,8 +251,14 @@ def same_release(release: Path, source_files: list[Path]) -> bool:
     return True
 
 
-def publish(version: int, latest_raw: bytes, source: Path, files: list[Path]) -> str:
-    channel_root = UPDATE_ROOT / CHANNEL
+def publish(
+    channel: str,
+    version: int,
+    latest_raw: bytes,
+    source: Path,
+    files: list[Path],
+) -> str:
+    channel_root = UPDATE_ROOT / channel
     releases = channel_root / "releases"
     release = releases / str(version)
     latest = channel_root / "latest.json"
@@ -266,7 +282,7 @@ def publish(version: int, latest_raw: bytes, source: Path, files: list[Path]) ->
             "ubuntu",
             COS_SYNC,
             "--channel",
-            CHANNEL,
+            channel,
             "--version",
             str(version),
         ],
@@ -283,6 +299,12 @@ def publish(version: int, latest_raw: bytes, source: Path, files: list[Path]) ->
 
 def main() -> None:
     parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "--channel",
+        choices=sorted(CHANNEL_IDENTITIES),
+        default="debug",
+        help="update channel; defaults to debug for existing callers",
+    )
     parser.add_argument("--artifact-id", type=int, required=True)
     parser.add_argument("--artifact-sha256", required=True)
     parser.add_argument("--source-run-id", type=int, required=True)
@@ -294,7 +316,7 @@ def main() -> None:
         raise SystemExit("source SHA must contain 40 hexadecimal characters")
     expected_archive_sha256 = normalize_digest(args.artifact_sha256)
     url = read_download_url()
-    channel_root = UPDATE_ROOT / CHANNEL
+    channel_root = UPDATE_ROOT / args.channel
     channel_root.mkdir(parents=True, exist_ok=True)
     lock_path = channel_root / ".artifact-pull.lock"
     archive = channel_root / f".artifact-{args.artifact_id}.zip"
@@ -311,10 +333,10 @@ def main() -> None:
                 with zipfile.ZipFile(archive) as bundle:
                     members = safe_members(bundle)
                     extract(bundle, members, extracted)
-                version, latest_raw, release, files = validate(extracted)
-                result = publish(version, latest_raw, release, files)
+                version, latest_raw, release, files = validate(extracted, args.channel)
+                result = publish(args.channel, version, latest_raw, release, files)
             print(
-                f"{result} debug versionCode {version} from "
+                f"{result} {args.channel} versionCode {version} from "
                 f"run {args.source_run_id} artifact {args.artifact_id}"
             )
         finally:

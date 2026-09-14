@@ -3168,7 +3168,7 @@
     <string name="labs_chorus_admin_desc">认证管理员设备、审核合唱音轨并管理自动审核</string>
     <string name="chorus_admin_title">合唱管理</string>
     <string name="chorus_admin_device_required">请先登记当前设备</string>
-    <string name="chorus_admin_device_required_desc">管理员身份只能授予已经登记到 Rhythm 音乐库的设备。</string>
+    <string name="chorus_admin_device_required_desc">管理员身份只能授予已经登记到 Sonorus 音乐库的设备。</string>
     <string name="chorus_admin_open_registration">打开设备登记</string>
     <string name="chorus_admin_login_title">管理员登录</string>
     <string name="chorus_admin_login_desc">登录一次即可选择可信管理员设备，密码不会保存到本地。</string>
@@ -3267,7 +3267,7 @@
     <string name="chorus_recording_help_close">关闭说明</string>
     <string name="chorus_recording_help_title">合唱录制指南</string>
     <string name="chorus_recording_help_subtitle">从准备到上传，只需四步</string>
-    <string name="chorus_recording_help_overview">Rhythm 会将你的声音与项目乐谱对齐。佩戴耳机完成录制，在本机试听和微调后再上传。</string>
+    <string name="chorus_recording_help_overview">Sonorus 会将你的声音与项目乐谱对齐。佩戴耳机完成录制，在本机试听和微调后再上传。</string>
     <string name="chorus_recording_help_steps">操作步骤</string>
     <string name="chorus_recording_help_step_prepare_title">准备耳机和麦克风</string>
     <string name="chorus_recording_help_step_prepare_body">选择声部，保持麦克风距离稳定，并用耳机收听乐谱播放。</string>

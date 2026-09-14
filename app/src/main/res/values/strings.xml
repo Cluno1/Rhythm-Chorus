@@ -3430,7 +3430,7 @@
     <string name="labs_chorus_admin_desc">Trust administrator devices, review uploaded chorus tracks, and manage automatic approval</string>
     <string name="chorus_admin_title">Chorus administration</string>
     <string name="chorus_admin_device_required">Register this device first</string>
-    <string name="chorus_admin_device_required_desc">An administrator role can only be granted to a device already registered with the Rhythm catalog.</string>
+    <string name="chorus_admin_device_required_desc">An administrator role can only be granted to a device already registered with the Sonorus catalog.</string>
     <string name="chorus_admin_open_registration">Open device registration</string>
     <string name="chorus_admin_login_title">Administrator sign-in</string>
     <string name="chorus_admin_login_desc">Sign in once to choose trusted administrator devices. The password is not stored.</string>
@@ -3529,7 +3529,7 @@
     <string name="chorus_recording_help_close">Close help</string>
     <string name="chorus_recording_help_title">Chorus recording guide</string>
     <string name="chorus_recording_help_subtitle">Four steps from preparation to upload</string>
-    <string name="chorus_recording_help_overview">Rhythm keeps your voice aligned to the project score. Record with headphones, preview locally, adjust timing if needed, then upload.</string>
+    <string name="chorus_recording_help_overview">Sonorus keeps your voice aligned to the project score. Record with headphones, preview locally, adjust timing if needed, then upload.</string>
     <string name="chorus_recording_help_steps">Steps</string>
     <string name="chorus_recording_help_step_prepare_title">Prepare headphones and microphone</string>
     <string name="chorus_recording_help_step_prepare_body">Choose your part, keep the microphone at a steady distance, and use headphones for the score playback.</string>

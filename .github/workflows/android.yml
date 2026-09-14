@@ -1,8 +1,6 @@
 name: Android CI
 
 on:
-  push:
-    branches: [ "main" ]
   pull_request:
     branches: [ "main" ]
 
@@ -65,10 +63,13 @@ jobs:
 
     - name: Generate build info
       if: github.event_name == 'pull_request'
+      env:
+        COMMIT_SHA: ${{ github.sha }}
+        HEAD_REF: ${{ github.head_ref }}
       run: |
         echo "Build completed at: $(date)" > build_info.txt
-        echo "Commit: ${{ github.sha }}" >> build_info.txt
-        echo "Branch: ${{ github.head_ref }}" >> build_info.txt
+        echo "Commit: $COMMIT_SHA" >> build_info.txt
+        echo "Branch: $HEAD_REF" >> build_info.txt
 
     - name: Upload PR artifacts
       if: github.event_name == 'pull_request'

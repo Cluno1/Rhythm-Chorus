@@ -3,8 +3,9 @@
 ## Permanent identity
 
 - Application ID and namespace: `io.github.cluno1.sonorus`
-- Stable tag format: `vMAJOR.MINOR.PATCH`
-- Version code: `MAJOR * 1,000,000 + MINOR * 1,000 + PATCH`; minor and patch are limited to 0–999.
+- Stable source: every reviewed push to `main`.
+- Version name: `1.(stable workflow run / 1000).(stable workflow run % 1000)`.
+- Version code: `1,000,000 + stable workflow run`; the workflow run must remain below 1,000,000.
 - Release assets: `Sonorus-{version}-githubRelease-{abi}.apk` plus the universal `githubRelease.apk` and matching `.sha256` files.
 
 Never change the application ID or signing certificate after the first customer release. Sonorus is a new Android app and does not replace or inherit private data from `chromahub.rhythm.app`; users can use backup/restore, then register the Sonorus installation as a new Catalog device.
@@ -13,7 +14,7 @@ Never change the application ID or signing certificate after the first customer 
 
 Generate one Sonorus release keystore outside the repository, keep two encrypted offline backups, and record its SHA-256 certificate fingerprint with the release records. The keystore and passwords must never be committed.
 
-The GitHub Actions environment expects these encrypted secrets:
+The `sonorus-stable` GitHub Actions environment expects these encrypted secrets:
 
 - `SONORUS_SIGNING_KEYSTORE`: base64-encoded keystore
 - `SONORUS_STORE_PASSWORD`
@@ -21,7 +22,7 @@ The GitHub Actions environment expects these encrypted secrets:
 - `SONORUS_KEY_PASSWORD`
 - `SONORUS_STABLE_MANIFEST_PRIVATE_KEY`: PEM Ed25519 key, restricted to the protected Stable release environment
 
-It also requires these non-secret repository variables:
+It also requires these non-secret environment variables:
 
 - `SONORUS_RELEASE_CERT_SHA256`: frozen APK signing certificate fingerprint
 - `SONORUS_STABLE_MANIFEST_PUBLIC_KEY`: raw 32-byte Stable Ed25519 public key in Base64
@@ -36,29 +37,28 @@ With no `.config/keystore.properties`, Gradle intentionally falls back to the de
 scripts/release_dry_run.sh 1.0.0
 ```
 
-Inspect the generated APK package, label, version, signing certificate, icons, bundled GPL, and SHA-256 output. A manual CI `workflow_dispatch` creates signed artifacts without creating a public Release; it still requires the fixed signing secrets. Only a reviewed `vMAJOR.MINOR.PATCH` tag can publish a Release.
+Inspect the generated APK package, label, version, signing certificate, icons, bundled GPL, and SHA-256 output. Only a reviewed commit pushed to `main` can publish Stable; the Stable workflow has no manual trigger.
 
 ## Publish and rollback
 
 1. Start from a clean, reviewed commit and pass the dry-run.
-2. Confirm the version is greater than every published Sonorus version.
+2. Confirm the Stable workflow run-derived version is greater than every published Sonorus version.
 3. Confirm the signing certificate fingerprint matches the first Sonorus release.
-4. Push the annotated stable tag.
-5. Generate the signed Stable update manifest as documented in `SELF_HOSTED_UPDATES.md`.
-6. Publish the immutable server directory and atomically switch `stable/latest.json` only after external smoke tests.
-7. Verify all ABI/universal APKs, checksums, source tag, GPL notice, and updater discovery.
+4. Push the reviewed commit to `main`.
+5. Let the workflow generate and sign the Stable update manifest.
+6. Let the server verify the Artifact, synchronize COS, and atomically switch `stable/latest.json`.
+7. Verify the public Stable download, authenticated updater discovery, install, and retained app data.
 
-Do not replace a published binary under the same tag. If a release is bad, mark it clearly, publish a higher patch version signed by the same key, and let clients upgrade forward.
+Do not replace a published binary under the same version code. If a release is bad, push a reviewed fix so the workflow publishes a higher version signed by the same key, and let clients upgrade forward.
 
-## Deferred before a public release
+## Before each public Stable push
 
-The current repository is a local Sonorus rebrand/build baseline, not an authorization to publish. Before the first public release:
+Before updating `main`:
 
-- create or rename the `Cluno1/Sonorus` GitHub repository and configure protected release environments;
-- provision the permanent keystore secrets, add an expected certificate SHA-256 secret, and enforce an exact certificate match in CI;
-- enforce that a proposed tag and Android `versionCode` are greater than every historical Sonorus release;
-- deploy the authenticated self-hosted update routes and complete two-version end-to-end update/install testing;
-- finish explicit translations for newly added About/legal text in every supported locale;
-- resolve the bundled `sonivox.sf2` provenance/license blocker and verify exact notices for every bundled font/library listed in `THIRD_PARTY_NOTICES.md`.
+- review and test the exact commit that will become public;
+- confirm the `sonorus-stable` environment remains restricted to `main`;
+- confirm the permanent APK certificate and Stable manifest key backups are intact;
+- verify the previous Stable package can discover, download, and install the new version;
+- verify the public Stable download and the authenticated app update path after publication.
 
-Until these are complete, local APKs are development verification artifacts only.
+Stable rollback is forward-only. Never overwrite an immutable server release, COS object, or signed manifest.
