@@ -150,6 +150,16 @@ fun ChorusAdminScreen(
             )
         }
     }
+
+    if (state.administratorDashboard != null) {
+        state.issuedInvite?.let { invite ->
+            CatalogIssuedInviteDialog(
+                invite = invite,
+                serverUrl = state.serverUrl,
+                onDismiss = viewModel::clearInviteUiState,
+            )
+        }
+    }
 }
 
 @Composable
@@ -424,30 +434,6 @@ private fun AdministratorDashboard(
                             modifier = Modifier.fillMaxWidth(),
                         ) {
                             Text(stringResource(R.string.chorus_admin_invite_action))
-                        }
-                        state.issuedInvite?.let { invite ->
-                            Card(
-                                shape = RoundedCornerShape(18.dp),
-                                colors = CardDefaults.cardColors(
-                                    containerColor = MaterialTheme.colorScheme.secondaryContainer,
-                                ),
-                            ) {
-                                Column(
-                                    Modifier.fillMaxWidth().padding(16.dp),
-                                    verticalArrangement = Arrangement.spacedBy(4.dp),
-                                ) {
-                                    Text(
-                                        stringResource(R.string.chorus_admin_invite_created),
-                                        fontWeight = FontWeight.Bold,
-                                    )
-                                    Text(invite.inviteCode, style = MaterialTheme.typography.headlineSmall)
-                                    Text(
-                                        stringResource(R.string.chorus_admin_invite_expiry, invite.expiresAt),
-                                        style = MaterialTheme.typography.bodySmall,
-                                        color = MaterialTheme.colorScheme.onSecondaryContainer,
-                                    )
-                                }
-                            }
                         }
                     }
                 }

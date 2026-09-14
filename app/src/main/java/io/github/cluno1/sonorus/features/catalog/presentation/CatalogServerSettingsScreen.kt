@@ -390,7 +390,7 @@ private fun CatalogAdminInviteScreen(
 }
 
 @Composable
-private fun CatalogIssuedInviteDialog(
+internal fun CatalogIssuedInviteDialog(
     invite: CatalogIssuedInvite,
     serverUrl: String,
     onDismiss: () -> Unit,
