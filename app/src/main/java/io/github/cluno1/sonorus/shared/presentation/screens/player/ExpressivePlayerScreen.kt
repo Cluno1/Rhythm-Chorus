@@ -2373,81 +2373,83 @@ fun ExpressivePlayerScreen(
                     }
                 }
 
-                // Playback modes remain easy to reach without consuming configurable bottom-bar slots.
-                val topActionContentColor = when {
-                    needsDarkSurfaces -> ambientControlContent
-                    useAccentBackground -> accentFg
-                    else -> monoFg
-                }
-                Row(
-                    modifier = Modifier
-                        .align(Alignment.TopEnd)
-                        .padding(top = 8.dp, end = 12.dp),
-                    horizontalArrangement = Arrangement.spacedBy(6.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    Box(
-                        modifier = Modifier
-                            .size(40.dp)
-                            .clip(CircleShape)
-                            .background(
-                                if (isShuffleEnabled) primaryColor.copy(alpha = 0.35f)
-                                else controlsContainerColor,
-                            )
-                            .clickable {
-                                HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT)
-                                onToggleShuffle()
-                            },
-                        contentAlignment = Alignment.Center,
-                    ) {
-                        Icon(
-                            imageVector = RhythmIcons.Player.Shuffle,
-                            contentDescription = stringResource(R.string.action_shuffle),
-                            tint = if (isShuffleEnabled) primaryColor else topActionContentColor,
-                            modifier = Modifier.size(20.dp),
-                        )
+                // Keep the fixed actions off the lyrics canvas so they cannot cover lyric text.
+                if (!lyricsVisible) {
+                    val topActionContentColor = when {
+                        needsDarkSurfaces -> ambientControlContent
+                        useAccentBackground -> accentFg
+                        else -> monoFg
                     }
-
-                    Box(
+                    Row(
                         modifier = Modifier
-                            .size(40.dp)
-                            .clip(CircleShape)
-                            .background(
-                                if (repeatMode != Player.REPEAT_MODE_OFF) primaryColor.copy(alpha = 0.35f)
-                                else controlsContainerColor,
-                            )
-                            .clickable {
-                                HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT)
-                                onToggleRepeat()
-                            },
-                        contentAlignment = Alignment.Center,
+                            .align(Alignment.TopEnd)
+                            .padding(top = 8.dp, end = 12.dp),
+                        horizontalArrangement = Arrangement.spacedBy(6.dp),
+                        verticalAlignment = Alignment.CenterVertically,
                     ) {
-                        Icon(
-                            imageVector = if (repeatMode == Player.REPEAT_MODE_ONE) {
-                                RhythmIcons.Player.RepeatOne
-                            } else {
-                                RhythmIcons.Player.Repeat
-                            },
-                            contentDescription = stringResource(R.string.player_chip_repeat),
-                            tint = if (repeatMode != Player.REPEAT_MODE_OFF) primaryColor else topActionContentColor,
-                            modifier = Modifier.size(20.dp),
-                        )
-                    }
-
-                    // The audio-quality badge follows the fixed playback-mode buttons and still auto-hides.
-                    if (playerShowAudioQualityBadges) {
-                        debouncedSong.value?.let { displaySong ->
-                            AudioQualityIcon(
-                                song = displaySong,
-                                iconSize = 40.dp,
-                                padding = 6.dp,
-                                autoHideAfterMs = 5000,
-                                tint = when {
-                                    showDarkBg -> Color.White
-                                    useAccentBackground -> accentFg
-                                    else -> null
+                        Box(
+                            modifier = Modifier
+                                .size(40.dp)
+                                .clip(CircleShape)
+                                .background(
+                                    if (isShuffleEnabled) primaryColor.copy(alpha = 0.35f)
+                                    else controlsContainerColor,
+                                )
+                                .clickable {
+                                    HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT)
+                                    onToggleShuffle()
                                 },
+                            contentAlignment = Alignment.Center,
+                        ) {
+                            Icon(
+                                imageVector = RhythmIcons.Player.Shuffle,
+                                contentDescription = stringResource(R.string.action_shuffle),
+                                tint = if (isShuffleEnabled) primaryColor else topActionContentColor,
+                                modifier = Modifier.size(20.dp),
                             )
+                        }
+
+                        Box(
+                            modifier = Modifier
+                                .size(40.dp)
+                                .clip(CircleShape)
+                                .background(
+                                    if (repeatMode != Player.REPEAT_MODE_OFF) primaryColor.copy(alpha = 0.35f)
+                                    else controlsContainerColor,
+                                )
+                                .clickable {
+                                    HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT)
+                                    onToggleRepeat()
+                                },
+                            contentAlignment = Alignment.Center,
+                        ) {
+                            Icon(
+                                imageVector = if (repeatMode == Player.REPEAT_MODE_ONE) {
+                                    RhythmIcons.Player.RepeatOne
+                                } else {
+                                    RhythmIcons.Player.Repeat
+                                },
+                                contentDescription = stringResource(R.string.player_chip_repeat),
+                                tint = if (repeatMode != Player.REPEAT_MODE_OFF) primaryColor else topActionContentColor,
+                                modifier = Modifier.size(20.dp),
+                            )
+                        }
+
+                        // The audio-quality badge follows the fixed playback-mode buttons and still auto-hides.
+                        if (playerShowAudioQualityBadges) {
+                            debouncedSong.value?.let { displaySong ->
+                                AudioQualityIcon(
+                                    song = displaySong,
+                                    iconSize = 40.dp,
+                                    padding = 6.dp,
+                                    autoHideAfterMs = 5000,
+                                    tint = when {
+                                        showDarkBg -> Color.White
+                                        useAccentBackground -> accentFg
+                                        else -> null
+                                    },
+                                )
+                            }
                         }
                     }
                 }
