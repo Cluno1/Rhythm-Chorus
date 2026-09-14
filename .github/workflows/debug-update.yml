@@ -29,6 +29,8 @@ jobs:
           cache: gradle
 
       - uses: android-actions/setup-android@v4
+        with:
+          packages: platform-tools
 
       - name: Allocate monotonically increasing Debug version
         id: version
