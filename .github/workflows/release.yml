@@ -37,7 +37,8 @@ jobs:
           python3 -m py_compile \
             scripts/build_update_manifest.py \
             scripts/server_pull_update_artifact.py \
-            scripts/server_sync_update_cos.py
+            scripts/server_sync_update_cos.py \
+            scripts/verify_release_apks.py
           scripts/check_sonorus_brand.py
           scripts/verify_brand_assets.sh
 
@@ -100,24 +101,12 @@ jobs:
           APKSIGNER="$(find "$ANDROID_HOME/build-tools" -type f -name apksigner | sort -V | tail -1)"
           AAPT="$(find "$ANDROID_HOME/build-tools" -type f -name aapt | sort -V | tail -1)"
           test -x "$APKSIGNER" && test -x "$AAPT"
-          cd app/build/outputs/apk/github/release
-          shopt -s nullglob
-          apks=(Sonorus-*-githubRelease*.apk)
-          test ${#apks[@]} -gt 0
-          signer=""
-          for apk in "${apks[@]}"; do
-            "$APKSIGNER" verify --verbose "$apk"
-            cert="$($APKSIGNER verify --print-certs "$apk")"
-            ! grep -q 'CN=Android Debug' <<< "$cert"
-            current="$(sed -n 's/^Signer #1 certificate SHA-256 digest: //p' <<< "$cert")"
-            test -n "$current"
-            normalized_current="$(tr -d ':' <<< "$current" | tr '[:upper:]' '[:lower:]')"
-            normalized_expected="$(tr -d ':' <<< "$EXPECTED_CERT_SHA256" | tr '[:upper:]' '[:lower:]')"
-            test "$normalized_current" = "$normalized_expected"
-            if [[ -z "$signer" ]]; then signer="$current"; else test "$current" = "$signer"; fi
-            "$AAPT" dump badging "$apk" | grep -q "^package: name='io.github.cluno1.sonorus'"
-            sha256sum "$apk" > "$apk.sha256"
-          done
+          scripts/verify_release_apks.py \
+            --application-id io.github.cluno1.sonorus \
+            --expected-certificate-sha256 "$EXPECTED_CERT_SHA256" \
+            --aapt "$AAPT" \
+            --apksigner "$APKSIGNER" \
+            app/build/outputs/apk/github/release/Sonorus-*-githubRelease*.apk
 
       - name: Build signed Stable update manifest
         env:
