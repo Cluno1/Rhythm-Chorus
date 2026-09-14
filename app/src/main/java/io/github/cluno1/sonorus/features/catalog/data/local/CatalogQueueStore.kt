@@ -6,25 +6,26 @@ import io.github.cluno1.sonorus.features.catalog.domain.RhythmNowPlayingItem
 import io.github.cluno1.sonorus.features.catalog.domain.RhythmQueueEntry
 import io.github.cluno1.sonorus.shared.data.model.Song
 import com.google.gson.Gson
+import com.google.gson.annotations.SerializedName
 
 data class CatalogQueueRecord(
-    val entries: List<CatalogQueueRecordEntry>,
-    val currentIndex: Int,
-    val positionMs: Long,
+    @SerializedName("entries") val entries: List<CatalogQueueRecordEntry>,
+    @SerializedName("currentIndex") val currentIndex: Int,
+    @SerializedName("positionMs") val positionMs: Long,
 )
 
 data class CatalogQueueRecordEntry(
-    val source: String? = SOURCE_CATALOG,
-    val deviceSongId: String? = null,
-    val nowPlaying: RhythmNowPlayingItem? = null,
-    val title: String? = null,
-    val artist: String? = null,
-    val arrangementName: String? = null,
-    val assetId: String? = null,
-    val cacheKey: String? = null,
-    val durationMs: Long = 0L,
-    val albumId: String = "",
-    val artworkUrl: String? = null,
+    @SerializedName("source") val source: String? = SOURCE_CATALOG,
+    @SerializedName("deviceSongId") val deviceSongId: String? = null,
+    @SerializedName("nowPlaying") val nowPlaying: RhythmNowPlayingItem? = null,
+    @SerializedName("title") val title: String? = null,
+    @SerializedName("artist") val artist: String? = null,
+    @SerializedName("arrangementName") val arrangementName: String? = null,
+    @SerializedName("assetId") val assetId: String? = null,
+    @SerializedName("cacheKey") val cacheKey: String? = null,
+    @SerializedName("durationMs") val durationMs: Long = 0L,
+    @SerializedName("albumId") val albumId: String = "",
+    @SerializedName("artworkUrl") val artworkUrl: String? = null,
 ) {
     fun isDevice(): Boolean = source == SOURCE_DEVICE
 

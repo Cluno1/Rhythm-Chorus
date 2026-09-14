@@ -6,6 +6,7 @@
 package io.github.cluno1.sonorus.util
 
 import android.util.Log
+import com.google.gson.annotations.SerializedName
 import java.util.regex.Pattern
 import java.util.Locale
 import io.github.cluno1.sonorus.shared.data.model.AppSettings
@@ -625,23 +626,23 @@ object LyricsParser {
 }
 
 data class LyricLine(
-    val timestamp: Long,
-    val text: String,
-    val voiceTag: String? = null, // Voice tag (v1, v2, v3, etc.) for multi-voice lyrics
-    val translation: String? = null, // Translation text (if present)
-    val romanization: String? = null, // Romanization text (if present)
-    val endTime: Long? = null
+    @SerializedName("timestamp") val timestamp: Long,
+    @SerializedName("text") val text: String,
+    @SerializedName("voiceTag") val voiceTag: String? = null, // Voice tag (v1, v2, v3, etc.) for multi-voice lyrics
+    @SerializedName("translation") val translation: String? = null, // Translation text (if present)
+    @SerializedName("romanization") val romanization: String? = null, // Romanization text (if present)
+    @SerializedName("endTime") val endTime: Long? = null
 )
 
 /**
  * Represents a lyric line with word-level timing (Enhanced LRC format)
  */
 data class EnhancedLyricLine(
-    val words: List<EnhancedWord>,
-    val lineTimestamp: Long,
-    val lineEndtime: Long,
-    val translation: String? = null,
-    val romanization: String? = null
+    @SerializedName("words") val words: List<EnhancedWord>,
+    @SerializedName("lineTimestamp") val lineTimestamp: Long,
+    @SerializedName("lineEndtime") val lineEndtime: Long,
+    @SerializedName("translation") val translation: String? = null,
+    @SerializedName("romanization") val romanization: String? = null
 )
 
 /**
@@ -649,11 +650,11 @@ data class EnhancedLyricLine(
  * TODO: Add syllable support - break words into syllable parts with individual timing
  */
 data class EnhancedWord(
-    val text: String,
-    val timestamp: Long, // start time in milliseconds
-    val endtime: Long, // end time in milliseconds
-    val isPart: Boolean = false,
-    val syllables: List<Syllable>? = null // TODO: Future syllable-level timing
+    @SerializedName("text") val text: String,
+    @SerializedName("timestamp") val timestamp: Long, // start time in milliseconds
+    @SerializedName("endtime") val endtime: Long, // end time in milliseconds
+    @SerializedName("isPart") val isPart: Boolean = false,
+    @SerializedName("syllables") val syllables: List<Syllable>? = null // TODO: Future syllable-level timing
 )
 
 /**
@@ -661,7 +662,7 @@ data class EnhancedWord(
  * TODO: Implement syllable parsing and display
  */
 data class Syllable(
-    val text: String,
-    val timestamp: Long,
-    val endtime: Long
+    @SerializedName("text") val text: String,
+    @SerializedName("timestamp") val timestamp: Long,
+    @SerializedName("endtime") val endtime: Long
 )

@@ -39,6 +39,19 @@
     @com.google.gson.annotations.SerializedName <fields>;
 }
 
+# Catalog domain objects persisted by CatalogCache or nested in saved queue/draft
+# records must retain stable field names across app updates.
+-keepclassmembers,allowoptimization class io.github.cluno1.sonorus.features.catalog.domain.Work* { <fields>; }
+-keepclassmembers,allowoptimization class io.github.cluno1.sonorus.features.catalog.domain.Arrangement { <fields>; }
+-keepclassmembers,allowoptimization class io.github.cluno1.sonorus.features.catalog.domain.Part { <fields>; }
+-keepclassmembers,allowoptimization class io.github.cluno1.sonorus.features.catalog.domain.Score* { <fields>; }
+-keepclassmembers,allowoptimization class io.github.cluno1.sonorus.features.catalog.domain.Rendition* { <fields>; }
+-keepclassmembers,allowoptimization class io.github.cluno1.sonorus.features.catalog.domain.CatalogLibrary* { <fields>; }
+-keepclassmembers,allowoptimization class io.github.cluno1.sonorus.features.catalog.domain.CatalogLyric* { <fields>; }
+-keepclassmembers,allowoptimization class io.github.cluno1.sonorus.features.catalog.domain.CatalogScoreOption { <fields>; }
+-keepclassmembers,allowoptimization class io.github.cluno1.sonorus.features.catalog.domain.RhythmNowPlayingItem { <fields>; }
+-keepclassmembers,allowoptimization class io.github.cluno1.sonorus.features.catalog.domain.CatalogPlaybackItem { <fields>; }
+
 # ──────────────────────────────
 # Room Database Configuration
 # ──────────────────────────────

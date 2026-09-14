@@ -9,6 +9,7 @@ import android.util.Log
 import io.github.cluno1.sonorus.network.RhythmLyricsLine
 import io.github.cluno1.sonorus.network.RhythmLyricsWord
 import com.google.gson.Gson
+import com.google.gson.annotations.SerializedName
 import com.google.gson.reflect.TypeToken
 import org.xmlpull.v1.XmlPullParser
 import java.io.StringReader
@@ -963,22 +964,22 @@ object RhythmLyricsParser {
  * Represents a line of lyrics with word-level timing
  */
 data class WordByWordLyricLine(
-    val words: List<WordByWordWord>,
-    val lineTimestamp: Long,
-    val lineEndtime: Long,
-    val background: Boolean = false,
-    val voiceTag: String? = null, // Voice tag (v1, v2, v3, etc.) for multi-voice lyrics
-    val translation: String? = null,
-    val romanization: String? = null,
-    val endIsImplicit: Boolean = false
+    @SerializedName("words") val words: List<WordByWordWord>,
+    @SerializedName("lineTimestamp") val lineTimestamp: Long,
+    @SerializedName("lineEndtime") val lineEndtime: Long,
+    @SerializedName("background") val background: Boolean = false,
+    @SerializedName("voiceTag") val voiceTag: String? = null, // Voice tag (v1, v2, v3, etc.) for multi-voice lyrics
+    @SerializedName("translation") val translation: String? = null,
+    @SerializedName("romanization") val romanization: String? = null,
+    @SerializedName("endIsImplicit") val endIsImplicit: Boolean = false
 )
 
 /**
  * Represents a single word with precise timing
  */
 data class WordByWordWord(
-    val text: String,
-    val isPart: Boolean, // true if this is a syllable/part of a split word
-    val timestamp: Long, // start time in milliseconds
-    val endtime: Long // end time in milliseconds
+    @SerializedName("text") val text: String,
+    @SerializedName("isPart") val isPart: Boolean, // true if this is a syllable/part of a split word
+    @SerializedName("timestamp") val timestamp: Long, // start time in milliseconds
+    @SerializedName("endtime") val endtime: Long // end time in milliseconds
 )

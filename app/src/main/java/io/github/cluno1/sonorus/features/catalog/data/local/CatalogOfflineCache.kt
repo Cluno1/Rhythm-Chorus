@@ -3,6 +3,7 @@ package io.github.cluno1.sonorus.features.catalog.data.local
 import android.content.Context
 import android.net.Uri
 import com.google.gson.Gson
+import com.google.gson.annotations.SerializedName
 import com.google.gson.reflect.TypeToken
 import java.io.File
 import java.io.IOException
@@ -247,16 +248,16 @@ internal class CatalogOfflineCache private constructor(
     private val indexFile: File get() = File(root, INDEX_FILE)
 
     private data class Entry(
-        val namespace: String,
-        val kind: String,
-        val assetId: String,
-        val sha256: String,
-        val byteSize: Long,
-        val mediaType: String,
-        val renditionId: String?,
-        val revisionId: String?,
-        val relativePath: String,
-        var lastAccessedAt: Long,
+        @SerializedName("namespace") val namespace: String,
+        @SerializedName("kind") val kind: String,
+        @SerializedName("assetId") val assetId: String,
+        @SerializedName("sha256") val sha256: String,
+        @SerializedName("byteSize") val byteSize: Long,
+        @SerializedName("mediaType") val mediaType: String,
+        @SerializedName("renditionId") val renditionId: String?,
+        @SerializedName("revisionId") val revisionId: String?,
+        @SerializedName("relativePath") val relativePath: String,
+        @SerializedName("lastAccessedAt") var lastAccessedAt: Long,
     ) {
         fun toCachedAsset(file: File) = CachedAsset(file, mediaType, assetId, sha256, byteSize)
     }

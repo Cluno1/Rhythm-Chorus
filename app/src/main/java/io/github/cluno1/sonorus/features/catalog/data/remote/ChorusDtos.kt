@@ -4,36 +4,36 @@ import com.google.gson.annotations.SerializedName
 
 internal data class WorkChorusDto(
     @SerializedName("work_id") val workId: String?,
-    val projects: List<ChorusProjectDto>?,
+    @SerializedName("projects") val projects: List<ChorusProjectDto>?,
 )
 
 internal data class ChorusProjectDto(
-    val id: String?,
+    @SerializedName("id") val id: String?,
     @SerializedName("work_id") val workId: String?,
     @SerializedName("arrangement_id") val arrangementId: String?,
     @SerializedName("score_id") val scoreId: String?,
     @SerializedName("alignment_score_revision_id") val alignmentScoreRevisionId: String?,
     @SerializedName("timeline_hash") val timelineHash: String?,
-    val title: String?,
-    val status: String?,
-    val revision: Int?,
-    val parts: List<ChorusPartDto>?,
-    val timelines: List<ChorusTimelineDto>?,
-    val tracks: List<ChorusTrackDto>?,
+    @SerializedName("title") val title: String?,
+    @SerializedName("status") val status: String?,
+    @SerializedName("revision") val revision: Int?,
+    @SerializedName("parts") val parts: List<ChorusPartDto>?,
+    @SerializedName("timelines") val timelines: List<ChorusTimelineDto>?,
+    @SerializedName("tracks") val tracks: List<ChorusTrackDto>?,
 )
 
 internal data class ChorusTimelineDto(
-    val id: String?,
+    @SerializedName("id") val id: String?,
     @SerializedName("chorus_project_id") val chorusProjectId: String?,
     @SerializedName("score_revision_id") val scoreRevisionId: String?,
     @SerializedName("timeline_hash") val timelineHash: String?,
-    val revision: Int?,
+    @SerializedName("revision") val revision: Int?,
 )
 
 internal data class ChorusPartDto(
-    val id: String?,
-    val code: String?,
-    val name: String?,
+    @SerializedName("id") val id: String?,
+    @SerializedName("code") val code: String?,
+    @SerializedName("name") val name: String?,
     @SerializedName("display_order") val displayOrder: Int?,
 )
 
@@ -41,12 +41,12 @@ internal data class ChorusSyncAnchorDto(
     @SerializedName("anchor_order") val anchorOrder: Int,
     @SerializedName("score_tick") val scoreTick: Long,
     @SerializedName("media_ms") val mediaMs: Long,
-    val confidence: Double = 1.0,
-    val source: String = "in_app_clock",
+    @SerializedName("confidence") val confidence: Double = 1.0,
+    @SerializedName("source") val source: String = "in_app_clock",
 )
 
 internal data class ChorusTrackDto(
-    val id: String?,
+    @SerializedName("id") val id: String?,
     @SerializedName("chorus_project_id") val chorusProjectId: String?,
     @SerializedName("chorus_timeline_id") val chorusTimelineId: String?,
     @SerializedName("rendition_id") val renditionId: String?,
@@ -58,14 +58,14 @@ internal data class ChorusTrackDto(
     @SerializedName("take_no") val takeNo: Int?,
     @SerializedName("alignment_state") val alignmentState: String?,
     @SerializedName("alignment_offset_ms") val alignmentOffsetMs: Long?,
-    val status: String?,
+    @SerializedName("status") val status: String?,
     @SerializedName("gain_db") val gainDb: Double?,
-    val pan: Double?,
+    @SerializedName("pan") val pan: Double?,
     @SerializedName("duration_ms") val durationMs: Long?,
     @SerializedName("waveform_peaks") val waveformPeaks: List<Float>?,
     @SerializedName("rejection_reason") val rejectionReason: String?,
-    val revision: Int?,
-    val anchors: List<ChorusSyncAnchorDto>?,
+    @SerializedName("revision") val revision: Int?,
+    @SerializedName("anchors") val anchors: List<ChorusSyncAnchorDto>?,
 )
 
 internal data class ChorusTrackCreateDto(
@@ -74,7 +74,7 @@ internal data class ChorusTrackCreateDto(
     @SerializedName("contribution_kind") val contributionKind: String,
     @SerializedName("display_label") val displayLabel: String,
     @SerializedName("take_no") val takeNo: Int,
-    val sha256: String,
+    @SerializedName("sha256") val sha256: String,
     @SerializedName("byte_size") val byteSize: Long,
     @SerializedName("media_type") val mediaType: String,
     @SerializedName("original_filename") val originalFilename: String,
@@ -84,21 +84,21 @@ internal data class ChorusTrackCreateDto(
 )
 
 internal data class ChorusUploadTargetDto(
-    val id: String?,
-    val method: String?,
-    val url: String?,
+    @SerializedName("id") val id: String?,
+    @SerializedName("method") val method: String?,
+    @SerializedName("url") val url: String?,
     @SerializedName("expires_at") val expiresAt: String?,
 )
 
 internal data class ChorusTrackCreateResponseDto(
-    val track: ChorusTrackDto?,
+    @SerializedName("track") val track: ChorusTrackDto?,
     @SerializedName("upload_status") val uploadStatus: String?,
-    val upload: ChorusUploadTargetDto?,
+    @SerializedName("upload") val upload: ChorusUploadTargetDto?,
 )
 
 internal data class ChorusAlignmentPatchDto(
     @SerializedName("offset_ms") val offsetMs: Long,
-    val anchors: List<ChorusSyncAnchorDto>,
+    @SerializedName("anchors") val anchors: List<ChorusSyncAnchorDto>,
 )
 
 internal data class ChorusMixResolveDto(
@@ -107,15 +107,15 @@ internal data class ChorusMixResolveDto(
 )
 
 internal data class ChorusMixDto(
-    val id: String?,
+    @SerializedName("id") val id: String?,
     @SerializedName("chorus_project_id") val chorusProjectId: String?,
     @SerializedName("chorus_timeline_id") val chorusTimelineId: String?,
     @SerializedName("selection_hash") val selectionHash: String?,
     @SerializedName("selected_track_ids") val selectedTrackIds: List<String>?,
     @SerializedName("selected_track_count") val selectedTrackCount: Int?,
     @SerializedName("mix_profile") val mixProfile: String?,
-    val state: String?,
+    @SerializedName("state") val state: String?,
     @SerializedName("duration_ms") val durationMs: Long?,
     @SerializedName("error_summary") val errorSummary: String?,
-    val delivery: AssetDeliveryDto?,
+    @SerializedName("delivery") val delivery: AssetDeliveryDto?,
 )

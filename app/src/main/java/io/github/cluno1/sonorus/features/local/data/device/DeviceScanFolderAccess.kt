@@ -10,12 +10,13 @@ import android.provider.DocumentsContract
 import androidx.core.content.edit
 import androidx.documentfile.provider.DocumentFile
 import com.google.gson.Gson
+import com.google.gson.annotations.SerializedName
 import com.google.gson.reflect.TypeToken
 import java.util.UUID
 
 data class DeviceScanRoot(
-    val treeUri: String,
-    val displayPath: String,
+    @SerializedName("treeUri") val treeUri: String,
+    @SerializedName("displayPath") val displayPath: String,
 )
 
 /** Persisted read-only SAF roots used to supplement MediaStore in either filtering mode. */

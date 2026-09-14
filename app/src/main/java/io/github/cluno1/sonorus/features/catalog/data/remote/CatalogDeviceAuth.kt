@@ -38,8 +38,8 @@ internal data class AdminSessionDto(
     @SerializedName("expiresIn") val expiresIn: Long,
 )
 internal data class PasswordAdminSession(
-    val accessToken: String,
-    val devices: AdminDeviceListDto,
+    @SerializedName("accessToken") val accessToken: String,
+    @SerializedName("devices") val devices: AdminDeviceListDto,
 )
 internal data class InviteRequest(
     @SerializedName("userId") val userId: String,
