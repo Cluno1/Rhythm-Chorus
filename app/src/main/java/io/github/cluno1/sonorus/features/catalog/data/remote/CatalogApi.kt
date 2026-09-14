@@ -1,5 +1,6 @@
 package io.github.cluno1.sonorus.features.catalog.data.remote
 
+import com.google.gson.annotations.SerializedName
 import okhttp3.ResponseBody
 import retrofit2.Response
 import retrofit2.http.GET
@@ -93,4 +94,7 @@ internal interface CatalogLyricsWriteApi {
     ): Response<RenditionLyricWriteDto>
 }
 
-internal data class HealthDto(val status: String? = null, val version: String? = null)
+internal data class HealthDto(
+    @SerializedName("status") val status: String? = null,
+    @SerializedName("version") val version: String? = null,
+)

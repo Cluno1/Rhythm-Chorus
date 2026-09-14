@@ -12,21 +12,23 @@ import retrofit2.http.Path
 import retrofit2.http.Query
 
 internal data class AdminDeviceDto(
-    val deviceId: String?,
-    val userId: String?,
-    val displayName: String?,
-    val applicationId: String?,
-    val status: String?,
-    val isAdministrator: Boolean?,
-    val createdAt: String?,
-    val lastSeenAt: String?,
+    @SerializedName("deviceId") val deviceId: String?,
+    @SerializedName("userId") val userId: String?,
+    @SerializedName("displayName") val displayName: String?,
+    @SerializedName("applicationId") val applicationId: String?,
+    @SerializedName("status") val status: String?,
+    @SerializedName("isAdministrator") val isAdministrator: Boolean?,
+    @SerializedName("createdAt") val createdAt: String?,
+    @SerializedName("lastSeenAt") val lastSeenAt: String?,
 )
 
-internal data class AdminDeviceListDto(val items: List<AdminDeviceDto>?)
+internal data class AdminDeviceListDto(
+    @SerializedName("items") val items: List<AdminDeviceDto>?,
+)
 
 internal data class AdministratorChangeDto(
-    val deviceId: String?,
-    val isAdministrator: Boolean?,
+    @SerializedName("deviceId") val deviceId: String?,
+    @SerializedName("isAdministrator") val isAdministrator: Boolean?,
 )
 
 internal data class ChorusModerationSettingsDto(
@@ -42,16 +44,18 @@ internal data class ChorusModerationSettingsPatchDto(
 internal data class ChorusModerationItemDto(
     @SerializedName("work_id") val workId: String?,
     @SerializedName("project_title") val projectTitle: String?,
-    val track: ChorusTrackDto?,
+    @SerializedName("track") val track: ChorusTrackDto?,
 )
 
-internal data class ChorusModerationQueueDto(val items: List<ChorusModerationItemDto>?)
+internal data class ChorusModerationQueueDto(
+    @SerializedName("items") val items: List<ChorusModerationItemDto>?,
+)
 
 internal data class ChorusModerationRequestDto(
-    val status: String,
-    val reason: String? = null,
+    @SerializedName("status") val status: String,
+    @SerializedName("reason") val reason: String? = null,
     @SerializedName("gain_db") val gainDb: Double = 0.0,
-    val pan: Double = 0.0,
+    @SerializedName("pan") val pan: Double = 0.0,
 )
 
 internal interface CatalogAdminApi {

@@ -9,6 +9,7 @@ import io.github.cluno1.sonorus.features.catalog.data.CatalogSigner
 import io.github.cluno1.sonorus.features.catalog.domain.CatalogFailure
 import io.github.cluno1.sonorus.features.catalog.domain.CatalogIssuedInvite
 import com.google.gson.GsonBuilder
+import com.google.gson.annotations.SerializedName
 import okhttp3.HttpUrl.Companion.toHttpUrl
 import okhttp3.OkHttpClient
 import okhttp3.Request
@@ -28,49 +29,66 @@ import java.security.MessageDigest
 import java.time.Instant
 import java.util.concurrent.TimeUnit
 
-internal data class AdminSessionRequest(val username: String, val password: String)
-internal data class AdminSessionDto(val accessToken: String, val expiresIn: Long)
+internal data class AdminSessionRequest(
+    @SerializedName("username") val username: String,
+    @SerializedName("password") val password: String,
+)
+internal data class AdminSessionDto(
+    @SerializedName("accessToken") val accessToken: String,
+    @SerializedName("expiresIn") val expiresIn: Long,
+)
 internal data class PasswordAdminSession(
     val accessToken: String,
     val devices: AdminDeviceListDto,
 )
 internal data class InviteRequest(
-    val userId: String,
-    val displayName: String? = null,
-    val replaceExistingDevice: Boolean = false,
+    @SerializedName("userId") val userId: String,
+    @SerializedName("displayName") val displayName: String? = null,
+    @SerializedName("replaceExistingDevice") val replaceExistingDevice: Boolean = false,
 )
-internal data class InviteDto(val inviteCode: String, val userId: String, val expiresAt: String)
+internal data class InviteDto(
+    @SerializedName("inviteCode") val inviteCode: String,
+    @SerializedName("userId") val userId: String,
+    @SerializedName("expiresAt") val expiresAt: String,
+)
 internal fun InviteDto.toIssuedInvite(): CatalogIssuedInvite = CatalogIssuedInvite(
     inviteCode = inviteCode,
     userId = userId,
     expiresAt = expiresAt,
 )
-internal data class InviteChallengeRequest(val inviteCode: String)
-internal data class DeviceNonceRequest(val deviceId: String)
-internal data class NonceDto(val nonce: String, val expiresAt: String)
+internal data class InviteChallengeRequest(
+    @SerializedName("inviteCode") val inviteCode: String,
+)
+internal data class DeviceNonceRequest(
+    @SerializedName("deviceId") val deviceId: String,
+)
+internal data class NonceDto(
+    @SerializedName("nonce") val nonce: String,
+    @SerializedName("expiresAt") val expiresAt: String,
+)
 internal data class EnrollRequest(
-    val inviteCode: String,
-    val nonce: String,
-    val publicKeySpki: String,
-    val signature: String,
-    val displayName: String,
-    val applicationId: String,
-    val signingCertificateSha256: String,
+    @SerializedName("inviteCode") val inviteCode: String,
+    @SerializedName("nonce") val nonce: String,
+    @SerializedName("publicKeySpki") val publicKeySpki: String,
+    @SerializedName("signature") val signature: String,
+    @SerializedName("displayName") val displayName: String,
+    @SerializedName("applicationId") val applicationId: String,
+    @SerializedName("signingCertificateSha256") val signingCertificateSha256: String,
 )
 internal data class RefreshRequest(
-    val deviceId: String,
-    val sessionId: String,
-    val timestamp: Long,
-    val nonce: String,
-    val signature: String,
+    @SerializedName("deviceId") val deviceId: String,
+    @SerializedName("sessionId") val sessionId: String,
+    @SerializedName("timestamp") val timestamp: Long,
+    @SerializedName("nonce") val nonce: String,
+    @SerializedName("signature") val signature: String,
 )
 internal data class DeviceSessionDto(
-    val userId: String,
-    val deviceId: String,
-    val sessionId: String,
-    val accessToken: String,
-    val accessTokenExpiresIn: Long,
-    val sessionExpiresAt: String,
+    @SerializedName("userId") val userId: String,
+    @SerializedName("deviceId") val deviceId: String,
+    @SerializedName("sessionId") val sessionId: String,
+    @SerializedName("accessToken") val accessToken: String,
+    @SerializedName("accessTokenExpiresIn") val accessTokenExpiresIn: Long,
+    @SerializedName("sessionExpiresAt") val sessionExpiresAt: String,
 )
 
 internal interface CatalogDeviceAuthApi {
@@ -372,12 +390,7 @@ internal class CatalogDeviceAuthClient(
 
     private fun <T> Response<T>.bodyOrThrow(): T {
         if (!isSuccessful) {
-            throw when (code()) {
-                401 -> CatalogFailure.InvalidCredentials()
-                409 -> CatalogFailure.InvalidData("该用户已有登记设备，请生成‘替换已有设备’邀请码")
-                429 -> CatalogFailure.InvalidData("请求过于频繁，请稍后再试")
-                else -> IOException("服务器拒绝请求（${code()}）")
-            }
+            throw catalogHttpFailure(code())
         }
         return body() ?: throw IOException("服务器返回空响应")
     }
@@ -393,4 +406,12 @@ internal class CatalogDeviceAuthClient(
         .connectTimeout(12, TimeUnit.SECONDS)
         .readTimeout(30, TimeUnit.SECONDS)
         .build()
+}
+
+internal fun catalogHttpFailure(statusCode: Int): IOException = when (statusCode) {
+    401 -> CatalogFailure.InvalidCredentials()
+    409 -> CatalogFailure.InvalidData("该用户已有登记设备，请生成‘替换已有设备’邀请码")
+    422 -> CatalogFailure.InvalidData("客户端与服务器协议不兼容（422）")
+    429 -> CatalogFailure.InvalidData("请求过于频繁，请稍后再试")
+    else -> IOException("服务器拒绝请求（$statusCode）")
 }
