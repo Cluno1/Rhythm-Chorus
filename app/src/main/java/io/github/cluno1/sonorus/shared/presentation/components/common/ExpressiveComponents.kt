@@ -54,6 +54,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.ui.draw.clip
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -111,6 +112,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -1726,7 +1728,7 @@ private fun ExpressiveMorphingPlayPauseButton(
     
     if (!showSeekButtons && !isLoading) {
         // Pill button with text when seek buttons disabled
-        Box(
+        BoxWithConstraints(
             modifier = modifier
                 .then(if (modifier == Modifier) Modifier.width(width) else Modifier)
                 .height(height)
@@ -1735,10 +1737,13 @@ private fun ExpressiveMorphingPlayPauseButton(
                 .clickable(onClick = onClick),
             contentAlignment = Alignment.Center
         ) {
+            // The tablet lyrics split can allocate less width than the preferred pill.
+            // Keep the label only when the measured button can fit icon, gap, and text.
+            val showPlayPauseLabel = maxWidth >= 96.dp
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.Center,
-                modifier = Modifier.padding(horizontal = 12.dp)
+                modifier = Modifier.padding(horizontal = if (showPlayPauseLabel) 12.dp else 8.dp)
             ) {
                 Crossfade(
                     targetState = isPlaying,
@@ -1753,7 +1758,7 @@ private fun ExpressiveMorphingPlayPauseButton(
                     )
                 }
                 AnimatedVisibility(
-                    visible = !isPlaying || showPauseText,
+                    visible = showPlayPauseLabel && (!isPlaying || showPauseText),
                     enter = fadeIn() + expandHorizontally(),
                     exit = fadeOut() + shrinkHorizontally()
                 ) {
@@ -1763,6 +1768,9 @@ private fun ExpressiveMorphingPlayPauseButton(
                             fontWeight = FontWeight.Bold
                         ),
                         color = buttonTint,
+                        maxLines = 1,
+                        softWrap = false,
+                        overflow = TextOverflow.Clip,
                         modifier = Modifier.padding(start = 8.dp)
                     )
                 }
