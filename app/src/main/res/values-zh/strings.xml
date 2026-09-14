@@ -2356,6 +2356,7 @@
     <string name="lyrics_settings_title">歌词</string>
     <string name="lyrics_settings_general">常规设置</string>
     <string name="lyrics_settings_open_fullscreen_desc">点击歌词视图打开全屏歌词屏幕</string>
+    <string name="lyrics_enter_immersive_view">隐藏播放器控件显示歌词</string>
     <string name="lyrics_settings_autohide_controls">自动隐藏歌词控件</string>
     <string name="lyrics_settings_autohide_controls_desc">几秒不活动后自动隐藏全屏歌词屏幕中的控件</string>
     <string name="lyrics_settings_embedded_first">嵌入式优先</string>

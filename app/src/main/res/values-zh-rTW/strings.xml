@@ -2354,6 +2354,7 @@
     <string name="lyrics_settings_title">歌詞</string>
     <string name="lyrics_settings_general">一般設定</string>
     <string name="lyrics_settings_open_fullscreen_desc">點選歌詞檢視以開啟全螢幕歌詞</string>
+    <string name="lyrics_enter_immersive_view">隱藏播放器控制選項以顯示歌詞</string>
     <string name="lyrics_settings_autohide_controls">自動隱藏歌詞控制選項</string>
     <string name="lyrics_settings_autohide_controls_desc">幾秒後自動隱藏全螢幕歌詞時的控制選項</string>
     <string name="lyrics_settings_embedded_first">嵌入式優先</string>

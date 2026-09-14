@@ -2289,6 +2289,7 @@
 <string name="lyrics_settings_title">Lyrics</string>
     <string name="lyrics_settings_general">General Settings</string>
     <string name="lyrics_settings_open_fullscreen_desc">Open a full-screen lyrics screen by tapping the lyrics view</string>
+    <string name="lyrics_enter_immersive_view">Show lyrics without player controls</string>
     <string name="lyrics_settings_autohide_controls">Auto-hide lyrics controls</string>
     <string name="lyrics_settings_autohide_controls_desc">Automatically hide controls in full-screen lyrics screen after a few seconds of inactivity</string>
     <string name="lyrics_settings_embedded_first">Embedded First</string>

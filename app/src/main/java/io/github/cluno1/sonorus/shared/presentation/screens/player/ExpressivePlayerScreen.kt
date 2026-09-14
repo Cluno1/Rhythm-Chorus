@@ -434,11 +434,18 @@ fun ExpressivePlayerScreen(
     }
 
     var lyricsControlsVisible by remember { mutableStateOf(true) }
+    var lyricsControlsManuallyHidden by remember { mutableStateOf(false) }
     var lastLyricsInteractionTime by remember { mutableLongStateOf(System.currentTimeMillis()) }
 
     fun showLyricsControls() {
+        lyricsControlsManuallyHidden = false
         lyricsControlsVisible = true
         lastLyricsInteractionTime = System.currentTimeMillis()
+    }
+
+    fun hideLyricsControlsImmediately() {
+        lyricsControlsManuallyHidden = true
+        lyricsControlsVisible = false
     }
 
     fun toggleLyricsControls() {
@@ -598,7 +605,7 @@ fun ExpressivePlayerScreen(
     }
     
     val showPlayerControls = if (lyricsVisible) {
-        !autoHideLyricsControls || lyricsControlsVisible
+        !lyricsControlsManuallyHidden && (!autoHideLyricsControls || lyricsControlsVisible)
     } else {
         true
     }
@@ -2373,7 +2380,9 @@ fun ExpressivePlayerScreen(
                     }
                 }
 
-                // Keep the fixed actions off the lyrics canvas so they cannot cover lyric text.
+                // Replace playback actions with one explicit immersive-mode action while
+                // embedded lyrics are visible. Tapping the lyrics themselves still opens
+                // the separate full-screen lyrics page.
                 if (!lyricsVisible) {
                     val topActionContentColor = when {
                         needsDarkSurfaces -> ambientControlContent
@@ -2451,6 +2460,31 @@ fun ExpressivePlayerScreen(
                                 )
                             }
                         }
+                    }
+                } else if (showPlayerControls) {
+                    Box(
+                        modifier = Modifier
+                            .align(Alignment.TopEnd)
+                            .padding(top = 8.dp, end = 12.dp)
+                            .size(40.dp)
+                            .clip(CircleShape)
+                            .background(controlsContainerColor)
+                            .clickable {
+                                HapticUtils.performHapticFeedback(context, haptic, HapticType.LIGHT)
+                                hideLyricsControlsImmediately()
+                            },
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        Icon(
+                            imageVector = MaterialSymbolIcon("fullscreen", filled = true),
+                            contentDescription = stringResource(R.string.lyrics_enter_immersive_view),
+                            tint = when {
+                                needsDarkSurfaces -> ambientControlContent
+                                useAccentBackground -> accentFg
+                                else -> monoFg
+                            },
+                            modifier = Modifier.size(20.dp),
+                        )
                     }
                 }
             }
