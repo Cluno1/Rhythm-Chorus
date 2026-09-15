@@ -104,6 +104,10 @@ jobs:
             --mapping app/build/outputs/mapping/githubRelease/mapping.txt \
             --seeds app/build/outputs/mapping/githubRelease/seeds.txt \
             --usage app/build/outputs/mapping/githubRelease/usage.txt
+          python3 scripts/verify_alphaskia_jni_contract.py \
+            --mapping app/build/outputs/mapping/githubRelease/mapping.txt \
+            --seeds app/build/outputs/mapping/githubRelease/seeds.txt \
+            --usage app/build/outputs/mapping/githubRelease/usage.txt
           scripts/check_sonorus_brand.py
           scripts/verify_brand_assets.sh
           APKSIGNER="$(find "$ANDROID_HOME/build-tools" -type f -name apksigner | sort -V | tail -1)"

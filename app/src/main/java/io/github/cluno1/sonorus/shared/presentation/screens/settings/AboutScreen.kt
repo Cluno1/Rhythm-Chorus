@@ -175,7 +175,7 @@ fun AboutScreen(
     var showLicensesSheet by remember { mutableStateOf(false) }
     var showGplDialog by remember { mutableStateOf(false) }
     val sourceRevisionUrl = remember {
-        if (BuildConfig.DEBUG) {
+        if (BuildConfig.UPDATE_CHANNEL == "debug") {
             BuildConfig.SOURCE_URL
         } else {
             val releaseVersion = BuildConfig.VERSION_NAME
@@ -274,7 +274,7 @@ fun AboutScreen(
             item {
                 val appInfo = context.applicationInfo
                 val buildType = when {
-                    BuildConfig.DEBUG -> "Debug"
+                    BuildConfig.UPDATE_CHANNEL == "debug" -> "Debug"
                     BuildConfig.IS_NIGHTLY -> "Nightly"
                     BuildConfig.VERSION_NAME.contains("Beta", ignoreCase = true) -> "Beta"
                     else -> "Stable"

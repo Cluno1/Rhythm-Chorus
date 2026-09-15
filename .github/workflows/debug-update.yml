@@ -75,6 +75,17 @@ jobs:
             -PsonorusDebugManifestPublicKey="$MANIFEST_PUBLIC_KEY" \
             --stacktrace
 
+      - name: Verify minified Debug runtime contracts
+        run: |
+          python3 scripts/verify_catalog_json_contract.py \
+            --mapping app/build/outputs/mapping/githubDebug/mapping.txt \
+            --seeds app/build/outputs/mapping/githubDebug/seeds.txt \
+            --usage app/build/outputs/mapping/githubDebug/usage.txt
+          python3 scripts/verify_alphaskia_jni_contract.py \
+            --mapping app/build/outputs/mapping/githubDebug/mapping.txt \
+            --seeds app/build/outputs/mapping/githubDebug/seeds.txt \
+            --usage app/build/outputs/mapping/githubDebug/usage.txt
+
       - name: Build and verify signed Debug manifest
         env:
           EXPECTED_CERT_SHA256: ${{ vars.SONORUS_DEBUG_CERT_SHA256 }}

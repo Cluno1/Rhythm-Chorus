@@ -163,8 +163,17 @@ android {
             buildConfigField("String", "UPDATE_MANIFEST_PUBLIC_KEY", "\"$debugManifestPublicKey\"")
             applicationIdSuffix = ".debug"
             versionNameSuffix = "-debug"
-            //isMinifyEnabled = false
-            //isDebuggable = true
+            // Keep the distributed Debug channel R8-equivalent to Stable so JNI,
+            // reflection and serialization regressions fail before a Stable release.
+            // AGP disables R8 optimization for debuggable builds even when minification
+            // is requested, so this published channel must be non-debuggable as well.
+            isMinifyEnabled = true
+            isShrinkResources = true
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro"
+            )
+            isDebuggable = false
             // Local builds may use Android's disposable debug key. Any published Debug APK
             // must provide .config/debug-keystore.properties and use the frozen Sonorus key.
             signingConfig = fixedDebugSigning ?: signingConfigs.getByName("debug")
@@ -365,8 +374,6 @@ dependencies {
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
     
-    // LeakCanary for memory leak detection (debug builds only)
-    debugImplementation(libs.com.squareup.leakcanary.leakcanary.android)
 }
 
 composeCompiler {

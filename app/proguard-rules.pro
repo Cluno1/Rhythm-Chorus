@@ -68,6 +68,11 @@
 # Third-Party Libraries (No native rules in AAR/JAR)
 # ──────────────────────────────
 
+# alphaSkia's JNI library looks up AlphaSkiaNative.handle and bridge classes by
+# their Java names. alphaSkia 3.4.135 does not publish consumer ProGuard rules,
+# so R8 must not rename or optimize this small native bridge package.
+-keep class alphaTab.alphaSkia.** { *; }
+
 # jaudiotagger (metadata extraction relies heavily on reflection and dynamic class loading)
 -keep class org.jaudiotagger.** { *; }
 -dontwarn org.jaudiotagger.**
