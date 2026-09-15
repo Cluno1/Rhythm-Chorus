@@ -1,31 +1,111 @@
-# Sonorus
+<div align="center">
+  <img src="assets/brand/sonorus-master.png" width="420" alt="Sonorus" />
 
-Sonorus is an independently maintained Android music player for device audio, a private Catalog, and MusicXML scores. It is built with Kotlin, Jetpack Compose, Material 3, Media3, Room, and alphaTab.
+  <h3>Music, lyrics, scores, and your private library — together.</h3>
 
-The public source and signed release APKs are intended to live at [Cluno1/Sonorus](https://github.com/Cluno1/Sonorus). Until that repository and its first release exist, build from source; no F-Droid, IzzyOnDroid, OpenAPK, or other store listing is claimed.
+  <p>
+    A local-first Android music player with an optional private Catalog,<br />
+    MusicXML score reading, synchronized lyrics editing, and rehearsal tools.
+  </p>
 
-## Build
+  <p>
+    <a href="https://github.com/Cluno1/Sonorus/releases/latest"><strong>Download Stable</strong></a>
+    ·
+    <a href="#screenshots">Screenshots</a>
+    ·
+    <a href="docs/RELEASING.md">Release integrity</a>
+    ·
+    <a href="https://discord.gg/KaGCYshewX">Discord</a>
+  </p>
+
+  <p>
+    <img alt="Android 8+" src="https://img.shields.io/badge/Android-8.0%2B-3DDC84?logo=android&logoColor=white" />
+    <img alt="Kotlin" src="https://img.shields.io/badge/Kotlin-Jetpack%20Compose-7F52FF?logo=kotlin&logoColor=white" />
+    <img alt="License GPL-3.0-or-later" src="https://img.shields.io/badge/license-GPL--3.0--or--later-4c6ef5" />
+    <img alt="Latest release" src="https://img.shields.io/github/v/release/Cluno1/Sonorus?display_name=tag&sort=semver" />
+  </p>
+</div>
+
+## Why Sonorus
+
+Sonorus treats listening, reading, and rehearsing as parts of the same experience. Use it as a polished offline player, or connect it to a private Catalog when you want a controlled library shared across your own devices.
+
+| | Feature | What it gives you |
+| --- | --- | --- |
+| 🎧 | **Local music** | Fast on-device browsing, playlists, favorites, search, queue controls, equalizer options, and backup/restore. |
+| 🔐 | **Private Catalog** | Optional self-hosted music access with per-device enrollment, authenticated downloads, and multiple registered devices per user. |
+| 🎼 | **Music scores** | Browse and render MusicXML scores, select vocal or instrumental parts, follow playback, and work with tempo and metronome controls. |
+| ✍️ | **Lyrics workshop** | Edit source text, line timing, or word timing; stamp lyrics against the track; import, save, and synchronize supported lyrics with the Catalog. |
+| 🎙️ | **Chorus Lab** | Rehearse against a chosen score revision, record and trim takes, preview submissions, and manage collaborative mixes through invitations. |
+| 📱 | **Made for Android** | Material 3 UI with layouts for phones and larger screens, immersive lyrics, Media3 playback, and Android 8.0+ support. |
+
+The private Catalog and Chorus Lab are optional. Local playback does not require a Sonorus server account.
+
+## Screenshots
+
+<table>
+  <tr>
+    <td align="center"><img src="assets/ScreenShots/Sonorus/score-library.png" alt="Sonorus score library" width="270" /></td>
+    <td align="center"><img src="assets/ScreenShots/Sonorus/score-viewer.png" alt="Sonorus MusicXML score viewer" width="270" /></td>
+    <td align="center"><img src="assets/ScreenShots/Sonorus/lyrics-editor.png" alt="Sonorus synchronized lyrics editor" width="270" /></td>
+  </tr>
+  <tr>
+    <td align="center"><strong>Score library</strong><br />Organize music by ensemble or part.</td>
+    <td align="center"><strong>MusicXML viewer</strong><br />Read the score and follow its playback position.</td>
+    <td align="center"><strong>Lyrics editor</strong><br />Edit and stamp line- or word-level timing.</td>
+  </tr>
+</table>
+
+Screenshots are captured from a headless, silent emulator using a local demonstration Catalog. They contain no production account or server data.
+
+## Download
+
+Signed Stable APKs and their SHA-256 files are published on the [GitHub Releases page](https://github.com/Cluno1/Sonorus/releases/latest).
+
+| Your device | Recommended asset |
+| --- | --- |
+| Most current Android phones and tablets | `arm64-v8a` |
+| Older 32-bit ARM devices | `armeabi-v7a` |
+| x86 / x86_64 devices and emulators | Matching x86 build |
+| Not sure | Universal APK without an ABI suffix |
+
+Android 8.0 or newer is required. Stable uses application ID `io.github.cluno1.sonorus`; Debug uses `io.github.cluno1.sonorus.debug`, so both can be installed together. Their app data and private-Catalog device registrations are intentionally separate.
+
+Every Stable workflow verifies the package, version, supported ABI, minimum SDK, permanent signing certificate, and checksum before publishing. It then updates the authenticated private channel and creates a GitHub Release with five signed APKs and five matching `.sha256` files.
+
+## Build from source
 
 Requirements: JDK 17 and the Android SDK.
 
 ```bash
+git clone https://github.com/Cluno1/Sonorus.git
+cd Sonorus
 ./gradlew testGithubDebugUnitTest assembleGithubDebug
 ```
 
-The production application ID is `io.github.cluno1.sonorus`; debug builds use `io.github.cluno1.sonorus.debug`. A new application ID means Sonorus can coexist with the upstream app. Existing private app data is not inherited automatically; use backup/restore and register the device again.
+The official public release target is `githubRelease`. A local release dry-run uses a development certificate unless you provide the protected signing configuration, so it must not be distributed as an official update.
 
-## Releases and updates
+```bash
+scripts/release_dry_run.sh 1.0.0
+```
 
-Sonorus checks only stable releases from `Cluno1/Sonorus`. Release assets use the form `Sonorus-{version}-githubRelease-{abi}.apk`, with a universal APK as fallback, and each APK is accompanied by SHA-256. Long-term upgrades require the same application ID, the same offline-backed release signing key, and a strictly increasing version code.
+See [the release procedure](docs/RELEASING.md), [build variants](docs/BUILD_VARIANTS.md), and [self-hosted update design](docs/SELF_HOSTED_UPDATES.md) for details. No keystore, password, Catalog credential, or cloud-storage credential is stored in this repository.
 
-See [RELEASING.md](docs/RELEASING.md) for the local dry-run and CI secret names. This repository does not contain a keystore, passwords, Catalog credentials, or COS credentials.
+## Privacy and security
 
-## Privacy
+Your device library stays on your device. Network access is used only for features you choose, such as a configured private Catalog, online metadata or lyrics providers, and first-party update checks. Catalog authentication and update downloads fail closed when signatures or device proofs are invalid.
 
-Device music stays on the device. Sonorus can contact the configured Catalog/COS service and, when enabled, the first-party Sonorus GitHub Releases endpoint. See the privacy policy bundled in the app for details.
+Please report ordinary bugs through [GitHub Issues](https://github.com/Cluno1/Sonorus/issues). Do not post credentials, registration material, signing keys, or vulnerability details in a public issue; follow [SECURITY.md](docs/SECURITY.md) instead.
+
+## Community and private services
+
+- Join the community and share feedback on [Discord](https://discord.gg/KaGCYshewX).
+- Email [clunojames@gmal.com](mailto:clunojames@gmal.com) for direct contact.
+- Bugs, feature requests, and usability feedback are welcome through [GitHub Issues](https://github.com/Cluno1/Sonorus/issues).
+- Private deployments and custom backend services are available; contact us through Discord or email to discuss requirements.
 
 ## Upstream and license
 
-Sonorus is an independent, unofficial derivative of [Rhythm](https://github.com/cromaguy/Rhythm), originally created by Anjishnu Nandi and Team ChromaHub. Sonorus is not affiliated with or endorsed by the Rhythm authors or Team ChromaHub. Original copyright and SPDX notices are retained in source files and Git history.
+Sonorus is an independent, unofficial derivative of [Rhythm](https://github.com/cromaguy/Rhythm), originally created by Anjishnu Nandi and Team ChromaHub. Sonorus is not affiliated with or endorsed by the Rhythm authors or Team ChromaHub. Original copyright and SPDX notices remain in source files and Git history.
 
-The Android client remains licensed under [GNU GPL v3 or later](LICENSE). alphaTab is licensed under MPL-2.0; other bundled libraries and assets retain their own licenses. Music, artwork, lyrics, scores, fonts, and SoundFont content are not automatically covered by the client GPL.
+The Android client is licensed under [GNU GPL v3 or later](LICENSE). alphaTab is licensed under MPL-2.0; other bundled libraries and assets retain their own licenses. Music, artwork, lyrics, scores, fonts, and SoundFont content are not automatically covered by the client GPL.
