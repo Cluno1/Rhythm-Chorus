@@ -12,13 +12,17 @@ import io.github.cluno1.sonorus.shared.presentation.components.icons.Icon
 
 import android.Manifest
 import android.app.Activity
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Environment
 import android.provider.MediaStore
+import android.provider.Settings
 import android.util.Log
 import android.widget.Toast
 import androidx.activity.compose.BackHandler
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.*
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.*
@@ -49,6 +53,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import io.github.cluno1.sonorus.R
 import io.github.cluno1.sonorus.features.catalog.domain.CatalogPlaybackPolicy
 import io.github.cluno1.sonorus.features.local.presentation.viewmodel.MusicViewModel
@@ -213,37 +220,66 @@ fun SingleCardExplorerContent(
     
     val playlists by musicViewModel.playlists.collectAsState()
 
-    // Check storage permission based on Android version
-    val hasStoragePermission = remember {
-        when {
-            Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU -> {
-                ContextCompat.checkSelfPermission(
-                    context,
-                    Manifest.permission.READ_MEDIA_AUDIO
-                ) == PackageManager.PERMISSION_GRANTED
-            }
-            else -> {
-                ContextCompat.checkSelfPermission(
-                    context,
-                    Manifest.permission.READ_EXTERNAL_STORAGE
-                ) == PackageManager.PERMISSION_GRANTED
-            }
-        }
+    val storagePermission = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+        Manifest.permission.READ_MEDIA_AUDIO
+    } else {
+        Manifest.permission.READ_EXTERNAL_STORAGE
     }
+    fun isStoragePermissionGranted(): Boolean =
+        ContextCompat.checkSelfPermission(context, storagePermission) == PackageManager.PERMISSION_GRANTED
 
-    var showPermissionDialog by remember { mutableStateOf(false) }
+    // Keep one stable state holder so the Activity Result callback and ON_RESUME observer share
+    // the same idempotency guard even before Compose has had a chance to recompose.
+    val hasStoragePermissionState = remember(storagePermission) {
+        mutableStateOf(isStoragePermissionGranted())
+    }
+    val scanStartedForCurrentGrant = remember(storagePermission) {
+        mutableStateOf(hasStoragePermissionState.value)
+    }
+    var permissionRequestAttempted by rememberSaveable(storagePermission) { mutableStateOf(false) }
     var isLoadingDirectory by remember { mutableStateOf(false) }
     var isInitialLoading by remember { mutableStateOf(true) }
 
-    // Handle permission result in a LaunchedEffect
-    LaunchedEffect(hasStoragePermission) {
-        if (!hasStoragePermission) {
-            showPermissionDialog = true
+    fun synchronizePermissionState(granted: Boolean) {
+        val permissionWasGranted = hasStoragePermissionState.value
+        hasStoragePermissionState.value = granted
+        if (!granted) {
+            scanStartedForCurrentGrant.value = false
+        } else if (!permissionWasGranted && !scanStartedForCurrentGrant.value) {
+            scanStartedForCurrentGrant.value = true
+            Toast.makeText(
+                context,
+                context.getString(R.string.device_library_permission_granted_scanning),
+                Toast.LENGTH_SHORT,
+            ).show()
+            musicViewModel.refreshLibrary(showMediaScanLoader = false)
         }
     }
 
+    val permissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission(),
+    ) { granted ->
+        permissionRequestAttempted = true
+        synchronizePermissionState(granted)
+    }
+    val lifecycleOwner = LocalLifecycleOwner.current
+    DisposableEffect(lifecycleOwner, storagePermission) {
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_RESUME) {
+                synchronizePermissionState(isStoragePermissionGranted())
+            }
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
+    }
+
+    val hasStoragePermission = hasStoragePermissionState.value
+    val permissionDenied = permissionRequestAttempted && !hasStoragePermission
+    val permissionPermanentlyDenied = permissionDenied &&
+        !ActivityCompat.shouldShowRequestPermissionRationale(activity, storagePermission)
+
     // Permission not granted - show request UI
-    if (!hasStoragePermission || showPermissionDialog) {
+    if (!hasStoragePermission) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -282,7 +318,7 @@ fun SingleCardExplorerContent(
                     }
 
                     Text(
-                        text = context.getString(R.string.storage_permission_required),
+                        text = stringResource(R.string.device_library_permission_title),
                         style = MaterialTheme.typography.headlineSmall,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.onSurface,
@@ -290,7 +326,7 @@ fun SingleCardExplorerContent(
                     )
 
                     Text(
-                        text = context.getString(R.string.storage_permission_desc),
+                        text = stringResource(R.string.device_library_permission_description),
                         style = MaterialTheme.typography.bodyLarge,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         textAlign = TextAlign.Center,
@@ -302,22 +338,14 @@ fun SingleCardExplorerContent(
                     Button(
                         onClick = {
                             HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
-
-                            when {
-                                Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU -> {
-                                    ActivityCompat.requestPermissions(
-                                        activity,
-                                        arrayOf(Manifest.permission.READ_MEDIA_AUDIO),
-                                        1001
-                                    )
-                                }
-                                else -> {
-                                    ActivityCompat.requestPermissions(
-                                        activity,
-                                        arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE),
-                                        1001
-                                    )
-                                }
+                            if (permissionPermanentlyDenied) {
+                                context.startActivity(
+                                    Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
+                                        data = "package:${context.packageName}".toUri()
+                                    },
+                                )
+                            } else {
+                                permissionLauncher.launch(storagePermission)
                             }
                         },
                         modifier = Modifier.fillMaxWidth(),
@@ -328,15 +356,30 @@ fun SingleCardExplorerContent(
                         )
                     ) {
                         Icon(
-                            imageVector = if (hasStoragePermission) RhythmIcons.Check else MaterialSymbolIcon("lock"),
+                            imageVector = if (permissionPermanentlyDenied) RhythmIcons.Settings else MaterialSymbolIcon("lock"),
                             contentDescription = null,
                             modifier = Modifier.size(20.dp)
                         )
                         Spacer(modifier = Modifier.width(8.dp))
                         Text(
-                            text = if (hasStoragePermission) "Permission Granted" else "Grant Permission",
+                            text = stringResource(
+                                if (permissionPermanentlyDenied) {
+                                    R.string.device_library_permission_open_settings
+                                } else {
+                                    R.string.device_library_permission_allow_action
+                                },
+                            ),
                             style = MaterialTheme.typography.labelLarge,
                             fontWeight = FontWeight.SemiBold
+                        )
+                    }
+
+                    if (permissionDenied) {
+                        Text(
+                            text = stringResource(R.string.device_library_permission_denied),
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.error,
+                            textAlign = TextAlign.Center,
                         )
                     }
 
@@ -358,7 +401,7 @@ fun SingleCardExplorerContent(
                                     modifier = Modifier.size(20.dp)
                                 )
                                 Text(
-                                    text = context.getString(R.string.storage_permission_audio_only),
+                                    text = stringResource(R.string.storage_permission_audio_only),
                                     style = MaterialTheme.typography.bodySmall,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                                     lineHeight = MaterialTheme.typography.bodySmall.lineHeight * 1.2

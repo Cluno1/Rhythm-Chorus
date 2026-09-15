@@ -18,8 +18,11 @@ import io.github.cluno1.sonorus.util.NaturalSortComparator
 
 import kotlin.math.abs
 
+import android.content.ActivityNotFoundException
+import android.content.Intent
 import android.widget.Toast
 import android.os.Environment
+import android.provider.DocumentsContract
 import android.provider.MediaStore
 import androidx.documentfile.provider.DocumentFile
 import java.io.File
@@ -210,7 +213,10 @@ import io.github.cluno1.sonorus.shared.data.model.PlaylistViewType
 import io.github.cluno1.sonorus.shared.data.model.ScoreSortOrder
 import io.github.cluno1.sonorus.shared.data.model.ScoreViewType
 import io.github.cluno1.sonorus.shared.data.model.AppSettings
+import io.github.cluno1.sonorus.shared.data.model.LocalAudioScanPolicy
 import io.github.cluno1.sonorus.features.catalog.domain.CatalogScoreOption
+import io.github.cluno1.sonorus.features.catalog.domain.CatalogPlaybackPolicy
+import io.github.cluno1.sonorus.features.local.data.device.DeviceScanFolderAccess
 import io.github.cluno1.sonorus.shared.presentation.components.bottomsheets.AddToPlaylistBottomSheet
 import io.github.cluno1.sonorus.shared.presentation.components.dialogs.CreatePlaylistDialog
 import io.github.cluno1.sonorus.shared.presentation.components.player.MiniPlayer
@@ -237,6 +243,7 @@ import io.github.cluno1.sonorus.util.HapticUtils
 import io.github.cluno1.sonorus.util.HapticType
 import io.github.cluno1.sonorus.features.local.presentation.viewmodel.MusicViewModel
 import io.github.cluno1.sonorus.shared.data.model.ScanPhase
+import io.github.cluno1.sonorus.shared.data.model.MediaScanMode
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
@@ -302,6 +309,12 @@ enum class LibraryPlaylistSortOrder {
     SONG_COUNT_ASC,
     SONG_COUNT_DESC
 }
+
+private data class PendingDeviceFolderScan(
+    val folderName: String,
+    val previousAcceptedSongs: Int,
+    val previousCompletedAtMs: Long,
+)
 
 /**
  * Main library surface with tabbed browsing, playback actions, and library management controls.
@@ -798,6 +811,162 @@ fun LibraryScreen(
     
     
     val isLibraryRefreshing by musicViewModel.isLibraryRefreshing.collectAsState()
+    val scanDiagnostics by musicViewModel.scanDiagnostics.collectAsState()
+    val lastSuccessfulScanTimestamp by musicViewModel.lastScanTimestamp.collectAsState()
+    val hasCurrentProcessScanResult = scanDiagnostics.completedAtMs > 0L
+    val acceptedDeviceSongCount = if (hasCurrentProcessScanResult) {
+        scanDiagnostics.acceptedSongs
+    } else {
+        songs.count { !it.id.startsWith("rhythm-catalog:") }
+    }
+    val scanFolderAccess = remember(context) { DeviceScanFolderAccess(context) }
+    var validAuthorizedScanRoots by remember {
+        mutableStateOf(scanFolderAccess.validRoots())
+    }
+    val mediaScanMode by appSettings.mediaScanMode.collectAsState()
+    val whitelistedFolders by appSettings.whitelistedFolders.collectAsState()
+    val effectiveAuthorizedScanRootCount = validAuthorizedScanRoots.count { root ->
+        LocalAudioScanPolicy.authorizedRootApplies(
+            mode = mediaScanMode,
+            rootDisplayPath = root.displayPath,
+            whitelistedFolders = whitelistedFolders,
+        )
+    }
+    var folderPickerInFlight by remember { mutableStateOf(false) }
+    var pendingDeviceFolderScan by remember { mutableStateOf<PendingDeviceFolderScan?>(null) }
+
+    LaunchedEffect(scanDiagnostics.completedAtMs) {
+        validAuthorizedScanRoots = scanFolderAccess.validRoots()
+    }
+
+    val scanSourcePickerLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.StartActivityForResult(),
+    ) { result ->
+        folderPickerInFlight = false
+        val uri = result.data?.data
+        if (result.resultCode != Activity.RESULT_OK || uri == null) {
+            Toast.makeText(
+                context,
+                context.getString(R.string.device_library_folder_picker_cancelled),
+                Toast.LENGTH_LONG,
+            ).show()
+            return@rememberLauncherForActivityResult
+        }
+
+        val displayPath = DeviceScanFolderAccess.displayPath(context, uri)
+        val folderName = displayPath.substringAfterLast('/').ifBlank { displayPath }
+        try {
+            val root = scanFolderAccess.add(uri, displayPath)
+            val validRoots = scanFolderAccess.validRoots()
+            validAuthorizedScanRoots = validRoots
+            if (validRoots.none { it.treeUri == root.treeUri }) {
+                scanFolderAccess.removeByDisplayPath(root.displayPath)
+                validAuthorizedScanRoots = scanFolderAccess.validRoots()
+                Toast.makeText(
+                    context,
+                    context.getString(R.string.device_library_folder_invalid, folderName),
+                    Toast.LENGTH_LONG,
+                ).show()
+                return@rememberLauncherForActivityResult
+            }
+
+            if (appSettings.mediaScanMode.value == MediaScanMode.WHITELIST) {
+                appSettings.addFolderToWhitelist(root.displayPath)
+            }
+            pendingDeviceFolderScan = PendingDeviceFolderScan(
+                folderName = folderName,
+                previousAcceptedSongs = acceptedDeviceSongCount,
+                previousCompletedAtMs = scanDiagnostics.completedAtMs,
+            )
+            Toast.makeText(
+                context,
+                context.getString(R.string.device_library_folder_authorized_scanning, folderName),
+                Toast.LENGTH_LONG,
+            ).show()
+            appSettings.requestFullMediaRescanOnNextLaunch(
+                reason = "device_library_low_result_folder_added",
+            )
+            musicViewModel.refreshLibrary(showMediaScanLoader = false)
+        } catch (e: Exception) {
+            Log.e("LibraryScreen", "Unable to retain guided scan folder access", e)
+            validAuthorizedScanRoots = scanFolderAccess.validRoots()
+            Toast.makeText(
+                context,
+                context.getString(R.string.device_library_folder_invalid, folderName),
+                Toast.LENGTH_LONG,
+            ).show()
+        }
+    }
+
+    LaunchedEffect(scanDiagnostics.completedAtMs, isLibraryRefreshing, pendingDeviceFolderScan) {
+        val pendingScan = pendingDeviceFolderScan ?: return@LaunchedEffect
+        val hasNewResult = scanDiagnostics.completedAtMs > 0L &&
+            scanDiagnostics.completedAtMs != pendingScan.previousCompletedAtMs
+        if (!isLibraryRefreshing && hasNewResult) {
+            val resultMessage = when {
+                scanDiagnostics.failed -> context.getString(R.string.device_library_folder_scan_failed)
+                scanDiagnostics.acceptedSongs > pendingScan.previousAcceptedSongs -> context.getString(
+                    R.string.device_library_folder_scan_success,
+                    scanDiagnostics.acceptedSongs - pendingScan.previousAcceptedSongs,
+                    scanDiagnostics.acceptedSongs,
+                )
+                else -> context.getString(
+                    R.string.device_library_folder_scan_no_new,
+                    pendingScan.folderName,
+                )
+            }
+            Toast.makeText(context, resultMessage, Toast.LENGTH_LONG).show()
+            pendingDeviceFolderScan = null
+        }
+    }
+
+    val requiredMediaPermission = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+        Manifest.permission.READ_MEDIA_AUDIO
+    } else {
+        Manifest.permission.READ_EXTERNAL_STORAGE
+    }
+    val hasDeviceMediaPermission =
+        ContextCompat.checkSelfPermission(context, requiredMediaPermission) == PackageManager.PERMISSION_GRANTED
+    val showDeviceFolderGuidance = DeviceLibraryScanGuidance.shouldShow(
+        deviceLibraryEnabled = CatalogPlaybackPolicy.DEVICE_LIBRARY_ENABLED,
+        isStreamingMode = isStreamingMode,
+        hasMediaPermission = hasDeviceMediaPermission,
+        scanCompleted = hasCurrentProcessScanResult || lastSuccessfulScanTimestamp > 0L,
+        scanFailed = hasCurrentProcessScanResult && scanDiagnostics.failed,
+        scanInProgress = isLibraryRefreshing,
+        acceptedDeviceSongs = acceptedDeviceSongCount,
+        validAuthorizedRootCount = effectiveAuthorizedScanRootCount,
+    )
+    val launchGuidedFolderPicker = {
+        HapticUtils.performHapticFeedback(context, haptics, HapticType.HEAVY)
+        Toast.makeText(
+            context,
+            context.getString(R.string.device_library_folder_picker_instruction),
+            Toast.LENGTH_SHORT,
+        ).show()
+        try {
+            val intent = Intent(Intent.ACTION_OPEN_DOCUMENT_TREE).addFlags(
+                Intent.FLAG_GRANT_READ_URI_PERMISSION or
+                    Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION,
+            )
+            intent.putExtra(
+                DocumentsContract.EXTRA_INITIAL_URI,
+                DocumentsContract.buildDocumentUri(
+                    "com.android.externalstorage.documents",
+                    "primary:Music",
+                ),
+            )
+            folderPickerInFlight = true
+            scanSourcePickerLauncher.launch(intent)
+        } catch (e: ActivityNotFoundException) {
+            folderPickerInFlight = false
+            Toast.makeText(
+                context,
+                context.getString(R.string.error_no_document_app),
+                Toast.LENGTH_LONG,
+            ).show()
+        }
+    }
     val pullToRefreshState = rememberPullToRefreshState()
     var isRefreshing by remember { mutableStateOf(false) }
 
@@ -1790,6 +1959,22 @@ fun LibraryScreen(
                     
                 }
             }
+
+            AnimatedVisibility(
+                visible = showDeviceFolderGuidance &&
+                    visibleTabIds.getOrNull(selectedTabIndex) in setOf("SONGS", "EXPLORER"),
+                enter = expandVertically() + fadeIn(),
+                exit = shrinkVertically() + fadeOut(),
+            ) {
+                DeviceLibraryFolderGuidanceCard(
+                    acceptedSongCount = acceptedDeviceSongCount,
+                    actionEnabled = !folderPickerInFlight,
+                    onChooseFolder = launchGuidedFolderPicker,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 18.dp, vertical = 6.dp),
+                )
+            }
             
             Surface(
                 modifier = Modifier
@@ -2548,6 +2733,75 @@ fun LibraryScreen(
             },
             shape = RoundedCornerShape(24.dp)
         )
+    }
+}
+
+@Composable
+private fun DeviceLibraryFolderGuidanceCard(
+    acceptedSongCount: Int,
+    actionEnabled: Boolean,
+    onChooseFolder: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Card(
+        modifier = modifier,
+        shape = RoundedCornerShape(20.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.secondaryContainer,
+            contentColor = MaterialTheme.colorScheme.onSecondaryContainer,
+        ),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
+    ) {
+        Column(
+            modifier = Modifier.padding(18.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp),
+        ) {
+            Row(
+                verticalAlignment = Alignment.Top,
+                horizontalArrangement = Arrangement.spacedBy(14.dp),
+            ) {
+                Icon(
+                    imageVector = RhythmIcons.Folder,
+                    contentDescription = stringResource(R.string.device_library_choose_folder_action),
+                    tint = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.size(28.dp),
+                )
+                Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                    Text(
+                        text = stringResource(R.string.device_library_low_result_title),
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold,
+                    )
+                    Text(
+                        text = stringResource(
+                            R.string.device_library_low_result_description,
+                            acceptedSongCount,
+                        ),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSecondaryContainer.copy(alpha = 0.82f),
+                    )
+                }
+            }
+            Button(
+                onClick = onChooseFolder,
+                enabled = actionEnabled,
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(12.dp),
+            ) {
+                Icon(
+                    imageVector = RhythmIcons.Folder,
+                    contentDescription = null,
+                    modifier = Modifier.size(20.dp),
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(stringResource(R.string.device_library_choose_folder_action))
+            }
+            Text(
+                text = stringResource(R.string.device_library_choose_folder_help),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSecondaryContainer.copy(alpha = 0.72f),
+            )
+        }
     }
 }
 

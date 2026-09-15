@@ -426,6 +426,23 @@
     <string name="storage_permission_required">需要儲存權限</string>
     <string name="storage_permission_desc">若要瀏覽您的音樂檔案並瀏覽裝置的儲存空間，Sonorus 需要存取您的檔案和媒體的權限。</string>
     <string name="storage_permission_audio_only">這僅允許存取包含音樂的音訊檔案和資料夾。</string>
+    <string name="device_library_permission_title">允許存取本機音樂</string>
+    <string name="device_library_permission_description">Sonorus 需要「音樂和音訊」權限，才能讀取 Android 媒體庫中的歌曲。授權後會立即掃描；不會上傳您的音訊或檔案路徑。</string>
+    <string name="device_library_permission_allow_action">允許存取音樂</string>
+    <string name="device_library_permission_granted_scanning">權限已允許，正在掃描本機音樂…</string>
+    <string name="device_library_permission_denied">未獲得音樂權限，目前無法顯示本機歌曲。您可以稍後重試或前往系統設定允許。</string>
+    <string name="device_library_permission_open_settings">開啟系統設定</string>
+    <string name="device_library_low_result_title">沒有找到完整的本機音樂</string>
+    <string name="device_library_low_result_description">Sonorus 目前只找到 %1$d 首歌曲。部分檔案可能尚未加入 Android 媒體庫。請選擇音樂資料夾，Sonorus 將只掃描您授權的資料夾。</string>
+    <string name="device_library_choose_folder_action">選擇音樂資料夾</string>
+    <string name="device_library_choose_folder_help">選擇包含音樂的資料夾，然後在系統頁面點選「使用這個資料夾」。</string>
+    <string name="device_library_folder_picker_instruction">請選擇包含音樂的資料夾</string>
+    <string name="device_library_folder_authorized_scanning">已授權「%1$s」，正在重新掃描…</string>
+    <string name="device_library_folder_scan_success">掃描完成：新增 %1$d 首，共 %2$d 首</string>
+    <string name="device_library_folder_scan_no_new">已掃描「%1$s」，未發現新的支援音訊。請檢查檔案格式和掃描設定。</string>
+    <string name="device_library_folder_picker_cancelled">未選擇資料夾。Sonorus 仍會顯示 Android 媒體庫中的歌曲。</string>
+    <string name="device_library_folder_invalid">無法讀取「%1$s」。請重新選擇該資料夾。</string>
+    <string name="device_library_folder_scan_failed">掃描未完成，已保留原有音樂庫。請稍後重試。</string>
     <!-- PlayerScreen -->
     <string name="player_loading_lyrics">載入歌詞…</string>
     <string name="player_queue">佇列</string>

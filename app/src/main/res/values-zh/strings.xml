@@ -426,6 +426,23 @@
     <string name="storage_permission_required">需要存储权限</string>
     <string name="storage_permission_desc">要浏览您的音乐文件并浏览设备的存储空间，Sonorus 需要访问您的文件和媒体的权限。</string>
     <string name="storage_permission_audio_only">这仅允许访问包含音乐的音频文件和文件夹。</string>
+    <string name="device_library_permission_title">允许访问本地音乐</string>
+    <string name="device_library_permission_description">Sonorus 需要“音乐和音频”权限，才能读取 Android 媒体库中的歌曲。授权后会立即扫描；不会上传您的音频或文件路径。</string>
+    <string name="device_library_permission_allow_action">允许访问音乐</string>
+    <string name="device_library_permission_granted_scanning">权限已允许，正在扫描本地音乐…</string>
+    <string name="device_library_permission_denied">未获得音乐权限，暂时无法显示本地歌曲。您可以稍后重试或前往系统设置允许。</string>
+    <string name="device_library_permission_open_settings">打开系统设置</string>
+    <string name="device_library_low_result_title">没有找到完整的本地音乐</string>
+    <string name="device_library_low_result_description">Sonorus 目前只找到 %1$d 首歌曲。部分文件可能尚未加入 Android 媒体库。请选择音乐文件夹，Sonorus 将仅扫描您授权的文件夹。</string>
+    <string name="device_library_choose_folder_action">选择音乐文件夹</string>
+    <string name="device_library_choose_folder_help">选择包含音乐的文件夹，然后在系统页面点击“使用此文件夹”。</string>
+    <string name="device_library_folder_picker_instruction">请选择包含音乐的文件夹</string>
+    <string name="device_library_folder_authorized_scanning">已授权“%1$s”，正在重新扫描…</string>
+    <string name="device_library_folder_scan_success">扫描完成：新增 %1$d 首，共 %2$d 首</string>
+    <string name="device_library_folder_scan_no_new">已扫描“%1$s”，未发现新的受支持音频。请检查文件格式和扫描设置。</string>
+    <string name="device_library_folder_picker_cancelled">未选择文件夹。Sonorus 仍会显示 Android 媒体库中的歌曲。</string>
+    <string name="device_library_folder_invalid">无法读取“%1$s”。请重新选择该文件夹。</string>
+    <string name="device_library_folder_scan_failed">扫描未完成，已保留原有曲库。请稍后重试。</string>
     <string name="local_library_disabled_title">本地音乐库已禁用</string>
     <string name="local_library_disabled_desc">Sonorus 仅播放私有作品库中的受管音源。作品列表和录音版本选择正在接入后端。</string>
     <!-- PlayerScreen -->

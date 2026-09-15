@@ -2592,11 +2592,19 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
                 }
 
                 val duration = System.currentTimeMillis() - startTime
-                appSettings.setLastScanTimestamp(System.currentTimeMillis())
-                appSettings.setLastScanDuration(duration)
-                
-                Log.d(TAG, "Library refresh complete. Loaded ${_songs.value.size} songs, ${_albums.value.size} albums, ${_artists.value.size} artists in ${duration}ms")
-                refreshCompletedSuccessfully = true
+                val scanFailed = repository.scanDiagnostics.value.failed ||
+                    repository.scanProgress.value.stage == ScanPhase.PermissionDenied
+                if (scanFailed) {
+                    Log.w(
+                        TAG,
+                        "Library refresh kept the previous library because the device scan failed",
+                    )
+                } else {
+                    appSettings.setLastScanTimestamp(System.currentTimeMillis())
+                    appSettings.setLastScanDuration(duration)
+                    Log.d(TAG, "Library refresh complete. Loaded ${_songs.value.size} songs, ${_albums.value.size} albums, ${_artists.value.size} artists in ${duration}ms")
+                    refreshCompletedSuccessfully = true
+                }
             } catch (e: kotlinx.coroutines.CancellationException) {
                 Log.d(TAG, "Library refresh cancelled by user")
                 refreshCancelled = true

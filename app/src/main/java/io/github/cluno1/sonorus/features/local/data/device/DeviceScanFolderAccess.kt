@@ -8,6 +8,7 @@ import android.content.Intent
 import android.net.Uri
 import android.provider.DocumentsContract
 import androidx.core.content.edit
+import androidx.core.net.toUri
 import androidx.documentfile.provider.DocumentFile
 import com.google.gson.Gson
 import com.google.gson.annotations.SerializedName
@@ -32,6 +33,30 @@ class DeviceScanFolderAccess(private val context: Context) {
                 object : TypeToken<List<DeviceScanRoot>>() {}.type,
             ).orEmpty()
         }.getOrDefault(emptyList())
+    }
+
+    /**
+     * Returns only roots that still have a persisted read grant and whose provider reports the
+     * directory as readable. A saved URI alone is not enough: users can revoke SAF access from
+     * system settings or the backing volume can disappear.
+     */
+    fun validRoots(): List<DeviceScanRoot> {
+        val persistedReadUris = context.contentResolver.persistedUriPermissions
+            .filter { it.isReadPermission }
+            .map { it.uri }
+
+        return roots().filter { root ->
+            val rootUri = runCatching { root.treeUri.toUri() }.getOrNull()
+                ?: return@filter false
+            val hasPersistedReadGrant = persistedReadUris.any { grantedUri ->
+                sameTree(rootUri, grantedUri)
+            }
+            hasPersistedReadGrant && runCatching {
+                DocumentFile.fromTreeUri(context, rootUri)?.let { document ->
+                    document.exists() && document.canRead()
+                } == true
+            }.getOrDefault(false)
+        }
     }
 
     fun add(
@@ -69,7 +94,7 @@ class DeviceScanFolderAccess(private val context: Context) {
     }
 
     private fun releaseRoot(root: DeviceScanRoot) {
-        val uri = runCatching { Uri.parse(root.treeUri) }.getOrNull() ?: return
+        val uri = runCatching { root.treeUri.toUri() }.getOrNull() ?: return
         if (uri in DeviceFolderAccess(context).roots()) return
         runCatching {
             context.contentResolver.releasePersistableUriPermission(
@@ -77,6 +102,14 @@ class DeviceScanFolderAccess(private val context: Context) {
                 Intent.FLAG_GRANT_READ_URI_PERMISSION,
             )
         }
+    }
+
+    private fun sameTree(first: Uri, second: Uri): Boolean {
+        if (first == second) return true
+        if (first.authority != second.authority) return false
+        val firstTreeId = runCatching { DocumentsContract.getTreeDocumentId(first) }.getOrNull()
+        val secondTreeId = runCatching { DocumentsContract.getTreeDocumentId(second) }.getOrNull()
+        return firstTreeId != null && firstTreeId == secondTreeId
     }
 
     companion object {
@@ -128,7 +161,7 @@ object DeviceDocumentPolicy {
         val itemTreeId = runCatching { DocumentsContract.getTreeDocumentId(uri) }.getOrNull()
             ?: return false
         val configuredRoot = DeviceScanFolderAccess(context).roots().any { root ->
-            val rootUri = runCatching { Uri.parse(root.treeUri) }.getOrNull() ?: return@any false
+            val rootUri = runCatching { root.treeUri.toUri() }.getOrNull() ?: return@any false
             rootUri.authority == uri.authority &&
                 runCatching { DocumentsContract.getTreeDocumentId(rootUri) }.getOrNull() == itemTreeId
         }
