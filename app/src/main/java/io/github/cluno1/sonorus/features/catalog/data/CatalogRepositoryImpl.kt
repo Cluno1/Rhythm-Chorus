@@ -42,6 +42,8 @@ import io.github.cluno1.sonorus.features.catalog.domain.PlaybackDescriptor
 import io.github.cluno1.sonorus.features.catalog.domain.ScoreRevision
 import io.github.cluno1.sonorus.features.catalog.domain.WorkBundle
 import io.github.cluno1.sonorus.features.catalog.domain.WorkSummary
+import io.github.cluno1.sonorus.features.catalog.domain.clientRevisionId
+import io.github.cluno1.sonorus.features.catalog.domain.clientScore
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import retrofit2.Response
@@ -446,12 +448,9 @@ class CatalogRepositoryImpl(context: Context) : CatalogRepository {
         val bundle = getWorkBundle(validWorkId, forceRefresh = true).getOrThrow()
         val arrangement = bundle.arrangements.firstOrNull { it.id == validArrangementId }
             ?: throw CatalogFailure.InvalidData("播放条目对应的编曲不存在")
-        val score = arrangement.preferredScoreId
-            ?.let { preferred -> arrangement.scores.firstOrNull { it.id == preferred } }
-            ?.takeIf { it.headRevisionId != null || it.publishedRevisionId != null }
-            ?: arrangement.scores.firstOrNull { it.headRevisionId != null || it.publishedRevisionId != null }
+        val score = arrangement.clientScore()
             ?: return@guarded Unit
-        val revisionId = score.headRevisionId ?: score.publishedRevisionId ?: return@guarded Unit
+        val revisionId = score.clientRevisionId ?: return@guarded Unit
         val revision = getScoreRevision(revisionId).getOrThrow()
         val asset = revision.primaryMusicXml
             ?: throw CatalogFailure.InvalidData("最新谱面修订没有 primary_musicxml")
@@ -499,8 +498,14 @@ class CatalogRepositoryImpl(context: Context) : CatalogRepository {
             cursor = page.nextCursor
             hasMore = page.hasMore
         } while (hasMore)
-        val tombstonedWorks = all.filter { it.tombstone && it.entityType == "work" }.map { it.entityId }.toSet()
+        val affectedWorks = all.flatMap { it.workIds }.toSet()
+        val tombstonedWorks = all
+            .filter { it.tombstone && it.entityType == "work" }
+            .map { it.entityId }
+            .toSet()
+        cache.invalidateWorkBundles(affectedWorks)
         cache.removeWorks(tombstonedWorks)
+        if (affectedWorks.isNotEmpty()) cache.invalidateLibrary()
         cache.saveSyncCursor(cursor)
         CatalogChanges(all, cursor, false)
     }

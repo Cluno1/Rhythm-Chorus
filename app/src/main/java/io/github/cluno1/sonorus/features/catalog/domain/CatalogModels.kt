@@ -61,6 +61,16 @@ data class Score(
     val revision: Int,
 )
 
+/** The revision visible to users. A newer unpublished head remains an admin draft. */
+val Score.clientRevisionId: String?
+    get() = publishedRevisionId
+
+/** Prefer the configured score only when it has a published revision. */
+fun Arrangement.clientScore(): Score? = preferredScoreId
+    ?.let { preferred -> scores.firstOrNull { it.id == preferred } }
+    ?.takeIf { it.clientRevisionId != null }
+    ?: scores.firstOrNull { it.clientRevisionId != null }
+
 data class ScoreRevision(
     val id: String,
     val scoreId: String,

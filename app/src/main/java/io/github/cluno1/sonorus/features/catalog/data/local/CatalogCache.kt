@@ -67,8 +67,23 @@ internal class CatalogCache(context: Context, private val gson: Gson = Gson()) {
     fun removeWorks(ids: Set<String>) {
         if (ids.isEmpty()) return
         saveWorks(loadWorks().filterNot { it.id in ids })
+        invalidateWorkBundles(ids)
+    }
+
+    fun invalidateWorkBundles(ids: Set<String>) {
+        if (ids.isEmpty()) return
         preferences.edit(commit = true) {
             ids.forEach { remove(bundleKey(it)); remove(etagKey(it)) }
+        }
+    }
+
+    fun invalidateLibrary() {
+        val detailKeys = preferences.all.keys.filter { it.startsWith(KEY_LIBRARY_ALBUM_PREFIX) }
+        preferences.edit(commit = true) {
+            remove(KEY_LIBRARY_SONGS)
+            remove(KEY_LIBRARY_ALBUMS)
+            remove(KEY_LIBRARY_SCORE_WORKS)
+            detailKeys.forEach(::remove)
         }
     }
 
@@ -79,7 +94,7 @@ internal class CatalogCache(context: Context, private val gson: Gson = Gson()) {
     private fun write(key: String, value: Any) = preferences.edit(commit = true) { putString(key, gson.toJson(value)) }
     private fun bundleKey(id: String) = "bundle:$id"
     private fun etagKey(id: String) = "etag:$id"
-    private fun libraryAlbumKey(id: String) = "library_album:$id"
+    private fun libraryAlbumKey(id: String) = "$KEY_LIBRARY_ALBUM_PREFIX$id"
     private fun scoreRevisionKey(id: String) = "score_revision:$id"
 
     private companion object {
@@ -89,5 +104,6 @@ internal class CatalogCache(context: Context, private val gson: Gson = Gson()) {
         const val KEY_LIBRARY_SONGS = "library_songs"
         const val KEY_LIBRARY_ALBUMS = "library_albums"
         const val KEY_LIBRARY_SCORE_WORKS = "library_score_works"
+        const val KEY_LIBRARY_ALBUM_PREFIX = "library_album:"
     }
 }

@@ -143,6 +143,8 @@ import io.github.cluno1.sonorus.features.catalog.domain.isCatalogLibrarySong
 import io.github.cluno1.sonorus.features.catalog.domain.toStableCatalogSongId
 import io.github.cluno1.sonorus.features.catalog.domain.toRhythmAlbum
 import io.github.cluno1.sonorus.features.catalog.domain.toRhythmSong
+import io.github.cluno1.sonorus.features.catalog.domain.clientRevisionId
+import io.github.cluno1.sonorus.features.catalog.domain.clientScore
 import io.github.cluno1.sonorus.features.catalog.presentation.CatalogServerSettingsScreen
 import io.github.cluno1.sonorus.features.catalog.presentation.ChorusAdminScreen
 import io.github.cluno1.sonorus.features.catalog.presentation.CatalogRemoteScoreScreen
@@ -1001,7 +1003,7 @@ private fun LocalNavigationContent(
         activeCatalogScoreAvailable = bundle?.arrangements
             ?.firstOrNull { it.id == item.arrangementId }
             ?.scores
-            ?.any { (it.headRevisionId ?: it.publishedRevisionId) != null }
+            ?.any { it.clientRevisionId != null }
             ?: false
     }
     val catalogSongs = remember(catalogState.songs, catalogState.serverUrl) {
@@ -1497,12 +1499,7 @@ private fun LocalNavigationContent(
                                         }
                                     val arrangement = bundle.arrangements
                                         .firstOrNull { it.id == item.arrangementId }
-                                    val selectedScore = arrangement?.preferredScoreId
-                                        ?.let { preferred -> arrangement.scores.firstOrNull { it.id == preferred } }
-                                        ?.takeIf { (it.headRevisionId ?: it.publishedRevisionId) != null }
-                                        ?: arrangement?.scores?.firstOrNull {
-                                            (it.headRevisionId ?: it.publishedRevisionId) != null
-                                        }
+                                    val selectedScore = arrangement?.clientScore()
                                     val scorePair = if (arrangement != null && selectedScore != null) {
                                         arrangement to selectedScore
                                     } else {
@@ -1513,7 +1510,7 @@ private fun LocalNavigationContent(
                                         return@launch
                                     }
                                     val (arr, score) = scorePair
-                                    val revId = (score.headRevisionId ?: score.publishedRevisionId)!!
+                                    val revId = score.clientRevisionId!!
                                     navController.navigate(
                                         Screen.CatalogScore.createRoute(
                                             item.workId,
