@@ -47,7 +47,8 @@ Inspect the generated APK package, label, version, signing certificate, icons, b
 4. Push the reviewed commit to `main`.
 5. Let the workflow generate and sign the Stable update manifest.
 6. Let the server verify the Artifact, synchronize COS, and atomically switch `stable/latest.json`.
-7. Verify the public Stable download, authenticated updater discovery, install, and retained app data.
+7. Let the workflow create `v{version}` on GitHub Releases and attach all five signed APKs plus their five SHA-256 files.
+8. Verify the GitHub Release, authenticated updater discovery, install, and retained app data.
 
 Do not replace a published binary under the same version code. If a release is bad, push a reviewed fix so the workflow publishes a higher version signed by the same key, and let clients upgrade forward.
 
@@ -59,6 +60,7 @@ Before updating `main`:
 - confirm the `sonorus-stable` environment remains restricted to `main`;
 - confirm the permanent APK certificate and Stable manifest key backups are intact;
 - verify the previous Stable package can discover, download, and install the new version;
-- verify the public Stable download and the authenticated app update path after publication.
+- verify the GitHub Release contains the structured change summary, device/ABI guidance, build identity, and all ten expected assets;
+- verify the public GitHub download and the authenticated app update path after publication.
 
-Stable rollback is forward-only. Never overwrite an immutable server release, COS object, or signed manifest.
+Stable rollback is forward-only. Never overwrite an immutable server release, COS object, signed manifest, or published GitHub tag. A rerun for the same workflow run may only repair the matching Release assets and notes.

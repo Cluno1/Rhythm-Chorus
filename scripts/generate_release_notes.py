@@ -1,308 +1,246 @@
+#!/usr/bin/env python3
+"""Generate structured, repeatable GitHub Release notes for Sonorus Stable."""
+
+from __future__ import annotations
+
+import argparse
 import os
 import re
-import sys
 import subprocess
-
-# Path constants
-ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-CHANGELOG_PATH = os.path.join(ROOT_DIR, "docs", "CHANGELOG.md")
-BUILD_GRADLE_PATH = os.path.join(ROOT_DIR, "app", "build.gradle.kts")
-BANNER_HINT_PATH = os.path.join(ROOT_DIR, ".release_banner_url")
-
-DEFAULT_BETA_BANNER = "https://github.com/user-attachments/assets/52d9f9b9-722e-4e66-abab-2dcbf59b6648"
-DEFAULT_STABLE_BANNER = "https://github.com/user-attachments/assets/f307174a-ec2e-41ec-b274-0a458123d4f7"
-
-def parse_gradle_version_info():
-    version_name = "Unknown"
-    version_code = "Unknown"
-    if os.path.exists(BUILD_GRADLE_PATH):
-        with open(BUILD_GRADLE_PATH, "r", encoding="utf-8") as f:
-            content = f.read()
-        name_match = re.search(r"versionName\s*=\s*(?:overrideVersionName\s*\?:\s*)?\"(.*?)\"", content)
-        if name_match:
-            version_name = name_match.group(1)
-        code_match = re.search(r"versionCode\s*=\s*(?:overrideVersionCode\s*\?:\s*)?(\d+)", content)
-        if code_match:
-            version_code = code_match.group(1)
-    return version_name, version_code
-
-def extract_release_notes(tag_name):
-    # Normalize tag name, e.g. "v5.1.412.1078-beta" -> "5.1.412.1078"
-    version_numbers = re.search(r"(\d+\.\d+\.\d+\.\d+)", tag_name)
-    if not version_numbers:
-        version_numbers = re.search(r"(\d+\.\d+\.\d+)", tag_name)
-        
-    if not version_numbers:
-        print(f"Could not parse version numbers from tag: {tag_name}")
-        return ""
-        
-    version_str = version_numbers.group(1)
-    
-    if not os.path.exists(CHANGELOG_PATH):
-        print(f"Changelog file not found at: {CHANGELOG_PATH}")
-        return ""
-        
-    with open(CHANGELOG_PATH, "r", encoding="utf-8") as f:
-        content = f.read()
-        
-    version_esc = re.escape(version_str)
-    pattern = rf"##\s*\[\s*v?{version_esc}.*?\][^\n]*\n(.*?)(?=\n##\s*\[|\Z)"
-    
-    match = re.search(pattern, content, re.DOTALL | re.IGNORECASE)
-    if match:
-        return match.group(1).strip()
-    return ""
+from dataclasses import dataclass
+from pathlib import Path
 
 
-def load_banner_url(is_beta):
-    """Load banner URL from .release_banner_url hint file, or return the default."""
-    if os.path.exists(BANNER_HINT_PATH):
-        with open(BANNER_HINT_PATH, "r", encoding="utf-8") as f:
-            url = f.read().strip()
-        # Empty file means "no banner"
-        return url if url else None
-    # No hint file — use defaults
-    return DEFAULT_BETA_BANNER if is_beta else DEFAULT_STABLE_BANNER
+DEFAULT_REPOSITORY = "Cluno1/Sonorus"
+MAX_COMMITS_WITHOUT_TAG = 30
 
 
-def render_banner_html(banner_url):
-    """Return an HTML snippet for the banner with rounded corners."""
-    if not banner_url:
+@dataclass(frozen=True)
+class Change:
+    category: str
+    text: str
+    short_sha: str
+
+
+CATEGORY_TITLES = {
+    "feature": "New and improved",
+    "fix": "Fixes",
+    "performance": "Performance",
+    "docs": "Documentation",
+    "engineering": "Engineering",
+}
+
+
+def run_git(*args: str) -> str:
+    result = subprocess.run(
+        ["git", *args],
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+    return result.stdout.strip()
+
+
+def previous_release_tag(commit: str, current_tag: str) -> str | None:
+    tags = run_git(
+        "tag",
+        "--list",
+        "v[0-9]*",
+        "--merged",
+        commit,
+        "--sort=-version:refname",
+    ).splitlines()
+    return next((tag for tag in tags if tag and tag != current_tag), None)
+
+
+def classify_commit(subject: str, short_sha: str) -> Change | None:
+    if re.match(r"^(merge|release)(?:\b|:)", subject, re.IGNORECASE):
         return None
-    return (
-        '<p align="center">\n'
-        f'  <img src="{banner_url}" alt="Release Banner"\n'
-        '       style="border-radius: 16px; width: 100%; max-width: 960px;" />\n'
-        '</p>'
+
+    match = re.match(
+        r"^(feat|fix|perf|docs|refactor|test|build|ci|chore|style)"
+        r"(?:\(([^)]+)\))?!?:\s*(.+)$",
+        subject,
+        re.IGNORECASE,
+    )
+    if match:
+        kind, scope, text = match.groups()
+        kind = kind.lower()
+        category = {
+            "feat": "feature",
+            "fix": "fix",
+            "perf": "performance",
+            "docs": "docs",
+        }.get(kind, "engineering")
+        if scope:
+            scope_label = {
+                "ci": "CI",
+                "ui": "UI",
+                "api": "API",
+                "r8": "R8",
+            }.get(scope.lower(), scope.replace("-", " ").title())
+            text = f"{scope_label}: {text}"
+    else:
+        category = "feature"
+        text = subject
+
+    text = text.strip().rstrip(".")
+    if text:
+        text = text[0].upper() + text[1:]
+    return Change(category=category, text=text, short_sha=short_sha)
+
+
+def collect_changes(commit: str, previous_tag: str | None) -> list[Change]:
+    revision = f"{previous_tag}..{commit}" if previous_tag else commit
+    args = [
+        "log",
+        revision,
+        "--no-merges",
+        "--format=%h%x09%s",
+    ]
+    if previous_tag is None:
+        args.insert(2, f"--max-count={MAX_COMMITS_WITHOUT_TAG}")
+
+    seen: set[str] = set()
+    changes: list[Change] = []
+    for line in run_git(*args).splitlines():
+        if "\t" not in line:
+            continue
+        short_sha, subject = line.split("\t", 1)
+        change = classify_commit(subject.strip(), short_sha)
+        if change is None or change.text.lower() in seen:
+            continue
+        seen.add(change.text.lower())
+        changes.append(change)
+    return changes
+
+
+def version_from_tag(tag: str) -> str:
+    version = tag.removeprefix("v")
+    if not re.fullmatch(r"\d+\.\d+\.\d+", version):
+        raise ValueError(f"Stable tag must look like v1.2.3, got: {tag}")
+    return version
+
+
+def render_notes(
+    *,
+    tag: str,
+    version_code: str,
+    repository: str,
+    previous_tag: str | None,
+    changes: list[Change],
+) -> str:
+    version = version_from_tag(tag)
+    grouped = {category: [] for category in CATEGORY_TITLES}
+    for change in changes:
+        grouped[change.category].append(change)
+
+    lines = [
+        f"# Sonorus {version}",
+        "",
+        "A signed Stable build of Sonorus: local music playback, an optional private Catalog, "
+        "MusicXML scores, synchronized lyrics editing, and Chorus Lab rehearsal tools.",
+        "",
+        "## What's changed",
+        "",
+    ]
+
+    visible_categories = [category for category, items in grouped.items() if items]
+    if not visible_categories:
+        lines.extend(["- Maintenance and reliability improvements.", ""])
+    else:
+        for category in visible_categories:
+            lines.append(f"### {CATEGORY_TITLES[category]}")
+            lines.append("")
+            for change in grouped[category]:
+                lines.append(f"- {change.text} (`{change.short_sha}`)")
+            lines.append("")
+
+    lines.extend(
+        [
+            "## Choose your APK",
+            "",
+            "| Device | Download asset |",
+            "| --- | --- |",
+            f"| Most current Android phones and tablets | `Sonorus-{version}-githubRelease-arm64-v8a.apk` |",
+            f"| Older 32-bit ARM devices | `Sonorus-{version}-githubRelease-armeabi-v7a.apk` |",
+            f"| x86 / x86_64 devices and emulators | The matching `x86` or `x86_64` APK |",
+            f"| Unsure which one to use | `Sonorus-{version}-githubRelease.apk` (universal) |",
+            "",
+            "Each APK has a matching `.sha256` file. Android 8.0 or newer is required.",
+            "",
+            "## Release integrity",
+            "",
+            f"- Version code: `{version_code}`",
+            "- Production application ID: `io.github.cluno1.sonorus`",
+            "- Every APK is checked for package identity, version, ABI, minimum SDK, and the permanent signing certificate before publication.",
+            "- The private in-app updater additionally verifies a signed update manifest and APK SHA-256 before installation.",
+            "",
+            "> [!NOTE]",
+            "> Stable and Debug are separate apps. Installing Stable does not copy Debug's local data or device registration; use backup/restore where applicable and enroll the Stable app separately.",
+            "",
+            "## Feedback and services",
+            "",
+            f"- [Report a bug](https://github.com/{repository}/issues)",
+            "- [Join the Discord community](https://discord.gg/KaGCYshewX)",
+            "- [Email the maintainer](mailto:clunojames@gmal.com)",
+            "- Contact us through Discord or email for private deployments and custom backend services.",
+            "",
+        ]
     )
 
-def clean_changelog_content(raw_notes):
-    lines = raw_notes.splitlines()
-    cleaned_items = []
-    current_category = "Added"
-    has_translation = False
-    
-    for line in lines:
-        line = line.strip()
-        if not line:
-            continue
-            
-        cat_match = re.match(r"^###\s*(.*)", line)
-        if cat_match:
-            current_category = cat_match.group(1).strip()
-            continue
-            
-        if line.startswith("-") or line.startswith("*") or line.startswith("•"):
-            item_text = re.sub(r"^[-*•]\s*", "", line)
-            if item_text and item_text != "-":
-                # Collapse all translation/l10n lines into one
-                if re.search(r"l10n|translation|localiz|update.*lang", item_text, re.IGNORECASE):
-                    has_translation = True
-                    continue
-                cleaned_items.append(f"- **{current_category}:** {item_text}")
-
-    if has_translation:
-        cleaned_items.append("- **Added:** Updated translations")
-                
-    return cleaned_items
-
-# Commit messages that carry no user-facing value and are excluded from changelogs
-JUNK_PATTERNS = [
-    r"^minor\b.*$",
-    r"^fix\s+warnings?\s*$",
-    r"^fix\s+lint\s*$",
-    r"^fix\s+warnings?\s*[/\s-]?lint\s*$",
-    r"^update\s+[a-z0-9_.-]+\.(ya?ml|json|md|properties|txt)\s*$",
-    r"^update\s+.*\.github.*$",
-    r"^bump\s+(version|dependenc\w+).*$",
-    r"^cleanup\s*$",
-    r"^refactor\s*$",
-    r"^chore\s*\(\s*(deps|ci|build|config)\s*\).*$",
-    r"^(build|ci|chore|style|docs)\s*:.*$",
-]
-
-
-def is_junk_commit(msg):
-    return any(re.search(p, msg, re.IGNORECASE) for p in JUNK_PATTERNS)
-
-
-def get_commits_between_tags(current_tag, previous_tag=None):
-    try:
-        if not previous_tag:
-            # Get list of tags sorted by version
-            tags_output = subprocess.check_output(
-                ["git", "tag", "--sort=-v:refname"],
-                stderr=subprocess.DEVNULL
-            ).decode("utf-8").strip().splitlines()
-            
-            tags = [t.strip() for t in tags_output if t.strip()]
-            
-            if current_tag in tags:
-                idx = tags.index(current_tag)
-                # Find the next older tag
-                if idx + 1 < len(tags):
-                    previous_tag = tags[idx + 1]
-                
-        if previous_tag:
-            log_cmd = ["git", "log", f"{previous_tag}..{current_tag}", "--oneline"]
-            print(f"Fetching commits between {previous_tag} and {current_tag}")
-        else:
-            log_cmd = ["git", "log", f"{current_tag}", "--oneline"]
-            print(f"Fetching all commits up to {current_tag}")
-            
-        log_output = subprocess.check_output(log_cmd).decode("utf-8").strip()
-        if not log_output:
-            return []
-            
-        commits = []
-        seen = set()
-        has_translation = False
-        for line in log_output.splitlines():
-            parts = line.split(" ", 1)
-            if len(parts) > 1:
-                msg = parts[1].strip()
-                # Skip merge, release, and junk commits so the word-limited
-                # changelog keeps the meaningful changes, not the noise
-                if msg.startswith("Merge branch") or msg.startswith("Merge pull request") or msg.startswith("Release "):
-                    continue
-                if is_junk_commit(msg):
-                    continue
-                # Collapse all translation/localization commits into one line
-                if re.search(r"l10n|translation|chore\(l10n\)|localiz|hardcoded.*strings", msg, re.IGNORECASE):
-                    has_translation = True
-                    continue
-                if msg in seen:
-                    continue
-                seen.add(msg)
-                commits.append(msg)
-        if has_translation:
-            commits.append("Updated translations")
-        return commits
-    except Exception as e:
-        print(f"Error fetching commits between tags: {e}")
-        return []
-
-def main():
-    if len(sys.argv) < 2:
-        print("Usage: python generate_release_notes.py <tag_name> [commit_sha] [previous_tag]")
-        sys.exit(1)
-        
-    tag_name = sys.argv[1]
-    commit_sha = sys.argv[2] if len(sys.argv) > 2 else os.environ.get("GITHUB_SHA", "unknown")
-    custom_prev_tag = sys.argv[3] if len(sys.argv) > 3 else None
-    
-    is_beta = "beta" in tag_name.lower() or "alpha" in tag_name.lower() or "rc" in tag_name.lower()
-    
-    print(f"Generating release notes for tag: {tag_name} (IsBeta={is_beta})")
-    raw_notes = extract_release_notes(tag_name)
-    
-    bullets = []
-    if raw_notes:
-        bullets = clean_changelog_content(raw_notes)
-        if not bullets:
-            # Fallback to general bullet lines if no categories matched
-            for line in raw_notes.splitlines():
-                line = line.strip()
-                if line.startswith("-") or line.startswith("*") or line.startswith("•"):
-                    bullets.append(line)
-                    
-    if not bullets:
-        print("No changelog entries found in docs/CHANGELOG.md. Fetching commits since the previous tag...")
-        commits = get_commits_between_tags(tag_name, custom_prev_tag)
-        if commits:
-            bullets = [f"- **Added:** {c}" for c in commits]
-        else:
-            bullets = ["- **Added:** Minor bug fixes and performance improvements."]
-        
-    version_name, version_code = parse_gradle_version_info()
-    
-    major_minor = "5.1"
-    mm_match = re.search(r"(\d+\.\d+)", tag_name)
-    if mm_match:
-        major_minor = mm_match.group(1)
-    
-    build_num = "1078"
-    build_match = re.search(r"\.(\d+)(?:-|$)", tag_name)
-    if build_match:
-        build_num = build_match.group(1)
-    elif version_name != "Unknown":
-        parts = version_name.split(" ")[0].split(".")
-        if len(parts) >= 4:
-            build_num = parts[3]
-            
-    github_notes = []
-    
-    # Load banner URL (respects prepare_release.py choice, or uses default)
-    banner_url = load_banner_url(is_beta)
-    banner_html = render_banner_html(banner_url)
-
-    # Title & Banner
-    if is_beta:
-        github_notes.append(f"# Sonorus {major_minor} - Bug Fix Update\n")
+    if previous_tag:
+        lines.append(
+            f"**Full changelog:** https://github.com/{repository}/compare/{previous_tag}...{tag}"
+        )
     else:
-        github_notes.append(f"# Sonorus {major_minor} - Feature Update\n")
+        lines.append(f"**Source at this release:** https://github.com/{repository}/tree/{tag}")
 
-    if banner_html:
-        github_notes.append(banner_html + "\n")
-        
-    # What's New section
-    github_notes.append("**What's New:**")
-    for bullet in bullets:
-        github_notes.append(bullet)
-    github_notes.append("- **Many more reported Bug Fixes, UI & Performance Improvements.**")
-    
-    github_notes.append("")
-    
-    # Known Issues section
-    if is_beta:
-        github_notes.append("**Known Issues (Will be fixed on a later build):**")
-        github_notes.append("   - Translation contributions are being collected.")
-        github_notes.append("   - Report to GitHub Issues or Community on Discord & Telegram.")
-    else:
-        github_notes.append("**Known Issues:**")
-        github_notes.append("   - Translation contributions are being collected.")
-        github_notes.append("   - Report to GitHub Issues or Community on Discord & Telegram.")
-        
-    github_notes.append("")
-    
-    # Build Info section
-    github_notes.append("**Build Information:**")
-    github_notes.append(f"- Build: {build_num}")
-    github_notes.append(f"- Type: {'Beta' if is_beta else 'Stable'} Release")
-    
-    github_notes.append("\n---\n")
-    
-    # Important update notes
-    github_notes.append("> [!NOTE]")
-    github_notes.append("> **Important Update Notes**")
-    if is_beta:
-        github_notes.append("> * Don't restore old backups")
-        github_notes.append("\n> [!CAUTION]")
-        github_notes.append("> This is a **Beta** build. Please report [Issues](https://github.com/Cluno1/Sonorus/issues) if found.\n")
-    else:
-        github_notes.append("> * The app is in active development, so many features might be missing compared to other FOSS players.")
-        github_notes.append("> * You will find several improvements and changes with each release, so please stay up to date.")
-        github_notes.append("\n> [!TIP]")
-        github_notes.append("> * **Turn on Auto-Backup** so that no matter what happens, you can always recover your data.")
-        github_notes.append("> * You can turn off/on/manage APIs based on your needs from **Settings**.\n")
-        
-    github_notes.append("[Download signed Sonorus APKs from GitHub Releases](https://github.com/Cluno1/Sonorus/releases/latest)\n")
-    
-    github_notes.append("---")
-    
-    # Credits
-    github_notes.append("\nSonorus is an independent GPL-3.0-or-later derivative of [Rhythm](https://github.com/cromaguy/Rhythm).\n")
-    github_notes.append("### 🏆 Special Credits")
-    github_notes.append("* **The Community**: A big thanks to all Testers, Contributors, and Users!")
-    github_notes.append("\n---\n")
-    
-    release_notes_content = "\n".join(github_notes)
-    
-    output_path = os.path.join(ROOT_DIR, "release_notes.md")
-    with open(output_path, "w", encoding="utf-8") as f:
-        f.write(release_notes_content)
-        
-    print(f"Generated release notes file at: {output_path}")
-    
+    lines.extend(
+        [
+            "",
+            "---",
+            "",
+            "Sonorus is an independent GPL-3.0-or-later derivative of [Rhythm](https://github.com/cromaguy/Rhythm).",
+            "",
+        ]
+    )
+    return "\n".join(lines)
+
+
+def parse_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("tag", help="Stable tag, for example v1.0.7")
+    parser.add_argument("commit", nargs="?", default=os.environ.get("GITHUB_SHA", "HEAD"))
+    parser.add_argument("previous_tag", nargs="?", default=None)
+    parser.add_argument("--version-code", default="unknown")
+    parser.add_argument(
+        "--repository",
+        default=os.environ.get("GITHUB_REPOSITORY", DEFAULT_REPOSITORY),
+    )
+    parser.add_argument("--output", type=Path, default=Path("release_notes.md"))
+    return parser.parse_args()
+
+
+def main() -> None:
+    args = parse_args()
+    version_from_tag(args.tag)
+    previous_tag = args.previous_tag or previous_release_tag(args.commit, args.tag)
+    changes = collect_changes(args.commit, previous_tag)
+    notes = render_notes(
+        tag=args.tag,
+        version_code=str(args.version_code),
+        repository=args.repository,
+        previous_tag=previous_tag,
+        changes=changes,
+    )
+    args.output.parent.mkdir(parents=True, exist_ok=True)
+    args.output.write_text(notes, encoding="utf-8")
+    print(
+        f"Generated {args.output} with {len(changes)} change(s)"
+        + (f" since {previous_tag}" if previous_tag else " from recent history")
+    )
+
+
 if __name__ == "__main__":
     main()

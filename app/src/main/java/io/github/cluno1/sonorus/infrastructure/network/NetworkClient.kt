@@ -169,7 +169,7 @@ object NetworkClient {
         if (original.header("User-Agent").isNullOrBlank()) {
             builder.header(
                 "User-Agent",
-                "Sonorus/$versionName (https://github.com/Cluno1/Rhythm-Chorus)",
+                "Sonorus/$versionName (https://github.com/Cluno1/Sonorus)",
             )
         }
         if (original.header("Accept").isNullOrBlank()) {

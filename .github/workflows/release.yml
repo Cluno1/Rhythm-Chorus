@@ -6,7 +6,7 @@ on:
 
 permissions:
   actions: read
-  contents: read
+  contents: write
 
 concurrency:
   group: sonorus-stable-update
@@ -38,10 +38,12 @@ jobs:
         run: |
           python3 -m py_compile \
             scripts/build_update_manifest.py \
+            scripts/generate_release_notes.py \
             scripts/server_pull_update_artifact.py \
             scripts/server_sync_update_cos.py \
             scripts/verify_catalog_json_contract.py \
             scripts/verify_release_apks.py
+          python3 scripts/test_generate_release_notes.py
           python3 scripts/verify_catalog_json_contract.py
           scripts/check_sonorus_brand.py
           scripts/verify_brand_assets.sh
@@ -61,6 +63,15 @@ jobs:
           CODE=$((1000000 + GITHUB_RUN_NUMBER))
           echo "name=$VERSION" >> "$GITHUB_OUTPUT"
           echo "code=$CODE" >> "$GITHUB_OUTPUT"
+
+      - name: Generate detailed GitHub Release notes
+        run: >-
+          python3 scripts/generate_release_notes.py
+          "v${{ steps.version.outputs.name }}"
+          "$GITHUB_SHA"
+          --version-code "${{ steps.version.outputs.code }}"
+          --repository "$GITHUB_REPOSITORY"
+          --output "$RUNNER_TEMP/sonorus-release-notes.md"
 
       - name: Require fixed Sonorus signing credentials
         env:
@@ -196,3 +207,38 @@ jobs:
             sleep 5
           done
           exit 1
+
+      - name: Publish signed APKs to GitHub Releases
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          TAG="v${{ steps.version.outputs.name }}"
+          TITLE="Sonorus ${{ steps.version.outputs.name }} (Stable)"
+          NOTES="$RUNNER_TEMP/sonorus-release-notes.md"
+          ASSET_DIR="app/build/outputs/apk/github/release"
+          mapfile -t ASSETS < <(
+            find "$ASSET_DIR" -maxdepth 1 -type f \
+              \( -name 'Sonorus-*.apk' -o -name 'Sonorus-*.apk.sha256' \) \
+              -print | sort
+          )
+          test -s "$NOTES"
+          test "${#ASSETS[@]}" -eq 10
+
+          if gh release view "$TAG" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            gh release edit "$TAG" \
+              --repo "$GITHUB_REPOSITORY" \
+              --title "$TITLE" \
+              --notes-file "$NOTES" \
+              --latest
+            gh release upload "$TAG" "${ASSETS[@]}" \
+              --repo "$GITHUB_REPOSITORY" \
+              --clobber
+          else
+            gh release create "$TAG" "${ASSETS[@]}" \
+              --repo "$GITHUB_REPOSITORY" \
+              --target "$GITHUB_SHA" \
+              --title "$TITLE" \
+              --notes-file "$NOTES" \
+              --latest
+          fi

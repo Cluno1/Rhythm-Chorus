@@ -30,7 +30,7 @@ class LrclibHeadersInterceptorTest {
 
         val request = server.takeRequest()
         assertEquals(
-            listOf("Sonorus/1.2.3-test (https://github.com/Cluno1/Rhythm-Chorus)"),
+            listOf("Sonorus/1.2.3-test (https://github.com/Cluno1/Sonorus)"),
             request.headers.values("User-Agent"),
         )
         assertEquals("application/json", request.headers["Accept"])

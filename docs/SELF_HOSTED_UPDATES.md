@@ -60,6 +60,8 @@ scripts/publish_update_bundle.py \
 
 The workflow stores the signed bundle as an immutable GitHub Actions artifact, resolves the artifact API's short-lived download URL, and sends only that callback over pinned public SSH. `/usr/local/bin/sonorus-pull-update` then downloads the artifact through the server's loopback Mihomo proxy, verifies the GitHub artifact digest, ZIP allowlist, Ed25519 manifest signature, APK SHA-256, frozen certificate identity and monotonic version before switching `latest.json` atomically. The server never stores a GitHub token, and no HTTP callback port is opened.
 
+Only after the private Stable publication succeeds does the workflow create the matching public GitHub Release. It creates tag `v{version}` at the exact workflow commit, generates categorized notes from commits since the previous Stable tag, explains the APK choices and build identity, and attaches the four ABI APKs, the universal APK, and all five `.sha256` sidecars. A rerun updates only that same run-derived tag and uses `--clobber` solely to repair its matching assets; a later Stable run always receives a new version and tag.
+
 Before either publisher switches `latest.json`, it invokes the narrowly privileged
 `/usr/local/bin/sonorus-sync-update-cos`. The helper independently verifies the channel's
 Ed25519 manifest and every local APK, uploads only the immutable
@@ -79,7 +81,7 @@ the correct installable file name.
 
 Configure the `sonorus-debug` and `sonorus-stable` GitHub environments with their own APK keystore/password secrets, manifest private/public key pair, frozen APK certificate fingerprint, deployment SSH private key, pinned `SONORUS_UPDATE_KNOWN_HOSTS`, and public `SONORUS_UPDATE_SSH_TARGET`. Restrict the Debug environment to `debug` and Stable to `main`. The SSH account must be dedicated to this job and use key-only authentication; host-key checking remains mandatory. It can write only the two channel directories and has no general sudo access: its sole sudo rule runs the root-owned COS verifier as `ubuntu`, with a fixed channel/version command shape. The server puller is root-owned, uses `http://127.0.0.1:7890`, accepts an explicit `debug` or `stable` channel, and accepts only GitHub Actions artifact hosts over HTTPS.
 
-Stable is continuous delivery from `main`: a successful Stable workflow installs the immutable server release, synchronizes the content-addressed APK to private COS with a full read-back, and switches `stable/latest.json` last. Do not push an unreviewed commit to `main`; once a Stable version is visible to a device, rollback remains forward-only.
+Stable is continuous delivery from `main`: a successful Stable workflow installs the immutable server release, synchronizes the content-addressed APK to private COS with a full read-back, switches `stable/latest.json`, and then publishes the corresponding GitHub Release. Do not push an unreviewed commit to `main`; once a Stable version is visible to a device, rollback remains forward-only.
 
 The public gateway must expose only authenticated `GET/HEAD /v2/app-updates/latest` and `/v2/app-updates/files/{versionCode}/{fileName}`. Range requests require the same device proof. There is deliberately no public update upload API.
 

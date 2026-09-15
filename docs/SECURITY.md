@@ -1,6 +1,6 @@
 # Security policy
 
-The latest stable Sonorus release is the supported line. Until the first public `Cluno1/Sonorus` Release exists, builds are development previews and have no published support guarantee.
+The latest public `Cluno1/Sonorus` Stable Release is the supported line. Debug builds and locally signed APKs are development previews and have no published support guarantee.
 
 Do not place vulnerabilities, device-registration material, Catalog credentials, signing keys, or proof-of-concept secrets in a public issue. Use GitHub's private security-advisory reporting for `Cluno1/Sonorus` when the repository enables it. If private reporting is not available, contact the repository owner through their GitHub profile without sending exploit details publicly.
 
